@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>FORGE OS · Data Input</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: linear-gradient(135deg, #d84315 0%, #ff9800 50%, #ffc107 100%);
+      font-family: -apple-system, sans-serif;
+      min-height: 100vh;
+      padding: 20px;
+      color: #0d0d0d;
+    }
+    .shell { max-width: 500px; margin: 0 auto; }
+    h1 { font-size: 22px; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 6px; }
+    .sub { font-size: 14px; color: #4a4a4a; margin-bottom: 24px; }
+    .card {
+      background: rgba(255,255,255,0.2);
+      border: 3px solid #0d0d0d;
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    .card h2 {
+      font-size: 14px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+    .field { margin-bottom: 14px; }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #1a1a1a;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 2px solid #0d0d0d;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.4);
+      color: #0d0d0d;
+      -webkit-appearance: none;
+    }
+    input:focus { outline: none; background: rgba(255,255,255,0.6); }
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      background: #0d0d0d;
+      color: #ffc107;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-top: 8px;
+      touch-action: manipulation;
+    }
+    .submit-btn:active { opacity: 0.8; }
+    .status {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      text-align: center;
+      display: none;
+    }
+    .status.success { background: rgba(39,174,96,0.3); border: 2px solid #27ae60; }
+    .status.error { background: rgba(192,57,43,0.3); border: 2px solid #c0392b; }
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 16px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #0d0d0d;
+      text-decoration: none;
+      border-bottom: 2px solid #0d0d0d;
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <h1>🌴 FORGE OS</h1>
+  <div class="sub">Enter today's HRV + Sleep data</div>
+
+  <div class="card">
+    <h2>❤️ Welltory HRV</h2>
+    <div class="field">
+      <label>Stress % (0-100)</label>
+      <input type="number" id="stress" min="0" max="100" placeholder="e.g. 72">
+    </div>
+    <div class="field">
+      <label>Energy % (0-100)</label>
+      <input type="number" id="energy" min="0" max="100" placeholder="e.g. 39">
+    </div>
+    <div class="field">
+      <label>Health % (0-100)</label>
+      <input type="number" id="health" min="0" max="100" placeholder="e.g. 20">
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>😴 Sleep Data</h2>
+    <div class="field">
+      <label>Sleep Score % (0-100)</label>
+      <input type="number" id="sleep_score" min="0" max="100" placeholder="e.g. 94">
+    </div>
+    <div class="field">
+      <label>Sleep Duration</label>
+      <input type="text" id="sleep_duration" placeholder="e.g. 7h 15m">
+    </div>
+    <div class="field">
+      <label>HR Range Min (bpm)</label>
+      <input type="number" id="hr_min" min="30" max="120" placeholder="e.g. 52">
+    </div>
+    <div class="field">
+      <label>HR Range Max (bpm)</label>
+      <input type="number" id="hr_max" min="30" max="120" placeholder="e.g. 72">
+    </div>
+  </div>
+
+  <button class="submit-btn" onclick="submitData()">🚀 UPDATE BRIEF</button>
+
+  <div class="status" id="status"></div>
+
+  <a href="https://theseanman.github.io/forge-daily-brief" class="back-link">← Back to Brief</a>
+
+</div>
+
+<script>
+// GitHub configuration
+var GITHUB_TOKEN = "PASTE_YOUR_GITHUB_PAT_HERE";
+var GITHUB_REPO = "theseanman/forge-daily-brief";
+var GITHUB_BRANCH = "gh-pages";
+
+function showStatus(msg, type) {
+  var el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status ' + type;
+  el.style.display = 'block';
+  setTimeout(function() { el.style.display = 'none'; }, 5000);
+}
+
+async function submitData() {
+  var stress = document.getElementById('stress').value;
+  var energy = document.getElementById('energy').value;
+  var health = document.getElementById('health').value;
+  var score = document.getElementById('sleep_score').value;
+  var duration = document.getElementById('sleep_duration').value;
+  var hr_min = document.getElementById('hr_min').value;
+  var hr_max = document.getElementById('hr_max').value;
+
+  if (!stress || !energy || !health || !score || !duration || !hr_min || !hr_max) {
+    showStatus('⚠️ Please fill in all fields', 'error');
+    return;
+  }
+
+  var data = {
+    welltory: {
+      stress: parseInt(stress),
+      energy: parseInt(energy),
+      health: parseInt(health)
+    },
+    sleep: {
+      score: parseInt(score),
+      duration: duration,
+      hr_range: hr_min + '–' + hr_max
+    },
+    updated: new Date().toISOString()
+  };
+
+  var content = btoa(JSON.stringify(data, null, 2));
+
+  try {
+    // Get current file SHA (needed for update)
+    var shaResponse = await fetch(
+      'https://api.github.com/repos/' + GITHUB_REPO + '/contents/data.json?ref=' + GITHUB_BRANCH,
+      { headers: { 'Authorization': 'token ' + GITHUB_TOKEN } }
+    );
+    
+    var sha = null;
+    if (shaResponse.ok) {
+      var shaData = await shaResponse.json();
+      sha = shaData.sha;
+    }
+
+    // Update the file
+    var body = {
+      message: 'Update FORGE data ' + new Date().toLocaleTimeString(),
+      content: content,
+      branch: GITHUB_BRANCH
+    };
+    if (sha) body.sha = sha;
+
+    var response = await fetch(
+      'https://api.github.com/repos/' + GITHUB_REPO + '/contents/data.json',
+      {
+        method: 'PUT',
+        headers: {
+          'Authorization': 'token ' + GITHUB_TOKEN,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      }
+    );
+
+    if (response.ok) {
+      showStatus('✅ Data saved! Brief will update at 6 AM.', 'success');
+    } else {
+      var err = await response.json();
+      showStatus('❌ Error: ' + (err.message || 'Unknown error'), 'error');
+    }
+
+  } catch(e) {
+    showStatus('❌ Network error. Check connection.', 'error');
+  }
+}
+</script>
+</body>
+</html>

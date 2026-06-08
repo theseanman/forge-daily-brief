@@ -1,0 +1,42 @@
+name: Generate FORGE OS Daily Brief
+
+on:
+  schedule:
+    # 6 AM Pacific = 14:00 UTC (adjusts for PDT)
+    - cron: '0 14 * * *'
+  workflow_dispatch:
+    # Allow manual trigger from GitHub website
+
+jobs:
+  generate-brief:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v3
+        with:
+          ref: gh-pages
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install caldav vobject
+      
+      - name: Generate brief
+        env:
+          ICLOUD_EMAIL: ${{ secrets.ICLOUD_EMAIL }}
+          ICLOUD_PASSWORD: ${{ secrets.ICLOUD_PASSWORD }}
+        run: |
+          python forge_actions.py
+      
+      - name: Commit and push index.html
+        run: |
+          git config user.name "FORGE OS Bot"
+          git config user.email "forge@theseanman.github.io"
+          git add index.html
+          git diff --staged --quiet || git commit -m "FORGE Brief $(date +'%b %d %Y')"
+          git push origin gh-pages
