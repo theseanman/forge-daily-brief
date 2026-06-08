@@ -53,23 +53,7 @@
     .paramount-goal { background: rgba(255,255,255,0.2); border: 2px solid var(--text-bright); border-radius: 8px; padding: 14px; margin-bottom: 10px; font-size: 14px; color: var(--text-light); line-height: 1.7; font-weight: 600; }
     .paramount-num { font-size: 15px; color: var(--text-bright); font-weight: 700; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
     .goal-controls { display: flex; gap: 8px; align-items: center; }
-    .goal-btn {
-      background: rgba(255,255,255,0.4);
-      border: 2px solid var(--text-bright);
-      border-radius: 6px;
-      padding: 8px 16px;
-      font-weight: 700;
-      font-size: 20px;
-      color: var(--text-bright);
-      cursor: pointer;
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: rgba(0,0,0,0.2);
-      min-width: 44px;
-      min-height: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+    .goal-btn { background: rgba(255,255,255,0.4); border: 2px solid var(--text-bright); border-radius: 6px; padding: 8px 16px; font-weight: 700; font-size: 20px; color: var(--text-bright); cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: rgba(0,0,0,0.2); min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
     .goal-btn:active { background: rgba(255,255,255,0.7); }
     .goal-counter { background: rgba(255,255,255,0.3); border: 2px solid var(--text-bright); border-radius: 6px; padding: 6px 14px; font-weight: 700; font-size: 16px; min-width: 40px; text-align: center; color: var(--text-bright); }
     .advice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -93,7 +77,7 @@
     <div class="date-block">
       <div class="date-main">Sunday</div>
       <div style="font-size:11px; color:var(--muted);">June 07, 2026</div>
-      <div class="date-time" id="live-clock">06:57 PM</div>
+      <div class="date-time" id="live-clock">07:00 PM</div>
     </div>
   </div>
 
@@ -110,12 +94,12 @@
     </div>
   </div>
 
-  <div class="alert-banner">🚨 RECOVERY DAY PROTOCOL ACTIVE Health at risk. Stress 78% (elevated). Energy 38% (limited). No strain. No decisions. Rest only.</div>
+  <div class="alert-banner">🚨 RECOVERY DAY PROTOCOL ACTIVE Health at risk. Stress 79% (elevated). Energy 38% (limited). No strain. No decisions. Rest only.</div>
 
   <div class="card">
     <div class="card-header"><span class="card-icon">❤️🌴</span><span>Welltory HRV</span></div>
     <div class="stat-row">
-      <div class="stat-block"><div class="stat-val">78%</div><div class="stat-label">Stress</div><div class="stat-sub">Elevated</div></div>
+      <div class="stat-block"><div class="stat-val">79%</div><div class="stat-label">Stress</div><div class="stat-sub">Elevated</div></div>
       <div class="stat-block"><div class="stat-val">38%</div><div class="stat-label">Energy</div><div class="stat-sub">Limited</div></div>
       <div class="stat-block"><div class="stat-val">20%</div><div class="stat-label">Health</div><div class="stat-sub">At Risk</div></div>
     </div>
@@ -134,8 +118,7 @@
     <div class="card-header"><span class="card-icon">🎯🌴</span><span>Five Paramount Goals</span></div>
 
     <div class="paramount-goal">
-      <div class="paramount-num">
-        <span>1️⃣ PAUSE BEFORE ANSWERING</span>
+      <div class="paramount-num"><span>1️⃣ PAUSE BEFORE ANSWERING</span>
         <div class="goal-controls">
           <button class="goal-btn" onclick="decrementGoal(0)">−</button>
           <span class="goal-counter" id="goal-0-counter">0</span>
@@ -146,8 +129,7 @@
     </div>
 
     <div class="paramount-goal">
-      <div class="paramount-num">
-        <span>2️⃣ CAL AI BEFORE MEALS</span>
+      <div class="paramount-num"><span>2️⃣ CAL AI BEFORE MEALS</span>
         <div class="goal-controls">
           <button class="goal-btn" onclick="decrementGoal(1)">−</button>
           <span class="goal-counter" id="goal-1-counter">0</span>
@@ -158,8 +140,7 @@
     </div>
 
     <div class="paramount-goal">
-      <div class="paramount-num">
-        <span>3️⃣ SLOW MOVEMENTS & SPEECH</span>
+      <div class="paramount-num"><span>3️⃣ SLOW MOVEMENTS & SPEECH</span>
         <div class="goal-controls">
           <button class="goal-btn" onclick="decrementGoal(2)">−</button>
           <span class="goal-counter" id="goal-2-counter">0</span>
@@ -170,46 +151,42 @@
     </div>
 
     <div class="paramount-goal">
-      <div class="paramount-num">
-        <span>4️⃣ OPPORTUNITY SCANNING</span>
+      <div class="paramount-num"><span>4️⃣ OPPORTUNITY SCANNING</span>
         <div class="goal-controls">
           <button class="goal-btn" onclick="decrementGoal(3)">−</button>
           <span class="goal-counter" id="goal-3-counter">0</span>
           <button class="goal-btn" onclick="incrementGoal(3)">+</button>
         </div>
       </div>
-      Every new environment or setback: "What opportunity does this situation present me with?"
+      Every setback: "What opportunity does this situation present me with?"
     </div>
 
     <div class="paramount-goal">
-      <div class="paramount-num">
-        <span>5️⃣ NO NARRATIVES</span>
+      <div class="paramount-num"><span>5️⃣ NO NARRATIVES</span>
         <div class="goal-controls">
           <button class="goal-btn" onclick="decrementGoal(4)">−</button>
           <span class="goal-counter" id="goal-4-counter">0</span>
           <button class="goal-btn" onclick="incrementGoal(4)">+</button>
         </div>
       </div>
-      Shut down internal narratives the moment they begin. Facts only. No story.
+      Shut down internal narratives the moment they begin. Facts only.
     </div>
 
-    <div class="mini-detail" style="margin-top:12px; font-size:12px; color:var(--muted);">
-      💡 Tap +/− to track. Counters reset at midnight.
-    </div>
+    <div class="mini-detail" style="margin-top:12px; font-size:12px; color:var(--muted);">💡 Tap +/− to track. Counters reset at midnight.</div>
   </div>
 
   <div class="card" style="background: linear-gradient(135deg, rgba(100,150,200,0.2), rgba(70,120,170,0.1)); border: 3px solid var(--text-bright);">
     <div class="card-header"><span class="card-icon">🎭🌴</span><span>Identityless Protocol</span></div>
     <div class="mini-card expandable" onclick="toggleSection(this)">
-      <div class="mini-title">🌀 Tap to expand — Groundlessness & No-Frame Actions</div>
+      <div class="mini-title">🌀 Tap to expand</div>
       <div class="expandable-content">
         <strong>GROUNDLESSNESS TOLERANCE:</strong><br>
         • No-Frame Actions: Act without identity narratives. Just do it.<br>
         • "I Don't Know" as Full Stop: Sit in uncertainty 30–60 seconds.<br>
-        • "No Story. Just This" Under Stress: Cut narrative, focus on sensory data.<br><br>
+        • "No Story. Just This": Cut narrative, focus on sensory data.<br><br>
         <strong>INTERNAL AUDIENCE REMOVAL:</strong><br>
         • Catching "Camera On": Detect self-observation, label it, don't judge.<br>
-        • Shift to Raw Perception: Drop self-thoughts, anchor in ONE sensory channel.<br>
+        • Shift to Raw Perception: Anchor in ONE sensory channel.<br>
         • Unwitnessed Existence: 2–5 min activities with zero self-reference.
       </div>
     </div>
@@ -218,7 +195,7 @@
   <div class="card" style="background: linear-gradient(135deg, rgba(150,100,200,0.2), rgba(120,70,170,0.1)); border: 3px solid var(--text-bright);">
     <div class="card-header"><span class="card-icon">⏰🌴</span><span>Future Self Protocol</span></div>
     <div class="mini-card expandable" onclick="toggleSection(this)">
-      <div class="mini-title">📋 Tap to expand — Morning → Midday → Evening</div>
+      <div class="mini-title">📋 Tap to expand</div>
       <div class="expandable-content">
         <strong>MORNING:</strong> Posture Reset → Fractal Scan → Identity Merge → EV Selection → Atmospheric Bruiser Lock-In<br><br>
         <strong>MIDDAY:</strong> Re-anchor → SBOS scan → Remove friction → Enforce boundary → Execute micro-win<br><br>
@@ -235,7 +212,7 @@
   <div class="card">
     <div class="card-header"><span class="card-icon">📅🌴</span><span>Today's Schedule — June 07, 2026</span></div>
     <div class="mini-card">
-      <div class="mini-detail"><pre style="font-size:13px; color:var(--text-light); white-space:pre-wrap; word-wrap:break-word; font-family:-apple-system,sans-serif;">No calendar events found.</pre></div>
+      <div class="mini-detail"><pre style="font-size:13px; color:var(--text-light); white-space:pre-wrap; word-wrap:break-word; font-family:-apple-system,sans-serif;">No calendar events today.</pre></div>
     </div>
   </div>
 
@@ -281,7 +258,7 @@
     </div>
   </div>
 
-  <div class="footer">🌴 FORGE OS · JUNE 07, 2026 · 06:57 PM · theseanman.github.io/forge-daily-brief</div>
+  <div class="footer">🌴 FORGE OS · JUNE 07, 2026 · 07:00 PM · theseanman.github.io/forge-daily-brief</div>
 
 </div>
 
