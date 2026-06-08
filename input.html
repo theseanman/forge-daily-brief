@@ -244,11 +244,11 @@ function submitData() {
     xhr2.onreadystatechange = function() {
       if (xhr2.readyState !== 4) return;
       if (xhr2.status === 200 || xhr2.status === 201) {
-        showStatus('Data saved! Brief updates at 6 AM.', 'green');
+        showStatus('Saved! Returning...', 'green'); setTimeout(function(){ window.location='https://theseanman.github.io/forge-daily-brief'; }, 2000);
       } else if (xhr2.status === 401) {
         showStatus('PAT invalid or expired. Tap Reset PAT.', 'red');
       } else {
-        showStatus('Error ' + xhr2.status + '. Try Reset PAT.', 'red');
+        if(xhr2.status===409){setTimeout(submitData,500);}else{showStatus('Error ' + xhr2.status + '. Try Reset PAT.', 'red');}
       }
     };
 
