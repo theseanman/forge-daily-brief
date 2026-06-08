@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, orientation=auto">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>FORGE OS · Morning Brief</title>
@@ -49,13 +49,15 @@
     .character-quote { font-size: 17px; color: var(--text-bright); font-style: italic; font-weight: 500; margin-bottom: 8px; }
     .character-name { font-size: 13px; color: var(--text-light); font-weight: 600; }
     .alert-banner { background: rgba(255,50,50,0.3); border: 3px solid var(--text-bright); border-radius: 8px; padding: 14px; font-size: 15px; color: var(--text-bright); margin-bottom: 14px; line-height: 1.7; font-weight: 600; }
+    .input-banner { background: rgba(255,255,255,0.2); border: 3px solid var(--text-bright); border-radius: 8px; padding: 14px; font-size: 15px; color: var(--text-bright); margin-bottom: 14px; line-height: 1.7; font-weight: 600; text-align: center; }
+    .input-banner a { color: var(--text-bright); font-size: 17px; }
     .mini-card { background: rgba(255,255,255,0.12); border: 2px solid var(--text-bright); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
     .mini-title { font-size: 15px; color: var(--text-bright); font-weight: 700; margin-bottom: 6px; }
     .mini-detail { font-size: 13px; color: var(--text-light); line-height: 1.6; }
     .paramount-goal { background: rgba(255,255,255,0.2); border: 2px solid var(--text-bright); border-radius: 8px; padding: 14px; margin-bottom: 10px; font-size: 14px; color: var(--text-light); line-height: 1.7; font-weight: 600; }
     .paramount-num { font-size: 15px; color: var(--text-bright); font-weight: 700; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
     .goal-controls { display: flex; gap: 8px; align-items: center; }
-    .goal-btn { background: rgba(255,255,255,0.4); border: 2px solid var(--text-bright); border-radius: 6px; padding: 8px 16px; font-weight: 700; font-size: 20px; color: var(--text-bright); cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: rgba(0,0,0,0.2); min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
+    .goal-btn { background: rgba(255,255,255,0.4); border: 2px solid var(--text-bright); border-radius: 6px; padding: 8px 16px; font-weight: 700; font-size: 20px; color: var(--text-bright); cursor: pointer; touch-action: manipulation; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
     .goal-btn:active { background: rgba(255,255,255,0.7); }
     .goal-counter { background: rgba(255,255,255,0.3); border: 2px solid var(--text-bright); border-radius: 6px; padding: 6px 14px; font-weight: 700; font-size: 16px; min-width: 40px; text-align: center; color: var(--text-bright); }
     .advice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -77,10 +79,14 @@
       <div class="forge-sub">Morning Brief</div>
     </div>
     <div class="date-block">
-      <div class="date-main">Sunday</div>
-      <div style="font-size:11px; color:var(--muted);">June 07, 2026</div>
-      <div class="date-time" id="live-clock">07:15 PM</div>
+      <div class="date-main">Monday</div>
+      <div style="font-size:11px; color:var(--muted);">June 08, 2026</div>
+      <div class="date-time" id="live-clock">03:05 AM</div>
     </div>
+  </div>
+
+  <div class="input-banner">
+    📊 Update today's HRV + Sleep data → <a href="https://theseanman.github.io/forge-daily-brief/input.html">Open Input Form →</a>
   </div>
 
   <div class="motd-box">
@@ -89,36 +95,35 @@
   </div>
 
   <div class="character-quote-box">
-    <img class="character-image" src="https://upload.wikimedia.org/wikipedia/en/thumb/3/32/Eddie_Haskell.jpg/220px-Eddie_Haskell.jpg" alt="Eddie Haskell" onerror="this.style.display='none'">
+    <img class="character-image" src="https://upload.wikimedia.org/wikipedia/en/thumb/d/da/Hannibal_Smith.jpg/220px-Hannibal_Smith.jpg" alt="Hannibal Smith" onerror="this.style.display='none'">
     <div>
-      <div class="character-quote">"Gee Beaver, I'd love to help, but something just came up that's ever so important."</div>
-      <div class="character-name">— Eddie Haskell, Leave it to Beaver</div>
+      <div class="character-quote">"You know, Murdock, sometimes the best plans are the ones that seem the craziest."</div>
+      <div class="character-name">— Hannibal Smith, The A-Team</div>
     </div>
   </div>
 
-  <div class="alert-banner">🚨 RECOVERY DAY PROTOCOL ACTIVE Health at risk. Stress 78% (elevated). Energy 38% (limited). No strain. No decisions. Rest only.</div>
+  <div class="alert-banner">🚨 CHILL FLOW ACTIVE Moderate pace. Defer big decisions. Protect energy.</div>
 
   <div class="card">
     <div class="card-header"><span class="card-icon">❤️🌴</span><span>Welltory HRV</span></div>
     <div class="stat-row">
-      <div class="stat-block"><div class="stat-val">78%</div><div class="stat-label">Stress</div><div class="stat-sub">Elevated</div></div>
-      <div class="stat-block"><div class="stat-val">38%</div><div class="stat-label">Energy</div><div class="stat-sub">Limited</div></div>
-      <div class="stat-block"><div class="stat-val">20%</div><div class="stat-label">Health</div><div class="stat-sub">At Risk</div></div>
+      <div class="stat-block"><div class="stat-val">50%</div><div class="stat-label">Stress</div><div class="stat-sub">Moderate</div></div>
+      <div class="stat-block"><div class="stat-val">50%</div><div class="stat-label">Energy</div><div class="stat-sub">Moderate</div></div>
+      <div class="stat-block"><div class="stat-val">50%</div><div class="stat-label">Health</div><div class="stat-sub">Vulnerable</div></div>
     </div>
   </div>
 
   <div class="card">
     <div class="card-header"><span class="card-icon">😴🌴</span><span>Sleep Report</span></div>
     <div class="stat-row">
-      <div class="stat-block"><div class="stat-val">97%</div><div class="stat-label">Score</div></div>
-      <div class="stat-block"><div class="stat-val">7h43m</div><div class="stat-label">Duration</div></div>
-      <div class="stat-block"><div class="stat-val">51–72</div><div class="stat-label">HR Range</div></div>
+      <div class="stat-block"><div class="stat-val">85%</div><div class="stat-label">Score</div></div>
+      <div class="stat-block"><div class="stat-val">7h 0m</div><div class="stat-label">Duration</div></div>
+      <div class="stat-block"><div class="stat-val">50–70</div><div class="stat-label">HR Range</div></div>
     </div>
   </div>
 
   <div class="card" style="background: linear-gradient(135deg, rgba(255,215,0,0.25), rgba(255,140,0,0.15)); border: 3px double var(--text-bright);">
     <div class="card-header"><span class="card-icon">🎯🌴</span><span>Five Paramount Goals</span></div>
-
     <div class="paramount-goal">
       <div class="paramount-num"><span>1️⃣ PAUSE BEFORE ANSWERING</span>
         <div class="goal-controls">
@@ -129,7 +134,6 @@
       </div>
       Brief pause before any response. Conscious deliberation first.
     </div>
-
     <div class="paramount-goal">
       <div class="paramount-num"><span>2️⃣ CAL AI BEFORE MEALS</span>
         <div class="goal-controls">
@@ -140,7 +144,6 @@
       </div>
       Log nutrition in Cal AI before eating. Every meal. Non-negotiable.
     </div>
-
     <div class="paramount-goal">
       <div class="paramount-num"><span>3️⃣ SLOW MOVEMENTS & SPEECH</span>
         <div class="goal-controls">
@@ -151,7 +154,6 @@
       </div>
       Deliberate, slower pace in all physical and verbal communication.
     </div>
-
     <div class="paramount-goal">
       <div class="paramount-num"><span>4️⃣ OPPORTUNITY SCANNING</span>
         <div class="goal-controls">
@@ -162,7 +164,6 @@
       </div>
       Every setback: "What opportunity does this situation present me with?"
     </div>
-
     <div class="paramount-goal">
       <div class="paramount-num"><span>5️⃣ NO NARRATIVES</span>
         <div class="goal-controls">
@@ -173,7 +174,6 @@
       </div>
       Shut down internal narratives the moment they begin. Facts only.
     </div>
-
     <div class="mini-detail" style="margin-top:12px; font-size:12px; color:var(--muted);">💡 Tap +/− to track. Counters reset at midnight.</div>
   </div>
 
@@ -208,39 +208,29 @@
 
   <div class="card">
     <div class="card-header"><span class="card-icon">🌤️🌴</span><span>Richmond Weather</span></div>
-    <div class="mini-card"><div class="mini-detail">Overcast, 15.6°C</div></div>
+    <div class="mini-card"><div class="mini-detail">Overcast, 14.8°C</div></div>
   </div>
 
   <div class="card">
-    <div class="card-header"><span class="card-icon">📅🌴</span><span>Today — June 07, 2026</span></div>
-    <div class="mini-card">
-      <div class="mini-detail"><pre style="font-size:13px; color:var(--text-light); white-space:pre-wrap; word-wrap:break-word; font-family:-apple-system,sans-serif;">Annual day of Slayer — Sat Jun 06 (All Day)
-Dylan’s birthday  — Sat Jun 06 (All Day)
-TD statement available online banking — Sun Jun 07 (All Day)</pre></div>
-    </div>
+    <div class="card-header"><span class="card-icon">📅🌴</span><span>Today — June 08, 2026</span></div>
+    <div class="mini-card"><div class="mini-detail"><pre style="font-size:13px; color:var(--text-light); white-space:pre-wrap; word-wrap:break-word; font-family:-apple-system,sans-serif;">Meal-less Monday  — Mon Jun 08 (All Day)
+Dr. Up will call  @ Mon Jun 08, 12:10 PM</pre></div></div>
   </div>
 
   <div class="card">
     <div class="card-header"><span class="card-icon">📆🌴</span><span>This Week (Next 7 Days)</span></div>
-    <div class="mini-card">
-      <div class="mini-detail"><pre style="font-size:13px; color:var(--text-light); white-space:pre-wrap; word-wrap:break-word; font-family:-apple-system,sans-serif;">Annual day of Slayer — Sat Jun 06 (All Day)
-Dylan’s birthday  — Sat Jun 06 (All Day)
-TD statement available online banking — Sun Jun 07 (All Day)
-Meal-less Monday  — Mon Jun 08 (All Day)
+    <div class="mini-card"><div class="mini-detail"><pre style="font-size:13px; color:var(--text-light); white-space:pre-wrap; word-wrap:break-word; font-family:-apple-system,sans-serif;">Meal-less Monday  — Mon Jun 08 (All Day)
 Dr. Up will call  @ Mon Jun 08, 12:10 PM
 Recess supervision door 26 @ Tue Jun 09, 10:10 AM
-Fun day walkthrough  @ Wed Jun 10, 01:00 PM</pre></div>
-    </div>
+Fun day walkthrough  @ Wed Jun 10, 01:00 PM
+Scotland Vs Haiti WC 2026 tartan army party @ Sat Jun 13, 06:00 PM</pre></div></div>
   </div>
 
   <div class="card">
     <div class="card-header"><span class="card-icon">🗓️🌴</span><span>This Month (Next 30 Days)</span></div>
     <div class="mini-card expandable" onclick="toggleSection(this)">
       <div class="mini-title">Tap to expand</div>
-      <div class="expandable-content"><pre style="font-size:13px; color:var(--text-light); white-space:pre-wrap; word-wrap:break-word; font-family:-apple-system,sans-serif;">Annual day of Slayer — Sat Jun 06 (All Day)
-Dylan’s birthday  — Sat Jun 06 (All Day)
-TD statement available online banking — Sun Jun 07 (All Day)
-Meal-less Monday  — Mon Jun 08 (All Day)
+      <div class="expandable-content"><pre style="font-size:13px; color:var(--text-light); white-space:pre-wrap; word-wrap:break-word; font-family:-apple-system,sans-serif;">Meal-less Monday  — Mon Jun 08 (All Day)
 Dr. Up will call  @ Mon Jun 08, 12:10 PM
 Recess supervision door 26 @ Tue Jun 09, 10:10 AM
 Fun day walkthrough  @ Wed Jun 10, 01:00 PM
@@ -253,7 +243,8 @@ Grad assembly practice run through @ Tue Jun 23, 09:00 AM
 Health and safety meeting @ Wed Jun 24, 08:00 AM
 Dr. Heng in person at Richmond hospital  @ Wed Jun 24, 03:30 PM
 Year end school party  @ Thu Jun 25, 03:00 PM
-Life, Larry, and the pursuit of unhappiness show debut on HBO — Fri Jun 26 (All Day)</pre></div>
+Life, Larry, and the pursuit of unhappiness show debut on HBO — Fri Jun 26 (All Day)
+TD statement available online banking — Tue Jul 07 (All Day)</pre></div>
     </div>
   </div>
 
@@ -299,13 +290,12 @@ Life, Larry, and the pursuit of unhappiness show debut on HBO — Fri Jun 26 (Al
     </div>
   </div>
 
-  <div class="footer">🌴 FORGE OS · JUNE 07, 2026 · 07:15 PM · theseanman.github.io/forge-daily-brief</div>
+  <div class="footer">🌴 FORGE OS · JUNE 08, 2026 · 03:05 AM · theseanman.github.io/forge-daily-brief</div>
 
 </div>
 
 <script>
 var counts = [0,0,0,0,0];
-
 function loadCounts() {
   var today = new Date().toDateString();
   try {
@@ -324,24 +314,20 @@ function loadCounts() {
     if (el) el.textContent = counts[i];
   }
 }
-
 function incrementGoal(i) {
   counts[i]++;
   try { localStorage.setItem('g' + i, counts[i]); } catch(e) {}
   document.getElementById('goal-' + i + '-counter').textContent = counts[i];
 }
-
 function decrementGoal(i) {
   if (counts[i] > 0) counts[i]--;
   try { localStorage.setItem('g' + i, counts[i]); } catch(e) {}
   document.getElementById('goal-' + i + '-counter').textContent = counts[i];
 }
-
 function toggleSection(el) {
   var c = el.querySelector('.expandable-content');
   if (c) c.style.display = c.style.display === 'block' ? 'none' : 'block';
 }
-
 function tick() {
   var el = document.getElementById('live-clock');
   if (el) {
@@ -349,11 +335,7 @@ function tick() {
     el.textContent = now.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
   }
 }
-
-window.onload = function() {
-  loadCounts();
-  setInterval(tick, 1000);
-};
+window.onload = function() { loadCounts(); setInterval(tick, 1000); };
 </script>
 </body>
 </html>
