@@ -15,6 +15,80 @@ import urllib.request
 import urllib.parse
 from datetime import datetime, date, timedelta, timezone
 
+
+import datetime as _dt
+
+JLPT_WORDS = [
+    {"word": "刹那 (Setsuna)", "level": "N1", "meaning": "A fleeting moment; the infinitesimal instant.", "example": "人生は刹那の連続だ", "translation": "Life is a succession of fleeting moments."},
+    {"word": "余韻 (Yoin)", "level": "N1", "meaning": "Lingering reverberation; an afterglow of feeling.", "example": "音楽の余韻に浸る", "translation": "To be immersed in the lingering notes of music."},
+    {"word": "葛藤 (Kattou)", "level": "N1", "meaning": "Inner conflict; mental struggle.", "example": "葛藤を乗り越えた", "translation": "He overcame his inner conflict."},
+    {"word": "侘寂 (Wabi-sabi)", "level": "N1", "meaning": "Beauty in imperfection and impermanence.", "example": "古い茶碗に侘寂を感じる", "translation": "I feel wabi-sabi in the old tea bowl."},
+    {"word": "幽玄 (Yuugen)", "level": "N1", "meaning": "Profound, mysterious sense of the universe.", "example": "能楽には幽玄の美がある", "translation": "Noh theater has the beauty of yuugen."},
+    {"word": "物の哀れ (Mono no aware)", "level": "N1", "meaning": "Bittersweet awareness of impermanence.", "example": "桜の散る様に物の哀れを感じる", "translation": "I feel it in falling cherry blossoms."},
+    {"word": "矜持 (Kyouji)", "level": "N1", "meaning": "Pride; self-respect; sense of dignity.", "example": "プロとしての矜持を持つ", "translation": "To have pride as a professional."},
+    {"word": "僥倖 (Gyoukou)", "level": "N1", "meaning": "Unexpected good fortune; windfall luck.", "example": "それは僥倖だった", "translation": "That was a stroke of unexpected luck."},
+    {"word": "懸念 (Kenen)", "level": "N2", "meaning": "Concern; worry; apprehension.", "example": "健康への懸念がある", "translation": "There is concern about health."},
+    {"word": "顕著 (Kenchyo)", "level": "N2", "meaning": "Remarkable; conspicuous; notable.", "example": "顕著な改善が見られた", "translation": "A remarkable improvement was observed."},
+    {"word": "体裁 (Teisai)", "level": "N2", "meaning": "Outward appearance; keeping up appearances.", "example": "体裁を気にしすぎる", "translation": "To care too much about appearances."},
+    {"word": "逡巡 (Shunjun)", "level": "N2", "meaning": "Hesitation; wavering indecision.", "example": "逡巡せずに決断した", "translation": "He decided without hesitation."},
+    {"word": "慮る (Omonpakaru)", "level": "N1", "meaning": "To give careful consideration.", "example": "相手の立場を慮る", "translation": "To consider the other person's position."},
+    {"word": "凛然 (Rinzen)", "level": "N1", "meaning": "Dignified and resolute; commanding.", "example": "凛然とした態度", "translation": "A dignified and resolute attitude."},
+]
+
+ART_ENTRIES = [
+    {"title": "Hokusai — The Great Wave off Kanagawa", "url": "https://artsandculture.google.com/search?q=hokusai+great+wave"},
+    {"title": "Kusama Yayoi — Infinity Mirror Room", "url": "https://artsandculture.google.com/search?q=kusama+infinity+mirror"},
+    {"title": "Basquiat — Untitled (1982)", "url": "https://artsandculture.google.com/search?q=basquiat+untitled+1982"},
+    {"title": "Rothko — No. 61 (Rust and Blue)", "url": "https://artsandculture.google.com/search?q=rothko+rust+blue"},
+    {"title": "Francis Bacon — Three Studies for Figures", "url": "https://artsandculture.google.com/search?q=francis+bacon+three+studies"},
+    {"title": "Egon Schiele — Self-Portrait (1912)", "url": "https://artsandculture.google.com/search?q=egon+schiele+self+portrait"},
+    {"title": "Hiroshi Sugimoto — Seascapes", "url": "https://artsandculture.google.com/search?q=hiroshi+sugimoto+seascapes"},
+    {"title": "Goya — Saturn Devouring His Son", "url": "https://artsandculture.google.com/search?q=goya+saturn+devouring"},
+    {"title": "Caravaggio — Judith Beheading Holofernes", "url": "https://artsandculture.google.com/search?q=caravaggio+judith"},
+    {"title": "Turner — The Fighting Temeraire", "url": "https://artsandculture.google.com/search?q=turner+fighting+temeraire"},
+    {"title": "Frida Kahlo — The Two Fridas", "url": "https://artsandculture.google.com/search?q=frida+kahlo+two+fridas"},
+    {"title": "William Blake — Ancient of Days", "url": "https://artsandculture.google.com/search?q=william+blake+ancient+of+days"},
+    {"title": "Jenny Saville — Propped", "url": "https://artsandculture.google.com/search?q=jenny+saville+propped"},
+    {"title": "Monet — Water Lilies Series", "url": "https://artsandculture.google.com/search?q=monet+water+lilies"},
+]
+
+MUSIC_ENTRIES = [
+    {"title": "Dissection — Storm of the Light's Bane (1995)", "spotify": "https://open.spotify.com/search/dissection%20storm%20of%20the%20lights%20bane", "youtube": "https://music.youtube.com/search?q=dissection+storm+lights+bane"},
+    {"title": "Sarcofago — I.N.R.I. (1987)", "spotify": "https://open.spotify.com/search/sarcofago%20inri", "youtube": "https://music.youtube.com/search?q=sarcofago+inri"},
+    {"title": "Emperor — In the Nightside Eclipse (1994)", "spotify": "https://open.spotify.com/search/emperor%20nightside%20eclipse", "youtube": "https://music.youtube.com/search?q=emperor+nightside+eclipse"},
+    {"title": "Carcass — Heartwork (1993)", "spotify": "https://open.spotify.com/search/carcass%20heartwork", "youtube": "https://music.youtube.com/search?q=carcass+heartwork"},
+    {"title": "Pantera — Vulgar Display of Power (1992)", "spotify": "https://open.spotify.com/search/pantera%20vulgar%20display", "youtube": "https://music.youtube.com/search?q=pantera+vulgar+display"},
+    {"title": "Entombed — Left Hand Path (1990)", "spotify": "https://open.spotify.com/search/entombed%20left%20hand%20path", "youtube": "https://music.youtube.com/search?q=entombed+left+hand+path"},
+    {"title": "Immortal — Pure Holocaust (1993)", "spotify": "https://open.spotify.com/search/immortal%20pure%20holocaust", "youtube": "https://music.youtube.com/search?q=immortal+pure+holocaust"},
+    {"title": "Type O Negative — Bloody Kisses (1993)", "spotify": "https://open.spotify.com/search/type%20o%20negative%20bloody%20kisses", "youtube": "https://music.youtube.com/search?q=type+o+negative+bloody+kisses"},
+    {"title": "Saor — Guardians (2016)", "spotify": "https://open.spotify.com/search/saor%20guardians", "youtube": "https://music.youtube.com/search?q=saor+guardians"},
+    {"title": "Motorhead — Ace of Spades (1980)", "spotify": "https://open.spotify.com/search/motorhead%20ace%20of%20spades", "youtube": "https://music.youtube.com/search?q=motorhead+ace+of+spades"},
+    {"title": "Slayer — Reign in Blood (1986)", "spotify": "https://open.spotify.com/search/slayer%20reign%20in%20blood", "youtube": "https://music.youtube.com/search?q=slayer+reign+in+blood"},
+    {"title": "Behemoth — The Satanist (2014)", "spotify": "https://open.spotify.com/search/behemoth%20the%20satanist", "youtube": "https://music.youtube.com/search?q=behemoth+the+satanist"},
+    {"title": "Danzig — Lucifuge (1990)", "spotify": "https://open.spotify.com/search/danzig%20lucifuge", "youtube": "https://music.youtube.com/search?q=danzig+lucifuge"},
+    {"title": "Machine Head — Burn My Eyes (1994)", "spotify": "https://open.spotify.com/search/machine%20head%20burn%20my%20eyes", "youtube": "https://music.youtube.com/search?q=machine+head+burn+my+eyes"},
+]
+
+CHARACTER_QUOTES = [
+    {"name": "Hannibal Smith", "quote": "I love it when a plan comes together.", "show": "The A-Team", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/d/da/Hannibal_Smith.jpg/220px-Hannibal_Smith.jpg"},
+    {"name": "Zack Morris", "quote": "The more rules they make, the more ways I find to get around them.", "show": "Saved by the Bell", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/0/0f/Zack_Morris.jpg/220px-Zack_Morris.jpg"},
+    {"name": "Eddie Haskell", "quote": "Gee Beaver, I would love to help, but something just came up.", "show": "Leave it to Beaver", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/3/32/Eddie_Haskell.jpg/220px-Eddie_Haskell.jpg"},
+    {"name": "Al Bundy", "quote": "I had it all once. Now I am married with children.", "show": "Married... with Children", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/c/c5/Al_Bundy.jpg/220px-Al_Bundy.jpg"},
+    {"name": "Hannibal Smith", "quote": "The best thing about being underestimated is the look on their face when you win.", "show": "The A-Team", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/d/da/Hannibal_Smith.jpg/220px-Hannibal_Smith.jpg"},
+    {"name": "Al Bundy", "quote": "Women. You cannot live with them, period.", "show": "Married... with Children", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/c/c5/Al_Bundy.jpg/220px-Al_Bundy.jpg"},
+    {"name": "Zack Morris", "quote": "Time out. Let me think about this.", "show": "Saved by the Bell", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/0/0f/Zack_Morris.jpg/220px-Zack_Morris.jpg"},
+    {"name": "Hannibal Smith", "quote": "In war, the most dangerous weapon is the element of surprise.", "show": "The A-Team", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/d/da/Hannibal_Smith.jpg/220px-Hannibal_Smith.jpg"},
+    {"name": "Eddie Haskell", "quote": "That is a very lovely dress, Mrs. Cleaver.", "show": "Leave it to Beaver", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/3/32/Eddie_Haskell.jpg/220px-Eddie_Haskell.jpg"},
+    {"name": "Al Bundy", "quote": "Every day above ground is a good day. Every day in this house is debatable.", "show": "Married... with Children", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/c/c5/Al_Bundy.jpg/220px-Al_Bundy.jpg"},
+    {"name": "Hannibal Smith", "quote": "You know, sometimes the best disguise is no disguise at all.", "show": "The A-Team", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/d/da/Hannibal_Smith.jpg/220px-Hannibal_Smith.jpg"},
+    {"name": "Zack Morris", "quote": "When life gives you lemons, sell them.", "show": "Saved by the Bell", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/0/0f/Zack_Morris.jpg/220px-Zack_Morris.jpg"},
+    {"name": "Eddie Haskell", "quote": "I was merely trying to be helpful, sir.", "show": "Leave it to Beaver", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/3/32/Eddie_Haskell.jpg/220px-Eddie_Haskell.jpg"},
+    {"name": "Al Bundy", "quote": "A man can take just so much. Then he snaps.", "show": "Married... with Children", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/c/c5/Al_Bundy.jpg/220px-Al_Bundy.jpg"},
+]
+
+def get_daily_index(list_len):
+    return _dt.date.today().timetuple().tm_yday % list_len
+
 RICHMOND_COORDS = (49.1895, -123.1724)
 ICLOUD_EMAIL = os.environ.get("ICLOUD_EMAIL", "yoseanreid@icloud.com")
 ICLOUD_PASSWORD = os.environ.get("ICLOUD_PASSWORD", "")
@@ -160,13 +234,8 @@ def push_calendar_to_jsonbin(week_structured):
         print(f"⚠️ Calendar embed failed: {e}")
 
 def get_character_quote(day_of_week):
-    characters = [
-        {"name": "Hannibal Smith", "quote": "You know, Murdock, sometimes the best plans are the ones that seem the craziest.", "show": "The A-Team", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/d/da/Hannibal_Smith.jpg/220px-Hannibal_Smith.jpg"},
-        {"name": "Zack Morris", "quote": "The more rules they make, the more ways I find to get around them.", "show": "Saved by the Bell", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/0/0f/Zack_Morris.jpg/220px-Zack_Morris.jpg"},
-        {"name": "Eddie Haskell", "quote": "Gee Beaver, I'd love to help, but something just came up that's ever so important.", "show": "Leave it to Beaver", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/3/32/Eddie_Haskell.jpg/220px-Eddie_Haskell.jpg"},
-        {"name": "Al Bundy", "quote": "I had it all once. Now I'm married with children. But I didn't have it all—I had something better.", "show": "Married... with Children", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/c/c5/Al_Bundy.jpg/220px-Al_Bundy.jpg"}
-    ]
-    return characters[day_of_week % len(characters)]
+    return CHARACTER_QUOTES[get_daily_index(len(CHARACTER_QUOTES))]
+
 
 def generate_html(welltory, sleep, weather, calendar_events, week_structured=None):
     now = datetime.now()
@@ -193,6 +262,13 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
 
     cal_json = json.dumps(week_structured or [])
     cal_today = calendar_events.get("today", "No events today.")
+    jlpt = JLPT_WORDS[get_daily_index(len(JLPT_WORDS))]
+    jlpt_word = jlpt["word"]; jlpt_level = jlpt["level"]; jlpt_meaning = jlpt["meaning"]
+    jlpt_example = jlpt["example"]; jlpt_translation = jlpt["translation"]
+    art = ART_ENTRIES[get_daily_index(len(ART_ENTRIES))]
+    art_title = art["title"]; art_url = art["url"]
+    music = MUSIC_ENTRIES[get_daily_index(len(MUSIC_ENTRIES))]
+    music_title = music["title"]; music_spotify = music["spotify"]; music_youtube = music["youtube"]
     cal_week = calendar_events.get("week", "No events this week.")
     cal_month = calendar_events.get("month", "No events this month.")
 
@@ -442,11 +518,10 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
   <div class="card">
     <div class="card-header"><span class="card-icon">🇯🇵🌴</span><span>Japanese Word of the Day</span></div>
     <div class="mini-card">
-      <div class="mini-title">今日の言葉: 刹那 (Setsuna) — JLPT N1</div>
+      <div class="mini-title">今日の言葉: {jlpt_word} — JLPT {jlpt_level}</div>
       <div class="mini-detail">
-        A fleeting moment; the infinitesimal instant.<br>
-        人生は刹那の連続だ = "Life is a succession of fleeting moments."<br>
-        <strong>Today:</strong> Recovery happens setsuna by setsuna.
+        {jlpt_meaning}<br>
+        {jlpt_example} = "{jlpt_translation}"
       </div>
     </div>
   </div>
@@ -454,17 +529,16 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
   <div class="card">
     <div class="card-header"><span class="card-icon">🎨🌴</span><span>Art & Music</span></div>
     <div class="mini-card">
-      <div class="mini-title">🎨 Kusama Yayoi — Infinity Mirror Room</div>
+      <div class="mini-title">🎨 {art_title}</div>
       <div class="mini-detail">
-        <a href="https://artsandculture.google.com/search?q=kusama+infinity+mirror" target="_blank">Google Arts & Culture →</a> &nbsp;
-        <a href="https://www.guggenheim.org/exhibitions/yayoi-kusama" target="_blank">Guggenheim →</a>
+        <a href="{art_url}" target="_blank">Google Arts & Culture →</a>
       </div>
     </div>
     <div class="mini-card">
-      <div class="mini-title">🎵 Sarcófago — I.N.R.I. (1987)</div>
+      <div class="mini-title">🎵 {music_title}</div>
       <div class="mini-detail">
-        <a href="https://open.spotify.com/search/sarcofago%20inri" target="_blank">Spotify →</a> &nbsp;
-        <a href="https://music.youtube.com/search?q=sarcofago+inri" target="_blank">YouTube Music →</a>
+        <a href="{music_spotify}" target="_blank">Spotify →</a> &nbsp;
+        <a href="{music_youtube}" target="_blank">YouTube Music →</a>
       </div>
     </div>
   </div>
