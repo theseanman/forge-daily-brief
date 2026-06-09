@@ -24,6 +24,8 @@ jobs:
       
       - name: Install dependencies
         run: |
+          pwd
+          ls -la
           pip install caldav vobject
       
       - name: Generate brief
@@ -32,10 +34,14 @@ jobs:
           ICLOUD_PASSWORD: ${{ secrets.ICLOUD_PASSWORD }}
           JSONBIN_MASTER_KEY: ${{ secrets.JSONBIN_MASTER_KEY }}
         run: |
+          pwd
+          ls -la
           python forge_actions.py
       
       - name: Commit and push index.html
         run: |
+          pwd
+          ls -la
           git config user.name "FORGE OS Bot"
           git config user.email "forge@theseanman.github.io"
           ls -la calendar.json || echo "MISSING"
