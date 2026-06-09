@@ -168,7 +168,7 @@ def get_character_quote(day_of_week):
     ]
     return characters[day_of_week % len(characters)]
 
-def generate_html(welltory, sleep, weather, calendar_events):
+def generate_html(welltory, sleep, weather, calendar_events, week_structured=None):
     now = datetime.now()
     day_name = now.strftime("%A")
     date_str = now.strftime("%B %d, %Y")
@@ -191,6 +191,7 @@ def generate_html(welltory, sleep, weather, calendar_events):
 
     char = get_character_quote(day_of_week)
 
+    cal_json = json.dumps(week_structured or [])
     cal_today = calendar_events.get("today", "No events today.")
     cal_week = calendar_events.get("week", "No events this week.")
     cal_month = calendar_events.get("month", "No events this month.")
@@ -513,6 +514,7 @@ function tick() {{
     el.textContent = now.toLocaleTimeString('en-US', {{hour:'2-digit',minute:'2-digit'}});
   }}
 }}
+window.FORGE_CALENDAR = {cal_json};
 window.onload = function() {{ loadCounts(); setInterval(tick, 1000); }};
 </script>
 </body>
@@ -535,7 +537,7 @@ def main():
     if calendar.get("week_structured"):
         push_calendar_to_jsonbin(calendar["week_structured"])
     
-    html = generate_html(welltory, sleep, weather, calendar)
+    html = generate_html(welltory, sleep, weather, calendar, calendar.get("week_structured", []))
     
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(html)
