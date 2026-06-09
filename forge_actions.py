@@ -149,7 +149,7 @@ def push_calendar_to_jsonbin(week_structured):
     try:
         with open("calendar.json", "w", encoding="utf-8") as f:
             json.dump({"week": week_structured}, f)
-        print(f"✓ calendar.json written to {os.path.abspath("calendar.json")} — ({len(week_structured)} events)")
+        path = os.path.abspath("calendar.json"); print(f"✓ calendar.json written to {path} ({len(week_structured)} events)")
     except Exception as e:
         print(f"⚠️ calendar.json write failed: {e}")
 
