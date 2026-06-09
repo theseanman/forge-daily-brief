@@ -30,6 +30,7 @@ jobs:
         env:
           ICLOUD_EMAIL: ${{ secrets.ICLOUD_EMAIL }}
           ICLOUD_PASSWORD: ${{ secrets.ICLOUD_PASSWORD }}
+          JSONBIN_MASTER_KEY: ${{ secrets.JSONBIN_MASTER_KEY }}
         run: |
           python forge_actions.py
       
