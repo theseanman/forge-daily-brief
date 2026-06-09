@@ -145,25 +145,13 @@ def get_calendar_events():
         return {"today": "Calendar unavailable.", "week": "", "month": "", "week_structured": []}
 
 def push_calendar_to_jsonbin(week_structured):
-    """Push 7-day calendar events to JSONBin for Evening Debrief."""
-    if not JSONBIN_MASTER_KEY:
-        print("⚠️ No JSONBin master key — skipping calendar push")
-        return
+    """Write 7-day calendar events to calendar.json for Evening Debrief."""
     try:
-        payload = json.dumps({"week": week_structured}).encode("utf-8")
-        req = urllib.request.Request(
-            f"https://api.jsonbin.io/v3/b/{JSONBIN_CAL_BIN}",
-            data=payload,
-            method="PUT"
-        )
-        req.add_header("Content-Type", "application/json")
-        req.add_header("X-Master-Key", JSONBIN_MASTER_KEY)
-        req.add_header("X-Bin-Versioning", "false")
-        with urllib.request.urlopen(req, timeout=10) as res:
-            print(f"✓ Calendar pushed to JSONBin ({len(week_structured)} events)")
+        with open("calendar.json", "w", encoding="utf-8") as f:
+            json.dump({"week": week_structured}, f)
+        print(f"✓ calendar.json written ({len(week_structured)} events)")
     except Exception as e:
-        import traceback; traceback.print_exc()
-        print(f"⚠️ JSONBin calendar push failed: {e}")
+        print(f"⚠️ calendar.json write failed: {e}")
 
 def get_character_quote(day_of_week):
     characters = [
