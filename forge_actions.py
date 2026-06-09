@@ -145,13 +145,19 @@ def get_calendar_events():
         return {"today": "Calendar unavailable.", "week": "", "month": "", "week_structured": []}
 
 def push_calendar_to_jsonbin(week_structured):
-    """Write 7-day calendar events to calendar.json for Evening Debrief."""
+    """Embed calendar data into data.json for Evening Debrief."""
     try:
-        with open("calendar.json", "w", encoding="utf-8") as f:
-            json.dump({"week": week_structured}, f)
-        path = os.path.abspath("calendar.json"); print(f"✓ calendar.json written to {path} ({len(week_structured)} events)")
+        try:
+            with open("data.json", "r") as f:
+                data = json.load(f)
+        except:
+            data = {}
+        data["calendar"] = week_structured
+        with open("data.json", "w", encoding="utf-8") as f:
+            json.dump(data, f)
+        print(f"✓ Calendar embedded in data.json ({len(week_structured)} events)")
     except Exception as e:
-        print(f"⚠️ calendar.json write failed: {e}")
+        print(f"⚠️ Calendar embed failed: {e}")
 
 def get_character_quote(day_of_week):
     characters = [
