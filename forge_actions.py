@@ -86,6 +86,38 @@ CHARACTER_QUOTES = [
     {"name": "Al Bundy", "quote": "A man can take just so much. Then he snaps.", "show": "Married... with Children", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/c/c5/Al_Bundy.jpg/220px-Al_Bundy.jpg"},
 ]
 
+
+STOIC_QUOTES = [
+    {"text": "You have power over your mind, not outside events. Realize this, and you will find strength.", "source": "Marcus Aurelius, Meditations"},
+    {"text": "The impediment to action advances action. What stands in the way becomes the way.", "source": "Marcus Aurelius, Meditations"},
+    {"text": "Waste no more time arguing what a good man should be. Be one.", "source": "Marcus Aurelius, Meditations"},
+    {"text": "If it is not right, do not do it. If it is not true, do not say it.", "source": "Marcus Aurelius, Meditations"},
+    {"text": "The best revenge is to be unlike him who performed the injury.", "source": "Marcus Aurelius, Meditations"},
+    {"text": "He who knows when he can fight and when he cannot will be victorious.", "source": "Sun Tzu, The Art of War"},
+    {"text": "Supreme excellence consists in breaking the enemy's resistance without fighting.", "source": "Sun Tzu, The Art of War"},
+    {"text": "In the midst of chaos, there is also opportunity.", "source": "Sun Tzu, The Art of War"},
+    {"text": "Do not seek to follow in the footsteps of the wise. Seek what they sought.", "source": "Matsuo Basho"},
+    {"text": "There is nothing outside of yourself that can ever enable you to get better, stronger, richer, quicker, or smarter. Everything is within.", "source": "Miyamoto Musashi, The Book of Five Rings"},
+    {"text": "Today is victory over yourself of yesterday. Tomorrow is victory over lesser men.", "source": "Miyamoto Musashi"},
+    {"text": "Think lightly of yourself and deeply of the world.", "source": "Miyamoto Musashi"},
+    {"text": "The man who moves a mountain begins by carrying away small stones.", "source": "Confucius"},
+    {"text": "He who has a why to live can bear almost any how.", "source": "Friedrich Nietzsche"},
+    {"text": "That which does not kill us makes us stronger.", "source": "Friedrich Nietzsche"},
+    {"text": "Whoever fights monsters should see to it that in the process he does not become a monster.", "source": "Friedrich Nietzsche"},
+    {"text": "The only way to deal with an unfree world is to become so absolutely free that your very existence is an act of rebellion.", "source": "Albert Camus"},
+    {"text": "You must be the change you wish to see in the world.", "source": "Mahatma Gandhi"},
+    {"text": "It does not matter how slowly you go as long as you do not stop.", "source": "Confucius"},
+    {"text": "Stillness is what creates love. Movement is what creates life. To be still and still moving — that is everything.", "source": "Do Hyun Choe"},
+    {"text": "Absorb what is useful, discard what is not, add what is uniquely your own.", "source": "Bruce Lee"},
+    {"text": "I fear not the man who has practiced 10,000 kicks once, but I fear the man who has practiced one kick 10,000 times.", "source": "Bruce Lee"},
+    {"text": "The more I know, the more I realize I know nothing.", "source": "Socrates"},
+    {"text": "An unexamined life is not worth living.", "source": "Socrates"},
+    {"text": "We suffer more in imagination than in reality.", "source": "Seneca"},
+    {"text": "It is not that I am brave, it is just that I am right.", "source": "David Hackworth"},
+    {"text": "Victorious warriors win first and then go to war. Defeated warriors go to war first and then seek to win.", "source": "Sun Tzu"},
+    {"text": "The most courageous act is still to think for yourself. Aloud.", "source": "Coco Chanel"},
+]
+
 def get_daily_index(list_len):
     return _dt.date.today().timetuple().tm_yday % list_len
 
@@ -262,6 +294,8 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
 
     cal_json = json.dumps(week_structured or [])
     cal_today = calendar_events.get("today", "No events today.")
+    stoic = STOIC_QUOTES[get_daily_index(len(STOIC_QUOTES))]
+    stoic_quote = stoic["text"]; stoic_source = stoic["source"]
     jlpt = JLPT_WORDS[get_daily_index(len(JLPT_WORDS))]
     jlpt_word = jlpt["word"]; jlpt_level = jlpt["level"]; jlpt_meaning = jlpt["meaning"]
     jlpt_example = jlpt["example"]; jlpt_translation = jlpt["translation"]
@@ -364,8 +398,8 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
   </div>
 
   <div class="motd-box">
-    <div class="motd-text">"You have power over your mind—not outside events. Realize this, and you will find strength."</div>
-    <div class="motd-source">— Marcus Aurelius, Meditations</div>
+    <div class="motd-text">"{stoic_quote}"</div>
+    <div class="motd-source">— {stoic_source}</div>
   </div>
 
   <div class="character-quote-box">
