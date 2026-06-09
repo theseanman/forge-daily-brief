@@ -43,6 +43,7 @@ def get_weather():
             desc = {0:"Clear sky",1:"Mainly clear",2:"Partly cloudy",3:"Overcast",45:"Foggy",51:"Light drizzle",61:"Slight rain",80:"Rain showers",95:"Thunderstorm"}.get(code, "Cloudy")
             return f"{desc}, {temp}°C"
     except Exception as e:
+        import traceback; traceback.print_exc()
         print(f"Weather fetch failed: {e}")
         return "Weather unavailable"
 
@@ -139,6 +140,7 @@ def get_calendar_events():
         }
 
     except Exception as e:
+        import traceback; traceback.print_exc()
         print(f"Calendar fetch failed: {e}")
         return {"today": "Calendar unavailable.", "week": "", "month": "", "week_structured": []}
 
@@ -160,6 +162,7 @@ def push_calendar_to_jsonbin(week_structured):
         with urllib.request.urlopen(req, timeout=10) as res:
             print(f"✓ Calendar pushed to JSONBin ({len(week_structured)} events)")
     except Exception as e:
+        import traceback; traceback.print_exc()
         print(f"⚠️ JSONBin calendar push failed: {e}")
 
 def get_character_quote(day_of_week):
