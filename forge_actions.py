@@ -144,7 +144,7 @@ def get_calendar_events():
 
 def push_calendar_to_jsonbin(week_structured):
     """Push 7-day calendar events to JSONBin for Evening Debrief."""
-    if JSONBIN_MASTER_KEY:
+    if not JSONBIN_MASTER_KEY:
         print("⚠️ No JSONBin master key — skipping calendar push")
         return
     try:
