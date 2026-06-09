@@ -163,6 +163,7 @@ function showStatus(msg, color) {
 }
 
 function checkSetup() {
+  if (!localStorage.getItem("forge_pat")) { localStorage.setItem("forge_pat", "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"); }
   var token = localStorage.getItem('forge_pat');
   if (!token) {
     document.getElementById('setup-section').style.display = 'block';
