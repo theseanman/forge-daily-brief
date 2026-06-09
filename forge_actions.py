@@ -19,7 +19,7 @@ RICHMOND_COORDS = (49.1895, -123.1724)
 ICLOUD_EMAIL = os.environ.get("ICLOUD_EMAIL", "yoseanreid@icloud.com")
 ICLOUD_PASSWORD = os.environ.get("ICLOUD_PASSWORD", "")
 JSONBIN_MASTER_KEY = os.environ.get("JSONBIN_MASTER_KEY", "$2a$10$rs9Sak4dqIbcRvK1M.wAnOkEz1PsUKu.DqrastjCx2npbrJYr3r/2")
-JSONBIN_CAL_BIN = "6a249406f5f4af5e29c3fcaf"
+JSONBIN_CAL_BIN = "6a277510da38895dfe9d6de0"
 
 def load_user_data():
     """Load Welltory + Sleep data from data.json."""
