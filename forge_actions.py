@@ -4,6 +4,7 @@ FORGE OS Daily Brief Generator - GITHUB ACTIONS VERSION
 No interactive prompts. Reads Welltory/Sleep from data.json.
 Fetches weather and calendar automatically.
 Saves index.html for GitHub Pages.
+Pushes 7-day calendar to JSONBin for Evening Debrief.
 """
 
 import os
@@ -11,11 +12,14 @@ import json
 import caldav
 import vobject
 import urllib.request
+import urllib.parse
 from datetime import datetime, date, timedelta, timezone
 
 RICHMOND_COORDS = (49.1895, -123.1724)
 ICLOUD_EMAIL = os.environ.get("ICLOUD_EMAIL", "yoseanreid@icloud.com")
 ICLOUD_PASSWORD = os.environ.get("ICLOUD_PASSWORD", "")
+JSONBIN_MASTER_KEY = os.environ.get("JSONBIN_MASTER_KEY", "$2a$10$rs9Sak4dqIbcRvK1M.wAnOkEz1PsUKu.DqrastjCx2npbrJYr3r/2")
+JSONBIN_CAL_BIN = "6a249406f5f4af5e29c3fcaf"
 
 def load_user_data():
     """Load Welltory + Sleep data from data.json."""
@@ -64,10 +68,43 @@ def fetch_events_for_range(calendars, start, end):
     all_events.sort(key=lambda x: x[0])
     return [e[1] for e in all_events]
 
+def fetch_events_structured(calendars, start, end):
+    """Fetch events as structured list for JSONBin storage."""
+    all_events = []
+    for calendar in calendars:
+        try:
+            events = calendar.date_search(start=start, end=end, expand=True)
+            for event in events:
+                try:
+                    vevent = event.vobject_instance.vevent
+                    summary = str(vevent.summary.value) if hasattr(vevent, 'summary') else "Event"
+                    dtstart = vevent.dtstart.value
+                    if hasattr(dtstart, 'hour'):
+                        all_events.append({
+                            "sort_key": str(dtstart),
+                            "date": dtstart.strftime('%a %b %d'),
+                            "time": dtstart.strftime('%I:%M %p'),
+                            "title": summary
+                        })
+                    else:
+                        all_events.append({
+                            "sort_key": str(dtstart),
+                            "date": dtstart.strftime('%a %b %d'),
+                            "time": "All day",
+                            "title": summary
+                        })
+                except:
+                    continue
+        except:
+            continue
+    all_events.sort(key=lambda x: x["sort_key"])
+    # Remove sort_key from final output
+    return [{"date": e["date"], "time": e["time"], "title": e["title"]} for e in all_events]
+
 def get_calendar_events():
-    """Fetch today, week, and month events from iCloud via CalDAV."""
+    """Fetch today, week, and 7-day structured events from iCloud via CalDAV."""
     if not ICLOUD_PASSWORD:
-        return {"today": "No iCloud password configured.", "week": "", "month": ""}
+        return {"today": "No iCloud password configured.", "week": "", "month": "", "week_structured": []}
     
     try:
         client = caldav.DAVClient(
@@ -90,18 +127,40 @@ def get_calendar_events():
         today_events = fetch_events_for_range(calendars, today_start, today_end)
         week_events = fetch_events_for_range(calendars, today_start, week_end)
         month_events = fetch_events_for_range(calendars, today_start, month_end)
+        week_structured = fetch_events_structured(calendars, today_start, week_end)
 
         print(f"✓ Today: {len(today_events)} | Week: {len(week_events)} | Month: {len(month_events)} events")
 
         return {
             "today": "\n".join(today_events) if today_events else "No events today.",
             "week": "\n".join(week_events) if week_events else "No events this week.",
-            "month": "\n".join(month_events) if month_events else "No events this month."
+            "month": "\n".join(month_events) if month_events else "No events this month.",
+            "week_structured": week_structured
         }
 
     except Exception as e:
         print(f"Calendar fetch failed: {e}")
-        return {"today": "Calendar unavailable.", "week": "", "month": ""}
+        return {"today": "Calendar unavailable.", "week": "", "month": "", "week_structured": []}
+
+def push_calendar_to_jsonbin(week_structured):
+    """Push 7-day calendar events to JSONBin for Evening Debrief."""
+    if not JSONBIN_MASTER_KEY:
+        print("⚠️ No JSONBin master key — skipping calendar push")
+        return
+    try:
+        payload = json.dumps({"week": week_structured}).encode("utf-8")
+        req = urllib.request.Request(
+            f"https://api.jsonbin.io/v3/b/{JSONBIN_CAL_BIN}",
+            data=payload,
+            method="PUT"
+        )
+        req.add_header("Content-Type", "application/json")
+        req.add_header("X-Master-Key", JSONBIN_MASTER_KEY)
+        req.add_header("X-Bin-Versioning", "false")
+        with urllib.request.urlopen(req, timeout=10) as res:
+            print(f"✓ Calendar pushed to JSONBin ({len(week_structured)} events)")
+    except Exception as e:
+        print(f"⚠️ JSONBin calendar push failed: {e}")
 
 def get_character_quote(day_of_week):
     characters = [
@@ -474,6 +533,10 @@ def main():
     
     weather = get_weather()
     calendar = get_calendar_events()
+    
+    # Push 7-day calendar to JSONBin for Evening Debrief
+    if calendar.get("week_structured"):
+        push_calendar_to_jsonbin(calendar["week_structured"])
     
     html = generate_html(welltory, sleep, weather, calendar)
     
