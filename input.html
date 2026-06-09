@@ -163,7 +163,7 @@ function showStatus(msg, color) {
 }
 
 function checkSetup() {
-  if (!localStorage.getItem("forge_pat")) { localStorage.setItem("forge_pat", "ghp_9YymPfXfZoXUcxZc" + "tbbqrKVMGvAKbZ3qsFvS"); }
+  
   var token = localStorage.getItem('forge_pat');
   if (!token) {
     document.getElementById('setup-section').style.display = 'block';
@@ -191,7 +191,7 @@ function resetPAT() {
 }
 
 function submitData() {
-  if (!localStorage.getItem("forge_pat")) { localStorage.setItem("forge_pat", "ghp_9YymPfXfZoXUcxZc" + "tbbqrKVMGvAKbZ3qsFvS"); }
+  
   var token = localStorage.getItem('forge_pat');
   if (!token) {
     showStatus('No PAT found. Please set up first.', 'red');
