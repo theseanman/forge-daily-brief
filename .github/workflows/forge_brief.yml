@@ -45,6 +45,6 @@ jobs:
           git config user.name "FORGE OS Bot"
           git config user.email "forge@theseanman.github.io"
           ls -la calendar.json || echo "MISSING"
-          git add -f index.html calendar.json
+          git add -f index.html data.json
           git diff --staged --quiet || git commit -m "FORGE Brief $(date +'%b %d %Y')"
           git push origin gh-pages
