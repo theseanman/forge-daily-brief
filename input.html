@@ -201,7 +201,7 @@ function submitData() {
     },
     sleep: {
       score: parseInt(document.getElementById('sleep_score').value) || 85,
-      duration: (document.getElementById('sleep_hours').value || '7') + 'h ' + (document.getElementById('sleep_mins').value || '0') + 'm',
+      duration: (document.getElementById('sleep_duration').value || '7h 0m',
       hr_range: (document.getElementById('hr_min').value || '50') + '–' + (document.getElementById('hr_max').value || '70')
     }
   };
