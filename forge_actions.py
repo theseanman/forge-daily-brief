@@ -577,6 +577,27 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     </div>
   </div>
 
+
+  <div class="card">
+    <div class="card-header"><span class="card-icon">🎸🌴</span><span>Upcoming Metal Shows</span></div>
+    <div class="mini-card">
+      <div class="mini-title">🎸 JUNE 14 · Napalm Death + Primitive Man</div>
+      <div class="mini-detail">The Pearl, Vancouver · Death metal legends</div>
+    </div>
+    <div class="mini-card">
+      <div class="mini-title">🎸 JUNE 25 · Anvil + Midnite Hellion</div>
+      <div class="mini-detail">El Corazon, Seattle</div>
+    </div>
+    <div class="mini-card">
+      <div class="mini-title">🎸 JUNE 27 · Anvil + Midnite Hellion</div>
+      <div class="mini-detail">Astoria, Vancouver</div>
+    </div>
+    <div class="mini-card">
+      <div class="mini-title">🎸 JULY 8 · Jinjer + Entheos + Crystal Lake</div>
+      <div class="mini-detail">Commodore Ballroom, Vancouver</div>
+    </div>
+  </div>
+
   <div class="footer">🌴 FORGE OS · {date_str.upper()} · {time_str} · theseanman.github.io/forge-daily-brief</div>
 
 </div>
