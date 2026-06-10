@@ -191,21 +191,35 @@ function resetPAT() {
 }
 
 function submitData() {
-  if (!localStorage.getItem("forge_pat")) { localStorage.setItem("forge_pat", "placeholder"); }
   var WORKER_URL = 'https://forge-input.yoseanreid.workers.dev';
+  var stress = document.getElementById('stress').value;
+  var energy = document.getElementById('energy').value;
+  var health = document.getElementById('health').value;
+  var sleep_score = document.getElementById('sleep_score').value;
+  var sleep_duration = document.getElementById('sleep_duration').value;
+  var hr_min = document.getElementById('hr_min').value;
+  var hr_max = document.getElementById('hr_max').value;
+
+  if (!stress || !energy || !health) {
+    showStatus('Please fill in Welltory data', 'red');
+    return;
+  }
+
   var payload = {
     welltory: {
-      stress: parseInt(document.getElementById('stress').value) || 50,
-      energy: parseInt(document.getElementById('energy').value) || 50,
-      health: parseInt(document.getElementById('health').value) || 50
+      stress: parseInt(stress),
+      energy: parseInt(energy),
+      health: parseInt(health)
     },
     sleep: {
-      score: parseInt(document.getElementById('sleep_score').value) || 85,
-      duration: (document.getElementById('sleep_duration').value || '7h 0m',
-      hr_range: (document.getElementById('hr_min').value || '50') + '–' + (document.getElementById('hr_max').value || '70')
+      score: parseInt(sleep_score) || 85,
+      duration: sleep_duration || '7h 0m',
+      hr_range: (hr_min || '50') + '–' + (hr_max || '70')
     }
   };
-  showStatus('Submitting...', 'blue');
+
+  showStatus('Submitting…', 'neutral');
+
   fetch(WORKER_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -214,9 +228,9 @@ function submitData() {
   .then(function(r) { return r.json(); })
   .then(function(d) {
     if (d.ok) {
-      showStatus('Brief updated successfully!', 'green');
+      showStatus('Brief updated! Run GitHub Actions to regenerate.', 'green');
     } else {
-      showStatus('Error: ' + (d.error || 'Unknown error'), 'red');
+      showStatus('Error: ' + (d.error || 'Unknown'), 'red');
     }
   })
   .catch(function(e) {
