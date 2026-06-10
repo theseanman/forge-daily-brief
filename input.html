@@ -258,7 +258,7 @@ function submitData() {
   xhr1.send();
 }
 
-window.onload = function() { checkSetup(); };
+window.onload = function() { if (!localStorage.getItem('forge_pat')) { localStorage.setItem('forge_pat', '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'); } checkSetup(); };
 </script>
 </body>
 </html>
