@@ -218,44 +218,21 @@ function submitData() {
     updated: new Date().toISOString()
   };
 
-  var jsonStr = JSON.stringify(data, null, 2);
-  var content = btoa(unescape(encodeURIComponent(jsonStr)));
-
-  var xhr1 = new XMLHttpRequest();
-  xhr1.open('GET', 'https://api.github.com/repos/' + GITHUB_REPO + '/contents/data.json?ref=' + GITHUB_BRANCH, true);
-  xhr1.setRequestHeader('Authorization', 'token ' + token);
-
-  xhr1.onreadystatechange = function() {
-    if (xhr1.readyState !== 4) return;
-
-    var sha = null;
-    if (xhr1.status === 200) {
-      try { sha = JSON.parse(xhr1.responseText).sha; } catch(e) {}
+  fetch('https://forge-input.yoseanreid.workers.dev', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.ok) {
+      showStatus('Saved! Returning...', 'green');
+      setTimeout(function(){ window.location='https://theseanman.github.io/forge-daily-brief'; }, 2000);
+    } else {
+      showStatus('Error: ' + (d.error || 'unknown'), 'red');
     }
-
-    var body = { message: 'FORGE data update', content: content, branch: GITHUB_BRANCH };
-    if (sha) body.sha = sha;
-
-    var xhr2 = new XMLHttpRequest();
-    xhr2.open('PUT', 'https://api.github.com/repos/' + GITHUB_REPO + '/contents/data.json', true);
-    xhr2.setRequestHeader('Authorization', 'token ' + token);
-    xhr2.setRequestHeader('Content-Type', 'application/json');
-
-    xhr2.onreadystatechange = function() {
-      if (xhr2.readyState !== 4) return;
-      if (xhr2.status === 200 || xhr2.status === 201) {
-        showStatus('Saved! Returning...', 'green'); setTimeout(function(){ window.location='https://theseanman.github.io/forge-daily-brief'; }, 2000);
-      } else if (xhr2.status === 401) {
-        showStatus('PAT invalid or expired. Tap Reset PAT.', 'red');
-      } else {
-        if(xhr2.status===409){setTimeout(submitData,500);}else{showStatus('Error ' + xhr2.status + '. Try Reset PAT.', 'red');}
-      }
-    };
-
-    xhr2.send(JSON.stringify(body));
-  };
-
-  xhr1.send();
+  })
+  .catch(function(e) { showStatus('Error: ' + e.message, 'red'); });
 }
 
 window.onload = function() { if (!localStorage.getItem('forge_pat')) { localStorage.setItem('forge_pat', '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'); } checkSetup(); };
