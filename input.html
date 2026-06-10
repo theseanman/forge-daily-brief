@@ -85,7 +85,7 @@
       text-decoration: none;
       border-bottom: 2px solid #0d0d0d;
     }
-    #setup-section { display: none; }
+    #setup-section { display: none !important; }
   </style>
 </head>
 <body>
@@ -162,7 +162,7 @@ function showStatus(msg, color) {
   el.style.border = '2px solid ' + (color === 'green' ? '#27ae60' : color === 'red' ? '#c0392b' : '#0d0d0d');
 }
 
-function checkSetup() {
+function checkSetup() { document.getElementById("setup-section").style.display = "none"; document.getElementById("main-form").style.display = "block"; // original:
   
   var token = localStorage.getItem('forge_pat');
   if (!token) {
