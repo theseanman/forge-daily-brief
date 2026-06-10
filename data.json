@@ -1,13 +1,13 @@
 {
   "welltory": {
-    "stress": 71,
-    "energy": 38,
-    "health": 20
+    "stress": 57,
+    "energy": 47,
+    "health": 100
   },
   "sleep": {
-    "score": 97,
-    "duration": "7h 43",
-    "hr_range": "51-72"
+    "score": 98,
+    "duration": "7h 26m",
+    "hr_range": "48-73"
   },
-  "updated": "2026-06-08T04:31:55.914Z"
+  "updated": "2026-06-10T14:04:30.685Z"
 }
