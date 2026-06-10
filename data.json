@@ -1,13 +1,1 @@
-{
-  "welltory": {
-    "stress": 57,
-    "energy": 47,
-    "health": 100
-  },
-  "sleep": {
-    "score": 98,
-    "duration": "7h 26m",
-    "hr_range": "48-73"
-  },
-  "updated": "2026-06-10T14:04:30.685Z"
-}
+{"welltory": {"stress": 57, "energy": 47, "health": 100}, "sleep": {"score": 98, "duration": "7h 26m", "hr_range": "48-73"}, "updated": "2026-06-10T14:04:30.685Z", "calendar": [{"date": "Wed Jun 10", "time": "01:00 PM", "title": "Fun day walkthrough "}, {"date": "Sat Jun 13", "time": "06:00 PM", "title": "Scotland Vs Haiti WC 2026 tartan army party"}, {"date": "Mon Jun 15", "time": "All day", "title": "Meal-less Monday "}, {"date": "Tue Jun 16", "time": "All day", "title": "Use Claude to increase daily messages from one"}, {"date": "Tue Jun 16", "time": "10:10 AM", "title": "Recess supervision door 26"}]}
