@@ -191,73 +191,37 @@ function resetPAT() {
 }
 
 function submitData() {
-  
-  var token = localStorage.getItem('forge_pat');
-  if (!token) {
-    showStatus('No PAT found. Please set up first.', 'red');
-    checkSetup();
-    return;
-  }
-
-  var stress = document.getElementById('stress').value;
-  var energy = document.getElementById('energy').value;
-  var health = document.getElementById('health').value;
-  var score = document.getElementById('sleep_score').value;
-  var duration = document.getElementById('sleep_duration').value;
-  var hr_min = document.getElementById('hr_min').value;
-  var hr_max = document.getElementById('hr_max').value;
-
-  if (!stress || !energy || !health || !score || !duration || !hr_min || !hr_max) {
-    showStatus('Please fill in all fields', 'red');
-    return;
-  }
-
-  showStatus('Saving...', 'white');
-
-  var data = {
-    welltory: { stress: parseInt(stress), energy: parseInt(energy), health: parseInt(health) },
-    sleep: { score: parseInt(score), duration: duration, hr_range: hr_min + '-' + hr_max },
-    updated: new Date().toISOString()
-  };
-
-  var jsonStr = JSON.stringify(data, null, 2);
-  var content = btoa(unescape(encodeURIComponent(jsonStr)));
-
-  var xhr1 = new XMLHttpRequest();
-  xhr1.open('GET', 'https://api.github.com/repos/' + GITHUB_REPO + '/contents/data.json?ref=' + GITHUB_BRANCH, true);
-  xhr1.setRequestHeader('Authorization', 'token ' + token);
-
-  xhr1.onreadystatechange = function() {
-    if (xhr1.readyState !== 4) return;
-
-    var sha = null;
-    if (xhr1.status === 200) {
-      try { sha = JSON.parse(xhr1.responseText).sha; } catch(e) {}
+  if (!localStorage.getItem("forge_pat")) { localStorage.setItem("forge_pat", "placeholder"); }
+  var WORKER_URL = 'https://forge-input.yoseanreid.workers.dev';
+  var payload = {
+    welltory: {
+      stress: parseInt(document.getElementById('stress').value) || 50,
+      energy: parseInt(document.getElementById('energy').value) || 50,
+      health: parseInt(document.getElementById('health').value) || 50
+    },
+    sleep: {
+      score: parseInt(document.getElementById('sleep_score').value) || 85,
+      duration: (document.getElementById('sleep_hours').value || '7') + 'h ' + (document.getElementById('sleep_mins').value || '0') + 'm',
+      hr_range: (document.getElementById('hr_min').value || '50') + '–' + (document.getElementById('hr_max').value || '70')
     }
-
-    var body = { message: 'FORGE data update', content: content, branch: GITHUB_BRANCH };
-    if (sha) body.sha = sha;
-
-    var xhr2 = new XMLHttpRequest();
-    xhr2.open('PUT', 'https://api.github.com/repos/' + GITHUB_REPO + '/contents/data.json', true);
-    xhr2.setRequestHeader('Authorization', 'token ' + token);
-    xhr2.setRequestHeader('Content-Type', 'application/json');
-
-    xhr2.onreadystatechange = function() {
-      if (xhr2.readyState !== 4) return;
-      if (xhr2.status === 200 || xhr2.status === 201) {
-        showStatus('Saved! Returning...', 'green'); setTimeout(function(){ window.location='https://theseanman.github.io/forge-daily-brief'; }, 2000);
-      } else if (xhr2.status === 401) {
-        showStatus('PAT invalid or expired. Tap Reset PAT.', 'red');
-      } else {
-        if(xhr2.status===409){setTimeout(submitData,500);}else{showStatus('Error ' + xhr2.status + '. Try Reset PAT.', 'red');}
-      }
-    };
-
-    xhr2.send(JSON.stringify(body));
   };
-
-  xhr1.send();
+  showStatus('Submitting...', 'blue');
+  fetch(WORKER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.ok) {
+      showStatus('Brief updated successfully!', 'green');
+    } else {
+      showStatus('Error: ' + (d.error || 'Unknown error'), 'red');
+    }
+  })
+  .catch(function(e) {
+    showStatus('Network error: ' + e.message, 'red');
+  });
 }
 
 window.onload = function() { checkSetup(); };
