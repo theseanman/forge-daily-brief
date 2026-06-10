@@ -269,12 +269,268 @@ def get_character_quote(day_of_week):
     return CHARACTER_QUOTES[get_daily_index(len(CHARACTER_QUOTES))]
 
 
+
+WISDOM_POOLS = {
+    "self_defense": [
+        "Stance is survival. Feet shoulder-width, weight distributed, knees soft. Stability beats speed.",
+        "Distance is your friend. Create space before creating options. Never let aggression close the gap for free.",
+        "Don't block — redirect. Use their force, not yours. The smaller person wins on efficiency.",
+        "Eyes on the chest, not the hands. The torso telegraphs before the limbs move.",
+        "Strike through the target, not at it. Commitment is the difference between a bruise and a stop.",
+        "Verbal de-escalation is a weapon. Most fights are won before the first physical contact.",
+        "Your strongest weapon is your awareness. Danger avoided beats danger handled.",
+        "Train the thing you're worst at. Competence in weakness becomes your surprise.",
+        "After contact: disengage, create distance, assess. Don't stay in the pocket.",
+        "Breathing controls panic. Exhale on exertion. Three slow breaths resets the adrenal response.",
+        "Wrist grabs are releases, not fights. Rotate toward their thumb — it's always the weakest link.",
+        "Low kicks are underrated. Knees and shins don't train the way hands do. Target them.",
+        "Your loudest tool is your voice. It startles, commands space, and invites witnesses.",
+        "Control the head, control the body. Every restraint and escape starts there.",
+        "Train slow to perform fast. Muscle memory built at speed is sloppy muscle memory.",
+        "Never turn your back. Exit backward or sideways. Disengagement is not defeat.",
+        "The goal isn't to win — it's to get home. Everything is in service of that.",
+        "Choke defences first. It's the most likely attack and the most panicked response.",
+        "Soft targets: eyes, throat, knees, instep. You don't need power — you need precision.",
+        "Rest stance looks relaxed. Hands slightly raised, weight on back foot. Ready without telegraphing.",
+    ],
+    "parenting": [
+        "Listen more than talk. Your daughters don't need perfect — they need present.",
+        "They remember how you handled your mistakes more than the mistakes themselves.",
+        "Say their name before you say the thing. It opens the channel.",
+        "Your reaction to their failure sets their relationship with failure for life.",
+        "Get on their level physically when talking. Eye contact changes everything.",
+        "Don't rescue them from discomfort — sit with them in it. That's the skill.",
+        "Narrate your thinking out loud. They learn how to think by watching you do it.",
+        "Repair fast. A 10-minute rupture with a 2-minute repair is a net positive.",
+        "Ask what happened before you ask why. Why triggers defensiveness. What opens it.",
+        "Celebrate the effort, not the result. Outcome praise builds fragility.",
+        "Your calm is their nervous system regulator. Co-regulation before self-regulation.",
+        "Show them you change your mind when given good evidence. That's the most powerful lesson.",
+        "Notice the small things. The small things are the big things at their scale.",
+        "Don't over-explain. Say the thing once, clearly. Repetition teaches them to tune you out.",
+        "Create rituals. Predictability is safety. Safety is where growth happens.",
+        "Let them be bored. Boredom is the birthplace of creativity and self-reliance.",
+        "Apologize to them like you'd apologize to an adult. They feel the difference.",
+        "What you model about stress is what they'll carry into their own pressure moments.",
+        "Let them overhear you say something good about them to someone else.",
+        "The relationship is the discipline. Strong bond, minimal friction. Invest accordingly.",
+    ],
+    "fatherhood": [
+        "Model recovery. Show them that rest and saying 'not today' is strength.",
+        "They don't need a hero — they need a man who keeps showing up.",
+        "Your presence at the ordinary moments is the extraordinary gift.",
+        "Teach them to lose without collapse. Play games you occasionally let them win — and some you don't.",
+        "Work ethic is caught, not taught. Let them see you grind and rest in healthy proportion.",
+        "Name your emotions out loud. 'I'm frustrated right now' is parenting gold.",
+        "A father who reads makes readers. It's not what you say about books — it's what you do with them.",
+        "Their relationship with men starts with you. Build it consciously.",
+        "Ask them questions you don't know the answer to. Show them curiosity isn't weakness.",
+        "The car is a sacred space. Side-by-side conversation opens things that face-to-face won't.",
+        "Know their world well enough to ask a real question. Not 'how was school' — something specific.",
+        "Laughter is load-bearing. A family that laughs together has a reserve for the hard times.",
+        "Let them see you fail and try again. Perseverance modelled is perseverance transmitted.",
+        "Don't outsource your hard conversations to their mother. Own your half of the relationship.",
+        "Show up to the things that matter to them, not just the things that matter to you.",
+        "Physical affection has no expiry date. Keep it going through adolescence.",
+        "What you spend Saturday morning doing is the answer to 'what does Dad value'.",
+        "Teach them money is a tool, not a score. How you talk about it shapes their whole relationship.",
+        "Your daughters are watching how you treat women. The lesson is always live.",
+        "Be the person they run toward with good news. That means being safe with the bad news.",
+    ],
+    "mindset": [
+        "When the narrative starts: 'Story activated.' Drop it. Three words. Reset.",
+        "Discomfort is data. Ask what it's signalling before reacting to it.",
+        "The gap between stimulus and response is where your character lives. Widen it.",
+        "You don't rise to the level of your goals — you fall to the level of your systems.",
+        "Confidence is a post-action state, not a pre-condition. Do first. Feel it after.",
+        "Comparison is a rigged game. You're seeing their highlight reel against your blooper reel.",
+        "Identity drives behaviour. Ask: 'What would the Quiet Strategist do here?'",
+        "Most anxiety is future-projection. Bring it back to: what is actually true right now?",
+        "The hard conversation you're avoiding is the ceiling on your progress.",
+        "Inaction has a cost. Weigh the risk of doing against the certainty of staying stuck.",
+        "Your beliefs about your limits are more limiting than your actual limits.",
+        "Boredom is the body asking for a harder problem. Listen to it.",
+        "Emotion as information, not instruction. Feel it. Don't obey it.",
+        "What you rehearse in your mind, you perform under pressure. Choose your rehearsals.",
+        "Done is the engine of done better. Perfectionism is procrastination with a story.",
+        "The Operator executes. The Architect designs. Don't confuse which role the moment needs.",
+        "Resistance is the compass. The thing you're avoiding is usually the thing.",
+        "Slow is smooth. Smooth is fast. Urgency produces sloppiness. Pace produces leverage.",
+        "You can't think your way out of something you behaved your way into. Act first.",
+        "No story. Just this. Sensory data. Present moment. The rest is fiction.",
+    ],
+    "longevity": [
+        "3–4L water + electrolytes. Your immune system's operating capital. Log in Cal AI.",
+        "Sleep is the master variable. Everything else is noise when sleep is broken.",
+        "Zone 2 cardio: nasal breathing, conversational pace, 45–60 min. Non-negotiable base.",
+        "Protein first at every meal. 0.7–1g per pound of bodyweight. Everything else fills in around it.",
+        "Sunlight within 30 min of waking. Sets your cortisol curve and sleep pressure for the day.",
+        "HRV is your readiness report. When it drops, recovery — not grinding — is the right call.",
+        "Mobility is the tax on strength. Five minutes daily beats 60 minutes weekly.",
+        "The posterior tibial needs eccentric loading, not rest. Single-leg calf raises on a step.",
+        "Grip strength at 40+ is a longevity biomarker. Dead hangs, farmer carries, every week.",
+        "Time-restricted eating: 8–10 hour window. Your metabolic machinery needs the off-cycle.",
+        "Fibre is the unloved hero. 30–40g daily feeds the microbiome that regulates everything.",
+        "Cold exposure: face only in cold water for 30 seconds resets the vagal tone fast.",
+        "VO2 max is your life expectancy predictor. Improve it one hard cardio session per week.",
+        "Social connection is a health metric. Isolation has the same mortality risk as smoking.",
+        "Inflammatory foods age you visibly. Seed oils, ultra-processed, high sugar — identify and reduce.",
+        "Posture is a longevity habit. Forward head = compressed nerves, accelerated disc wear.",
+        "Alcohol math: even moderate use disrupts deep sleep architecture. Track the trade-off.",
+        "Leg strength in your 50s and 60s is built in your 40s. Keep the legs strong now.",
+        "Stress without recovery is the mechanism of accelerated aging. Recovery is not optional.",
+        "Annual bloodwork: fasting glucose, HbA1c, testosterone, Vitamin D, CRP. Know your numbers.",
+    ],
+    "life_hack": [
+        "Batch texts/emails. Check noon and 5 PM only. Attention is finite.",
+        "Decision fatigue is real. Automate the low-stakes choices so you're sharp for the high ones.",
+        "Two-minute rule: if it takes less than two minutes, do it now. The list is killing you.",
+        "Write the next action, not the project. 'Finish report' stalls. 'Open file, write intro' moves.",
+        "The phone in another room doubles deep work quality. Proximity is temptation.",
+        "Weekly review on Sunday evening. 20 minutes to plan clears the week's mental overhead.",
+        "Never leave a room empty-handed. Always be optimising the environment.",
+        "Friction removal is leverage. Make the good behaviour the path of least resistance.",
+        "Preparation is a multiplier. 10 minutes of prep the night before saves 40 minutes of morning chaos.",
+        "Name the mood before acting on it. 'I'm in a reactive state' changes what you do next.",
+        "High-value work in the first 90 minutes. That's your peak cortisol window. Don't waste it on email.",
+        "One hard thing before the thing you actually want to do. Momentum is sequential.",
+        "Capture everything externally. Your brain is for processing, not storage.",
+        "The calendar is a commitment device. If it's not scheduled, it's a wish.",
+        "Reduce optionality on the things that don't matter. Save choices for the things that do.",
+        "Say no to the good so you can say yes to the great. The word 'no' is a time machine.",
+        "Default to async. Meetings are a last resort, not a first response.",
+        "End each work block with a note of where you stopped and the next step. Re-entry costs you 15 min without it.",
+        "Temptation bundling: pair the thing you avoid with the thing you enjoy. Podcast only during walks.",
+        "Review your five paramount goals before bed. Primes the subconscious for the next day.",
+    ],
+}
+
+def get_wisdom(day_of_year):
+    """Return one tip per category, rotating by day of year."""
+    result = {}
+    for key, pool in WISDOM_POOLS.items():
+        result[key] = pool[day_of_year % len(pool)]
+    return result
+
+
+def get_sports_updates():
+    """Fetch scores/schedules for Sean's teams via ESPN public API."""
+    import urllib.request, json
+
+    def espn_get(url):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=10) as r:
+                return json.loads(r.read().decode())
+        except Exception as e:
+            print(f"ESPN fetch failed ({url}): {e}")
+            return None
+
+    lines = []
+
+    # ── Blue Jays ──────────────────────────────────────────────────────────────
+    try:
+        data = espn_get("https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/teams/14/schedule?season=2026")
+        if data:
+            events = data.get("events", [])
+            from datetime import date, datetime, timezone
+            today = date.today()
+            recent = next((e for e in reversed(events) if e.get("competitions") and
+                           datetime.fromisoformat(e["date"].replace("Z","")).date() < today), None)
+            upcoming = next((e for e in events if e.get("competitions") and
+                             datetime.fromisoformat(e["date"].replace("Z","")).date() >= today), None)
+            if recent:
+                comp = recent["competitions"][0]
+                teams = {t["team"]["abbreviation"]: t for t in comp["competitors"]}
+                jays = teams.get("TOR", {})
+                opp_abbr = [k for k in teams if k != "TOR"]
+                opp = teams.get(opp_abbr[0], {}) if opp_abbr else {}
+                score = f"{jays.get('score','?')}–{opp.get('score','?')}"
+                result_val = jays.get("winner")
+                result_str = "✅ W" if result_val else "❌ L"
+                lines.append(f"⚾ **Blue Jays** {result_str} {score} vs {opp.get('team',{}).get('abbreviation','?')} ({datetime.fromisoformat(recent['date'].replace('Z','')).strftime('%b %d')})")
+            if upcoming:
+                comp = upcoming["competitions"][0]
+                opp = next((t for t in comp["competitors"] if t["team"]["abbreviation"] != "TOR"), {})
+                home_away = "vs" if comp.get("neutralSite") or next((t for t in comp["competitors"] if t["team"]["abbreviation"]=="TOR"),{}).get("homeAway")=="home" else "@"
+                lines.append(f"⚾ Next: {home_away} {opp.get('team',{}).get('displayName','?')} — {datetime.fromisoformat(upcoming['date'].replace('Z','')).strftime('%a %b %d %I:%M %p').replace(' 0',' ')}")
+    except Exception as e:
+        print(f"Jays error: {e}")
+
+    # ── CFL ───────────────────────────────────────────────────────────────────
+    try:
+        data = espn_get("https://site.api.espn.com/apis/site/v2/sports/football/cfl/scoreboard")
+        if data:
+            games = data.get("events", [])
+            if games:
+                lines.append("🏈 **CFL Today:**")
+                for g in games[:4]:
+                    comp = g.get("competitions", [{}])[0]
+                    teams = comp.get("competitors", [])
+                    if len(teams) == 2:
+                        a, h = teams[0], teams[1]
+                        status = g.get("status", {}).get("type", {}).get("shortDetail", "")
+                        lines.append(f"  {a['team']['abbreviation']} {a.get('score','–')} @ {h['team']['abbreviation']} {h.get('score','–')}  {status}")
+            else:
+                # upcoming
+                data2 = espn_get("https://site.api.espn.com/apis/site/v2/sports/football/cfl/teams/BC/schedule?season=2026")
+                if data2:
+                    from datetime import date, datetime
+                    today = date.today()
+                    events = data2.get("events", [])
+                    upcoming = next((e for e in events if
+                                     datetime.fromisoformat(e["date"].replace("Z","")).date() >= today), None)
+                    if upcoming:
+                        comp = upcoming["competitions"][0]
+                        opp = next((t for t in comp["competitors"] if t["team"]["abbreviation"] != "BC"), {})
+                        lines.append(f"🏈 **BC Lions** next: vs {opp.get('team',{}).get('displayName','?')} — {datetime.fromisoformat(upcoming['date'].replace('Z','')).strftime('%a %b %d')}")
+    except Exception as e:
+        print(f"CFL error: {e}")
+
+    # ── Canucks (offseason note) ───────────────────────────────────────────────
+    try:
+        data = espn_get("https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/teams/23/schedule?season=2026")
+        if data:
+            events = data.get("events", [])
+            from datetime import date, datetime
+            today = date.today()
+            upcoming = next((e for e in events if
+                             datetime.fromisoformat(e["date"].replace("Z","")).date() >= today), None)
+            if upcoming:
+                comp = upcoming["competitions"][0]
+                opp = next((t for t in comp["competitors"] if t["team"]["abbreviation"] != "VAN"), {})
+                lines.append(f"🏒 **Canucks** next: vs {opp.get('team',{}).get('displayName','?')} — {datetime.fromisoformat(upcoming['date'].replace('Z','')).strftime('%a %b %d')}")
+            else:
+                lines.append("🏒 **Canucks** — Offseason")
+    except Exception as e:
+        print(f"Canucks error: {e}")
+
+    # ── UFC (next event) ──────────────────────────────────────────────────────
+    try:
+        data = espn_get("https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard")
+        if data:
+            events = data.get("events", [])
+            if events:
+                e = events[0]
+                from datetime import datetime
+                dt = datetime.fromisoformat(e["date"].replace("Z",""))
+                lines.append(f"🥊 **UFC** — {e.get('name','Event')} — {dt.strftime('%a %b %d')}")
+    except Exception as e:
+        print(f"UFC error: {e}")
+
+    if not lines:
+        return "No scores available right now."
+    return "\n".join(lines)
+
 def generate_html(welltory, sleep, weather, calendar_events, week_structured=None):
     now = datetime.now()
     day_name = now.strftime("%A")
     date_str = now.strftime("%B %d, %Y")
     time_str = now.strftime("%I:%M %p")
     day_of_week = now.weekday()
+    day_of_year = now.timetuple().tm_yday
+    wisdom = get_wisdom(day_of_year)
+    sports_text = get_sports_updates()
 
     stress_status = "Elevated" if welltory["stress"] >= 60 else "Moderate" if welltory["stress"] >= 40 else "Low"
     energy_status = "High" if welltory["energy"] >= 60 else "Moderate" if welltory["energy"] >= 40 else "Limited"
@@ -294,6 +550,13 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
 
     cal_json = json.dumps(week_structured or [])
     cal_today = calendar_events.get("today", "No events today.")
+    wisdom_self_defense = wisdom["self_defense"]
+    wisdom_parenting = wisdom["parenting"]
+    wisdom_fatherhood = wisdom["fatherhood"]
+    wisdom_mindset = wisdom["mindset"]
+    wisdom_longevity = wisdom["longevity"]
+    wisdom_life_hack = wisdom["life_hack"]
+    sports_section = sports_text
     stoic = STOIC_QUOTES[get_daily_index(len(STOIC_QUOTES))]
     stoic_quote = stoic["text"]; stoic_source = stoic["source"]
     jlpt = JLPT_WORDS[get_daily_index(len(JLPT_WORDS))]
@@ -540,13 +803,19 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
   <div class="card">
     <div class="card-header"><span class="card-icon">💡🌴</span><span>Quick Actionable Wisdom</span></div>
     <div class="advice-grid">
-      <div class="advice-item"><div class="advice-label">🥋 Self-Defense</div><div class="advice-text">Stance is survival. Feet shoulder-width, weight distributed, knees soft. Stability beats speed.</div></div>
-      <div class="advice-item"><div class="advice-label">👨‍👧‍👦 Parenting</div><div class="advice-text">Listen more than talk. Your daughters don't need perfect—they need present.</div></div>
-      <div class="advice-item"><div class="advice-label">👨 Fatherhood</div><div class="advice-text">Model recovery. Show them that rest and saying "not today" is strength.</div></div>
-      <div class="advice-item"><div class="advice-label">🧠 Mindset</div><div class="advice-text">When the narrative starts: "Story activated." Drop it. Three words. Reset.</div></div>
-      <div class="advice-item"><div class="advice-label">⏳ Longevity</div><div class="advice-text">3–4L water + electrolytes. Your immune system's operating capital. Log in Cal AI.</div></div>
-      <div class="advice-item"><div class="advice-label">⚡ Life Hack</div><div class="advice-text">Batch texts/emails. Check noon and 5 PM only. Attention is finite.</div></div>
+      <div class="advice-item"><div class="advice-label">🥋 Self-Defense</div><div class="advice-text">{wisdom_self_defense}</div></div>
+      <div class="advice-item"><div class="advice-label">👨‍👧‍👦 Parenting</div><div class="advice-text">{wisdom_parenting}</div></div>
+      <div class="advice-item"><div class="advice-label">👨 Fatherhood</div><div class="advice-text">{wisdom_fatherhood}</div></div>
+      <div class="advice-item"><div class="advice-label">🧠 Mindset</div><div class="advice-text">{wisdom_mindset}</div></div>
+      <div class="advice-item"><div class="advice-label">⏳ Longevity</div><div class="advice-text">{wisdom_longevity}</div></div>
+      <div class="advice-item"><div class="advice-label">⚡ Life Hack</div><div class="advice-text">{wisdom_life_hack}</div></div>
     </div>
+  </div>
+
+
+  <div class="card">
+    <div class="card-header"><span class="card-icon">🏆🌴</span><span>Sports Intel</span></div>
+    <div class="mini-card"><div class="mini-detail" style="white-space:pre-wrap; font-size:14px; line-height:1.8;">{sports_section}</div></div>
   </div>
 
   <div class="card">
