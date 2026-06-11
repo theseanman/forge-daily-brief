@@ -638,7 +638,7 @@ def get_sports_updates():
 
     # ── Canada Soccer World Cup ───────────────────────────────────────────────
     soccer_today = [(t, opp, venue) for d, t, _, opp, venue in CANADA_SOCCER if d == str(today)]
-    soccer_next = next(((d, t, opp, venue) for d, t, _, opp, venue in CANADA_SOCCER
+    soccer_next = next(((d, t, _, opp, venue) for d, t, _, opp, venue in CANADA_SOCCER
                         if datetime.strptime(d, "%Y-%m-%d").date() >= today), None)
     if soccer_today:
         for t, opp, venue in soccer_today:
