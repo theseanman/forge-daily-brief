@@ -683,7 +683,7 @@ def get_sports_updates():
 
     # ── Offseason notes ───────────────────────────────────────────────────────
     lines.append("🏒 Vancouver Goldeneyes (PWHL) — Offseason (next season Nov 2026 | Pacific Coliseum)")
-        lines.append("🏴󠁧󠁢󠁳󠁣󠁴󠁿 Glasgow Rangers — Offseason (new season Aug 2, 2026)")
+    lines.append("🏴󠁧󠁢󠁳󠁣󠁴󠁿 Glasgow Rangers — Offseason (new season Aug 2, 2026)")
     lines.append("🥍 Vancouver Warriors — Offseason (NLL season Nov 2026)")
     lines.append("🏈 Las Vegas Raiders — Offseason (NFL preseason Aug 2026)")
 
