@@ -682,9 +682,21 @@ def get_sports_updates():
         lines.append("🏒 Canucks — Offseason (next season Oct 2026)")
 
     # ── Offseason notes ───────────────────────────────────────────────────────
-    lines.append("🏴󠁧󠁢󠁳󠁣󠁴󠁿 Glasgow Rangers — Offseason (new season Aug 2, 2026)")
+    lines.append("🏒 Vancouver Goldeneyes (PWHL) — Offseason (next season Nov 2026 | Pacific Coliseum)")
+        lines.append("🏴󠁧󠁢󠁳󠁣󠁴󠁿 Glasgow Rangers — Offseason (new season Aug 2, 2026)")
     lines.append("🥍 Vancouver Warriors — Offseason (NLL season Nov 2026)")
     lines.append("🏈 Las Vegas Raiders — Offseason (NFL preseason Aug 2026)")
+
+    # ── UFC Fighter Tracking ──────────────────────────────────────────────────
+    UFC_FIGHTERS = [
+        ("Sean Strickland", "W def. Chimaev (Split Dec) UFC 328 May 9 — MW CHAMP", "No next fight announced"),
+        ("Chris Duncan",    "L sub R2 to Moicano UFC FN Mar 30",                   "No next fight announced"),
+        ("Mike Malott",     "W KO R3 vs Burns UFC FN Winnipeg Apr 18",              "No next fight announced"),
+        ("Conor McGregor",  "Inactive — no 2026 bout",                               "No next fight announced"),
+    ]
+    lines.append("\n🥊 UFC Fighter Watch:")
+    for name, last, nxt in UFC_FIGHTERS:
+        lines.append(f"  {name}: {last} | Next: {nxt}")
 
     # ── UFC ───────────────────────────────────────────────────────────────────
     try:
