@@ -417,6 +417,10 @@ def get_wisdom(day_of_year):
 def get_sports_updates():
     """Fetch scores/schedules for Sean's teams via ESPN public API."""
     import urllib.request, json
+    from datetime import date, datetime, timedelta, timezone
+
+    # Pacific time offset (UTC-7 during PDT)
+    PT_OFFSET = timedelta(hours=-7)
 
     def espn_get(url):
         try:
@@ -427,95 +431,137 @@ def get_sports_updates():
             print(f"ESPN fetch failed ({url}): {e}")
             return None
 
+    def extract_score(raw):
+        """
+        BUG FIX 1: ESPN returns score as either a plain string OR a dict
+        like {'value': 4.0, 'displayValue': '4'}. Always return the
+        displayValue string or the raw value — never the dict itself.
+        """
+        if raw is None:
+            return "?"
+        if isinstance(raw, dict):
+            return str(raw.get("displayValue", raw.get("value", "?")))
+        return str(raw)
+
+    def to_pt(dt_str):
+        """
+        BUG FIX 3: ESPN dates are UTC. Convert to Pacific time before
+        displaying so dates and times are correct for Vancouver.
+        """
+        dt = datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
+        return dt + PT_OFFSET
+
     lines = []
+    today_pt = (datetime.utcnow() + PT_OFFSET).date()
 
     # ── Blue Jays ──────────────────────────────────────────────────────────────
     try:
         data = espn_get("https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/teams/14/schedule?season=2026")
         if data:
             events = data.get("events", [])
-            from datetime import date, datetime, timezone
-            today = date.today()
+            # BUG FIX 1+2: use PT date for comparison; extract score properly
             recent = next((e for e in reversed(events) if e.get("competitions") and
-                           datetime.fromisoformat(e["date"].replace("Z","")).date() < today), None)
+                           to_pt(e["date"]).date() < today_pt), None)
             upcoming = next((e for e in events if e.get("competitions") and
-                             datetime.fromisoformat(e["date"].replace("Z","")).date() >= today), None)
+                             to_pt(e["date"]).date() >= today_pt), None)
             if recent:
                 comp = recent["competitions"][0]
                 teams = {t["team"]["abbreviation"]: t for t in comp["competitors"]}
                 jays = teams.get("TOR", {})
                 opp_abbr = [k for k in teams if k != "TOR"]
                 opp = teams.get(opp_abbr[0], {}) if opp_abbr else {}
-                score = f"{jays.get('score','?')}–{opp.get('score','?')}"
+                # FIX: use extract_score to avoid raw dict rendering
+                jays_score = extract_score(jays.get("score"))
+                opp_score  = extract_score(opp.get("score"))
+                score = f"{jays_score}–{opp_score}"
                 result_val = jays.get("winner")
                 result_str = "✅ W" if result_val else "❌ L"
-                lines.append(f"⚾ **Blue Jays** {result_str} {score} vs {opp.get('team',{}).get('abbreviation','?')} ({datetime.fromisoformat(recent['date'].replace('Z','')).strftime('%b %d')})")
+                game_date = to_pt(recent["date"]).strftime("%b %d")
+                lines.append(f"⚾ **Blue Jays** {result_str} {score} vs {opp.get('team',{}).get('abbreviation','?')} ({game_date})")
             if upcoming:
                 comp = upcoming["competitions"][0]
                 opp = next((t for t in comp["competitors"] if t["team"]["abbreviation"] != "TOR"), {})
-                home_away = "vs" if comp.get("neutralSite") or next((t for t in comp["competitors"] if t["team"]["abbreviation"]=="TOR"),{}).get("homeAway")=="home" else "@"
-                lines.append(f"⚾ Next: {home_away} {opp.get('team',{}).get('displayName','?')} — {datetime.fromisoformat(upcoming['date'].replace('Z','')).strftime('%a %b %d %I:%M %p').replace(' 0',' ')}")
+                home_away = "vs" if comp.get("neutralSite") or next(
+                    (t for t in comp["competitors"] if t["team"]["abbreviation"] == "TOR"), {}
+                ).get("homeAway") == "home" else "@"
+                # FIX: convert to PT for correct display time
+                dt_pt = to_pt(upcoming["date"])
+                lines.append(f"⚾ Next: {home_away} {opp.get('team',{}).get('displayName','?')} — {dt_pt.strftime('%a %b %d %-I:%M %p PT')}")
     except Exception as e:
         print(f"Jays error: {e}")
 
     # ── CFL ───────────────────────────────────────────────────────────────────
     try:
+        # BUG FIX 2: Check scoreboard first for live/today games
         data = espn_get("https://site.api.espn.com/apis/site/v2/sports/football/cfl/scoreboard")
-        if data:
-            games = data.get("events", [])
-            if games:
-                lines.append("🏈 **CFL Today:**")
-                for g in games[:4]:
-                    comp = g.get("competitions", [{}])[0]
-                    teams = comp.get("competitors", [])
-                    if len(teams) == 2:
-                        a, h = teams[0], teams[1]
-                        status = g.get("status", {}).get("type", {}).get("shortDetail", "")
-                        lines.append(f"  {a['team']['abbreviation']} {a.get('score','–')} @ {h['team']['abbreviation']} {h.get('score','–')}  {status}")
-            else:
-                # upcoming
-                data2 = espn_get("https://site.api.espn.com/apis/site/v2/sports/football/cfl/teams/BC/schedule?season=2026")
-                if data2:
-                    from datetime import date, datetime
-                    today = date.today()
-                    events = data2.get("events", [])
-                    upcoming = next((e for e in events if
-                                     datetime.fromisoformat(e["date"].replace("Z","")).date() >= today), None)
-                    if upcoming:
-                        comp = upcoming["competitions"][0]
-                        opp = next((t for t in comp["competitors"] if t["team"]["abbreviation"] != "BC"), {})
-                        lines.append(f"🏈 **BC Lions** next: vs {opp.get('team',{}).get('displayName','?')} — {datetime.fromisoformat(upcoming['date'].replace('Z','')).strftime('%a %b %d')}")
+        live_games = data.get("events", []) if data else []
+
+        # Filter to games that are live OR scheduled for today PT
+        todays_games = []
+        for g in live_games:
+            try:
+                g_date = to_pt(g["date"]).date()
+                status_type = g.get("status", {}).get("type", {}).get("name", "")
+                if g_date == today_pt or status_type in ("STATUS_IN_PROGRESS", "STATUS_SCHEDULED"):
+                    todays_games.append(g)
+            except:
+                continue
+
+        if todays_games:
+            lines.append("🏈 **CFL Today:**")
+            for g in todays_games[:4]:
+                comp = g.get("competitions", [{}])[0]
+                teams = comp.get("competitors", [])
+                if len(teams) == 2:
+                    a, h = teams[0], teams[1]
+                    a_score = extract_score(a.get("score"))
+                    h_score = extract_score(h.get("score"))
+                    status = g.get("status", {}).get("type", {}).get("shortDetail", "")
+                    lines.append(f"  {a['team']['abbreviation']} {a_score} @ {h['team']['abbreviation']} {h_score}  {status}")
+        else:
+            # No games today — show next upcoming game from BC Lions schedule
+            data2 = espn_get("https://site.api.espn.com/apis/site/v2/sports/football/cfl/teams/BC/schedule?season=2026")
+            if data2:
+                events = data2.get("events", [])
+                # BUG FIX 2: find truly upcoming game, not most recent past game
+                upcoming = next((e for e in events if
+                                 to_pt(e["date"]).date() >= today_pt), None)
+                if upcoming:
+                    comp = upcoming["competitions"][0]
+                    opp = next((t for t in comp["competitors"] if t["team"]["abbreviation"] != "BC"), {})
+                    dt_pt = to_pt(upcoming["date"])
+                    lines.append(f"🏈 **BC Lions** next: vs {opp.get('team',{}).get('displayName','?')} — {dt_pt.strftime('%a %b %d')}")
+                else:
+                    lines.append("🏈 **BC Lions** — No upcoming games found")
     except Exception as e:
         print(f"CFL error: {e}")
 
-    # ── Canucks (offseason note) ───────────────────────────────────────────────
+    # ── Canucks ────────────────────────────────────────────────────────────────
     try:
         data = espn_get("https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/teams/23/schedule?season=2026")
         if data:
             events = data.get("events", [])
-            from datetime import date, datetime
-            today = date.today()
             upcoming = next((e for e in events if
-                             datetime.fromisoformat(e["date"].replace("Z","")).date() >= today), None)
+                             to_pt(e["date"]).date() >= today_pt), None)
             if upcoming:
                 comp = upcoming["competitions"][0]
                 opp = next((t for t in comp["competitors"] if t["team"]["abbreviation"] != "VAN"), {})
-                lines.append(f"🏒 **Canucks** next: vs {opp.get('team',{}).get('displayName','?')} — {datetime.fromisoformat(upcoming['date'].replace('Z','')).strftime('%a %b %d')}")
+                lines.append(f"🏒 **Canucks** next: vs {opp.get('team',{}).get('displayName','?')} — {to_pt(upcoming['date']).strftime('%a %b %d')}")
             else:
                 lines.append("🏒 **Canucks** — Offseason")
     except Exception as e:
         print(f"Canucks error: {e}")
 
-    # ── UFC (next event) ──────────────────────────────────────────────────────
+    # ── UFC ───────────────────────────────────────────────────────────────────
     try:
         data = espn_get("https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard")
         if data:
             events = data.get("events", [])
             if events:
                 e = events[0]
-                from datetime import datetime
-                dt = datetime.fromisoformat(e["date"].replace("Z",""))
-                lines.append(f"🥊 **UFC** — {e.get('name','Event')} — {dt.strftime('%a %b %d')}")
+                # BUG FIX 3: convert UTC to PT before displaying date
+                dt_pt = to_pt(e["date"])
+                lines.append(f"🥊 **UFC** — {e.get('name','Event')} — {dt_pt.strftime('%a %b %d')}")
     except Exception as e:
         print(f"UFC error: {e}")
 
