@@ -142,6 +142,16 @@
       </div>
     </div>
 
+
+    <div class="card">
+      <h2>⚖️ Body Composition (optional)</h2>
+      <div class="field"><label>Weight (kg)</label><input type="number" step="0.1" id="bc_weight" placeholder="e.g. 82.4"></div>
+      <div class="field"><label>Body Fat %</label><input type="number" step="0.1" id="bc_fat" placeholder="e.g. 18.2"></div>
+      <div class="field"><label>Muscle Mass (kg)</label><input type="number" step="0.1" id="bc_muscle" placeholder="e.g. 64.1"></div>
+      <div class="field"><label>BMI</label><input type="number" step="0.1" id="bc_bmi" placeholder="e.g. 24.3"></div>
+      <div class="field"><label>Visceral Fat Level</label><input type="number" step="1" id="bc_visceral" placeholder="e.g. 8"></div>
+    </div>
+
     <button class="btn" onclick="submitData()">🚀 UPDATE BRIEF</button>
     <button class="btn-secondary" onclick="resetPAT()">Reset PAT (if not working)</button>
   </div>
@@ -214,6 +224,13 @@ function submitData() {
 
   var data = {
     welltory: { stress: parseInt(stress), energy: parseInt(energy), health: parseInt(health) },
+    body_comp: {
+      weight:       parseFloat(document.getElementById('bc_weight').value)   || null,
+      body_fat:     parseFloat(document.getElementById('bc_fat').value)       || null,
+      muscle_mass:  parseFloat(document.getElementById('bc_muscle').value)    || null,
+      bmi:          parseFloat(document.getElementById('bc_bmi').value)       || null,
+      visceral_fat: parseFloat(document.getElementById('bc_visceral').value)  || null
+    },
     sleep: { score: parseInt(score), duration: duration, hr_range: hr_min + '-' + hr_max },
     updated: new Date().toISOString()
   };
