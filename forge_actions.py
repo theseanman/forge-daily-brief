@@ -135,7 +135,8 @@ def load_user_data():
     except:
         return {
             "welltory": {"stress": 50, "energy": 50, "health": 50},
-            "sleep": {"score": 85, "duration": "7h 0m", "hr_range": "50–70"}
+            "sleep": {"score": 85, "duration": "7h 0m", "hr_range": "50–70"},
+            "body_comp": {"weight": None, "body_fat": None, "muscle_mass": None, "bmi": None, "visceral_fat": None}
         }
 
 def get_weather():
@@ -522,7 +523,7 @@ def get_sports_updates():
         return "No scores available right now."
     return "\n".join(lines)
 
-def generate_html(welltory, sleep, weather, calendar_events, week_structured=None):
+def generate_html(welltory, sleep, weather, calendar_events, week_structured=None, body_comp=None):
     now = datetime.now()
     day_name = now.strftime("%A")
     date_str = now.strftime("%B %d, %Y")
@@ -550,6 +551,14 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
 
     cal_json = json.dumps(week_structured or [])
     cal_today = calendar_events.get("today", "No events today.")
+    if body_comp is None:
+        body_comp = {}
+    bc_weight      = body_comp.get("weight")
+    bc_fat         = body_comp.get("body_fat")
+    bc_muscle      = body_comp.get("muscle_mass")
+    bc_bmi         = body_comp.get("bmi")
+    bc_visceral    = body_comp.get("visceral_fat")
+    bc_has_data    = any(v is not None for v in [bc_weight, bc_fat, bc_muscle, bc_bmi, bc_visceral])
     wisdom_self_defense = wisdom["self_defense"]
     wisdom_parenting = wisdom["parenting"]
     wisdom_fatherhood = wisdom["fatherhood"]
@@ -568,6 +577,18 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     music_title = music["title"]; music_spotify = music["spotify"]; music_youtube = music["youtube"]
     cal_week = calendar_events.get("week", "No events this week.")
     cal_month = calendar_events.get("month", "No events this month.")
+
+    # Build body comp content
+    if bc_has_data:
+        bc_rows = ""
+        if bc_weight   is not None: bc_rows += f'<div class="stat-block"><div class="stat-val">{bc_weight}</div><div class="stat-label">Weight (kg)</div></div>'
+        if bc_fat      is not None: bc_rows += f'<div class="stat-block"><div class="stat-val">{bc_fat}%</div><div class="stat-label">Body Fat</div></div>'
+        if bc_muscle   is not None: bc_rows += f'<div class="stat-block"><div class="stat-val">{bc_muscle}</div><div class="stat-label">Muscle (kg)</div></div>'
+        if bc_bmi      is not None: bc_rows += f'<div class="stat-block"><div class="stat-val">{bc_bmi}</div><div class="stat-label">BMI</div></div>'
+        if bc_visceral is not None: bc_rows += f'<div class="stat-block"><div class="stat-val">{bc_visceral}</div><div class="stat-label">Visceral Fat</div></div>'
+        body_comp_content = f'<div class="stat-row" style="grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));">{bc_rows}</div>'
+    else:
+        body_comp_content = '<div class="mini-card"><div class="mini-detail">No body comp data yet. <a href="input.html">Enter via input form →</a></div></div>'
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -778,6 +799,11 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
   </div>
 
   <div class="card">
+    <div class="card-header"><span class="card-icon">⚖️🌴</span><span>Body Composition</span></div>
+    {body_comp_content}
+  </div>
+
+  <div class="card">
     <div class="card-header"><span class="card-icon">🌤️🌴</span><span>Richmond Weather</span></div>
     <div class="mini-card"><div class="mini-detail">{weather}</div></div>
   </div>
@@ -925,6 +951,7 @@ def main():
     user_data = load_user_data()
     welltory = user_data.get("welltory", {"stress": 50, "energy": 50, "health": 50})
     sleep = user_data.get("sleep", {"score": 85, "duration": "7h 0m", "hr_range": "50–70"})
+    body_comp = user_data.get("body_comp", {"weight": None, "body_fat": None, "muscle_mass": None, "bmi": None, "visceral_fat": None})
     
     print(f"✓ Loaded user data: Stress {welltory['stress']}%, Energy {welltory['energy']}%, Health {welltory['health']}%")
     
@@ -935,7 +962,7 @@ def main():
     if calendar.get("week_structured"):
         push_calendar_to_jsonbin(calendar["week_structured"])
     
-    html = generate_html(welltory, sleep, weather, calendar, calendar.get("week_structured", []))
+    html = generate_html(welltory, sleep, weather, calendar, calendar.get("week_structured", []), body_comp)
     
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(html)
