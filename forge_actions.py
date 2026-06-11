@@ -427,12 +427,11 @@ def get_wisdom(day_of_year):
 
 
 def get_sports_updates():
-    """Fetch scores/schedules for Sean's teams via ESPN public API."""
+    """Comprehensive sports intel: API for MLB/NHL/NFL, hardcoded for CFL/Soccer/Rugby/NLL."""
     import urllib.request, json
-    from datetime import date, datetime, timedelta, timezone
-
-    # Pacific time offset (UTC-7 during PDT)
-    PT_OFFSET = timedelta(hours=-7)
+    from datetime import date, datetime, timedelta
+    import zoneinfo
+    PT = zoneinfo.ZoneInfo("America/Vancouver")
 
     def espn_get(url):
         try:
@@ -444,125 +443,248 @@ def get_sports_updates():
             return None
 
     def extract_score(raw):
-        """
-        BUG FIX 1: ESPN returns score as either a plain string OR a dict
-        like {'value': 4.0, 'displayValue': '4'}. Always return the
-        displayValue string or the raw value — never the dict itself.
-        """
-        if raw is None:
-            return "?"
-        if isinstance(raw, dict):
-            return str(raw.get("displayValue", raw.get("value", "?")))
+        if raw is None: return "?"
+        if isinstance(raw, dict): return str(raw.get("displayValue", raw.get("value", "?")))
         return str(raw)
 
     def to_pt(dt_str):
-        """
-        BUG FIX 3: ESPN dates are UTC. Convert to Pacific time before
-        displaying so dates and times are correct for Vancouver.
-        """
         dt = datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
-        return dt + PT_OFFSET
+        return dt.astimezone(PT)
 
+    def parse_game(date_str, time_str):
+        """Parse a game date/time string into a date object. date_str: 'YYYY-MM-DD', time_str: 'H:MM PM PT'"""
+        try:
+            return datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %I:%M %p PT").replace(tzinfo=PT)
+        except:
+            try:
+                return datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=PT)
+            except:
+                return None
+
+    today = datetime.now(PT).date()
     lines = []
-    today_pt = (datetime.utcnow() + PT_OFFSET).date()
 
-    # ── Blue Jays ──────────────────────────────────────────────────────────────
+    # ══════════════════════════════════════════════════════════════════════════
+    # BC LIONS 2026 SCHEDULE (hardcoded — ESPN CFL API broken for 2026)
+    # All times PT. Source: CFL.ca / sportshistori.com
+    # ══════════════════════════════════════════════════════════════════════════
+    BC_LIONS = [
+        # (date, time_pt, home_away, opponent, location)
+        ("2026-06-13", "2:00 PM", "@", "Saskatchewan Roughriders", "Mosaic Stadium"),
+        ("2026-06-19", "2:30 PM", "@", "Hamilton Tiger-Cats", "Tim Hortons Field"),
+        ("2026-06-27", "4:00 PM", "vs", "Calgary Stampeders", "Apple Bowl, Kelowna"),
+        ("2026-07-04", "4:00 PM", "vs", "Edmonton Elks", "Apple Bowl, Kelowna"),
+        ("2026-07-25", "4:00 PM", "vs", "Toronto Argonauts", "BC Place, Vancouver"),
+        ("2026-08-08", "4:00 PM", "vs", "Hamilton Tiger-Cats", "BC Place, Vancouver"),
+        ("2026-08-23", "4:00 PM", "vs", "Saskatchewan Roughriders", "BC Place, Vancouver"),
+        ("2026-09-12", "4:00 PM", "vs", "Montreal Alouettes", "BC Place, Vancouver"),
+        ("2026-09-25", "4:00 PM", "vs", "Saskatchewan Roughriders", "BC Place, Vancouver"),
+        ("2026-10-09", "4:00 PM", "vs", "Ottawa Redblacks", "BC Place, Vancouver"),
+        ("2026-10-23", "4:00 PM", "vs", "Winnipeg Blue Bombers", "BC Place, Vancouver"),
+    ]
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # ALL CFL WEEK 2 GAMES TODAY (hardcoded — ESPN API broken)
+    # Source: CFL.ca Week 2 schedule
+    # ══════════════════════════════════════════════════════════════════════════
+    CFL_SCHEDULE = [
+        # (date, time_pt, away, home)
+        ("2026-06-04", "4:00 PM", "Montreal Alouettes", "Hamilton Tiger-Cats"),
+        ("2026-06-05", "4:30 PM", "Winnipeg Blue Bombers", "Calgary Stampeders"),
+        ("2026-06-06", "4:00 PM", "Ottawa Redblacks", "Edmonton Elks"),
+        ("2026-06-11", "5:30 PM", "Hamilton Tiger-Cats", "Winnipeg Blue Bombers"),
+        ("2026-06-12", "2:00 PM", "Toronto Argonauts", "Montreal Alouettes"),
+        ("2026-06-13", "2:00 PM", "BC Lions", "Saskatchewan Roughriders"),
+        ("2026-06-19", "2:30 PM", "BC Lions", "Hamilton Tiger-Cats"),
+        ("2026-06-19", "4:00 PM", "Ottawa Redblacks", "Toronto Argonauts"),
+        ("2026-06-20", "4:00 PM", "Calgary Stampeders", "Edmonton Elks"),
+        ("2026-06-20", "5:30 PM", "Saskatchewan Roughriders", "Winnipeg Blue Bombers"),
+        ("2026-06-25", "4:00 PM", "Hamilton Tiger-Cats", "Ottawa Redblacks"),
+        ("2026-06-26", "2:00 PM", "Montreal Alouettes", "Toronto Argonauts"),
+        ("2026-06-27", "4:00 PM", "Calgary Stampeders", "BC Lions"),  # Kelowna
+        ("2026-06-27", "5:30 PM", "Edmonton Elks", "Saskatchewan Roughriders"),
+        ("2026-07-01", "1:00 PM", "Winnipeg Blue Bombers", "Ottawa Redblacks"),
+        ("2026-07-04", "4:00 PM", "Edmonton Elks", "BC Lions"),  # Kelowna
+        ("2026-07-04", "5:00 PM", "Saskatchewan Roughriders", "Calgary Stampeders"),
+        ("2026-07-10", "4:00 PM", "Toronto Argonauts", "Hamilton Tiger-Cats"),
+        ("2026-07-10", "5:30 PM", "Ottawa Redblacks", "Montreal Alouettes"),
+        ("2026-07-11", "4:30 PM", "Winnipeg Blue Bombers", "Edmonton Elks"),
+    ]
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # CANADA SOCCER — FIFA WORLD CUP 2026
+    # Source: FIFA / Canada Soccer official. All times PT.
+    # ══════════════════════════════════════════════════════════════════════════
+    CANADA_SOCCER = [
+        ("2026-06-12", "12:00 PM", "Canada", "Bosnia and Herzegovina", "BMO Field, Toronto"),
+        ("2026-06-18", "3:00 PM", "Canada", "Qatar", "BC Place, Vancouver"),
+        ("2026-06-24", "TBD", "Canada", "Switzerland", "TBD"),
+        # Round of 32 onwards — TBD based on group results
+    ]
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # CANADA RUGBY — WORLD RUGBY NATIONS CUP 2026
+    # Source: Rugby Canada. All times PT.
+    # ══════════════════════════════════════════════════════════════════════════
+    CANADA_RUGBY = [
+        ("2026-07-04", "4:00 PM", "Canada", "Spain", "Clarke Stadium, Edmonton"),
+        ("2026-07-11", "1:45 PM", "Canada", "Portugal", "Clarke Stadium, Edmonton"),
+        ("2026-07-18", "1:45 PM", "Canada", "Zimbabwe", "Princess Auto Stadium, Winnipeg"),
+    ]
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # BUILD OUTPUT
+    # ══════════════════════════════════════════════════════════════════════════
+
+    # ── CFL Games Today ───────────────────────────────────────────────────────
+    todays_cfl = [(a, h, t) for d, t, a, h in CFL_SCHEDULE if d == str(today)]
+    if todays_cfl:
+        lines.append("🏈 CFL TODAY:")
+        for away, home, time_pt in todays_cfl:
+            lines.append(f"  {away} @ {home} — {time_pt}")
+
+    # ── BC Lions ──────────────────────────────────────────────────────────────
+    lions_today = [(ha, opp, loc, t) for d, t, ha, opp, loc in BC_LIONS if d == str(today)]
+    lions_next = next(((d, t, ha, opp, loc) for d, t, ha, opp, loc in BC_LIONS
+                       if datetime.strptime(d, "%Y-%m-%d").date() > today), None)
+    if lions_today:
+        for ha, opp, loc, t in lions_today:
+            lines.append(f"🦁 BC LIONS TODAY: {ha} {opp} — {t} | {loc}")
+    elif lions_next:
+        d, t, ha, opp, loc = lions_next
+        dt = datetime.strptime(d, "%Y-%m-%d")
+        lines.append(f"🦁 BC Lions next: {ha} {opp} — {dt.strftime('%a %b %d')} {t}")
+    else:
+        lines.append("🦁 BC Lions — Season complete")
+
+    # ── Blue Jays ─────────────────────────────────────────────────────────────
     try:
         data = espn_get("https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/teams/14/schedule?season=2026")
         if data:
             events = data.get("events", [])
-            # BUG FIX 1+2: use PT date for comparison; extract score properly
             recent = next((e for e in reversed(events) if e.get("competitions") and
-                           to_pt(e["date"]).date() < today_pt), None)
+                           to_pt(e["date"]).date() < today), None)
             upcoming = next((e for e in events if e.get("competitions") and
-                             to_pt(e["date"]).date() >= today_pt), None)
+                             to_pt(e["date"]).date() >= today), None)
             if recent:
                 comp = recent["competitions"][0]
                 teams = {t["team"]["abbreviation"]: t for t in comp["competitors"]}
                 jays = teams.get("TOR", {})
                 opp_abbr = [k for k in teams if k != "TOR"]
                 opp = teams.get(opp_abbr[0], {}) if opp_abbr else {}
-                # FIX: use extract_score to avoid raw dict rendering
                 jays_score = extract_score(jays.get("score"))
-                opp_score  = extract_score(opp.get("score"))
-                score = f"{jays_score}–{opp_score}"
-                result_val = jays.get("winner")
-                result_str = "✅ W" if result_val else "❌ L"
+                opp_score = extract_score(opp.get("score"))
+                result_str = "✅ W" if jays.get("winner") else "❌ L"
                 game_date = to_pt(recent["date"]).strftime("%b %d")
-                lines.append(f"⚾ **Blue Jays** {result_str} {score} vs {opp.get('team',{}).get('abbreviation','?')} ({game_date})")
+                lines.append(f"⚾ Blue Jays {result_str} {jays_score}–{opp_score} vs {opp.get('team',{}).get('abbreviation','?')} ({game_date})")
             if upcoming:
                 comp = upcoming["competitions"][0]
                 opp = next((t for t in comp["competitors"] if t["team"]["abbreviation"] != "TOR"), {})
-                home_away = "vs" if comp.get("neutralSite") or next(
-                    (t for t in comp["competitors"] if t["team"]["abbreviation"] == "TOR"), {}
-                ).get("homeAway") == "home" else "@"
-                # FIX: convert to PT for correct display time
+                home_away = "vs" if next((t for t in comp["competitors"] if t["team"]["abbreviation"]=="TOR"),{}).get("homeAway")=="home" else "@"
                 dt_pt = to_pt(upcoming["date"])
-                lines.append(f"⚾ Next: {home_away} {opp.get('team',{}).get('displayName','?')} — {dt_pt.strftime('%a %b %d %-I:%M %p PT')}")
+                if dt_pt.date() == today:
+                    lines.append(f"⚾ Blue Jays TODAY: {home_away} {opp.get('team',{}).get('displayName','?')} — {dt_pt.strftime('%-I:%M %p PT')}")
+                else:
+                    lines.append(f"⚾ Blue Jays next: {home_away} {opp.get('team',{}).get('displayName','?')} — {dt_pt.strftime('%a %b %d %-I:%M %p PT')}")
     except Exception as e:
         print(f"Jays error: {e}")
 
-    # ── CFL ───────────────────────────────────────────────────────────────────
+    # ── Vancouver Canadians (MiLB) ────────────────────────────────────────────
     try:
-        # BUG FIX 2: Check scoreboard first for live/today games
-        data = espn_get("https://site.api.espn.com/apis/site/v2/sports/football/cfl/scoreboard")
-        live_games = data.get("events", []) if data else []
-
-        # Filter to games that are live OR scheduled for today PT
-        todays_games = []
-        for g in live_games:
-            try:
-                g_date = to_pt(g["date"]).date()
-                status_type = g.get("status", {}).get("type", {}).get("name", "")
-                if g_date == today_pt or status_type in ("STATUS_IN_PROGRESS", "STATUS_SCHEDULED"):
-                    todays_games.append(g)
-            except:
-                continue
-
-        if todays_games:
-            lines.append("🏈 **CFL Today:**")
-            for g in todays_games[:4]:
-                comp = g.get("competitions", [{}])[0]
-                teams = comp.get("competitors", [])
-                if len(teams) == 2:
-                    a, h = teams[0], teams[1]
-                    a_score = extract_score(a.get("score"))
-                    h_score = extract_score(h.get("score"))
-                    status = g.get("status", {}).get("type", {}).get("shortDetail", "")
-                    lines.append(f"  {a['team']['abbreviation']} {a_score} @ {h['team']['abbreviation']} {h_score}  {status}")
-        else:
-            # No games today — show next upcoming game from BC Lions schedule
-            data2 = espn_get("https://site.api.espn.com/apis/site/v2/sports/football/cfl/teams/BC/schedule?season=2026")
-            if data2:
-                events = data2.get("events", [])
-                # BUG FIX 2: find truly upcoming game, not most recent past game
-                upcoming = next((e for e in events if
-                                 to_pt(e["date"]).date() >= today_pt), None)
-                if upcoming:
-                    comp = upcoming["competitions"][0]
-                    opp = next((t for t in comp["competitors"] if t["team"]["abbreviation"] != "BC"), {})
-                    dt_pt = to_pt(upcoming["date"])
-                    lines.append(f"🏈 **BC Lions** next: vs {opp.get('team',{}).get('displayName','?')} — {dt_pt.strftime('%a %b %d')}")
-                else:
-                    lines.append("🏈 **BC Lions** — No upcoming games found")
+        data = espn_get("https://site.api.espn.com/apis/site/v2/sports/baseball/milb/teams/van/schedule?season=2026")
+        if not data:
+            # Try alternate MiLB endpoint
+            req = urllib.request.Request(
+                "https://bdfed.stitch.mlbinfra.com/bdfed/transform-milb-schedule?stitch_env=prod&season=2026&teamId=578&sportId=12&gameType=R&startDate=2026-06-01&endDate=2026-08-31&hydrate=team,linescore",
+                headers={"User-Agent": "Mozilla/5.0"}
+            )
+            with urllib.request.urlopen(req, timeout=10) as r:
+                data = json.loads(r.read().decode())
+        if data:
+            dates = data.get("dates", [])
+            for game_date_obj in dates:
+                game_date_str = game_date_obj.get("date", "")
+                try:
+                    gd = datetime.strptime(game_date_str, "%Y-%m-%d").date()
+                except:
+                    continue
+                if gd == today:
+                    for g in game_date_obj.get("games", []):
+                        away = g.get("teams", {}).get("away", {}).get("team", {}).get("name", "?")
+                        home = g.get("teams", {}).get("home", {}).get("team", {}).get("name", "?")
+                        game_time = g.get("gameDate", "")
+                        if game_time:
+                            try:
+                                gt = datetime.fromisoformat(game_time.replace("Z", "+00:00")).astimezone(PT)
+                                lines.append(f"⚾ C's TODAY: {away} @ {home} — {gt.strftime('%-I:%M %p PT')}")
+                            except:
+                                lines.append(f"⚾ C's TODAY: {away} @ {home}")
+                    break
+                elif gd > today:
+                    for g in game_date_obj.get("games", []):
+                        away = g.get("teams", {}).get("away", {}).get("team", {}).get("name", "?")
+                        home = g.get("teams", {}).get("home", {}).get("team", {}).get("name", "?")
+                        game_time = g.get("gameDate", "")
+                        if game_time:
+                            try:
+                                gt = datetime.fromisoformat(game_time.replace("Z", "+00:00")).astimezone(PT)
+                                lines.append(f"⚾ C's next: {away} @ {home} — {gt.strftime('%a %b %d %-I:%M %p PT')}")
+                            except:
+                                lines.append(f"⚾ C's next: {away} @ {home} — {game_date_str}")
+                    break
     except Exception as e:
-        print(f"CFL error: {e}")
+        print(f"Canadians error: {e}")
+        lines.append("⚾ Vancouver Canadians — schedule unavailable")
 
-    # ── Canucks ────────────────────────────────────────────────────────────────
+    # ── Canada Soccer World Cup ───────────────────────────────────────────────
+    soccer_today = [(t, opp, venue) for d, t, _, opp, venue in CANADA_SOCCER if d == str(today)]
+    soccer_next = next(((d, t, opp, venue) for d, t, _, opp, venue in CANADA_SOCCER
+                        if datetime.strptime(d, "%Y-%m-%d").date() >= today), None)
+    if soccer_today:
+        for t, opp, venue in soccer_today:
+            lines.append(f"⚽ CANADA SOCCER TODAY (World Cup): vs {opp} — {t} | {venue}")
+    elif soccer_next:
+        d, t, _, opp, venue = soccer_next
+        dt = datetime.strptime(d, "%Y-%m-%d")
+        days_away = (dt.date() - today).days
+        if days_away <= 7:
+            lines.append(f"⚽ Canada Soccer (WC): vs {opp} — {dt.strftime('%a %b %d')} {t} | {venue}")
+
+    # ── Canada Rugby ─────────────────────────────────────────────────────────
+    rugby_today = [(t, opp, venue) for d, t, _, opp, venue in CANADA_RUGBY if d == str(today)]
+    rugby_next = next(((d, t, opp, venue) for d, t, _, opp, venue in CANADA_RUGBY
+                       if datetime.strptime(d, "%Y-%m-%d").date() >= today), None)
+    if rugby_today:
+        for t, opp, venue in rugby_today:
+            lines.append(f"🏉 CANADA RUGBY TODAY: vs {opp} — {t} | {venue}")
+    elif rugby_next:
+        d, t, opp, venue = rugby_next
+        dt = datetime.strptime(d, "%Y-%m-%d")
+        days_away = (dt.date() - today).days
+        if days_away <= 14:
+            lines.append(f"🏉 Canada Rugby next: vs {opp} — {dt.strftime('%a %b %d')} {t}")
+
+    # ── Canucks ───────────────────────────────────────────────────────────────
     try:
-        data = espn_get("https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/teams/23/schedule?season=2026")
+        data = espn_get("https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/teams/23/schedule?season=2027")
         if data:
             events = data.get("events", [])
-            upcoming = next((e for e in events if
-                             to_pt(e["date"]).date() >= today_pt), None)
+            upcoming = next((e for e in events if to_pt(e["date"]).date() >= today), None)
             if upcoming:
                 comp = upcoming["competitions"][0]
                 opp = next((t for t in comp["competitors"] if t["team"]["abbreviation"] != "VAN"), {})
-                lines.append(f"🏒 **Canucks** next: vs {opp.get('team',{}).get('displayName','?')} — {to_pt(upcoming['date']).strftime('%a %b %d')}")
+                lines.append(f"🏒 Canucks next: vs {opp.get('team',{}).get('displayName','?')} — {to_pt(upcoming['date']).strftime('%a %b %d')}")
             else:
-                lines.append("🏒 **Canucks** — Offseason")
+                lines.append("🏒 Canucks — Offseason (next season Oct 2026)")
+        else:
+            lines.append("🏒 Canucks — Offseason (next season Oct 2026)")
     except Exception as e:
-        print(f"Canucks error: {e}")
+        lines.append("🏒 Canucks — Offseason (next season Oct 2026)")
+
+    # ── Offseason notes ───────────────────────────────────────────────────────
+    lines.append("🏴󠁧󠁢󠁳󠁣󠁴󠁿 Glasgow Rangers — Offseason (new season Aug 2, 2026)")
+    lines.append("🥍 Vancouver Warriors — Offseason (NLL season Nov 2026)")
+    lines.append("🏈 Las Vegas Raiders — Offseason (NFL preseason Aug 2026)")
 
     # ── UFC ───────────────────────────────────────────────────────────────────
     try:
@@ -571,14 +693,16 @@ def get_sports_updates():
             events = data.get("events", [])
             if events:
                 e = events[0]
-                # BUG FIX 3: convert UTC to PT before displaying date
                 dt_pt = to_pt(e["date"])
-                lines.append(f"🥊 **UFC** — {e.get('name','Event')} — {dt_pt.strftime('%a %b %d')}")
+                if dt_pt.date() == today:
+                    lines.append(f"🥊 UFC TODAY: {e.get('name','Event')}")
+                else:
+                    lines.append(f"🥊 UFC next: {e.get('name','Event')} — {dt_pt.strftime('%a %b %d')}")
     except Exception as e:
         print(f"UFC error: {e}")
 
     if not lines:
-        return "No scores available right now."
+        return "No sports data available."
     return "\n".join(lines)
 
 def generate_html(welltory, sleep, weather, calendar_events, week_structured=None, body_comp=None):
