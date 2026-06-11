@@ -17,6 +17,18 @@ from datetime import datetime, date, timedelta, timezone
 
 
 import datetime as _dt
+import zoneinfo
+
+# ── Timezone fix: all datetime.now() calls use Pacific time ──────────────────
+PACIFIC = zoneinfo.ZoneInfo("America/Vancouver")
+
+def now_pt():
+    """Return current datetime in Pacific time."""
+    return _dt.datetime.now(PACIFIC)
+
+def today_pt():
+    """Return current date in Pacific time."""
+    return _dt.datetime.now(PACIFIC).date()
 
 JLPT_WORDS = [
     {"word": "刹那 (Setsuna)", "level": "N1", "meaning": "A fleeting moment; the infinitesimal instant.", "example": "人生は刹那の連続だ", "translation": "Life is a succession of fleeting moments."},
@@ -570,7 +582,7 @@ def get_sports_updates():
     return "\n".join(lines)
 
 def generate_html(welltory, sleep, weather, calendar_events, week_structured=None, body_comp=None):
-    now = datetime.now()
+    now = now_pt()
     day_name = now.strftime("%A")
     date_str = now.strftime("%B %d, %Y")
     time_str = now.strftime("%I:%M %p")
