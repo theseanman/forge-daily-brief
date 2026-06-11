@@ -637,14 +637,14 @@ def get_sports_updates():
         lines.append("⚾ Vancouver Canadians — schedule unavailable")
 
     # ── Canada Soccer World Cup ───────────────────────────────────────────────
-    soccer_today = [(t, opp, venue) for d, t, opp, venue in CANADA_SOCCER if d == str(today)]
-    soccer_next = next(((d, t, opp, venue) for d, t, opp, venue in CANADA_SOCCER
+    soccer_today = [(t, opp, venue) for d, t, _, opp, venue in CANADA_SOCCER if d == str(today)]
+    soccer_next = next(((d, t, opp, venue) for d, t, _, opp, venue in CANADA_SOCCER
                         if datetime.strptime(d, "%Y-%m-%d").date() >= today), None)
     if soccer_today:
         for t, opp, venue in soccer_today:
             lines.append(f"⚽ CANADA SOCCER TODAY (World Cup): vs {opp} — {t} | {venue}")
     elif soccer_next:
-        d, t, opp, venue = soccer_next
+        d, t, _, opp, venue = soccer_next
         dt = datetime.strptime(d, "%Y-%m-%d")
         days_away = (dt.date() - today).days
         if days_away <= 7:
