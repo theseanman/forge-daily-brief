@@ -245,8 +245,10 @@ def get_calendar_events():
         today = today_pt()  # FIX: use Pacific time, not UTC
         tz = timezone.utc
 
-        today_start = datetime.combine(today, datetime.min.time()).replace(tzinfo=tz)
-        today_end = datetime.combine(today + timedelta(days=1), datetime.min.time()).replace(tzinfo=tz)
+        # Use Pacific timezone for today boundaries so evening PT events aren't cut off
+        pt = zoneinfo.ZoneInfo("America/Vancouver")
+        today_start = datetime.combine(today, datetime.min.time()).replace(tzinfo=pt)
+        today_end = datetime.combine(today + timedelta(days=1), datetime.min.time()).replace(tzinfo=pt)
         week_end = datetime.combine(today + timedelta(days=7), datetime.min.time()).replace(tzinfo=tz)
         month_end = datetime.combine(today + timedelta(days=30), datetime.min.time()).replace(tzinfo=tz)
 
