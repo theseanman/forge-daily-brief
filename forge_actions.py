@@ -1103,7 +1103,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
   <div class="card" style="background: linear-gradient(135deg, rgba(0,0,0,0.25), rgba(30,10,0,0.2)); border: 3px solid var(--text-bright);">
     <div class="card-header"><span class="card-icon">&#x1F4CB;&#x1F334;</span><span>FORGE SITREP</span></div>
     <div style="display:flex; flex-direction:row; gap:16px; align-items:flex-start;">
-      <img src="https://m.media-amazon.com/images/M/MV5BMTYxMzYxNjkxNF5BMl5BanBnXkFtZTcwNjYwMjUzMQ@@._V1_UY209_CR87,0,140,209_AL_.jpg"
+      <img src="https://theseanman.github.io/forge-daily-brief/hannibal.jpg"
            alt="Hannibal Smith"
            style="width:90px; min-width:90px; border-radius:8px; border:3px solid var(--text-bright); object-fit:cover;"
            onerror="this.style.display='none'; this.nextElementSibling.style.marginLeft='0'">
