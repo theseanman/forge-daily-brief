@@ -844,6 +844,109 @@ def generate_sitrep(welltory, sleep, calendar_events, weather):
 
     return " ".join(lines)
 
+
+HANNIBAL_IMG = "https://upload.wikimedia.org/wikipedia/en/thumb/d/da/Hannibal_Smith.jpg/220px-Hannibal_Smith.jpg"
+
+def generate_sitrep(welltory, sleep, calendar_events, weather):
+    """Rule-based FORGE SITREP. Reads data, outputs a terse commander briefing."""
+    stress = welltory.get("stress", 50)
+    energy = welltory.get("energy", 50)
+    health = welltory.get("health", 50)
+    sleep_score = sleep.get("score", 80)
+    sleep_dur = sleep.get("duration", "7h 0m")
+    today_events = calendar_events.get("today", "")
+    now = now_pt()
+    hour = now.hour
+    day_name = now.strftime("%A")
+
+    lines = []
+
+    # ── READINESS ASSESSMENT ──────────────────────────────────────────────────
+    if energy <= 35 or stress >= 75:
+        readiness = "RED"
+        readiness_line = (
+            f"Body is in the red. Energy at {energy}%, stress at {stress}%. "
+            "This is a conservation day — one priority only. Do not negotiate with the fatigue, work around it."
+        )
+    elif energy <= 50 or stress >= 60:
+        readiness = "AMBER"
+        readiness_line = (
+            f"Running at reduced capacity. Energy {energy}%, stress {stress}%. "
+            "Protect the morning window. Defer anything that can wait."
+        )
+    elif sleep_score < 70:
+        readiness = "AMBER"
+        readiness_line = (
+            f"Sleep score low at {sleep_score}% ({sleep_dur}). "
+            "HRV numbers are holding but don't push hard today. One focused block, then ease off."
+        )
+    else:
+        readiness = "GREEN"
+        readiness_line = (
+            f"Systems nominal. Energy {energy}%, stress {stress}%, sleep {sleep_score}%. "
+            "Execute as planned. You have the bandwidth today — use it."
+        )
+
+    lines.append(readiness_line)
+
+    # ── CALENDAR INTEL ────────────────────────────────────────────────────────
+    event_list = [e.strip() for e in today_events.strip().split("\n") if e.strip() and e.strip() != "No events today."]
+    if event_list:
+        if len(event_list) == 1:
+            lines.append(f"One commitment on the board today: {event_list[0]}. Everything else is yours.")
+        elif len(event_list) == 2:
+            lines.append(f"Two commitments today: {event_list[0]} and {event_list[1]}. Work the gaps between them.")
+        else:
+            lines.append(
+                f"You have {len(event_list)} commitments today. First up: {event_list[0]}. "
+                f"Last: {event_list[-1]}. Identify your one deep work block and protect it."
+            )
+    else:
+        lines.append("Calendar is clear today. Rare. Use it deliberately — blank days disappear fast.")
+
+    # ── STRATEGIC DIRECTION ───────────────────────────────────────────────────
+    if readiness == "RED":
+        lines.append(
+            "Strategy: survive and recover. Single task. No big decisions. "
+            "The Operator protects the Architect today."
+        )
+    elif readiness == "AMBER":
+        lines.append(
+            "Strategy: one meaningful output before noon. After that, maintenance mode. "
+            "Ask 'what is the single move that matters most today' — then only do that."
+        )
+    else:
+        if day_name in ("Monday", "Tuesday", "Wednesday"):
+            lines.append(
+                "Strategy: deep work first. "
+                "High cortisol window is now. Shut the noise, open the hardest thing, execute."
+            )
+        elif day_name == "Thursday":
+            lines.append(
+                "Strategy: close open loops. "
+                "Thursday is a finisher day — identify what needs to be done before Friday and do it."
+            )
+        elif day_name == "Friday":
+            lines.append(
+                "Strategy: complete and document. "
+                "Finish what you started this week. Set Monday up before you close out."
+            )
+        else:
+            lines.append(
+                "Strategy: recharge with intention. "
+                "Rest is not absence of work — it is preparation for it. Do one meaningful personal thing today."
+            )
+
+    # ── MINDSET CUE ──────────────────────────────────────────────────────────
+    if stress >= 60:
+        lines.append("No narrative. Just this. What is the next physical action? Do that.")
+    elif energy <= 45:
+        lines.append("Pace, not intensity. Slow is smooth. Smooth is output.")
+    else:
+        lines.append("The Quiet Strategist operates from here. One step ahead. Always.")
+
+    return " ".join(lines)
+
 def generate_html(welltory, sleep, weather, calendar_events, week_structured=None, body_comp=None):
     now = now_pt()
     day_name = now.strftime("%A")
@@ -853,6 +956,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     day_of_year = now.timetuple().tm_yday
     wisdom = get_wisdom(day_of_year)
     sports_text = get_sports_updates()
+    sitrep_text = generate_sitrep(welltory, sleep, calendar_events, weather)
     sitrep_text = generate_sitrep(welltory, sleep, calendar_events, weather)
 
     stress_status = "Elevated" if welltory["stress"] >= 60 else "Moderate" if welltory["stress"] >= 40 else "Low"
@@ -888,6 +992,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     wisdom_longevity = wisdom["longevity"]
     wisdom_life_hack = wisdom["life_hack"]
     sports_section = sports_text
+    sitrep_text = sitrep_text  # passed to HTML template
     sitrep_text = sitrep_text  # passed to HTML template
     stoic = STOIC_QUOTES[get_daily_index(len(STOIC_QUOTES))]
     stoic_quote = stoic["text"]; stoic_source = stoic["source"]
@@ -1018,6 +1123,17 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
   </div>
 
   <div class="alert-banner">🚨 {mode} {mode_advice}</div>
+
+  <div class="card" style="background: linear-gradient(135deg, rgba(0,0,0,0.25), rgba(30,10,0,0.2)); border: 3px solid var(--text-bright);">
+    <div class="card-header"><span class="card-icon">&#x1F4CB;&#x1F334;</span><span>FORGE SITREP</span></div>
+    <div style="display:grid; grid-template-columns: 110px 1fr; gap: 16px; align-items: start;">
+      <img src="https://upload.wikimedia.org/wikipedia/en/thumb/d/da/Hannibal_Smith.jpg/220px-Hannibal_Smith.jpg"
+           alt="Hannibal Smith"
+           style="width:110px; border-radius:8px; border:3px solid var(--text-bright); object-fit:cover;"
+           onerror="this.style.display='none'">
+      <div style="font-size:15px; color:var(--text-bright); line-height:1.8; font-weight:600;">{sitrep_text}</div>
+    </div>
+  </div>
 
   <div class="card" style="background: linear-gradient(135deg, rgba(0,0,0,0.25), rgba(30,10,0,0.2)); border: 3px solid var(--text-bright);">
     <div class="card-header"><span class="card-icon">&#x1F4CB;&#x1F334;</span><span>FORGE SITREP</span></div>
