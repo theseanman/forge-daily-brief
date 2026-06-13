@@ -166,7 +166,7 @@ def get_weather():
         print(f"Weather fetch failed: {e}")
         return "Weather unavailable"
 
-def fetch_events_for_range(calendars, start, end):
+def fetch_events_for_range(calendars, start, end, debug=False):
     """Fetch and format events for a given date range."""
     all_events = []
     for calendar in calendars:
@@ -177,13 +177,19 @@ def fetch_events_for_range(calendars, start, end):
                     vevent = event.vobject_instance.vevent
                     summary = str(vevent.summary.value) if hasattr(vevent, 'summary') else "Event"
                     dtstart = vevent.dtstart.value
+                    if debug:
+                        print(f"DEBUG EVENT: {summary!r} | dtstart={dtstart!r} | type={type(dtstart).__name__} | tzinfo={getattr(dtstart, 'tzinfo', 'N/A')}")
                     if hasattr(dtstart, 'hour'):
                         all_events.append((str(dtstart), f"{summary} @ {dtstart.strftime('%a %b %d, %I:%M %p')}"))
                     else:
                         all_events.append((str(dtstart), f"{summary} — {dtstart.strftime('%a %b %d')} (All Day)"))
-                except:
+                except Exception as e:
+                    if debug:
+                        print(f"DEBUG ERROR parsing event: {e}")
                     continue
-        except:
+        except Exception as e:
+            if debug:
+                print(f"DEBUG ERROR fetching calendar: {e}")
             continue
     all_events.sort(key=lambda x: x[0])
     return [e[1] for e in all_events]
@@ -244,7 +250,9 @@ def get_calendar_events():
         week_end = datetime.combine(today + timedelta(days=7), datetime.min.time()).replace(tzinfo=tz)
         month_end = datetime.combine(today + timedelta(days=30), datetime.min.time()).replace(tzinfo=tz)
 
-        today_events = fetch_events_for_range(calendars, today_start, today_end)
+        print(f"DEBUG: today={today} | today_start={today_start!r} | today_end={today_end!r}")
+        print(f"DEBUG: found {len(calendars)} calendars")
+        today_events = fetch_events_for_range(calendars, today_start, today_end, debug=True)
         week_events = fetch_events_for_range(calendars, today_start, week_end)
         month_events = fetch_events_for_range(calendars, today_start, month_end)
         week_structured = fetch_events_structured(calendars, today_start, week_end)
