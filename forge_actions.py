@@ -234,10 +234,22 @@ def get_calendar_events():
         )
         
         principal = client.principal()
-        calendars = principal.calendars()
+        # Fetch owned + subscribed calendars
+        try:
+            calendars = principal.calendars()
+        except Exception:
+            calendars = []
+        # Also try fetching from known calendar home
+        try:
+            for cal_home in principal.calendar_home_set:
+                for cal in cal_home.calendars():
+                    if cal not in calendars:
+                        calendars.append(cal)
+        except Exception:
+            pass
         
-        today = today_pt()  # FIX: use Pacific time, not UTC
-        tz = timezone.utc
+        today = today_pt()  # Pacific date
+        tz = zoneinfo.ZoneInfo("America/Vancouver")  # FIX: use Pacific for boundaries
 
         today_start = datetime.combine(today, datetime.min.time()).replace(tzinfo=tz)
         today_end = datetime.combine(today + timedelta(days=1), datetime.min.time()).replace(tzinfo=tz)
