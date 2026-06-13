@@ -236,7 +236,7 @@ def get_calendar_events():
         principal = client.principal()
         calendars = principal.calendars()
         
-        today = date.today()
+        today = today_pt()  # FIX: use Pacific time, not UTC
         tz = timezone.utc
 
         today_start = datetime.combine(today, datetime.min.time()).replace(tzinfo=tz)
@@ -533,6 +533,16 @@ def get_sports_updates():
     ]
 
     # ══════════════════════════════════════════════════════════════════════════
+    # SCOTLAND — FIFA WORLD CUP 2026
+    # Source: FIFA / Scotland FA. All times PT.
+    # ══════════════════════════════════════════════════════════════════════════
+    SCOTLAND_WC = [
+        ("2026-06-13", "6:00 PM", "Scotland", "Haiti", "SoFi Stadium, Los Angeles"),
+        ("2026-06-18", "9:00 AM", "Scotland", "Switzerland", "Levi's Stadium, San Jose"),
+        ("2026-06-23", "TBD",     "Scotland", "South Korea", "TBD"),
+    ]
+
+    # ══════════════════════════════════════════════════════════════════════════
     # BUILD OUTPUT
     # ══════════════════════════════════════════════════════════════════════════
 
@@ -649,6 +659,20 @@ def get_sports_updates():
         days_away = (dt.date() - today).days
         if days_away <= 7:
             lines.append(f"⚽ Canada Soccer (WC): vs {opp} — {dt.strftime('%a %b %d')} {t} | {venue}")
+
+    # ── Scotland World Cup ───────────────────────────────────────────────────
+    scotland_today = [(t, opp, venue) for d, t, _, opp, venue in SCOTLAND_WC if d == str(today)]
+    scotland_next = next(((d, t, opp, venue) for d, t, _, opp, venue in SCOTLAND_WC
+                          if datetime.strptime(d, "%Y-%m-%d").date() >= today), None)
+    if scotland_today:
+        for t, opp, venue in scotland_today:
+            lines.append(f"[SCO] SCOTLAND TODAY (World Cup): vs {opp} -- {t} | {venue}")
+    elif scotland_next:
+        d, t, opp, venue = scotland_next
+        dt = datetime.strptime(d, "%Y-%m-%d")
+        days_away = (dt.date() - today).days
+        if days_away <= 10:
+            lines.append(f"[SCO] Scotland (WC): vs {opp} -- {dt.strftime('%a %b %d')} {t} | {venue}")
 
     # ── Canada Rugby ─────────────────────────────────────────────────────────
     rugby_today = [(t, opp, venue) for d, t, _, opp, venue in CANADA_RUGBY if d == str(today)]
@@ -775,9 +799,9 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     # Build body comp content
     if bc_has_data:
         bc_rows = ""
-        if bc_weight   is not None: bc_rows += f'<div class="stat-block"><div class="stat-val">{bc_weight}</div><div class="stat-label">Weight (kg)</div></div>'
+        if bc_weight   is not None: bc_rows += f'<div class="stat-block"><div class="stat-val">{bc_weight}</div><div class="stat-label">Weight (lbs)</div></div>'
         if bc_fat      is not None: bc_rows += f'<div class="stat-block"><div class="stat-val">{bc_fat}%</div><div class="stat-label">Body Fat</div></div>'
-        if bc_muscle   is not None: bc_rows += f'<div class="stat-block"><div class="stat-val">{bc_muscle}</div><div class="stat-label">Muscle (kg)</div></div>'
+        if bc_muscle   is not None: bc_rows += f'<div class="stat-block"><div class="stat-val">{bc_muscle}</div><div class="stat-label">Muscle (lbs)</div></div>'
         if bc_bmi      is not None: bc_rows += f'<div class="stat-block"><div class="stat-val">{bc_bmi}</div><div class="stat-label">BMI</div></div>'
         if bc_visceral is not None: bc_rows += f'<div class="stat-block"><div class="stat-val">{bc_visceral}</div><div class="stat-label">Visceral Fat</div></div>'
         body_comp_content = f'<div class="stat-row" style="grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));">{bc_rows}</div>'
@@ -1036,6 +1060,31 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
   <div class="card">
     <div class="card-header"><span class="card-icon">🏆🌴</span><span>Sports Intel</span></div>
     <div class="mini-card"><div class="mini-detail" style="white-space:pre-wrap; font-size:14px; line-height:1.8;">{sports_section}</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-icon">&#x1F3B0;&#x1F334;</span><span>SBOS Betting Intel</span></div>
+    <div class="mini-card">
+      <div class="mini-title">&#x1F4E1; Live Signal Status</div>
+      <div class="mini-detail" style="font-size:13px; line-height:1.8;">
+        Check Telegram @SeanTradingAlertsBot for live CFL alerts.<br>
+        Commands: <strong>STATUS</strong> &nbsp;&#183;&nbsp; <strong>Y</strong> &nbsp;&#183;&nbsp; <strong>HALF</strong> &nbsp;&#183;&nbsp; <strong>WATCH</strong> &nbsp;&#183;&nbsp; <strong>N</strong> &nbsp;&#183;&nbsp; <strong>RESULT</strong>
+      </div>
+    </div>
+    <div class="mini-card">
+      <div class="mini-title">&#x1F4CB; S1/S5 Scoring</div>
+      <div class="mini-detail" style="font-size:13px; line-height:1.8;">
+        <strong>S1 Matchup Identity:</strong> 1=neutral &nbsp; 2=moderate home edge &nbsp; 3=strong home narrative<br>
+        <strong>S5 Psychological:</strong> 1=neutral &nbsp; 2=moderate pressure &nbsp; 3=high-stakes pressure<br>
+        <strong>Tier A (17-21):</strong> Full unit &nbsp; <strong>Tier B (13-16):</strong> Half unit &nbsp; <strong>Tier C (&lt;13):</strong> Pass
+      </div>
+    </div>
+    <div class="mini-card">
+      <div class="mini-title">&#x1F4B0; PlayNow</div>
+      <div class="mini-detail" style="font-size:13px; line-height:1.8;">
+        BC Sports Action &nbsp;&#183;&nbsp; Rocket icon = odds boost (marketing, NOT a signal) &nbsp;&#183;&nbsp; Chalk = favourite
+      </div>
+    </div>
   </div>
 
   <div class="card">
