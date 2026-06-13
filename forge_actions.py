@@ -15,11 +15,129 @@ import urllib.request
 import urllib.parse
 from datetime import datetime, date, timedelta, timezone
 
+
+import datetime as _dt
+import zoneinfo
+
+# ── Timezone fix: all datetime.now() calls use Pacific time ──────────────────
+PACIFIC = zoneinfo.ZoneInfo("America/Vancouver")
+
+def now_pt():
+    """Return current datetime in Pacific time."""
+    return _dt.datetime.now(PACIFIC)
+
+def today_pt():
+    """Return current date in Pacific time."""
+    return _dt.datetime.now(PACIFIC).date()
+
+JLPT_WORDS = [
+    {"word": "刹那 (Setsuna)", "level": "N1", "meaning": "A fleeting moment; the infinitesimal instant.", "example": "人生は刹那の連続だ", "translation": "Life is a succession of fleeting moments."},
+    {"word": "余韻 (Yoin)", "level": "N1", "meaning": "Lingering reverberation; an afterglow of feeling.", "example": "音楽の余韻に浸る", "translation": "To be immersed in the lingering notes of music."},
+    {"word": "葛藤 (Kattou)", "level": "N1", "meaning": "Inner conflict; mental struggle.", "example": "葛藤を乗り越えた", "translation": "He overcame his inner conflict."},
+    {"word": "侘寂 (Wabi-sabi)", "level": "N1", "meaning": "Beauty in imperfection and impermanence.", "example": "古い茶碗に侘寂を感じる", "translation": "I feel wabi-sabi in the old tea bowl."},
+    {"word": "幽玄 (Yuugen)", "level": "N1", "meaning": "Profound, mysterious sense of the universe.", "example": "能楽には幽玄の美がある", "translation": "Noh theater has the beauty of yuugen."},
+    {"word": "物の哀れ (Mono no aware)", "level": "N1", "meaning": "Bittersweet awareness of impermanence.", "example": "桜の散る様に物の哀れを感じる", "translation": "I feel it in falling cherry blossoms."},
+    {"word": "矜持 (Kyouji)", "level": "N1", "meaning": "Pride; self-respect; sense of dignity.", "example": "プロとしての矜持を持つ", "translation": "To have pride as a professional."},
+    {"word": "僥倖 (Gyoukou)", "level": "N1", "meaning": "Unexpected good fortune; windfall luck.", "example": "それは僥倖だった", "translation": "That was a stroke of unexpected luck."},
+    {"word": "懸念 (Kenen)", "level": "N2", "meaning": "Concern; worry; apprehension.", "example": "健康への懸念がある", "translation": "There is concern about health."},
+    {"word": "顕著 (Kenchyo)", "level": "N2", "meaning": "Remarkable; conspicuous; notable.", "example": "顕著な改善が見られた", "translation": "A remarkable improvement was observed."},
+    {"word": "体裁 (Teisai)", "level": "N2", "meaning": "Outward appearance; keeping up appearances.", "example": "体裁を気にしすぎる", "translation": "To care too much about appearances."},
+    {"word": "逡巡 (Shunjun)", "level": "N2", "meaning": "Hesitation; wavering indecision.", "example": "逡巡せずに決断した", "translation": "He decided without hesitation."},
+    {"word": "慮る (Omonpakaru)", "level": "N1", "meaning": "To give careful consideration.", "example": "相手の立場を慮る", "translation": "To consider the other person's position."},
+    {"word": "凛然 (Rinzen)", "level": "N1", "meaning": "Dignified and resolute; commanding.", "example": "凛然とした態度", "translation": "A dignified and resolute attitude."},
+]
+
+ART_ENTRIES = [
+    {"title": "Hokusai — The Great Wave off Kanagawa", "url": "https://artsandculture.google.com/search?q=hokusai+great+wave"},
+    {"title": "Kusama Yayoi — Infinity Mirror Room", "url": "https://artsandculture.google.com/search?q=kusama+infinity+mirror"},
+    {"title": "Basquiat — Untitled (1982)", "url": "https://artsandculture.google.com/search?q=basquiat+untitled+1982"},
+    {"title": "Rothko — No. 61 (Rust and Blue)", "url": "https://artsandculture.google.com/search?q=rothko+rust+blue"},
+    {"title": "Francis Bacon — Three Studies for Figures", "url": "https://artsandculture.google.com/search?q=francis+bacon+three+studies"},
+    {"title": "Egon Schiele — Self-Portrait (1912)", "url": "https://artsandculture.google.com/search?q=egon+schiele+self+portrait"},
+    {"title": "Hiroshi Sugimoto — Seascapes", "url": "https://artsandculture.google.com/search?q=hiroshi+sugimoto+seascapes"},
+    {"title": "Goya — Saturn Devouring His Son", "url": "https://artsandculture.google.com/search?q=goya+saturn+devouring"},
+    {"title": "Caravaggio — Judith Beheading Holofernes", "url": "https://artsandculture.google.com/search?q=caravaggio+judith"},
+    {"title": "Turner — The Fighting Temeraire", "url": "https://artsandculture.google.com/search?q=turner+fighting+temeraire"},
+    {"title": "Frida Kahlo — The Two Fridas", "url": "https://artsandculture.google.com/search?q=frida+kahlo+two+fridas"},
+    {"title": "William Blake — Ancient of Days", "url": "https://artsandculture.google.com/search?q=william+blake+ancient+of+days"},
+    {"title": "Jenny Saville — Propped", "url": "https://artsandculture.google.com/search?q=jenny+saville+propped"},
+    {"title": "Monet — Water Lilies Series", "url": "https://artsandculture.google.com/search?q=monet+water+lilies"},
+]
+
+MUSIC_ENTRIES = [
+    {"title": "Dissection — Storm of the Light's Bane (1995)", "spotify": "https://open.spotify.com/search/dissection%20storm%20of%20the%20lights%20bane", "youtube": "https://music.youtube.com/search?q=dissection+storm+lights+bane"},
+    {"title": "Sarcofago — I.N.R.I. (1987)", "spotify": "https://open.spotify.com/search/sarcofago%20inri", "youtube": "https://music.youtube.com/search?q=sarcofago+inri"},
+    {"title": "Emperor — In the Nightside Eclipse (1994)", "spotify": "https://open.spotify.com/search/emperor%20nightside%20eclipse", "youtube": "https://music.youtube.com/search?q=emperor+nightside+eclipse"},
+    {"title": "Carcass — Heartwork (1993)", "spotify": "https://open.spotify.com/search/carcass%20heartwork", "youtube": "https://music.youtube.com/search?q=carcass+heartwork"},
+    {"title": "Pantera — Vulgar Display of Power (1992)", "spotify": "https://open.spotify.com/search/pantera%20vulgar%20display", "youtube": "https://music.youtube.com/search?q=pantera+vulgar+display"},
+    {"title": "Entombed — Left Hand Path (1990)", "spotify": "https://open.spotify.com/search/entombed%20left%20hand%20path", "youtube": "https://music.youtube.com/search?q=entombed+left+hand+path"},
+    {"title": "Immortal — Pure Holocaust (1993)", "spotify": "https://open.spotify.com/search/immortal%20pure%20holocaust", "youtube": "https://music.youtube.com/search?q=immortal+pure+holocaust"},
+    {"title": "Type O Negative — Bloody Kisses (1993)", "spotify": "https://open.spotify.com/search/type%20o%20negative%20bloody%20kisses", "youtube": "https://music.youtube.com/search?q=type+o+negative+bloody+kisses"},
+    {"title": "Saor — Guardians (2016)", "spotify": "https://open.spotify.com/search/saor%20guardians", "youtube": "https://music.youtube.com/search?q=saor+guardians"},
+    {"title": "Motorhead — Ace of Spades (1980)", "spotify": "https://open.spotify.com/search/motorhead%20ace%20of%20spades", "youtube": "https://music.youtube.com/search?q=motorhead+ace+of+spades"},
+    {"title": "Slayer — Reign in Blood (1986)", "spotify": "https://open.spotify.com/search/slayer%20reign%20in%20blood", "youtube": "https://music.youtube.com/search?q=slayer+reign+in+blood"},
+    {"title": "Behemoth — The Satanist (2014)", "spotify": "https://open.spotify.com/search/behemoth%20the%20satanist", "youtube": "https://music.youtube.com/search?q=behemoth+the+satanist"},
+    {"title": "Danzig — Lucifuge (1990)", "spotify": "https://open.spotify.com/search/danzig%20lucifuge", "youtube": "https://music.youtube.com/search?q=danzig+lucifuge"},
+    {"title": "Machine Head — Burn My Eyes (1994)", "spotify": "https://open.spotify.com/search/machine%20head%20burn%20my%20eyes", "youtube": "https://music.youtube.com/search?q=machine+head+burn+my+eyes"},
+]
+
+CHARACTER_QUOTES = [
+    {"name": "Hannibal Smith", "quote": "I love it when a plan comes together.", "show": "The A-Team", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/d/da/Hannibal_Smith.jpg/220px-Hannibal_Smith.jpg"},
+    {"name": "Zack Morris", "quote": "The more rules they make, the more ways I find to get around them.", "show": "Saved by the Bell", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/0/0f/Zack_Morris.jpg/220px-Zack_Morris.jpg"},
+    {"name": "Eddie Haskell", "quote": "Gee Beaver, I would love to help, but something just came up.", "show": "Leave it to Beaver", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/3/32/Eddie_Haskell.jpg/220px-Eddie_Haskell.jpg"},
+    {"name": "Al Bundy", "quote": "I had it all once. Now I am married with children.", "show": "Married... with Children", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/c/c5/Al_Bundy.jpg/220px-Al_Bundy.jpg"},
+    {"name": "Hannibal Smith", "quote": "The best thing about being underestimated is the look on their face when you win.", "show": "The A-Team", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/d/da/Hannibal_Smith.jpg/220px-Hannibal_Smith.jpg"},
+    {"name": "Al Bundy", "quote": "Women. You cannot live with them, period.", "show": "Married... with Children", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/c/c5/Al_Bundy.jpg/220px-Al_Bundy.jpg"},
+    {"name": "Zack Morris", "quote": "Time out. Let me think about this.", "show": "Saved by the Bell", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/0/0f/Zack_Morris.jpg/220px-Zack_Morris.jpg"},
+    {"name": "Hannibal Smith", "quote": "In war, the most dangerous weapon is the element of surprise.", "show": "The A-Team", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/d/da/Hannibal_Smith.jpg/220px-Hannibal_Smith.jpg"},
+    {"name": "Eddie Haskell", "quote": "That is a very lovely dress, Mrs. Cleaver.", "show": "Leave it to Beaver", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/3/32/Eddie_Haskell.jpg/220px-Eddie_Haskell.jpg"},
+    {"name": "Al Bundy", "quote": "Every day above ground is a good day. Every day in this house is debatable.", "show": "Married... with Children", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/c/c5/Al_Bundy.jpg/220px-Al_Bundy.jpg"},
+    {"name": "Hannibal Smith", "quote": "You know, sometimes the best disguise is no disguise at all.", "show": "The A-Team", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/d/da/Hannibal_Smith.jpg/220px-Hannibal_Smith.jpg"},
+    {"name": "Zack Morris", "quote": "When life gives you lemons, sell them.", "show": "Saved by the Bell", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/0/0f/Zack_Morris.jpg/220px-Zack_Morris.jpg"},
+    {"name": "Eddie Haskell", "quote": "I was merely trying to be helpful, sir.", "show": "Leave it to Beaver", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/3/32/Eddie_Haskell.jpg/220px-Eddie_Haskell.jpg"},
+    {"name": "Al Bundy", "quote": "A man can take just so much. Then he snaps.", "show": "Married... with Children", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/c/c5/Al_Bundy.jpg/220px-Al_Bundy.jpg"},
+]
+
+
+STOIC_QUOTES = [
+    {"text": "You have power over your mind, not outside events. Realize this, and you will find strength.", "source": "Marcus Aurelius, Meditations"},
+    {"text": "The impediment to action advances action. What stands in the way becomes the way.", "source": "Marcus Aurelius, Meditations"},
+    {"text": "Waste no more time arguing what a good man should be. Be one.", "source": "Marcus Aurelius, Meditations"},
+    {"text": "If it is not right, do not do it. If it is not true, do not say it.", "source": "Marcus Aurelius, Meditations"},
+    {"text": "The best revenge is to be unlike him who performed the injury.", "source": "Marcus Aurelius, Meditations"},
+    {"text": "He who knows when he can fight and when he cannot will be victorious.", "source": "Sun Tzu, The Art of War"},
+    {"text": "Supreme excellence consists in breaking the enemy's resistance without fighting.", "source": "Sun Tzu, The Art of War"},
+    {"text": "In the midst of chaos, there is also opportunity.", "source": "Sun Tzu, The Art of War"},
+    {"text": "Do not seek to follow in the footsteps of the wise. Seek what they sought.", "source": "Matsuo Basho"},
+    {"text": "There is nothing outside of yourself that can ever enable you to get better, stronger, richer, quicker, or smarter. Everything is within.", "source": "Miyamoto Musashi, The Book of Five Rings"},
+    {"text": "Today is victory over yourself of yesterday. Tomorrow is victory over lesser men.", "source": "Miyamoto Musashi"},
+    {"text": "Think lightly of yourself and deeply of the world.", "source": "Miyamoto Musashi"},
+    {"text": "The man who moves a mountain begins by carrying away small stones.", "source": "Confucius"},
+    {"text": "He who has a why to live can bear almost any how.", "source": "Friedrich Nietzsche"},
+    {"text": "That which does not kill us makes us stronger.", "source": "Friedrich Nietzsche"},
+    {"text": "Whoever fights monsters should see to it that in the process he does not become a monster.", "source": "Friedrich Nietzsche"},
+    {"text": "The only way to deal with an unfree world is to become so absolutely free that your very existence is an act of rebellion.", "source": "Albert Camus"},
+    {"text": "You must be the change you wish to see in the world.", "source": "Mahatma Gandhi"},
+    {"text": "It does not matter how slowly you go as long as you do not stop.", "source": "Confucius"},
+    {"text": "Stillness is what creates love. Movement is what creates life. To be still and still moving — that is everything.", "source": "Do Hyun Choe"},
+    {"text": "Absorb what is useful, discard what is not, add what is uniquely your own.", "source": "Bruce Lee"},
+    {"text": "I fear not the man who has practiced 10,000 kicks once, but I fear the man who has practiced one kick 10,000 times.", "source": "Bruce Lee"},
+    {"text": "The more I know, the more I realize I know nothing.", "source": "Socrates"},
+    {"text": "An unexamined life is not worth living.", "source": "Socrates"},
+    {"text": "We suffer more in imagination than in reality.", "source": "Seneca"},
+    {"text": "It is not that I am brave, it is just that I am right.", "source": "David Hackworth"},
+    {"text": "Victorious warriors win first and then go to war. Defeated warriors go to war first and then seek to win.", "source": "Sun Tzu"},
+    {"text": "The most courageous act is still to think for yourself. Aloud.", "source": "Coco Chanel"},
+]
+
+def get_daily_index(list_len):
+    return _dt.date.today().timetuple().tm_yday % list_len
+
 RICHMOND_COORDS = (49.1895, -123.1724)
 ICLOUD_EMAIL = os.environ.get("ICLOUD_EMAIL", "yoseanreid@icloud.com")
 ICLOUD_PASSWORD = os.environ.get("ICLOUD_PASSWORD", "")
-JSONBIN_MASTER_KEY = os.environ.get("JSONBIN_MASTER_KEY", "$2a$10$rs9Sak4dqIbcRvK1M.wAnOkEz1PsUKu.DqrastjCx2npbrJYr3r/2")
-JSONBIN_CAL_BIN = "6a249406f5f4af5e29c3fcaf"
+JSONBIN_MASTER_KEY = "$2a$10$rs9Sak4dqIbcRvK1M.wAnOkEz1PsUKu.DqrastjCx2npbrJYr3r/2"
+JSONBIN_CAL_BIN = "6a277510da38895dfe9d6de0"
 
 def load_user_data():
     """Load Welltory + Sleep data from data.json."""
@@ -29,7 +147,8 @@ def load_user_data():
     except:
         return {
             "welltory": {"stress": 50, "energy": 50, "health": 50},
-            "sleep": {"score": 85, "duration": "7h 0m", "hr_range": "50–70"}
+            "sleep": {"score": 85, "duration": "7h 0m", "hr_range": "50–70"},
+            "body_comp": {"weight": None, "body_fat": None, "muscle_mass": None, "bmi": None, "visceral_fat": None}
         }
 
 def get_weather():
@@ -43,6 +162,7 @@ def get_weather():
             desc = {0:"Clear sky",1:"Mainly clear",2:"Partly cloudy",3:"Overcast",45:"Foggy",51:"Light drizzle",61:"Slight rain",80:"Rain showers",95:"Thunderstorm"}.get(code, "Cloudy")
             return f"{desc}, {temp}°C"
     except Exception as e:
+        import traceback; traceback.print_exc()
         print(f"Weather fetch failed: {e}")
         return "Weather unavailable"
 
@@ -139,44 +259,473 @@ def get_calendar_events():
         }
 
     except Exception as e:
+        import traceback; traceback.print_exc()
         print(f"Calendar fetch failed: {e}")
         return {"today": "Calendar unavailable.", "week": "", "month": "", "week_structured": []}
 
 def push_calendar_to_jsonbin(week_structured):
-    """Push 7-day calendar events to JSONBin for Evening Debrief."""
-    if not JSONBIN_MASTER_KEY:
-        print("⚠️ No JSONBin master key — skipping calendar push")
-        return
+    """Embed calendar data into data.json for Evening Debrief."""
     try:
-        payload = json.dumps({"week": week_structured}).encode("utf-8")
-        req = urllib.request.Request(
-            f"https://api.jsonbin.io/v3/b/{JSONBIN_CAL_BIN}",
-            data=payload,
-            method="PUT"
-        )
-        req.add_header("Content-Type", "application/json")
-        req.add_header("X-Master-Key", JSONBIN_MASTER_KEY)
-        req.add_header("X-Bin-Versioning", "false")
-        with urllib.request.urlopen(req, timeout=10) as res:
-            print(f"✓ Calendar pushed to JSONBin ({len(week_structured)} events)")
+        try:
+            with open("data.json", "r") as f:
+                data = json.load(f)
+        except:
+            data = {}
+        data["calendar"] = week_structured
+        with open("data.json", "w", encoding="utf-8") as f:
+            json.dump(data, f)
+        print(f"✓ Calendar embedded in data.json ({len(week_structured)} events)")
     except Exception as e:
-        print(f"⚠️ JSONBin calendar push failed: {e}")
+        print(f"⚠️ Calendar embed failed: {e}")
 
 def get_character_quote(day_of_week):
-    characters = [
-        {"name": "Hannibal Smith", "quote": "You know, Murdock, sometimes the best plans are the ones that seem the craziest.", "show": "The A-Team", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/d/da/Hannibal_Smith.jpg/220px-Hannibal_Smith.jpg"},
-        {"name": "Zack Morris", "quote": "The more rules they make, the more ways I find to get around them.", "show": "Saved by the Bell", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/0/0f/Zack_Morris.jpg/220px-Zack_Morris.jpg"},
-        {"name": "Eddie Haskell", "quote": "Gee Beaver, I'd love to help, but something just came up that's ever so important.", "show": "Leave it to Beaver", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/3/32/Eddie_Haskell.jpg/220px-Eddie_Haskell.jpg"},
-        {"name": "Al Bundy", "quote": "I had it all once. Now I'm married with children. But I didn't have it all—I had something better.", "show": "Married... with Children", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/c/c5/Al_Bundy.jpg/220px-Al_Bundy.jpg"}
-    ]
-    return characters[day_of_week % len(characters)]
+    return CHARACTER_QUOTES[get_daily_index(len(CHARACTER_QUOTES))]
 
-def generate_html(welltory, sleep, weather, calendar_events):
-    now = datetime.now()
+
+
+WISDOM_POOLS = {
+    "self_defense": [
+        "Stance is survival. Feet shoulder-width, weight distributed, knees soft. Stability beats speed.",
+        "Distance is your friend. Create space before creating options. Never let aggression close the gap for free.",
+        "Don't block — redirect. Use their force, not yours. The smaller person wins on efficiency.",
+        "Eyes on the chest, not the hands. The torso telegraphs before the limbs move.",
+        "Strike through the target, not at it. Commitment is the difference between a bruise and a stop.",
+        "Verbal de-escalation is a weapon. Most fights are won before the first physical contact.",
+        "Your strongest weapon is your awareness. Danger avoided beats danger handled.",
+        "Train the thing you're worst at. Competence in weakness becomes your surprise.",
+        "After contact: disengage, create distance, assess. Don't stay in the pocket.",
+        "Breathing controls panic. Exhale on exertion. Three slow breaths resets the adrenal response.",
+        "Wrist grabs are releases, not fights. Rotate toward their thumb — it's always the weakest link.",
+        "Low kicks are underrated. Knees and shins don't train the way hands do. Target them.",
+        "Your loudest tool is your voice. It startles, commands space, and invites witnesses.",
+        "Control the head, control the body. Every restraint and escape starts there.",
+        "Train slow to perform fast. Muscle memory built at speed is sloppy muscle memory.",
+        "Never turn your back. Exit backward or sideways. Disengagement is not defeat.",
+        "The goal isn't to win — it's to get home. Everything is in service of that.",
+        "Choke defences first. It's the most likely attack and the most panicked response.",
+        "Soft targets: eyes, throat, knees, instep. You don't need power — you need precision.",
+        "Rest stance looks relaxed. Hands slightly raised, weight on back foot. Ready without telegraphing.",
+    ],
+    "parenting": [
+        "Listen more than talk. Your daughters don't need perfect — they need present.",
+        "They remember how you handled your mistakes more than the mistakes themselves.",
+        "Say their name before you say the thing. It opens the channel.",
+        "Your reaction to their failure sets their relationship with failure for life.",
+        "Get on their level physically when talking. Eye contact changes everything.",
+        "Don't rescue them from discomfort — sit with them in it. That's the skill.",
+        "Narrate your thinking out loud. They learn how to think by watching you do it.",
+        "Repair fast. A 10-minute rupture with a 2-minute repair is a net positive.",
+        "Ask what happened before you ask why. Why triggers defensiveness. What opens it.",
+        "Celebrate the effort, not the result. Outcome praise builds fragility.",
+        "Your calm is their nervous system regulator. Co-regulation before self-regulation.",
+        "Show them you change your mind when given good evidence. That's the most powerful lesson.",
+        "Notice the small things. The small things are the big things at their scale.",
+        "Don't over-explain. Say the thing once, clearly. Repetition teaches them to tune you out.",
+        "Create rituals. Predictability is safety. Safety is where growth happens.",
+        "Let them be bored. Boredom is the birthplace of creativity and self-reliance.",
+        "Apologize to them like you'd apologize to an adult. They feel the difference.",
+        "What you model about stress is what they'll carry into their own pressure moments.",
+        "Let them overhear you say something good about them to someone else.",
+        "The relationship is the discipline. Strong bond, minimal friction. Invest accordingly.",
+    ],
+    "fatherhood": [
+        "Model recovery. Show them that rest and saying 'not today' is strength.",
+        "They don't need a hero — they need a man who keeps showing up.",
+        "Your presence at the ordinary moments is the extraordinary gift.",
+        "Teach them to lose without collapse. Play games you occasionally let them win — and some you don't.",
+        "Work ethic is caught, not taught. Let them see you grind and rest in healthy proportion.",
+        "Name your emotions out loud. 'I'm frustrated right now' is parenting gold.",
+        "A father who reads makes readers. It's not what you say about books — it's what you do with them.",
+        "Their relationship with men starts with you. Build it consciously.",
+        "Ask them questions you don't know the answer to. Show them curiosity isn't weakness.",
+        "The car is a sacred space. Side-by-side conversation opens things that face-to-face won't.",
+        "Know their world well enough to ask a real question. Not 'how was school' — something specific.",
+        "Laughter is load-bearing. A family that laughs together has a reserve for the hard times.",
+        "Let them see you fail and try again. Perseverance modelled is perseverance transmitted.",
+        "Don't outsource your hard conversations to their mother. Own your half of the relationship.",
+        "Show up to the things that matter to them, not just the things that matter to you.",
+        "Physical affection has no expiry date. Keep it going through adolescence.",
+        "What you spend Saturday morning doing is the answer to 'what does Dad value'.",
+        "Teach them money is a tool, not a score. How you talk about it shapes their whole relationship.",
+        "Your daughters are watching how you treat women. The lesson is always live.",
+        "Be the person they run toward with good news. That means being safe with the bad news.",
+    ],
+    "mindset": [
+        "When the narrative starts: 'Story activated.' Drop it. Three words. Reset.",
+        "Discomfort is data. Ask what it's signalling before reacting to it.",
+        "The gap between stimulus and response is where your character lives. Widen it.",
+        "You don't rise to the level of your goals — you fall to the level of your systems.",
+        "Confidence is a post-action state, not a pre-condition. Do first. Feel it after.",
+        "Comparison is a rigged game. You're seeing their highlight reel against your blooper reel.",
+        "Identity drives behaviour. Ask: 'What would the Quiet Strategist do here?'",
+        "Most anxiety is future-projection. Bring it back to: what is actually true right now?",
+        "The hard conversation you're avoiding is the ceiling on your progress.",
+        "Inaction has a cost. Weigh the risk of doing against the certainty of staying stuck.",
+        "Your beliefs about your limits are more limiting than your actual limits.",
+        "Boredom is the body asking for a harder problem. Listen to it.",
+        "Emotion as information, not instruction. Feel it. Don't obey it.",
+        "What you rehearse in your mind, you perform under pressure. Choose your rehearsals.",
+        "Done is the engine of done better. Perfectionism is procrastination with a story.",
+        "The Operator executes. The Architect designs. Don't confuse which role the moment needs.",
+        "Resistance is the compass. The thing you're avoiding is usually the thing.",
+        "Slow is smooth. Smooth is fast. Urgency produces sloppiness. Pace produces leverage.",
+        "You can't think your way out of something you behaved your way into. Act first.",
+        "No story. Just this. Sensory data. Present moment. The rest is fiction.",
+    ],
+    "longevity": [
+        "3–4L water + electrolytes. Your immune system's operating capital. Log in Cal AI.",
+        "Sleep is the master variable. Everything else is noise when sleep is broken.",
+        "Zone 2 cardio: nasal breathing, conversational pace, 45–60 min. Non-negotiable base.",
+        "Protein first at every meal. 0.7–1g per pound of bodyweight. Everything else fills in around it.",
+        "Sunlight within 30 min of waking. Sets your cortisol curve and sleep pressure for the day.",
+        "HRV is your readiness report. When it drops, recovery — not grinding — is the right call.",
+        "Mobility is the tax on strength. Five minutes daily beats 60 minutes weekly.",
+        "The posterior tibial needs eccentric loading, not rest. Single-leg calf raises on a step.",
+        "Grip strength at 40+ is a longevity biomarker. Dead hangs, farmer carries, every week.",
+        "Time-restricted eating: 8–10 hour window. Your metabolic machinery needs the off-cycle.",
+        "Fibre is the unloved hero. 30–40g daily feeds the microbiome that regulates everything.",
+        "Cold exposure: face only in cold water for 30 seconds resets the vagal tone fast.",
+        "VO2 max is your life expectancy predictor. Improve it one hard cardio session per week.",
+        "Social connection is a health metric. Isolation has the same mortality risk as smoking.",
+        "Inflammatory foods age you visibly. Seed oils, ultra-processed, high sugar — identify and reduce.",
+        "Posture is a longevity habit. Forward head = compressed nerves, accelerated disc wear.",
+        "Alcohol math: even moderate use disrupts deep sleep architecture. Track the trade-off.",
+        "Leg strength in your 50s and 60s is built in your 40s. Keep the legs strong now.",
+        "Stress without recovery is the mechanism of accelerated aging. Recovery is not optional.",
+        "Annual bloodwork: fasting glucose, HbA1c, testosterone, Vitamin D, CRP. Know your numbers.",
+    ],
+    "life_hack": [
+        "Batch texts/emails. Check noon and 5 PM only. Attention is finite.",
+        "Decision fatigue is real. Automate the low-stakes choices so you're sharp for the high ones.",
+        "Two-minute rule: if it takes less than two minutes, do it now. The list is killing you.",
+        "Write the next action, not the project. 'Finish report' stalls. 'Open file, write intro' moves.",
+        "The phone in another room doubles deep work quality. Proximity is temptation.",
+        "Weekly review on Sunday evening. 20 minutes to plan clears the week's mental overhead.",
+        "Never leave a room empty-handed. Always be optimising the environment.",
+        "Friction removal is leverage. Make the good behaviour the path of least resistance.",
+        "Preparation is a multiplier. 10 minutes of prep the night before saves 40 minutes of morning chaos.",
+        "Name the mood before acting on it. 'I'm in a reactive state' changes what you do next.",
+        "High-value work in the first 90 minutes. That's your peak cortisol window. Don't waste it on email.",
+        "One hard thing before the thing you actually want to do. Momentum is sequential.",
+        "Capture everything externally. Your brain is for processing, not storage.",
+        "The calendar is a commitment device. If it's not scheduled, it's a wish.",
+        "Reduce optionality on the things that don't matter. Save choices for the things that do.",
+        "Say no to the good so you can say yes to the great. The word 'no' is a time machine.",
+        "Default to async. Meetings are a last resort, not a first response.",
+        "End each work block with a note of where you stopped and the next step. Re-entry costs you 15 min without it.",
+        "Temptation bundling: pair the thing you avoid with the thing you enjoy. Podcast only during walks.",
+        "Review your five paramount goals before bed. Primes the subconscious for the next day.",
+    ],
+}
+
+def get_wisdom(day_of_year):
+    """Return one tip per category, rotating by day of year."""
+    result = {}
+    for key, pool in WISDOM_POOLS.items():
+        result[key] = pool[day_of_year % len(pool)]
+    return result
+
+
+def get_sports_updates():
+    """Comprehensive sports intel: API for MLB/NHL/NFL, hardcoded for CFL/Soccer/Rugby/NLL."""
+    import urllib.request, json
+    from datetime import date, datetime, timedelta
+    import zoneinfo
+    PT = zoneinfo.ZoneInfo("America/Vancouver")
+
+    def espn_get(url):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=10) as r:
+                return json.loads(r.read().decode())
+        except Exception as e:
+            print(f"ESPN fetch failed ({url}): {e}")
+            return None
+
+    def extract_score(raw):
+        if raw is None: return "?"
+        if isinstance(raw, dict): return str(raw.get("displayValue", raw.get("value", "?")))
+        return str(raw)
+
+    def to_pt(dt_str):
+        dt = datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
+        return dt.astimezone(PT)
+
+    def parse_game(date_str, time_str):
+        """Parse a game date/time string into a date object. date_str: 'YYYY-MM-DD', time_str: 'H:MM PM PT'"""
+        try:
+            return datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %I:%M %p PT").replace(tzinfo=PT)
+        except:
+            try:
+                return datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=PT)
+            except:
+                return None
+
+    today = datetime.now(PT).date()
+    lines = []
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # BC LIONS 2026 SCHEDULE (hardcoded — ESPN CFL API broken for 2026)
+    # All times PT. Source: CFL.ca / sportshistori.com
+    # ══════════════════════════════════════════════════════════════════════════
+    BC_LIONS = [
+        # (date, time_pt, home_away, opponent, location)
+        ("2026-06-13", "2:00 PM", "@", "Saskatchewan Roughriders", "Mosaic Stadium"),
+        ("2026-06-19", "2:30 PM", "@", "Hamilton Tiger-Cats", "Tim Hortons Field"),
+        ("2026-06-27", "4:00 PM", "vs", "Calgary Stampeders", "Apple Bowl, Kelowna"),
+        ("2026-07-04", "4:00 PM", "vs", "Edmonton Elks", "Apple Bowl, Kelowna"),
+        ("2026-07-25", "4:00 PM", "vs", "Toronto Argonauts", "BC Place, Vancouver"),
+        ("2026-08-08", "4:00 PM", "vs", "Hamilton Tiger-Cats", "BC Place, Vancouver"),
+        ("2026-08-23", "4:00 PM", "vs", "Saskatchewan Roughriders", "BC Place, Vancouver"),
+        ("2026-09-12", "4:00 PM", "vs", "Montreal Alouettes", "BC Place, Vancouver"),
+        ("2026-09-25", "4:00 PM", "vs", "Saskatchewan Roughriders", "BC Place, Vancouver"),
+        ("2026-10-09", "4:00 PM", "vs", "Ottawa Redblacks", "BC Place, Vancouver"),
+        ("2026-10-23", "4:00 PM", "vs", "Winnipeg Blue Bombers", "BC Place, Vancouver"),
+    ]
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # ALL CFL WEEK 2 GAMES TODAY (hardcoded — ESPN API broken)
+    # Source: CFL.ca Week 2 schedule
+    # ══════════════════════════════════════════════════════════════════════════
+    CFL_SCHEDULE = [
+        # (date, time_pt, away, home)
+        ("2026-06-04", "4:00 PM", "Montreal Alouettes", "Hamilton Tiger-Cats"),
+        ("2026-06-05", "4:30 PM", "Winnipeg Blue Bombers", "Calgary Stampeders"),
+        ("2026-06-06", "4:00 PM", "Ottawa Redblacks", "Edmonton Elks"),
+        ("2026-06-11", "5:30 PM", "Hamilton Tiger-Cats", "Winnipeg Blue Bombers"),
+        ("2026-06-12", "2:00 PM", "Toronto Argonauts", "Montreal Alouettes"),
+        ("2026-06-13", "2:00 PM", "BC Lions", "Saskatchewan Roughriders"),
+        ("2026-06-19", "2:30 PM", "BC Lions", "Hamilton Tiger-Cats"),
+        ("2026-06-19", "4:00 PM", "Ottawa Redblacks", "Toronto Argonauts"),
+        ("2026-06-20", "4:00 PM", "Calgary Stampeders", "Edmonton Elks"),
+        ("2026-06-20", "5:30 PM", "Saskatchewan Roughriders", "Winnipeg Blue Bombers"),
+        ("2026-06-25", "4:00 PM", "Hamilton Tiger-Cats", "Ottawa Redblacks"),
+        ("2026-06-26", "2:00 PM", "Montreal Alouettes", "Toronto Argonauts"),
+        ("2026-06-27", "4:00 PM", "Calgary Stampeders", "BC Lions"),  # Kelowna
+        ("2026-06-27", "5:30 PM", "Edmonton Elks", "Saskatchewan Roughriders"),
+        ("2026-07-01", "1:00 PM", "Winnipeg Blue Bombers", "Ottawa Redblacks"),
+        ("2026-07-04", "4:00 PM", "Edmonton Elks", "BC Lions"),  # Kelowna
+        ("2026-07-04", "5:00 PM", "Saskatchewan Roughriders", "Calgary Stampeders"),
+        ("2026-07-10", "4:00 PM", "Toronto Argonauts", "Hamilton Tiger-Cats"),
+        ("2026-07-10", "5:30 PM", "Ottawa Redblacks", "Montreal Alouettes"),
+        ("2026-07-11", "4:30 PM", "Winnipeg Blue Bombers", "Edmonton Elks"),
+    ]
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # CANADA SOCCER — FIFA WORLD CUP 2026
+    # Source: FIFA / Canada Soccer official. All times PT.
+    # ══════════════════════════════════════════════════════════════════════════
+    CANADA_SOCCER = [
+        ("2026-06-12", "12:00 PM", "Canada", "Bosnia and Herzegovina", "BMO Field, Toronto"),
+        ("2026-06-18", "3:00 PM", "Canada", "Qatar", "BC Place, Vancouver"),
+        ("2026-06-24", "TBD", "Canada", "Switzerland", "TBD"),
+        # Round of 32 onwards — TBD based on group results
+    ]
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # CANADA RUGBY — WORLD RUGBY NATIONS CUP 2026
+    # Source: Rugby Canada. All times PT.
+    # ══════════════════════════════════════════════════════════════════════════
+    CANADA_RUGBY = [
+        ("2026-07-04", "4:00 PM", "Canada", "Spain", "Clarke Stadium, Edmonton"),
+        ("2026-07-11", "1:45 PM", "Canada", "Portugal", "Clarke Stadium, Edmonton"),
+        ("2026-07-18", "1:45 PM", "Canada", "Zimbabwe", "Princess Auto Stadium, Winnipeg"),
+    ]
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # BUILD OUTPUT
+    # ══════════════════════════════════════════════════════════════════════════
+
+    # ── CFL Games Today ───────────────────────────────────────────────────────
+    todays_cfl = [(a, h, t) for d, t, a, h in CFL_SCHEDULE if d == str(today)]
+    if todays_cfl:
+        lines.append("🏈 CFL TODAY:")
+        for away, home, time_pt in todays_cfl:
+            lines.append(f"  {away} @ {home} — {time_pt}")
+
+    # ── BC Lions ──────────────────────────────────────────────────────────────
+    lions_today = [(ha, opp, loc, t) for d, t, ha, opp, loc in BC_LIONS if d == str(today)]
+    lions_next = next(((d, t, ha, opp, loc) for d, t, ha, opp, loc in BC_LIONS
+                       if datetime.strptime(d, "%Y-%m-%d").date() > today), None)
+    if lions_today:
+        for ha, opp, loc, t in lions_today:
+            lines.append(f"🦁 BC LIONS TODAY: {ha} {opp} — {t} | {loc}")
+    elif lions_next:
+        d, t, ha, opp, loc = lions_next
+        dt = datetime.strptime(d, "%Y-%m-%d")
+        lines.append(f"🦁 BC Lions next: {ha} {opp} — {dt.strftime('%a %b %d')} {t}")
+    else:
+        lines.append("🦁 BC Lions — Season complete")
+
+    # ── Blue Jays ─────────────────────────────────────────────────────────────
+    try:
+        data = espn_get("https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/teams/14/schedule?season=2026")
+        if data:
+            events = data.get("events", [])
+            recent = next((e for e in reversed(events) if e.get("competitions") and
+                           to_pt(e["date"]).date() < today), None)
+            upcoming = next((e for e in events if e.get("competitions") and
+                             to_pt(e["date"]).date() >= today), None)
+            if recent:
+                comp = recent["competitions"][0]
+                teams = {t["team"]["abbreviation"]: t for t in comp["competitors"]}
+                jays = teams.get("TOR", {})
+                opp_abbr = [k for k in teams if k != "TOR"]
+                opp = teams.get(opp_abbr[0], {}) if opp_abbr else {}
+                jays_score = extract_score(jays.get("score"))
+                opp_score = extract_score(opp.get("score"))
+                result_str = "✅ W" if jays.get("winner") else "❌ L"
+                game_date = to_pt(recent["date"]).strftime("%b %d")
+                lines.append(f"⚾ Blue Jays {result_str} {jays_score}–{opp_score} vs {opp.get('team',{}).get('abbreviation','?')} ({game_date})")
+            if upcoming:
+                comp = upcoming["competitions"][0]
+                opp = next((t for t in comp["competitors"] if t["team"]["abbreviation"] != "TOR"), {})
+                home_away = "vs" if next((t for t in comp["competitors"] if t["team"]["abbreviation"]=="TOR"),{}).get("homeAway")=="home" else "@"
+                dt_pt = to_pt(upcoming["date"])
+                if dt_pt.date() == today:
+                    lines.append(f"⚾ Blue Jays TODAY: {home_away} {opp.get('team',{}).get('displayName','?')} — {dt_pt.strftime('%-I:%M %p PT')}")
+                else:
+                    lines.append(f"⚾ Blue Jays next: {home_away} {opp.get('team',{}).get('displayName','?')} — {dt_pt.strftime('%a %b %d %-I:%M %p PT')}")
+    except Exception as e:
+        print(f"Jays error: {e}")
+
+    # ── Vancouver Canadians (MiLB) ────────────────────────────────────────────
+    try:
+        data = espn_get("https://site.api.espn.com/apis/site/v2/sports/baseball/milb/teams/van/schedule?season=2026")
+        if not data:
+            # Try alternate MiLB endpoint
+            req = urllib.request.Request(
+                "https://bdfed.stitch.mlbinfra.com/bdfed/transform-milb-schedule?stitch_env=prod&season=2026&teamId=578&sportId=12&gameType=R&startDate=2026-06-01&endDate=2026-08-31&hydrate=team,linescore",
+                headers={"User-Agent": "Mozilla/5.0"}
+            )
+            with urllib.request.urlopen(req, timeout=10) as r:
+                data = json.loads(r.read().decode())
+        if data:
+            dates = data.get("dates", [])
+            for game_date_obj in dates:
+                game_date_str = game_date_obj.get("date", "")
+                try:
+                    gd = datetime.strptime(game_date_str, "%Y-%m-%d").date()
+                except:
+                    continue
+                if gd == today:
+                    for g in game_date_obj.get("games", []):
+                        away = g.get("teams", {}).get("away", {}).get("team", {}).get("name", "?")
+                        home = g.get("teams", {}).get("home", {}).get("team", {}).get("name", "?")
+                        game_time = g.get("gameDate", "")
+                        if game_time:
+                            try:
+                                gt = datetime.fromisoformat(game_time.replace("Z", "+00:00")).astimezone(PT)
+                                lines.append(f"⚾ C's TODAY: {away} @ {home} — {gt.strftime('%-I:%M %p PT')}")
+                            except:
+                                lines.append(f"⚾ C's TODAY: {away} @ {home}")
+                    break
+                elif gd > today:
+                    for g in game_date_obj.get("games", []):
+                        away = g.get("teams", {}).get("away", {}).get("team", {}).get("name", "?")
+                        home = g.get("teams", {}).get("home", {}).get("team", {}).get("name", "?")
+                        game_time = g.get("gameDate", "")
+                        if game_time:
+                            try:
+                                gt = datetime.fromisoformat(game_time.replace("Z", "+00:00")).astimezone(PT)
+                                lines.append(f"⚾ C's next: {away} @ {home} — {gt.strftime('%a %b %d %-I:%M %p PT')}")
+                            except:
+                                lines.append(f"⚾ C's next: {away} @ {home} — {game_date_str}")
+                    break
+    except Exception as e:
+        print(f"Canadians error: {e}")
+        lines.append("⚾ Vancouver Canadians — schedule unavailable")
+
+    # ── Canada Soccer World Cup ───────────────────────────────────────────────
+    soccer_today = [(t, opp, venue) for d, t, _, opp, venue in CANADA_SOCCER if d == str(today)]
+    soccer_next = next(((d, t, _, opp, venue) for d, t, _, opp, venue in CANADA_SOCCER
+                        if datetime.strptime(d, "%Y-%m-%d").date() >= today), None)
+    if soccer_today:
+        for t, opp, venue in soccer_today:
+            lines.append(f"⚽ CANADA SOCCER TODAY (World Cup): vs {opp} — {t} | {venue}")
+    elif soccer_next:
+        d, t, _, opp, venue = soccer_next
+        dt = datetime.strptime(d, "%Y-%m-%d")
+        days_away = (dt.date() - today).days
+        if days_away <= 7:
+            lines.append(f"⚽ Canada Soccer (WC): vs {opp} — {dt.strftime('%a %b %d')} {t} | {venue}")
+
+    # ── Canada Rugby ─────────────────────────────────────────────────────────
+    rugby_today = [(t, opp, venue) for d, t, _, opp, venue in CANADA_RUGBY if d == str(today)]
+    rugby_next = next(((d, t, opp, venue) for d, t, _, opp, venue in CANADA_RUGBY
+                       if datetime.strptime(d, "%Y-%m-%d").date() >= today), None)
+    if rugby_today:
+        for t, opp, venue in rugby_today:
+            lines.append(f"🏉 CANADA RUGBY TODAY: vs {opp} — {t} | {venue}")
+    elif rugby_next:
+        d, t, opp, venue = rugby_next
+        dt = datetime.strptime(d, "%Y-%m-%d")
+        days_away = (dt.date() - today).days
+        if days_away <= 14:
+            lines.append(f"🏉 Canada Rugby next: vs {opp} — {dt.strftime('%a %b %d')} {t}")
+
+    # ── Canucks ───────────────────────────────────────────────────────────────
+    try:
+        data = espn_get("https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/teams/23/schedule?season=2027")
+        if data:
+            events = data.get("events", [])
+            upcoming = next((e for e in events if to_pt(e["date"]).date() >= today), None)
+            if upcoming:
+                comp = upcoming["competitions"][0]
+                opp = next((t for t in comp["competitors"] if t["team"]["abbreviation"] != "VAN"), {})
+                lines.append(f"🏒 Canucks next: vs {opp.get('team',{}).get('displayName','?')} — {to_pt(upcoming['date']).strftime('%a %b %d')}")
+            else:
+                lines.append("🏒 Canucks — Offseason (next season Oct 2026)")
+        else:
+            lines.append("🏒 Canucks — Offseason (next season Oct 2026)")
+    except Exception as e:
+        lines.append("🏒 Canucks — Offseason (next season Oct 2026)")
+
+    # ── Offseason notes ───────────────────────────────────────────────────────
+    lines.append("🏒 Vancouver Goldeneyes (PWHL) — Offseason (next season Nov 2026 | Pacific Coliseum)")
+    lines.append("🏴󠁧󠁢󠁳󠁣󠁴󠁿 Glasgow Rangers — Offseason (new season Aug 2, 2026)")
+    lines.append("🥍 Vancouver Warriors — Offseason (NLL season Nov 2026)")
+    lines.append("🏈 Las Vegas Raiders — Offseason (NFL preseason Aug 2026)")
+
+    # ── UFC Fighter Tracking ──────────────────────────────────────────────────
+    UFC_FIGHTERS = [
+        ("Sean Strickland", "W def. Chimaev (Split Dec) UFC 328 May 9 — MW CHAMP", "No next fight announced"),
+        ("Chris Duncan",    "L sub R2 to Moicano UFC FN Mar 30",                   "No next fight announced"),
+        ("Mike Malott",     "W KO R3 vs Burns UFC FN Winnipeg Apr 18",              "No next fight announced"),
+        ("Conor McGregor",  "Inactive — no 2026 bout",                               "No next fight announced"),
+    ]
+    lines.append("\n🥊 UFC Fighter Watch:")
+    for name, last, nxt in UFC_FIGHTERS:
+        lines.append(f"  {name}: {last} | Next: {nxt}")
+
+    # ── UFC ───────────────────────────────────────────────────────────────────
+    try:
+        data = espn_get("https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard")
+        if data:
+            events = data.get("events", [])
+            if events:
+                e = events[0]
+                dt_pt = to_pt(e["date"])
+                if dt_pt.date() == today:
+                    lines.append(f"🥊 UFC TODAY: {e.get('name','Event')}")
+                else:
+                    lines.append(f"🥊 UFC next: {e.get('name','Event')} — {dt_pt.strftime('%a %b %d')}")
+    except Exception as e:
+        print(f"UFC error: {e}")
+
+    if not lines:
+        return "No sports data available."
+    return "\n".join(lines)
+
+def generate_html(welltory, sleep, weather, calendar_events, week_structured=None, body_comp=None):
+    now = now_pt()
     day_name = now.strftime("%A")
     date_str = now.strftime("%B %d, %Y")
     time_str = now.strftime("%I:%M %p")
     day_of_week = now.weekday()
+    day_of_year = now.timetuple().tm_yday
+    wisdom = get_wisdom(day_of_year)
+    sports_text = get_sports_updates()
 
     stress_status = "Elevated" if welltory["stress"] >= 60 else "Moderate" if welltory["stress"] >= 40 else "Low"
     energy_status = "High" if welltory["energy"] >= 60 else "Moderate" if welltory["energy"] >= 40 else "Limited"
@@ -194,9 +743,46 @@ def generate_html(welltory, sleep, weather, calendar_events):
 
     char = get_character_quote(day_of_week)
 
+    cal_json = json.dumps(week_structured or [])
     cal_today = calendar_events.get("today", "No events today.")
+    if body_comp is None:
+        body_comp = {}
+    bc_weight      = body_comp.get("weight")
+    bc_fat         = body_comp.get("body_fat")
+    bc_muscle      = body_comp.get("muscle_mass")
+    bc_bmi         = body_comp.get("bmi")
+    bc_visceral    = body_comp.get("visceral_fat")
+    bc_has_data    = any(v is not None for v in [bc_weight, bc_fat, bc_muscle, bc_bmi, bc_visceral])
+    wisdom_self_defense = wisdom["self_defense"]
+    wisdom_parenting = wisdom["parenting"]
+    wisdom_fatherhood = wisdom["fatherhood"]
+    wisdom_mindset = wisdom["mindset"]
+    wisdom_longevity = wisdom["longevity"]
+    wisdom_life_hack = wisdom["life_hack"]
+    sports_section = sports_text
+    stoic = STOIC_QUOTES[get_daily_index(len(STOIC_QUOTES))]
+    stoic_quote = stoic["text"]; stoic_source = stoic["source"]
+    jlpt = JLPT_WORDS[get_daily_index(len(JLPT_WORDS))]
+    jlpt_word = jlpt["word"]; jlpt_level = jlpt["level"]; jlpt_meaning = jlpt["meaning"]
+    jlpt_example = jlpt["example"]; jlpt_translation = jlpt["translation"]
+    art = ART_ENTRIES[get_daily_index(len(ART_ENTRIES))]
+    art_title = art["title"]; art_url = art["url"]
+    music = MUSIC_ENTRIES[get_daily_index(len(MUSIC_ENTRIES))]
+    music_title = music["title"]; music_spotify = music["spotify"]; music_youtube = music["youtube"]
     cal_week = calendar_events.get("week", "No events this week.")
     cal_month = calendar_events.get("month", "No events this month.")
+
+    # Build body comp content
+    if bc_has_data:
+        bc_rows = ""
+        if bc_weight   is not None: bc_rows += f'<div class="stat-block"><div class="stat-val">{bc_weight}</div><div class="stat-label">Weight (kg)</div></div>'
+        if bc_fat      is not None: bc_rows += f'<div class="stat-block"><div class="stat-val">{bc_fat}%</div><div class="stat-label">Body Fat</div></div>'
+        if bc_muscle   is not None: bc_rows += f'<div class="stat-block"><div class="stat-val">{bc_muscle}</div><div class="stat-label">Muscle (kg)</div></div>'
+        if bc_bmi      is not None: bc_rows += f'<div class="stat-block"><div class="stat-val">{bc_bmi}</div><div class="stat-label">BMI</div></div>'
+        if bc_visceral is not None: bc_rows += f'<div class="stat-block"><div class="stat-val">{bc_visceral}</div><div class="stat-label">Visceral Fat</div></div>'
+        body_comp_content = f'<div class="stat-row" style="grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));">{bc_rows}</div>'
+    else:
+        body_comp_content = '<div class="mini-card"><div class="mini-detail">No body comp data yet. <a href="input.html">Enter via input form →</a></div></div>'
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -290,8 +876,8 @@ def generate_html(welltory, sleep, weather, calendar_events):
   </div>
 
   <div class="motd-box">
-    <div class="motd-text">"You have power over your mind—not outside events. Realize this, and you will find strength."</div>
-    <div class="motd-source">— Marcus Aurelius, Meditations</div>
+    <div class="motd-text">"{stoic_quote}"</div>
+    <div class="motd-source">— {stoic_source}</div>
   </div>
 
   <div class="character-quote-box">
@@ -407,6 +993,11 @@ def generate_html(welltory, sleep, weather, calendar_events):
   </div>
 
   <div class="card">
+    <div class="card-header"><span class="card-icon">⚖️🌴</span><span>Body Composition</span></div>
+    {body_comp_content}
+  </div>
+
+  <div class="card">
     <div class="card-header"><span class="card-icon">🌤️🌴</span><span>Richmond Weather</span></div>
     <div class="mini-card"><div class="mini-detail">{weather}</div></div>
   </div>
@@ -432,23 +1023,28 @@ def generate_html(welltory, sleep, weather, calendar_events):
   <div class="card">
     <div class="card-header"><span class="card-icon">💡🌴</span><span>Quick Actionable Wisdom</span></div>
     <div class="advice-grid">
-      <div class="advice-item"><div class="advice-label">🥋 Self-Defense</div><div class="advice-text">Stance is survival. Feet shoulder-width, weight distributed, knees soft. Stability beats speed.</div></div>
-      <div class="advice-item"><div class="advice-label">👨‍👧‍👦 Parenting</div><div class="advice-text">Listen more than talk. Your daughters don't need perfect—they need present.</div></div>
-      <div class="advice-item"><div class="advice-label">👨 Fatherhood</div><div class="advice-text">Model recovery. Show them that rest and saying "not today" is strength.</div></div>
-      <div class="advice-item"><div class="advice-label">🧠 Mindset</div><div class="advice-text">When the narrative starts: "Story activated." Drop it. Three words. Reset.</div></div>
-      <div class="advice-item"><div class="advice-label">⏳ Longevity</div><div class="advice-text">3–4L water + electrolytes. Your immune system's operating capital. Log in Cal AI.</div></div>
-      <div class="advice-item"><div class="advice-label">⚡ Life Hack</div><div class="advice-text">Batch texts/emails. Check noon and 5 PM only. Attention is finite.</div></div>
+      <div class="advice-item"><div class="advice-label">🥋 Self-Defense</div><div class="advice-text">{wisdom_self_defense}</div></div>
+      <div class="advice-item"><div class="advice-label">👨‍👧‍👦 Parenting</div><div class="advice-text">{wisdom_parenting}</div></div>
+      <div class="advice-item"><div class="advice-label">👨 Fatherhood</div><div class="advice-text">{wisdom_fatherhood}</div></div>
+      <div class="advice-item"><div class="advice-label">🧠 Mindset</div><div class="advice-text">{wisdom_mindset}</div></div>
+      <div class="advice-item"><div class="advice-label">⏳ Longevity</div><div class="advice-text">{wisdom_longevity}</div></div>
+      <div class="advice-item"><div class="advice-label">⚡ Life Hack</div><div class="advice-text">{wisdom_life_hack}</div></div>
     </div>
+  </div>
+
+
+  <div class="card">
+    <div class="card-header"><span class="card-icon">🏆🌴</span><span>Sports Intel</span></div>
+    <div class="mini-card"><div class="mini-detail" style="white-space:pre-wrap; font-size:14px; line-height:1.8;">{sports_section}</div></div>
   </div>
 
   <div class="card">
     <div class="card-header"><span class="card-icon">🇯🇵🌴</span><span>Japanese Word of the Day</span></div>
     <div class="mini-card">
-      <div class="mini-title">今日の言葉: 刹那 (Setsuna) — JLPT N1</div>
+      <div class="mini-title">今日の言葉: {jlpt_word} — JLPT {jlpt_level}</div>
       <div class="mini-detail">
-        A fleeting moment; the infinitesimal instant.<br>
-        人生は刹那の連続だ = "Life is a succession of fleeting moments."<br>
-        <strong>Today:</strong> Recovery happens setsuna by setsuna.
+        {jlpt_meaning}<br>
+        {jlpt_example} = "{jlpt_translation}"
       </div>
     </div>
   </div>
@@ -456,18 +1052,38 @@ def generate_html(welltory, sleep, weather, calendar_events):
   <div class="card">
     <div class="card-header"><span class="card-icon">🎨🌴</span><span>Art & Music</span></div>
     <div class="mini-card">
-      <div class="mini-title">🎨 Kusama Yayoi — Infinity Mirror Room</div>
+      <div class="mini-title">🎨 {art_title}</div>
       <div class="mini-detail">
-        <a href="https://artsandculture.google.com/search?q=kusama+infinity+mirror" target="_blank">Google Arts & Culture →</a> &nbsp;
-        <a href="https://www.guggenheim.org/exhibitions/yayoi-kusama" target="_blank">Guggenheim →</a>
+        <a href="{art_url}" target="_blank">Google Arts & Culture →</a>
       </div>
     </div>
     <div class="mini-card">
-      <div class="mini-title">🎵 Sarcófago — I.N.R.I. (1987)</div>
+      <div class="mini-title">🎵 {music_title}</div>
       <div class="mini-detail">
-        <a href="https://open.spotify.com/search/sarcofago%20inri" target="_blank">Spotify →</a> &nbsp;
-        <a href="https://music.youtube.com/search?q=sarcofago+inri" target="_blank">YouTube Music →</a>
+        <a href="{music_spotify}" target="_blank">Spotify →</a> &nbsp;
+        <a href="{music_youtube}" target="_blank">YouTube Music →</a>
       </div>
+    </div>
+  </div>
+
+
+  <div class="card">
+    <div class="card-header"><span class="card-icon">🎸🌴</span><span>Upcoming Metal Shows</span></div>
+    <div class="mini-card">
+      <div class="mini-title">🎸 JUNE 14 · Napalm Death + Primitive Man</div>
+      <div class="mini-detail">The Pearl, Vancouver · Death metal legends</div>
+    </div>
+    <div class="mini-card">
+      <div class="mini-title">🎸 JUNE 25 · Anvil + Midnite Hellion</div>
+      <div class="mini-detail">El Corazon, Seattle</div>
+    </div>
+    <div class="mini-card">
+      <div class="mini-title">🎸 JUNE 27 · Anvil + Midnite Hellion</div>
+      <div class="mini-detail">Astoria, Vancouver</div>
+    </div>
+    <div class="mini-card">
+      <div class="mini-title">🎸 JULY 8 · Jinjer + Entheos + Crystal Lake</div>
+      <div class="mini-detail">Commodore Ballroom, Vancouver</div>
     </div>
   </div>
 
@@ -516,6 +1132,7 @@ function tick() {{
     el.textContent = now.toLocaleTimeString('en-US', {{hour:'2-digit',minute:'2-digit'}});
   }}
 }}
+window.FORGE_CALENDAR = {cal_json};
 window.onload = function() {{ loadCounts(); setInterval(tick, 1000); }};
 </script>
 </body>
@@ -528,6 +1145,7 @@ def main():
     user_data = load_user_data()
     welltory = user_data.get("welltory", {"stress": 50, "energy": 50, "health": 50})
     sleep = user_data.get("sleep", {"score": 85, "duration": "7h 0m", "hr_range": "50–70"})
+    body_comp = user_data.get("body_comp", {"weight": None, "body_fat": None, "muscle_mass": None, "bmi": None, "visceral_fat": None})
     
     print(f"✓ Loaded user data: Stress {welltory['stress']}%, Energy {welltory['energy']}%, Health {welltory['health']}%")
     
@@ -538,7 +1156,7 @@ def main():
     if calendar.get("week_structured"):
         push_calendar_to_jsonbin(calendar["week_structured"])
     
-    html = generate_html(welltory, sleep, weather, calendar)
+    html = generate_html(welltory, sleep, weather, calendar, calendar.get("week_structured", []), body_comp)
     
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(html)

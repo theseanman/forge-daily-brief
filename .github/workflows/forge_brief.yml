@@ -4,7 +4,16 @@ on:
   schedule:
     # 6 AM Pacific = 14:00 UTC (adjusts for PDT)
     - cron: '0 14 * * *'
+  push:
+    branches:
+      - gh-pages
+    paths:
+      - data.json
   workflow_dispatch:
+
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: false
     # Allow manual trigger from GitHub website
 
 jobs:
@@ -24,19 +33,27 @@ jobs:
       
       - name: Install dependencies
         run: |
+          pwd
+          ls -la
           pip install caldav vobject
       
       - name: Generate brief
         env:
           ICLOUD_EMAIL: ${{ secrets.ICLOUD_EMAIL }}
           ICLOUD_PASSWORD: ${{ secrets.ICLOUD_PASSWORD }}
+          JSONBIN_MASTER_KEY: ${{ secrets.JSONBIN_MASTER_KEY }}
         run: |
+          pwd
+          ls -la
           python forge_actions.py
       
       - name: Commit and push index.html
         run: |
+          pwd
+          ls -la
           git config user.name "FORGE OS Bot"
           git config user.email "forge@theseanman.github.io"
-          git add index.html
+          ls -la calendar.json || echo "MISSING"
+          git add -f index.html data.json
           git diff --staged --quiet || git commit -m "FORGE Brief $(date +'%b %d %Y')"
           git push origin gh-pages
