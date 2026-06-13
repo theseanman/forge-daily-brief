@@ -221,6 +221,77 @@ def fetch_events_structured(calendars, start, end):
     # Remove sort_key from final output
     return [{"date": e["date"], "time": e["time"], "title": e["title"]} for e in all_events]
 
+
+SUBSCRIBED_ICS_URLS = [
+    ("Physio Steveston", "https://physiosteveston.janeapp.com/ical/kl9n5cYxfi2zzYub3Mw7/appointments.ics"),
+    ("Doctor", "https://p147-caldav.icloud.com/published/2/MjA4NzgzMDU5MjA4NzgzMKp8OzvkKcO0VBjXnAPWsZ3_SOkZblhgb63Ap9fXTp8mTVpP7f2Zhhi6oPiqkT8_u9GgW7cNm2tkWygB88NaKao"),
+    ("UFC Events", "https://raw.githubusercontent.com/clarencechaan/ufc-cal/ics/UFC.ics"),
+    ("Austria Vancouver", "https://austriavancouverclub.ca/?post_type=tribe_events&ical=1&eventDisplay=list"),
+    ("Ringette", "https://api3.rampinteractive.com/teamapp/Calendar/GetCalendar/America-Vancouver/3178874,3178962/0"),
+    ("Doctor 2", "https://p147-caldav.icloud.com/published/2/MjA4NzgzMDU5MjA4NzgzMKp8OzvkKcO0VBjXnAPWsZ3QfUpZTMmqDhS1RS2Q4Unql2HwH_zVrF_S7pswdX5EkPscxgI5CxoYg1ulgXc7ME0"),
+    ("Richmond Blundell Physio", "https://richmondblundellphysio.janeapp.com/ical/yphai5OwEVtmTOppT6Fx/appointments.ics"),
+    ("ONE Championship", "https://calendar.onefc.com/ONE-Championship-events.ics"),
+    ("Brighouse School", "https://brighouse.sd38.bc.ca/calendar-feed.ics"),
+]
+
+def fetch_ics_events(start_dt, end_dt):
+    import urllib.request
+    import re as _re
+    import zoneinfo as _zi
+    from datetime import datetime, timezone as _tz
+    PT = _zi.ZoneInfo("America/Vancouver")
+    all_events = []
+
+    for feed_name, url in SUBSCRIBED_ICS_URLS:
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=10) as r:
+                raw = r.read().decode("utf-8", errors="ignore")
+
+            blocks = raw.split("BEGIN:VEVENT")
+            for block in blocks[1:]:
+                try:
+                    summary = feed_name
+                    for line in block.splitlines():
+                        if line.startswith("SUMMARY:"):
+                            summary = line[8:].strip()
+                            break
+
+                    dtstart_raw = ""
+                    for line in block.splitlines():
+                        if line.startswith("DTSTART"):
+                            dtstart_raw = line.split(":", 1)[-1].strip()
+                            break
+
+                    if not dtstart_raw:
+                        continue
+
+                    if _re.match(r"^\d{8}$", dtstart_raw):
+                        dt = datetime.strptime(dtstart_raw, "%Y%m%d").date()
+                        dt_sort = datetime.combine(dt, datetime.min.time()).replace(tzinfo=PT)
+                        label = f"{summary} -- {dt.strftime('%a %b %d')} (All Day) [{feed_name}]"
+                    elif dtstart_raw.endswith("Z"):
+                        dt_sort = datetime.strptime(dtstart_raw, "%Y%m%dT%H%M%SZ").replace(tzinfo=_tz.utc).astimezone(PT)
+                        label = f"{summary} @ {dt_sort.strftime('%a %b %d, %I:%M %p')} [{feed_name}]"
+                    elif "T" in dtstart_raw and len(dtstart_raw) >= 15:
+                        dt_sort = datetime.strptime(dtstart_raw[:15], "%Y%m%dT%H%M%S").replace(tzinfo=PT)
+                        label = f"{summary} @ {dt_sort.strftime('%a %b %d, %I:%M %p')} [{feed_name}]"
+                    else:
+                        continue
+
+                    if start_dt <= dt_sort < end_dt:
+                        all_events.append((dt_sort.isoformat(), label))
+
+                except Exception:
+                    continue
+
+        except Exception as e:
+            print(f"ICS fetch failed ({feed_name}): {e}")
+            continue
+
+    all_events.sort(key=lambda x: x[0])
+    return [e[1] for e in all_events]
+
 def get_calendar_events():
     """Fetch today, week, and 7-day structured events from iCloud via CalDAV."""
     if not ICLOUD_PASSWORD:
@@ -251,7 +322,15 @@ def get_calendar_events():
         month_events = fetch_events_for_range(calendars, today_start, month_end)
         week_structured = fetch_events_structured(calendars, today_start, week_end)
 
-        print(f"✓ Today: {len(today_events)} | Week: {len(week_events)} | Month: {len(month_events)} events")
+        # Fetch subscribed ICS calendars and merge
+        ics_today = fetch_ics_events(today_start, today_end)
+        ics_week = fetch_ics_events(today_start, week_end)
+        ics_month = fetch_ics_events(today_start, month_end)
+        today_events = today_events + ics_today
+        week_events = week_events + ics_week
+        month_events = month_events + ics_month
+
+        print(f"✓ Today: {len(today_events)} | Week: {len(week_events)} | Month: {len(month_events)} events (ICS: {len(ics_today)} today)")
 
         return {
             "today": "\n".join(today_events) if today_events else "No events today.",
