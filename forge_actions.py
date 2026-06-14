@@ -823,9 +823,32 @@ def get_sports_updates():
     return "\n".join(lines)
 
 
+
+CLOUDFLARE_WORKER_URL = "https://forge-input.yoseanreid.workers.dev"
+
+def fetch_reminders():
+    """Fetch Active This Week reminders via Cloudflare Worker proxy."""
+    try:
+        req = urllib.request.Request(
+            f"{CLOUDFLARE_WORKER_URL}/reminders",
+            headers={"User-Agent": "FORGE-Actions"}
+        )
+        with urllib.request.urlopen(req, timeout=10) as r:
+            data = json.loads(r.read().decode())
+        # Data is a dict with a "week" key containing newline-separated reminders
+        week_text = data.get("week", "")
+        if not week_text:
+            return []
+        items = [line.strip() for line in week_text.strip().split("\n") if line.strip()]
+        # Return first 5 most recent (last in list = most recently added)
+        return items[-5:] if len(items) > 5 else items
+    except Exception as e:
+        print(f"Reminders fetch failed: {e}")
+        return []
+
 HANNIBAL_IMG = "https://upload.wikimedia.org/wikipedia/en/thumb/d/da/Hannibal_Smith.jpg/220px-Hannibal_Smith.jpg"
 
-def generate_sitrep(welltory, sleep, calendar_events, weather):
+def generate_sitrep(welltory, sleep, calendar_events, weather, reminders=None):
     """Rule-based FORGE SITREP. Reads data, outputs a terse commander briefing."""
     stress = welltory.get("stress", 50)
     energy = welltory.get("energy", 50)
@@ -915,6 +938,12 @@ def generate_sitrep(welltory, sleep, calendar_events, weather):
                 "Rest is not absence of work — it is preparation for it. Do one meaningful personal thing today."
             )
 
+    # ── ACTIVE REMINDERS ─────────────────────────────────────────────────────
+    if reminders:
+        reminder_count = len(reminders)
+        top = reminders[-1]  # most recently added
+        lines.append(f"Active reminders: {reminder_count} items. Top of stack: {top[:80]}{'...' if len(top) > 80 else ''}")
+
     # ── MINDSET CUE ──────────────────────────────────────────────────────────
     if stress >= 60:
         lines.append("No narrative. Just this. What is the next physical action? Do that.")
@@ -934,7 +963,8 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     day_of_year = now.timetuple().tm_yday
     wisdom = get_wisdom(day_of_year)
     sports_text = get_sports_updates()
-    sitrep_text = generate_sitrep(welltory, sleep, calendar_events, weather)
+    reminders = fetch_reminders()
+    sitrep_text = generate_sitrep(welltory, sleep, calendar_events, weather, reminders)
 
     stress_status = "Elevated" if welltory["stress"] >= 60 else "Moderate" if welltory["stress"] >= 40 else "Low"
     energy_status = "High" if welltory["energy"] >= 60 else "Moderate" if welltory["energy"] >= 40 else "Limited"
