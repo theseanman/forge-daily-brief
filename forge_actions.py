@@ -1032,18 +1032,21 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     sitrep_text = sitrep_text  # passed to HTML template
     # Fetch betting intel
     betting_signals, betting_generated = fetch_betting_intel()
-    if betting_signals:
+    # Filter to next 48h only
+    betting_signals_today = [s for s in betting_signals if s.get("hours_until", 999) <= 48]
+    if betting_signals_today:
         sbos_rows = ''
-        for sig in betting_signals:
+        for sig in betting_signals_today:
             sport = sig.get('sport', '')
             matchup = sig.get('matchup', '')
             signal = sig.get('signal', '')
             ev = sig.get('ev', 0)
             hours = sig.get('hours_until', 0)
-            sbos_rows += f'<div class="mini-card"><div class="mini-title">[{sport}] {matchup}</div><div class="mini-detail" style="font-size:13px;">&#x26A1; {signal} &nbsp;&#183;&nbsp; {hours}h away</div></div>'
-        sbos_signals_html = f'<div class="mini-card" style="background:rgba(255,200,0,0.2);"><div class="mini-title">&#x26A1; Top EV Signals Today</div></div>{sbos_rows}'
+            hours_str = f"{hours:.0f}h away" if hours > 1 else "Starting soon"
+            sbos_rows += f'<div class="mini-card"><div class="mini-title">[{sport}] {matchup}</div><div class="mini-detail" style="font-size:13px;">&#x26A1; {signal} &nbsp;&#183;&nbsp; {hours_str}</div></div>'
+        sbos_signals_html = f'<div class="mini-card" style="background:rgba(255,200,0,0.2);"><div class="mini-title">&#x26A1; Top EV Signals (Next 48h)</div></div>{sbos_rows}'
     else:
-        sbos_signals_html = '<div class="mini-card"><div class="mini-detail">No EV signals in next 24h. Check Telegram for CFL alerts.</div></div>'
+        sbos_signals_html = '<div class="mini-card"><div class="mini-detail">No EV signals in next 48h. Check Telegram for CFL alerts.</div></div>'
 
     stoic = STOIC_QUOTES[get_daily_index(len(STOIC_QUOTES))]
     stoic_quote = stoic["text"]; stoic_source = stoic["source"]
