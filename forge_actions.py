@@ -846,6 +846,38 @@ def fetch_reminders():
         print(f"Reminders fetch failed: {e}")
         return []
 
+
+BETTING_INTEL_URL = "https://theseanman.github.io/forge-daily-brief/betting_intel.json"
+
+def fetch_betting_intel():
+    """Fetch today's EV signals from betting_intel.json on gh-pages."""
+    try:
+        req = urllib.request.Request(
+            BETTING_INTEL_URL,
+            headers={"User-Agent": "FORGE-Actions"}
+        )
+        with urllib.request.urlopen(req, timeout=10) as r:
+            data = json.loads(r.read().decode())
+
+        signals = data.get("ev_signals", [])
+        generated = data.get("generated_at", "")
+
+        # Filter: EV between 4% and 30% (above 30% is likely bad data)
+        # Only show games within next 24 hours
+        filtered = [
+            s for s in signals
+            if s.get("ev") and 4 <= s["ev"] <= 30
+            and s.get("hours_until") and s["hours_until"] <= 24
+        ]
+
+        # Sort by EV descending, take top 5
+        filtered.sort(key=lambda x: x.get("ev", 0), reverse=True)
+        return filtered[:5], generated
+
+    except Exception as e:
+        print(f"Betting intel fetch failed: {e}")
+        return [], ""
+
 HANNIBAL_IMG = "https://upload.wikimedia.org/wikipedia/en/thumb/d/da/Hannibal_Smith.jpg/220px-Hannibal_Smith.jpg"
 
 def generate_sitrep(welltory, sleep, calendar_events, weather, reminders=None):
@@ -1000,6 +1032,21 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     wisdom_life_hack = wisdom["life_hack"]
     sports_section = sports_text
     sitrep_text = sitrep_text  # passed to HTML template
+    # Fetch betting intel
+    betting_signals, betting_generated = fetch_betting_intel()
+    if betting_signals:
+        sbos_rows = ''
+        for sig in betting_signals:
+            sport = sig.get('sport', '')
+            matchup = sig.get('matchup', '')
+            signal = sig.get('signal', '')
+            ev = sig.get('ev', 0)
+            hours = sig.get('hours_until', 0)
+            sbos_rows += f'<div class="mini-card"><div class="mini-title">[{sport}] {matchup}</div><div class="mini-detail" style="font-size:13px;">&#x26A1; {signal} &nbsp;&#183;&nbsp; {hours}h away</div></div>'
+        sbos_signals_html = f'<div class="mini-card" style="background:rgba(255,200,0,0.2);"><div class="mini-title">&#x26A1; Top EV Signals Today</div></div>{sbos_rows}'
+    else:
+        sbos_signals_html = '<div class="mini-card"><div class="mini-detail">No EV signals in next 24h. Check Telegram for CFL alerts.</div></div>'
+
     stoic = STOIC_QUOTES[get_daily_index(len(STOIC_QUOTES))]
     stoic_quote = stoic["text"]; stoic_source = stoic["source"]
     jlpt = JLPT_WORDS[get_daily_index(len(JLPT_WORDS))]
@@ -1291,25 +1338,18 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
 
   <div class="card">
     <div class="card-header"><span class="card-icon">&#x1F3B0;&#x1F334;</span><span>SBOS Betting Intel</span></div>
+    {sbos_signals_html}
     <div class="mini-card">
-      <div class="mini-title">&#x1F4E1; Live Signal Status</div>
+      <div class="mini-title">&#x1F4E1; CFL Telegram</div>
       <div class="mini-detail" style="font-size:13px; line-height:1.8;">
-        Check Telegram @SeanTradingAlertsBot for live CFL alerts.<br>
-        Commands: <strong>STATUS</strong> &nbsp;&#183;&nbsp; <strong>Y</strong> &nbsp;&#183;&nbsp; <strong>HALF</strong> &nbsp;&#183;&nbsp; <strong>WATCH</strong> &nbsp;&#183;&nbsp; <strong>N</strong> &nbsp;&#183;&nbsp; <strong>RESULT</strong>
+        @SeanTradingAlertsBot &nbsp;&#183;&nbsp; Commands: <strong>STATUS</strong> &nbsp;&#183;&nbsp; <strong>Y</strong> &nbsp;&#183;&nbsp; <strong>HALF</strong> &nbsp;&#183;&nbsp; <strong>WATCH</strong> &nbsp;&#183;&nbsp; <strong>N</strong> &nbsp;&#183;&nbsp; <strong>RESULT</strong>
       </div>
     </div>
     <div class="mini-card">
       <div class="mini-title">&#x1F4CB; S1/S5 Scoring</div>
       <div class="mini-detail" style="font-size:13px; line-height:1.8;">
-        <strong>S1 Matchup Identity:</strong> 1=neutral &nbsp; 2=moderate home edge &nbsp; 3=strong home narrative<br>
-        <strong>S5 Psychological:</strong> 1=neutral &nbsp; 2=moderate pressure &nbsp; 3=high-stakes pressure<br>
-        <strong>Tier A (17-21):</strong> Full unit &nbsp; <strong>Tier B (13-16):</strong> Half unit &nbsp; <strong>Tier C (&lt;13):</strong> Pass
-      </div>
-    </div>
-    <div class="mini-card">
-      <div class="mini-title">&#x1F4B0; PlayNow</div>
-      <div class="mini-detail" style="font-size:13px; line-height:1.8;">
-        BC Sports Action &nbsp;&#183;&nbsp; Rocket icon = odds boost (marketing, NOT a signal) &nbsp;&#183;&nbsp; Chalk = favourite
+        <strong>S1:</strong> 1=neutral 2=home edge 3=strong narrative &nbsp;&#183;&nbsp; <strong>S5:</strong> 1=neutral 2=pressure 3=high-stakes<br>
+        <strong>Tier A (17-21):</strong> Full &nbsp;&#183;&nbsp; <strong>Tier B (13-16):</strong> Half &nbsp;&#183;&nbsp; <strong>Tier C:</strong> Pass
       </div>
     </div>
   </div>
