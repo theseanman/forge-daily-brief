@@ -863,11 +863,9 @@ def fetch_betting_intel():
         generated = data.get("generated_at", "")
 
         # Filter: EV between 4% and 30% (above 30% is likely bad data)
-        # Only show games within next 24 hours
         filtered = [
             s for s in signals
             if s.get("ev") and 4 <= s["ev"] <= 30
-            and s.get("hours_until") and s["hours_until"] <= 24
         ]
 
         # Sort by EV descending, take top 5
