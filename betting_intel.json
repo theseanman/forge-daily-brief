@@ -1,8 +1,31 @@
 {
-  "generated_at": "2026-06-14T20:41:33.651705+00:00",
-  "summary": "\ud83c\udfaf No games in next 24 hours\n\nUpdated: 2026-06-14 20:41 UTC",
-  "games_today": [],
+  "generated_at": "2026-06-14T21:02:49.224052+00:00",
+  "summary": "\ud83c\udfaf TODAY'S GAMES (Jun 14)\n\u2022 [UFC] Away @ Home\n\u2022 [NHL] Carolina Hurricanes @ Vegas Golden Knights\n\nUpdated: 2026-06-14 14:02 PT",
+  "games_today": [
+    {
+      "sport": "UFC",
+      "matchup": "Away @ Home",
+      "time": "Sun Jun 14 \u00b7 05:00 PM PT",
+      "hours_until": 3.0,
+      "home_ml": null,
+      "away_ml": null,
+      "signal": null,
+      "ev": null,
+      "your_fighter": null
+    },
+    {
+      "sport": "NHL",
+      "matchup": "Carolina Hurricanes @ Vegas Golden Knights",
+      "time": "Sun Jun 14 \u00b7 05:00 PM PT",
+      "hours_until": 3.0,
+      "home_ml": null,
+      "away_ml": null,
+      "signal": null,
+      "ev": null,
+      "your_fighter": null
+    }
+  ],
   "ev_signals": [],
   "fighter_alerts": [],
-  "total_games_scanned": 0
+  "total_games_scanned": 2
 }
