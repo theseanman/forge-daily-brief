@@ -808,10 +808,11 @@ def get_sports_updates():
         data = espn_get("https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard")
         if data:
             events = data.get("events", [])
-            if events:
-                e = events[0]
+            future_events = [e for e in events if to_pt(e["date"]).date() >= today_pt]
+            if future_events:
+                e = future_events[0]
                 dt_pt = to_pt(e["date"])
-                if dt_pt.date() == today:
+                if dt_pt.date() == today_pt:
                     lines.append(f"🥊 UFC TODAY: {e.get('name','Event')}")
                 else:
                     lines.append(f"🥊 UFC next: {e.get('name','Event')} — {dt_pt.strftime('%a %b %d')}")
@@ -1071,6 +1072,25 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
         body_comp_content = f'<div class="stat-row" style="grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));">{bc_rows}</div>'
     else:
         body_comp_content = '<div class="mini-card"><div class="mini-detail">No body comp data yet. <a href="input.html">Enter via input form →</a></div></div>'
+
+
+    from datetime import date as _date
+    METAL_SHOWS = [
+        ("2026-06-25", "Anvil + Midnite Hellion", "El Corazon, Seattle"),
+        ("2026-06-27", "Anvil + Midnite Hellion", "Astoria, Vancouver"),
+        ("2026-07-08", "Jinjer + Entheos + Crystal Lake", "Commodore Ballroom, Vancouver"),
+    ]
+    _today_d = _date.today()
+    _upcoming = [(d,t,v) for d,t,v in METAL_SHOWS if _date.fromisoformat(d) >= _today_d]
+    def _fsd(iso):
+        return _date.fromisoformat(iso).strftime("%B %-d").upper()
+    if _upcoming:
+        _cards = []
+        for d,t,v in _upcoming:
+            _cards.append(f'<div class="mini-card"><div class="mini-title">🎸 {_fsd(d)} · {t}</div><div class="mini-detail">{v}</div></div>')
+        concert_cards_html = '  <div class="card"><div class="card-header"><span class="card-icon">🎸🌴</span><span>Upcoming Metal Shows</span></div>\n    ' + "\n    ".join(_cards) + '\n  </div>'
+    else:
+        concert_cards_html = '  <div class="card"><div class="card-header"><span class="card-icon">🎸🌴</span><span>Upcoming Metal Shows</span></div><div class="mini-card"><div class="mini-detail">No upcoming shows.</div></div></div>'
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -1384,25 +1404,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
   </div>
 
 
-  <div class="card">
-    <div class="card-header"><span class="card-icon">🎸🌴</span><span>Upcoming Metal Shows</span></div>
-    <div class="mini-card">
-      <div class="mini-title">🎸 JUNE 14 · Napalm Death + Primitive Man</div>
-      <div class="mini-detail">The Pearl, Vancouver · Death metal legends</div>
-    </div>
-    <div class="mini-card">
-      <div class="mini-title">🎸 JUNE 25 · Anvil + Midnite Hellion</div>
-      <div class="mini-detail">El Corazon, Seattle</div>
-    </div>
-    <div class="mini-card">
-      <div class="mini-title">🎸 JUNE 27 · Anvil + Midnite Hellion</div>
-      <div class="mini-detail">Astoria, Vancouver</div>
-    </div>
-    <div class="mini-card">
-      <div class="mini-title">🎸 JULY 8 · Jinjer + Entheos + Crystal Lake</div>
-      <div class="mini-detail">Commodore Ballroom, Vancouver</div>
-    </div>
-  </div>
+{concert_cards_html}
 
   <div class="footer">🌴 FORGE OS · {date_str.upper()} · {time_str} · theseanman.github.io/forge-daily-brief</div>
 
