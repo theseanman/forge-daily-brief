@@ -618,9 +618,9 @@ def get_sports_updates():
     # Source: FIFA / Scotland FA. All times PT.
     # ══════════════════════════════════════════════════════════════════════════
     SCOTLAND_WC = [
-        ("2026-06-13", "6:00 PM", "Scotland", "Haiti", "SoFi Stadium, Los Angeles"),
-        ("2026-06-18", "9:00 AM", "Scotland", "Switzerland", "Levi's Stadium, San Jose"),
-        ("2026-06-23", "TBD",     "Scotland", "South Korea", "TBD"),
+        ("2026-06-13", "6:00 PM", "Scotland", "Haiti", "Gillette Stadium, Boston (Foxborough)"),
+        ("2026-06-19", "3:00 PM", "Scotland", "Morocco", "Gillette Stadium, Boston (Foxborough)"),
+        ("2026-06-24", "3:00 PM", "Scotland", "Brazil", "Miami Stadium, Miami Gardens"),
     ]
 
     # ══════════════════════════════════════════════════════════════════════════
@@ -1099,6 +1099,9 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>FORGE OS · Morning Brief</title>
   <style>
     :root {{
