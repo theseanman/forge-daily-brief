@@ -1,1 +1,20 @@
-{"welltory": {"stress": 86, "energy": 32, "health": 45}, "body_comp": {"weight": null, "body_fat": null, "muscle_mass": null, "bmi": null, "visceral_fat": null}, "sleep": {"score": 90, "duration": "7h ;2", "hr_range": "53-73"}, "updated": "2026-06-17T14:35:47.844Z", "calendar": [{"date": "Wed Jun 17", "time": "All day", "title": "I work at Arrington tomorrow"}, {"date": "Fri Jun 19", "time": "All day", "title": "Kiyomi's Birthday 6:30pm"}, {"date": "Mon Jun 22", "time": "All day", "title": "Meal-less Monday "}, {"date": "Tue Jun 23", "time": "09:00 AM", "title": "Grad assembly practice run through"}, {"date": "Tue Jun 23", "time": "10:10 AM", "title": "Recess supervision door 26"}, {"date": "Tue Jun 23", "time": "03:00 PM", "title": "Meet in library for class placement discussion"}]}
+{
+  "welltory": {
+    "stress": 78,
+    "energy": 49,
+    "health": 45
+  },
+  "body_comp": {
+    "weight": null,
+    "body_fat": null,
+    "muscle_mass": null,
+    "bmi": null,
+    "visceral_fat": null
+  },
+  "sleep": {
+    "score": 91,
+    "duration": "7h 18",
+    "hr_range": "56-73"
+  },
+  "updated": "2026-06-18T14:27:26.040Z"
+}
