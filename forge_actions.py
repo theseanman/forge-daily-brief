@@ -682,15 +682,16 @@ def get_sports_updates():
 
     # ── Vancouver Canadians (MiLB) ────────────────────────────────────────────
     try:
-        data = espn_get("https://site.api.espn.com/apis/site/v2/sports/baseball/milb/teams/van/schedule?season=2026")
-        if not data:
-            # Try alternate MiLB endpoint
+        data = None
+        try:
             req = urllib.request.Request(
                 "https://bdfed.stitch.mlbinfra.com/bdfed/transform-milb-schedule?stitch_env=prod&season=2026&teamId=578&sportId=12&gameType=R&startDate=2026-06-01&endDate=2026-08-31&hydrate=team,linescore",
                 headers={"User-Agent": "Mozilla/5.0"}
             )
             with urllib.request.urlopen(req, timeout=10) as r:
                 data = json.loads(r.read().decode())
+        except Exception:
+            data = None
         if data:
             dates = data.get("dates", [])
             for game_date_obj in dates:
@@ -808,11 +809,11 @@ def get_sports_updates():
         data = espn_get("https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard")
         if data:
             events = data.get("events", [])
-            future_events = [e for e in events if to_pt(e["date"]).date() >= today_pt]
+            future_events = [e for e in events if to_pt(e["date"]).date() >= today_pt()]
             if future_events:
                 e = future_events[0]
                 dt_pt = to_pt(e["date"])
-                if dt_pt.date() == today_pt:
+                if dt_pt.date() == today_pt():
                     lines.append(f"🥊 UFC TODAY: {e.get('name','Event')}")
                 else:
                     lines.append(f"🥊 UFC next: {e.get('name','Event')} — {dt_pt.strftime('%a %b %d')}")
