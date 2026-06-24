@@ -1,1 +1,20 @@
-{"welltory": {"stress": 21, "energy": 69, "health": 45}, "body_comp": {"weight": null, "body_fat": null, "muscle_mass": null, "bmi": null, "visceral_fat": null}, "sleep": {"score": 95, "duration": "7h 11", "hr_range": "49-60"}, "updated": "2026-06-23T14:36:17.516Z", "calendar": [{"date": "Tue Jun 23", "time": "09:00 AM", "title": "Grad assembly practice run through"}, {"date": "Tue Jun 23", "time": "10:10 AM", "title": "Recess supervision door 26"}, {"date": "Tue Jun 23", "time": "03:00 PM", "title": "Meet in library for class placement discussion"}, {"date": "Wed Jun 24", "time": "08:00 AM", "title": "Health and safety meeting"}, {"date": "Wed Jun 24", "time": "03:30 PM", "title": "Dr. Heng in person at Richmond hospital "}, {"date": "Thu Jun 25", "time": "03:00 PM", "title": "Year end school party "}, {"date": "Fri Jun 26", "time": "All day", "title": "Life, Larry, and the pursuit of unhappiness show debut on HBO"}, {"date": "Mon Jun 29", "time": "All day", "title": "Meal-less Monday "}]}
+{
+  "welltory": {
+    "stress": 71,
+    "energy": 35,
+    "health": 100
+  },
+  "body_comp": {
+    "weight": null,
+    "body_fat": null,
+    "muscle_mass": null,
+    "bmi": null,
+    "visceral_fat": null
+  },
+  "sleep": {
+    "score": 89,
+    "duration": "7h 15m",
+    "hr_range": "51-76"
+  },
+  "updated": "2026-06-24T05:29:23.472Z"
+}
