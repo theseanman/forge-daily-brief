@@ -600,6 +600,103 @@ def get_wisdom(day_of_year):
     return result
 
 
+# ============================================================
+# THREE-MODE PHILOSOPHY TRIAD
+# Warrior = 3 fixed anchors (first person), one highlighted per day (rotating)
+# Identityless = rotating pool of 20 (bare/egoless — intentionally NO first person)
+# Strictness = rotating pool of 20 (first person)
+# ============================================================
+
+WARRIOR_ANCHORS = [
+    "I hold fast. The discomfort doesn't decide — I do. I anchor to who I am, not to how I feel.",
+    "Hard is the point. Where will I show my strength today?",
+    "I stand tall. Shoulders back. Breath slow. The posture is my decision.",
+]
+
+IDENTITYLESS_POOL = [
+    "No story. Just this. Drop the narrator — sensory data only, what is actually in front of you.",
+    "Camera off. Catch the self-observation, name it, return to raw perception.",
+    "Sit in 'I don't know' for sixty seconds without resolving it. Groundlessness is not danger.",
+    "Act with no frame. No 'as a man who…', no 'someone like me.' Just the next clean action.",
+    "Two minutes of unwitnessed existence: zero self-reference, only sensation and motion.",
+    "There is no audience. The watching self is a fiction — let the act happen without a witness.",
+    "Drop the verdict. Things are not good or bad right now. They simply are.",
+    "Notice the urge to narrate the moment. Don't. Let it pass unspoken.",
+    "Whose problem is this? Nobody's. It is just a condition to be handled. Handle it.",
+    "Release the outcome. The doing is complete in itself. The result is not yours to hold.",
+    "No identity to defend here. Nothing to protect means nothing to fear.",
+    "Become the task, not the one doing the task. Disappear into the action.",
+    "Strip the adjective. Not 'a hard run' — a run. Not 'an annoying email' — an email.",
+    "Let the thought arrive and leave without claiming it. You are not your thinking.",
+    "No past self to honor, no future self to impress. Only this breath, this motion.",
+    "When praised or criticized, neither lands — there is no fixed self for it to stick to.",
+    "Quiet the inner commentary. The silence underneath it was always there.",
+    "Stop managing the impression. There is no one to manage it for.",
+    "Pure perception: the cold, the weight, the breath. The labels are optional. Drop them.",
+    "Nothing to become. Nothing to prove. Just the next thing, done plainly.",
+]
+
+STRICTNESS_POOL = [
+    "I execute the block regardless of state. Mood does not get a veto.",
+    "I decide cleanly and act within five seconds of clarity. Deliberation past that is avoidance.",
+    "Minimum viable day still counts: one Forge task, one training block, one presence ritual.",
+    "I never miss two days running. The 3-day rule is the floor, not the goal.",
+    "I move slowly, speak precisely, enforce the boundary instantly. No leakage.",
+    "I do the thing I scheduled, at the time I scheduled it. The calendar is a contract.",
+    "I remove one friction point before I start. Make the right action the easy one.",
+    "I finish what I open. No half-closed loops carried into tomorrow.",
+    "I start before I feel ready. Readiness is a story; the start is the only proof.",
+    "One hard thing first, every day, before the thing I want. Momentum is sequential.",
+    "I keep my word to myself the way I'd keep it to someone I respect.",
+    "I do not negotiate with the snooze, the scroll, or the 'just five minutes.' The answer is no.",
+    "I protect the first ninety minutes. Peak window, hardest task, no email.",
+    "I show up at the same time regardless of how I slept or what happened yesterday.",
+    "I log the nutrition, the training, the metric — even when it's inconvenient. Especially then.",
+    "I enforce the boundary in the moment, not after rehearsing it ten times in my head.",
+    "I do the rep that nobody will see. Discipline is what holds when no one is watching.",
+    "I close the day with the next step written down. Re-entry tomorrow costs nothing then.",
+    "I cut the optional to protect the essential. Saying no is how I say yes to what matters.",
+    "I operate on the plan, not the impulse. The plan was made by the clearer version of me.",
+]
+
+
+def get_triad(day_of_year):
+    """Daily three-mode triad. Warrior: all 3 anchors, one highlighted (rotating).
+    Identityless + Strictness: one rotating line each."""
+    highlight_idx = day_of_year % len(WARRIOR_ANCHORS)
+    warrior = [{"text": l, "highlight": (i == highlight_idx)}
+               for i, l in enumerate(WARRIOR_ANCHORS)]
+    return {
+        "warrior": warrior,
+        "identityless": IDENTITYLESS_POOL[day_of_year % len(IDENTITYLESS_POOL)],
+        "strictness": STRICTNESS_POOL[day_of_year % len(STRICTNESS_POOL)],
+    }
+
+
+def render_triad(day_of_year):
+    """Build the SUNFURY-styled triad card HTML for the given day."""
+    triad = get_triad(day_of_year)
+    warrior_lines = ""
+    for w in triad["warrior"]:
+        cls = "triad-anchor triad-anchor-hi" if w["highlight"] else "triad-anchor"
+        warrior_lines += f'<div class="{cls}">{w["text"]}</div>'
+    return f'''  <div class="card">
+    <div class="card-header"><span class="card-icon">&#x2694;&#xFE0F;&#x1F334;</span><span>Three Modes — Daily Triad</span></div>
+    <div class="triad-mode">
+      <div class="triad-label">&#x2694;&#xFE0F; Warrior — Hold the Line</div>
+      {warrior_lines}
+    </div>
+    <div class="triad-mode">
+      <div class="triad-label">&#x1F3AD; Identityless — Drop the Self</div>
+      <div class="triad-text">{triad["identityless"]}</div>
+    </div>
+    <div class="triad-mode">
+      <div class="triad-label">&#x2696;&#xFE0F; Strictness — Execute</div>
+      <div class="triad-text">{triad["strictness"]}</div>
+    </div>
+  </div>'''
+
+
 def get_sports_updates():
     """Comprehensive sports intel: API for MLB/NHL/NFL, hardcoded for CFL/Soccer/Rugby/NLL."""
     import urllib.request, json
@@ -1087,6 +1184,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     day_of_week = now.weekday()
     day_of_year = now.timetuple().tm_yday
     wisdom = get_wisdom(day_of_year)
+    triad_block = render_triad(day_of_year)
     sports_text = get_sports_updates()
     reminders = fetch_reminders()
     sitrep_text = generate_sitrep(welltory, sleep, calendar_events, weather, reminders)
@@ -1255,6 +1353,11 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     .advice-item {{ background: rgba(255,255,255,0.1); border: 2px solid var(--text-bright); border-radius: 8px; padding: 12px; }}
     .advice-label {{ font-size: 12px; font-weight: 700; color: var(--text-bright); text-transform: uppercase; margin-bottom: 6px; }}
     .advice-text {{ font-size: 13px; color: var(--text-light); line-height: 1.5; }}
+    .triad-mode {{ margin-bottom: 14px; }}
+    .triad-label {{ font-size: 12px; font-weight: 700; color: var(--text-bright); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }}
+    .triad-anchor {{ background: rgba(255,255,255,0.1); border-left: 3px solid var(--text-bright); border-radius: 6px; padding: 10px 12px; margin-bottom: 6px; font-size: 13px; color: var(--text-light); line-height: 1.5; }}
+    .triad-anchor-hi {{ background: rgba(255,255,255,0.28); border-left: 5px solid var(--text-bright); font-weight: 700; box-shadow: 0 0 0 1px var(--text-bright); }}
+    .triad-text {{ background: rgba(255,255,255,0.1); border: 2px solid var(--text-bright); border-radius: 8px; padding: 12px; font-size: 13px; color: var(--text-light); line-height: 1.5; }}
     .footer {{ text-align: center; margin-top: 20px; font-size: 11px; color: var(--muted); letter-spacing: 0.15em; padding-bottom: 30px; }}
     a {{ color: var(--text-bright); text-decoration: none; font-weight: 700; border-bottom: 2px solid var(--text-bright); }}
     .expandable {{ cursor: pointer; }}
@@ -1447,6 +1550,8 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
       <div class="advice-item"><div class="advice-label">⚡ Life Hack</div><div class="advice-text">{wisdom_life_hack}</div></div>
     </div>
   </div>
+
+{triad_block}
 
 
   <div class="card">
