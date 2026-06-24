@@ -67,6 +67,11 @@
     .advice-item { background: rgba(255,255,255,0.1); border: 2px solid var(--text-bright); border-radius: 8px; padding: 12px; }
     .advice-label { font-size: 12px; font-weight: 700; color: var(--text-bright); text-transform: uppercase; margin-bottom: 6px; }
     .advice-text { font-size: 13px; color: var(--text-light); line-height: 1.5; }
+    .triad-mode { margin-bottom: 14px; }
+    .triad-label { font-size: 12px; font-weight: 700; color: var(--text-bright); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .triad-anchor { background: rgba(255,255,255,0.1); border-left: 3px solid var(--text-bright); border-radius: 6px; padding: 10px 12px; margin-bottom: 6px; font-size: 13px; color: var(--text-light); line-height: 1.5; }
+    .triad-anchor-hi { background: rgba(255,255,255,0.28); border-left: 5px solid var(--text-bright); font-weight: 700; box-shadow: 0 0 0 1px var(--text-bright); }
+    .triad-text { background: rgba(255,255,255,0.1); border: 2px solid var(--text-bright); border-radius: 8px; padding: 12px; font-size: 13px; color: var(--text-light); line-height: 1.5; }
     .footer { text-align: center; margin-top: 20px; font-size: 11px; color: var(--muted); letter-spacing: 0.15em; padding-bottom: 30px; }
     a { color: var(--text-bright); text-decoration: none; font-weight: 700; border-bottom: 2px solid var(--text-bright); }
     .expandable { cursor: pointer; }
@@ -84,7 +89,7 @@
     <div class="date-block">
       <div class="date-main">Tuesday</div>
       <div style="font-size:11px; color:var(--muted);">June 23, 2026</div>
-      <div class="date-time" id="live-clock">09:17 AM</div>
+      <div class="date-time" id="live-clock">10:26 PM</div>
     </div>
   </div>
 
@@ -93,15 +98,15 @@
   </div>
 
   <div class="motd-box">
-    <div class="motd-text">"Supreme excellence consists in breaking the enemy's resistance without fighting."</div>
+    <div class="motd-text">"In the midst of chaos, there is also opportunity."</div>
     <div class="motd-source">— Sun Tzu, The Art of War</div>
   </div>
 
   <div class="character-quote-box">
-    <img class="character-image" src="https://upload.wikimedia.org/wikipedia/en/thumb/0/0f/Zack_Morris.jpg/220px-Zack_Morris.jpg" alt="Zack Morris" onerror="this.style.display='none'">
+    <img class="character-image" src="https://upload.wikimedia.org/wikipedia/en/thumb/d/da/Hannibal_Smith.jpg/220px-Hannibal_Smith.jpg" alt="Hannibal Smith" onerror="this.style.display='none'">
     <div>
-      <div class="character-quote">"Time out. Let me think about this."</div>
-      <div class="character-name">— Zack Morris, Saved by the Bell</div>
+      <div class="character-quote">"In war, the most dangerous weapon is the element of surprise."</div>
+      <div class="character-name">— Hannibal Smith, The A-Team</div>
     </div>
   </div>
 
@@ -227,7 +232,7 @@
 
   <div class="card">
     <div class="card-header"><span class="card-icon">🌤️🌴</span><span>Richmond Weather</span></div>
-    <div class="mini-card"><div class="mini-detail">Mainly clear, 19.9°C</div></div>
+    <div class="mini-card"><div class="mini-detail">Clear sky, 20.4°C</div></div>
   </div>
 
   <div class="card">
@@ -296,6 +301,22 @@ UFC Fight Night: Du Plessis vs Usman @ Sat Jul 18, 05:00 PM [UFC Events]</pre></
     </div>
   </div>
 
+  <div class="card">
+    <div class="card-header"><span class="card-icon">&#x2694;&#xFE0F;&#x1F334;</span><span>Three Modes — Daily Triad</span></div>
+    <div class="triad-mode">
+      <div class="triad-label">&#x2694;&#xFE0F; Warrior — Hold the Line</div>
+      <div class="triad-anchor triad-anchor-hi">I hold fast. The discomfort doesn't decide — I do. I anchor to who I am, not to how I feel.</div><div class="triad-anchor">Hard is the point. Where will I show my strength today?</div><div class="triad-anchor">I stand tall. Shoulders back. Breath slow. The posture is my decision.</div>
+    </div>
+    <div class="triad-mode">
+      <div class="triad-label">&#x1F3AD; Identityless — Drop the Self</div>
+      <div class="triad-text">No past self to honor, no future self to impress. Only this breath, this motion.</div>
+    </div>
+    <div class="triad-mode">
+      <div class="triad-label">&#x2696;&#xFE0F; Strictness — Execute</div>
+      <div class="triad-text">I log the nutrition, the training, the metric — even when it's inconvenient. Especially then.</div>
+    </div>
+  </div>
+
 
   <div class="card">
     <div class="card-header"><span class="card-icon">🏆🌴</span><span>Sports Intel</span></div>
@@ -340,10 +361,10 @@ UFC Fight Night: Du Plessis vs Usman @ Sat Jul 18, 05:00 PM [UFC Events]</pre></
   <div class="card">
     <div class="card-header"><span class="card-icon">🇯🇵🌴</span><span>Japanese Word of the Day</span></div>
     <div class="mini-card">
-      <div class="mini-title">今日の言葉: 矜持 (Kyouji) — JLPT N1</div>
+      <div class="mini-title">今日の言葉: 僥倖 (Gyoukou) — JLPT N1</div>
       <div class="mini-detail">
-        Pride; self-respect; sense of dignity.<br>
-        プロとしての矜持を持つ = "To have pride as a professional."
+        Unexpected good fortune; windfall luck.<br>
+        それは僥倖だった = "That was a stroke of unexpected luck."
       </div>
     </div>
   </div>
@@ -351,16 +372,16 @@ UFC Fight Night: Du Plessis vs Usman @ Sat Jul 18, 05:00 PM [UFC Events]</pre></
   <div class="card">
     <div class="card-header"><span class="card-icon">🎨🌴</span><span>Art & Music</span></div>
     <div class="mini-card">
-      <div class="mini-title">🎨 Boris Vallejo — Fantasy paintings</div>
+      <div class="mini-title">🎨 John Martin — The Great Day of His Wrath (1853)</div>
       <div class="mini-detail">
-        <a href="https://artsandculture.google.com/search?q=boris+vallejo+fantasy" target="_blank">Google Arts & Culture →</a>
+        <a href="https://artsandculture.google.com/search?q=john+martin+great+day+wrath" target="_blank">Google Arts & Culture →</a>
       </div>
     </div>
     <div class="mini-card">
-      <div class="mini-title">🎵 Municipal Waste — The Art of Partying (2007) | FFO: Suicidal Tendencies, thrash</div>
+      <div class="mini-title">🎵 Sepultura — Chaos A.D. (1993) | FFO: RATM, groove/thrash</div>
       <div class="mini-detail">
-        <a href="https://open.spotify.com/search/municipal%20waste%20art%20of%20partying" target="_blank">Spotify →</a> &nbsp;
-        <a href="https://music.youtube.com/search?q=municipal+waste+art+of+partying" target="_blank">YouTube Music →</a>
+        <a href="https://open.spotify.com/search/sepultura%20chaos%20ad" target="_blank">Spotify →</a> &nbsp;
+        <a href="https://music.youtube.com/search?q=sepultura+chaos+ad" target="_blank">YouTube Music →</a>
       </div>
     </div>
   </div>
@@ -372,7 +393,7 @@ UFC Fight Night: Du Plessis vs Usman @ Sat Jul 18, 05:00 PM [UFC Events]</pre></
     <div class="mini-card"><div class="mini-title">🎸 JULY 8 · Jinjer + Entheos + Crystal Lake</div><div class="mini-detail">Commodore Ballroom, Vancouver</div></div>
   </div>
 
-  <div class="footer">🌴 FORGE OS · JUNE 23, 2026 · 09:17 AM · theseanman.github.io/forge-daily-brief</div>
+  <div class="footer">🌴 FORGE OS · JUNE 23, 2026 · 10:26 PM · theseanman.github.io/forge-daily-brief</div>
 
 </div>
 
