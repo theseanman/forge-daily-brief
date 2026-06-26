@@ -1,1 +1,20 @@
-{"welltory": {"stress": 63, "energy": 43, "health": 100}, "body_comp": {"weight": null, "body_fat": null, "muscle_mass": null, "bmi": null, "visceral_fat": null}, "sleep": {"score": 88, "duration": "8h 22", "hr_range": "53-74"}, "updated": "2026-06-26T14:46:24.593Z", "calendar": [{"date": "Fri Jun 26", "time": "All day", "title": "Life, Larry, and the pursuit of unhappiness show debut on HBO"}, {"date": "Mon Jun 29", "time": "All day", "title": "Meal-less Monday "}, {"date": "Tue Jun 30", "time": "10:10 AM", "title": "Recess supervision door 26"}, {"date": "Tue Jun 30", "time": "03:10 PM", "title": "Rowland massage "}, {"date": "Thu Jul 02", "time": "12:30 PM", "title": "MRI "}]}
+{
+  "welltory": {
+    "stress": 63,
+    "energy": 43,
+    "health": 100
+  },
+  "body_comp": {
+    "weight": null,
+    "body_fat": null,
+    "muscle_mass": null,
+    "bmi": null,
+    "visceral_fat": null
+  },
+  "sleep": {
+    "score": 88,
+    "duration": "7h 03m",
+    "hr_range": "54-75"
+  },
+  "updated": "2026-06-26T14:48:33.748Z"
+}
