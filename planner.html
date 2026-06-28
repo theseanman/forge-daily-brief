@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>FORGE Day Plan</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: linear-gradient(135deg, #d84315 0%, #ff9800 50%, #ffc107 100%);
+      font-family: -apple-system, sans-serif;
+      min-height: 100vh; padding: 18px; color: #0d0d0d;
+    }
+    .shell { max-width: 560px; margin: 0 auto; }
+    h1 { font-size: 22px; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 4px; }
+    .date { font-size: 14px; font-weight: 600; color: #5a2a00; margin-bottom: 14px; }
+    .banner {
+      background: rgba(0,0,0,0.85); color: #ffc107; font-weight: 800; font-size: 15px;
+      padding: 12px 14px; border-radius: 10px; margin-bottom: 16px; letter-spacing: 0.04em;
+    }
+    .grid {
+      background: rgba(255,255,255,0.18); border: 3px solid #0d0d0d; border-radius: 12px;
+      padding: 8px; overflow: hidden;
+    }
+    .row { display: flex; align-items: stretch; border-bottom: 1px solid rgba(0,0,0,0.18); }
+    .row:last-child { border-bottom: none; }
+    .row.now { background: rgba(0,0,0,0.85); border-radius: 8px; }
+    .row.now .hr { color: #ffc107; }
+    .row.now input { color: #fff; font-weight: 700; }
+    .row.now input::placeholder { color: rgba(255,255,255,0.5); }
+    .hr {
+      width: 64px; flex: none; display: flex; align-items: center; justify-content: flex-end;
+      padding: 0 10px; font-size: 13px; font-weight: 800; color: #5a2a00;
+    }
+    .row input {
+      flex: 1; border: none; background: transparent; font-size: 15px; padding: 13px 8px;
+      color: #0d0d0d; font-family: inherit; -webkit-appearance: none;
+    }
+    .row input:focus { outline: none; background: rgba(255,255,255,0.5); border-radius: 6px; }
+    .row input::placeholder { color: rgba(0,0,0,0.28); }
+    .btn-secondary {
+      width: 100%; padding: 12px; font-size: 14px; font-weight: 700; margin-top: 14px;
+      background: rgba(255,255,255,0.3); color: #0d0d0d; border: 2px solid #0d0d0d;
+      border-radius: 12px; cursor: pointer; touch-action: manipulation;
+    }
+    .back-link {
+      display: block; text-align: center; margin-top: 14px; font-size: 15px; font-weight: 700;
+      color: #0d0d0d; text-decoration: none; border-bottom: 2px solid #0d0d0d;
+    }
+    .saved { font-size: 12px; font-weight: 600; color: #1b5e20; text-align: center; margin-top: 10px; min-height: 16px; }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <h1>🌴 FORGE Day Plan</h1>
+  <div class="date" id="date"></div>
+  <div class="banner" id="banner"></div>
+  <div class="grid" id="grid"></div>
+  <div class="saved" id="saved"></div>
+  <button class="btn-secondary" onclick="clearDay()">Clear today's plan</button>
+  <a href="https://theseanman.github.io/forge-daily-brief" class="back-link">← Back to Brief</a>
+</div>
+<script>
+var START_HOUR = 6, END_HOUR = 23;   // 6 AM through 11 PM
+// Training schedule: 0=Sun ... 6=Sat. Lift Mon/Wed/Fri, HIIT Tue/Thu/Sun, Rest Sat.
+var TRAINING = { 0:'HIIT', 1:'Lift', 2:'HIIT', 3:'Lift', 4:'HIIT', 5:'Lift', 6:'Rest' };
+var SEED_HOUR = 17;                   // default slot for the auto-seeded workout (editable)
+
+function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function todayKey(){ return ymd(new Date()); }
+function hourLabel(h){
+  var ampm = h < 12 ? 'AM' : 'PM';
+  var hr = h % 12; if (hr === 0) hr = 12;
+  return hr + ' ' + ampm;
+}
+
+function loadPlan(){
+  try {
+    var all = JSON.parse(localStorage.getItem('forge-dayplan') || '{}');
+    return all[todayKey()] || {};
+  } catch(e){ return {}; }
+}
+function savePlan(plan){
+  try {
+    var all = JSON.parse(localStorage.getItem('forge-dayplan') || '{}');
+    all[todayKey()] = plan;
+    localStorage.setItem('forge-dayplan', JSON.stringify(all));
+  } catch(e){}
+}
+function flashSaved(){
+  var el = document.getElementById('saved');
+  el.textContent = '✓ saved';
+  clearTimeout(window._sv);
+  window._sv = setTimeout(function(){ el.textContent=''; }, 1200);
+}
+
+function buildGrid(){
+  var plan = loadPlan();
+  var nowH = new Date().getHours();
+  var grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  for (var h = START_HOUR; h <= END_HOUR; h++){
+    var row = document.createElement('div');
+    row.className = 'row' + (h === nowH ? ' now' : '');
+    var lab = document.createElement('div');
+    lab.className = 'hr'; lab.textContent = hourLabel(h);
+    var inp = document.createElement('input');
+    inp.type = 'text';
+    inp.setAttribute('data-h', h);
+    inp.placeholder = (h === nowH ? 'now —' : '');
+    if (plan[h]) inp.value = plan[h];
+    inp.addEventListener('input', function(){
+      var p = loadPlan();
+      var hh = this.getAttribute('data-h');
+      if (this.value === '') { delete p[hh]; } else { p[hh] = this.value; }
+      savePlan(p);
+      flashSaved();
+    });
+    row.appendChild(lab); row.appendChild(inp);
+    grid.appendChild(row);
+  }
+}
+
+function applyTrainingSeed(){
+  var dow = new Date().getDay();
+  var type = TRAINING[dow];
+  var label = type === 'Rest' ? '🛌 Rest day — no training scheduled'
+            : (type === 'Lift' ? '🏋️ Today is a LIFT day' : '🔥 Today is a HIIT day');
+  document.getElementById('banner').textContent = label;
+
+  if (type === 'Rest') return;
+  // Seed the workout into a default slot once per day, only if that slot is empty
+  // and we haven't already seeded today (so deleting it won't make it reappear).
+  var seededKey = 'forge-dayplan-seeded-' + todayKey();
+  if (localStorage.getItem(seededKey)) return;
+  var plan = loadPlan();
+  if (!plan[SEED_HOUR]){
+    plan[SEED_HOUR] = (type === 'Lift' ? '🏋️ Lift' : '🔥 HIIT') + ' (planned)';
+    savePlan(plan);
+  }
+  try { localStorage.setItem(seededKey, '1'); } catch(e){}
+}
+
+function clearDay(){
+  try {
+    var all = JSON.parse(localStorage.getItem('forge-dayplan') || '{}');
+    delete all[todayKey()];
+    localStorage.setItem('forge-dayplan', JSON.stringify(all));
+    localStorage.removeItem('forge-dayplan-seeded-' + todayKey());
+  } catch(e){}
+  buildGrid(); applyTrainingSeed(); buildGrid();
+}
+
+window.onload = function(){
+  var now = new Date();
+  document.getElementById('date').textContent =
+    now.toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric' });
+  applyTrainingSeed();   // sets banner + seeds workout
+  buildGrid();           // renders grid (picks up the seed) + highlights current hour
+  // Re-highlight the current hour as time passes (every minute)
+  setInterval(buildGrid, 60000);
+};
+</script>
+</body>
+</html>
