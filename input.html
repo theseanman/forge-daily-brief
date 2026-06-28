@@ -177,6 +177,7 @@
   <button class="btn-secondary" onclick="clearToday()">Clear today's entry</button>
 
   <div id="status"></div>
+  <div class="count" id="sync">☁︎ checking cloud…</div>
   <div class="count" id="count"></div>
   <a href="https://theseanman.github.io/forge-daily-brief" class="back-link">← Back to Brief</a>
 
@@ -298,6 +299,68 @@ function exportCSV(){
   showStatus('Exported '+dates.length+' day(s).', 'green');
 }
 
+// ── Cloud sync (JSONBin via the forge-input Worker) ───────────────────────
+var WORKER = 'https://forge-input.yoseanreid.workers.dev';
+
+function setSync(msg, color){
+  var el=document.getElementById('sync'); if(!el) return;
+  el.textContent=msg;
+  el.style.color = color==='green' ? '#1b5e20' : color==='red' ? '#7a1f12' : '#5a4a3a';
+  el.style.fontWeight = '700';
+}
+
+// Fill gaps from the cloud into local history WITHOUT overwriting any
+// non-empty local value (local edits win; cloud recovers anything missing,
+// including a totally empty bucket on a fresh device).
+function hydrateInto(local, cloud){
+  Object.keys(cloud).forEach(function(date){
+    var c=cloud[date]||{}; var l=local[date]||{date:date};
+    Object.keys(c).forEach(function(k){
+      var lv=l[k];
+      if(lv===undefined||lv===null||lv===''){
+        var cv=c[k];
+        if(cv!==undefined&&cv!==null&&cv!=='') l[k]=cv;
+      }
+    });
+    local[date]=l;
+  });
+}
+
+function hydrateFromCloud(){
+  setSync('☁︎ checking cloud…','grey');
+  fetch(WORKER+'/health', {method:'GET'})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d && d.ok && d.history){
+        var local=loadHistory();
+        hydrateInto(local, d.history);
+        saveHistory(local);
+        updateCount();
+        var n=Object.keys(d.history).length;
+        setSync('☁︎ Synced ✓  ('+n+' day(s) in cloud)','green');
+      } else {
+        setSync('⚠︎ Cloud read failed — using device copy','red');
+      }
+    })
+    .catch(function(){ setSync('⚠︎ Offline — using device copy','red'); });
+}
+
+function syncToCloud(records){
+  records = (records||[]).filter(function(r){ return r && r.date; });
+  if(records.length===0) return;
+  setSync('☁︎ syncing…','grey');
+  fetch(WORKER+'/health', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({records:records})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if(d && d.ok){ setSync('☁︎ Synced ✓  ('+(d.total||'?')+' day(s) in cloud)','green'); }
+    else { setSync('⚠︎ Sync failed — tap Export as backup','red'); }
+  })
+  .catch(function(){ setSync('⚠︎ Sync failed — tap Export as backup','red'); });
+}
+
 // ── Submit: measures → today, factors → yesterday, then POST brief ──────────
 function submitData(){
   var need=['hrv_stress','hrv_energy','hrv_health','sleep_score','sleep_duration','hr_min','hr_max'];
@@ -328,6 +391,9 @@ function submitData(){
   saveHistory(history);
   saveDraft();
   updateCount();
+
+  // Push the two records we just changed to the cloud (durable backup + multi-device)
+  syncToCloud([ history[todayKey()], history[yesterdayKey()] ]);
 
   // Brief still gets today's measures, unchanged shape — keeps the Brief working.
   var brief={
@@ -369,6 +435,7 @@ window.onload=function(){
   var restored=loadDraft();
   if(restored) document.getElementById('saved-flag').style.display='block';
   updateCount();
+  hydrateFromCloud();
 };
 </script>
 </body>
