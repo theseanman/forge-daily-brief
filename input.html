@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <title>FORGE OS · Data Input</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>FORGE OS · Daily Log</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -14,9 +15,9 @@
       padding: 20px;
       color: #0d0d0d;
     }
-    .shell { max-width: 500px; margin: 0 auto; }
+    .shell { max-width: 520px; margin: 0 auto; }
     h1 { font-size: 22px; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 6px; }
-    .sub { font-size: 14px; color: #4a4a4a; margin-bottom: 24px; }
+    .sub { font-size: 14px; color: #4a4a4a; margin-bottom: 20px; }
     .card {
       background: rgba(255,255,255,0.2);
       border: 3px solid #0d0d0d;
@@ -24,208 +25,351 @@
       padding: 18px;
       margin-bottom: 16px;
     }
-    .card h2 {
-      font-size: 14px;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      font-weight: 700;
-      margin-bottom: 14px;
-    }
-    .field { margin-bottom: 14px; }
-    label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 6px;
-      color: #1a1a1a;
-    }
-    input {
+    .card h2 { font-size: 15px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 800; margin-bottom: 4px; }
+    .card .when { font-size: 12px; font-weight: 600; color: #5a2a00; margin-bottom: 14px; }
+    .group-label { font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #7a3500; margin: 16px 0 8px; }
+    .field { margin-bottom: 12px; }
+    .row2 { display: flex; gap: 10px; }
+    .row2 .field { flex: 1; }
+    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #1a1a1a; }
+    input, textarea, select {
       width: 100%;
-      padding: 12px;
+      padding: 11px;
       font-size: 16px;
       border: 2px solid #0d0d0d;
       border-radius: 8px;
-      background: rgba(255,255,255,0.4);
+      background: rgba(255,255,255,0.45);
       color: #0d0d0d;
       -webkit-appearance: none;
+      font-family: inherit;
     }
-    input:focus { outline: none; background: rgba(255,255,255,0.6); }
-    .submit-btn {
-      width: 100%;
-      padding: 16px;
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      background: #0d0d0d;
-      color: #ffc107;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      margin-top: 8px;
-      touch-action: manipulation;
+    textarea { min-height: 60px; resize: vertical; }
+    input:focus, textarea:focus, select:focus { outline: none; background: rgba(255,255,255,0.65); }
+    .hint { font-size: 11px; color: #5a4a3a; margin-top: 3px; font-weight: 500; }
+    .toggle-row { display: flex; gap: 10px; margin-bottom: 12px; }
+    .toggle {
+      flex: 1; padding: 12px; text-align: center; font-weight: 700; font-size: 14px;
+      border: 2px solid #0d0d0d; border-radius: 8px; background: rgba(255,255,255,0.3);
+      cursor: pointer; touch-action: manipulation; user-select: none;
     }
-    .submit-btn:active { opacity: 0.8; }
-    .status {
-      margin-top: 16px;
-      padding: 14px;
-      border-radius: 8px;
-      font-size: 15px;
-      font-weight: 600;
-      text-align: center;
-      display: none;
+    .toggle.on { background: #0d0d0d; color: #ffc107; }
+    .seg { display: flex; gap: 6px; }
+    .seg .opt {
+      flex: 1; padding: 11px 4px; text-align: center; font-weight: 700; font-size: 14px;
+      border: 2px solid #0d0d0d; border-radius: 8px; background: rgba(255,255,255,0.3);
+      cursor: pointer; touch-action: manipulation; user-select: none;
     }
-    .status.success { background: rgba(39,174,96,0.3); border: 2px solid #27ae60; }
-    .status.error { background: rgba(192,57,43,0.3); border: 2px solid #c0392b; }
+    .seg .opt.on { background: #0d0d0d; color: #ffc107; }
+    .saved-flag {
+      display: none; font-size: 12px; font-weight: 700; color: #1b5e20;
+      background: rgba(39,174,96,0.25); border: 1px solid #1b5e20; border-radius: 6px;
+      padding: 8px 10px; margin-bottom: 14px; text-align: center;
+    }
+    .btn {
+      width: 100%; padding: 16px; font-size: 18px; font-weight: 700; letter-spacing: 0.08em;
+      background: #0d0d0d; color: #ffc107; border: none; border-radius: 12px;
+      cursor: pointer; margin-top: 6px; touch-action: manipulation;
+    }
+    .btn:active { opacity: 0.8; }
+    .btn-secondary {
+      width: 100%; padding: 12px; font-size: 14px; font-weight: 700;
+      background: rgba(255,255,255,0.3); color: #0d0d0d; border: 2px solid #0d0d0d;
+      border-radius: 12px; cursor: pointer; margin-top: 10px; touch-action: manipulation;
+    }
+    #status {
+      margin-top: 16px; padding: 14px; border-radius: 8px; font-size: 15px;
+      font-weight: 600; text-align: center; display: none;
+    }
     .back-link {
-      display: block;
-      text-align: center;
-      margin-top: 16px;
-      font-size: 15px;
-      font-weight: 700;
-      color: #0d0d0d;
-      text-decoration: none;
-      border-bottom: 2px solid #0d0d0d;
+      display: block; text-align: center; margin-top: 16px; font-size: 15px; font-weight: 700;
+      color: #0d0d0d; text-decoration: none; border-bottom: 2px solid #0d0d0d;
     }
+    .count { font-size: 11px; color: #5a4a3a; font-weight: 600; text-align: center; margin-top: 14px; }
   </style>
 </head>
 <body>
 <div class="shell">
 
-  <h1>🌴 FORGE OS</h1>
-  <div class="sub">Enter today's HRV + Sleep data</div>
+  <h1>🌴 FORGE Daily Log</h1>
+  <div class="sub">Log in the morning — you're completing yesterday and last night.</div>
 
+  <div id="saved-flag" class="saved-flag">✓ Saved on this device — leave and come back, it'll still be here.</div>
+
+  <!-- THIS MORNING -->
   <div class="card">
-    <h2>❤️ Welltory HRV</h2>
-    <div class="field">
-      <label>Stress % (0-100)</label>
-      <input type="number" id="stress" min="0" max="100" placeholder="e.g. 72">
+    <h2>☀️ This Morning</h2>
+    <div class="when">Last night's sleep + this morning's HRV and weigh-in → today's record</div>
+
+    <div class="group-label">Welltory HRV</div>
+    <div class="row2">
+      <div class="field"><label>Stress %</label><input type="number" id="hrv_stress" min="0" max="100" inputmode="numeric" placeholder="72"></div>
+      <div class="field"><label>Energy %</label><input type="number" id="hrv_energy" min="0" max="100" inputmode="numeric" placeholder="39"></div>
+      <div class="field"><label>Health %</label><input type="number" id="hrv_health" min="0" max="100" inputmode="numeric" placeholder="20"></div>
     </div>
-    <div class="field">
-      <label>Energy % (0-100)</label>
-      <input type="number" id="energy" min="0" max="100" placeholder="e.g. 39">
+
+    <div class="group-label">Sleep</div>
+    <div class="field"><label>Sleep score %</label><input type="number" id="sleep_score" min="0" max="100" inputmode="numeric" placeholder="94"></div>
+    <div class="field"><label>Duration</label><input type="text" id="sleep_duration" placeholder="7h 15m"></div>
+    <div class="row2">
+      <div class="field"><label>HR min</label><input type="number" id="hr_min" min="30" max="120" inputmode="numeric" placeholder="52"></div>
+      <div class="field"><label>HR max</label><input type="number" id="hr_max" min="30" max="120" inputmode="numeric" placeholder="72"></div>
     </div>
-    <div class="field">
-      <label>Health % (0-100)</label>
-      <input type="number" id="health" min="0" max="100" placeholder="e.g. 20">
+
+    <div class="group-label">Body composition (optional)</div>
+    <div class="row2">
+      <div class="field"><label>Weight (kg)</label><input type="number" step="0.1" id="bc_weight" inputmode="decimal" placeholder="82.4"></div>
+      <div class="field"><label>Body fat %</label><input type="number" step="0.1" id="bc_fat" inputmode="decimal" placeholder="18.2"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Muscle (kg)</label><input type="number" step="0.1" id="bc_muscle" inputmode="decimal" placeholder="64.1"></div>
+      <div class="field"><label>BMI</label><input type="number" step="0.1" id="bc_bmi" inputmode="decimal" placeholder="24.3"></div>
+    </div>
+    <div class="field"><label>Visceral fat level</label><input type="number" step="1" id="bc_visceral" inputmode="numeric" placeholder="8"></div>
+  </div>
+
+  <!-- YESTERDAY -->
+  <div class="card">
+    <h2>🌙 Yesterday</h2>
+    <div class="when">What you did yesterday — the inputs behind this morning's recovery → yesterday's record</div>
+
+    <div class="group-label">Alcohol</div>
+    <div class="row2">
+      <div class="field"><label>Drinks</label><input type="number" step="1" id="alcohol_units" inputmode="numeric" placeholder="0"></div>
+      <div class="field"><label>Last drink</label><input type="time" id="alcohol_time"></div>
+    </div>
+
+    <div class="group-label">Nicotine (snuff)</div>
+    <div class="row2">
+      <div class="field"><label>Pinches</label><input type="number" step="1" id="nicotine_units" inputmode="numeric" placeholder="0"></div>
+      <div class="field"><label>Last pinch</label><input type="time" id="nicotine_time"></div>
+    </div>
+
+    <div class="group-label">Stress &amp; load</div>
+    <div class="row2">
+      <div class="field"><label>Stress (1–10)</label><input type="number" min="1" max="10" id="stress_rating" inputmode="numeric" placeholder="5"></div>
+      <div class="field"><label>Busyness (1–10)</label><input type="number" min="1" max="10" id="busyness_rating" inputmode="numeric" placeholder="5"></div>
+    </div>
+
+    <div class="group-label">Training</div>
+    <div class="seg" id="training_seg">
+      <div class="opt" data-val="Rest">Rest</div>
+      <div class="opt" data-val="Lift">Lift</div>
+      <div class="opt" data-val="HIIT">HIIT</div>
+      <div class="opt" data-val="Other">Other</div>
+    </div>
+    <input type="hidden" id="training_type">
+    <div class="field" style="margin-top:10px"><label>Duration (min)</label><input type="number" step="1" id="training_min" inputmode="numeric" placeholder="0"></div>
+
+    <div class="group-label">Flags</div>
+    <div class="toggle-row">
+      <div class="toggle" id="t_sick" data-key="sick">🤧 Sick</div>
+      <div class="toggle" id="t_late" data-key="late_meal">🌙 Late meal</div>
+    </div>
+
+    <div class="group-label">Note</div>
+    <div class="field"><textarea id="y_note" placeholder="e.g. report cards till midnight · drinks with friends · fighting a cold"></textarea>
+      <div class="hint">Free text for anything that doesn't fit a field — searchable later, your discovery net.</div>
     </div>
   </div>
 
-  <div class="card">
-    <h2>😴 Sleep Data</h2>
-    <div class="field">
-      <label>Sleep Score % (0-100)</label>
-      <input type="number" id="sleep_score" min="0" max="100" placeholder="e.g. 94">
-    </div>
-    <div class="field">
-      <label>Sleep Duration</label>
-      <input type="text" id="sleep_duration" placeholder="e.g. 7h 15m">
-    </div>
-    <div class="field">
-      <label>HR Range Min (bpm)</label>
-      <input type="number" id="hr_min" min="30" max="120" placeholder="e.g. 52">
-    </div>
-    <div class="field">
-      <label>HR Range Max (bpm)</label>
-      <input type="number" id="hr_max" min="30" max="120" placeholder="e.g. 72">
-    </div>
-  </div>
+  <button class="btn" onclick="submitData()">🚀 Save &amp; Update Brief</button>
+  <button class="btn-secondary" onclick="exportCSV()">⬇︎ Export full history (CSV)</button>
+  <button class="btn-secondary" onclick="clearToday()">Clear today's entry</button>
 
-  <button class="submit-btn" onclick="submitData()">🚀 UPDATE BRIEF</button>
-
-  <div class="status" id="status"></div>
-
+  <div id="status"></div>
+  <div class="count" id="count"></div>
   <a href="https://theseanman.github.io/forge-daily-brief" class="back-link">← Back to Brief</a>
 
 </div>
-
 <script>
-// GitHub configuration
-var GITHUB_TOKEN = "PASTE_YOUR_GITHUB_PAT_HERE";
-var GITHUB_REPO = "theseanman/forge-daily-brief";
-var GITHUB_BRANCH = "gh-pages";
+// ── Date keys ──────────────────────────────────────────────────────────────
+function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function todayKey(){ return ymd(new Date()); }
+function yesterdayKey(){ var d=new Date(); d.setDate(d.getDate()-1); return ymd(d); }
 
-function showStatus(msg, type) {
-  var el = document.getElementById('status');
-  el.textContent = msg;
-  el.className = 'status ' + type;
-  el.style.display = 'block';
-  setTimeout(function() { el.style.display = 'none'; }, 5000);
+// Fields that round-trip in the draft (so the scale trip never wipes anything)
+var DRAFT_FIELDS = ['hrv_stress','hrv_energy','hrv_health','sleep_score','sleep_duration',
+  'hr_min','hr_max','bc_weight','bc_fat','bc_muscle','bc_bmi','bc_visceral',
+  'alcohol_units','alcohol_time','nicotine_units','nicotine_time',
+  'stress_rating','busyness_rating','training_min','y_note'];
+// training_type (hidden), sick, late_meal handled separately (toggles)
+
+function showStatus(msg, color){
+  var el=document.getElementById('status');
+  el.textContent=msg; el.style.display='block';
+  el.style.background = color==='green'?'rgba(39,174,96,0.3)':color==='red'?'rgba(192,57,43,0.3)':'rgba(255,255,255,0.35)';
+  el.style.border = '2px solid '+(color==='green'?'#27ae60':color==='red'?'#c0392b':'#0d0d0d');
+}
+function val(id){ var el=document.getElementById(id); return el?el.value:''; }
+function num(id){ var v=val(id); return v===''?null:parseFloat(v); }
+
+// ── History store: dict keyed by ISO date, fields merged per date ───────────
+function loadHistory(){
+  var raw;
+  try { raw = localStorage.getItem('forge-health-history'); } catch(e){ return {}; }
+  if(!raw) return {};
+  var parsed;
+  try { parsed = JSON.parse(raw); } catch(e){ return {}; }
+  // Migrate older array format → dict keyed by date
+  if(Array.isArray(parsed)){
+    var dict={};
+    parsed.forEach(function(e){ if(e&&e.date) dict[e.date]=e; });
+    return dict;
+  }
+  return parsed || {};
+}
+function saveHistory(h){ try{ localStorage.setItem('forge-health-history', JSON.stringify(h)); }catch(e){} }
+
+// Merge only the provided (non-null) fields into a date's record — never clobbers
+// fields written by the other card or, later, by the auto-pull Shortcut.
+function mergeInto(history, dateKey, fields){
+  var rec = history[dateKey] || { date: dateKey };
+  Object.keys(fields).forEach(function(k){
+    var v = fields[k];
+    if(v !== null && v !== '' && v !== undefined) rec[k] = v;
+  });
+  rec.updated = new Date().toISOString();
+  history[dateKey] = rec;
 }
 
-async function submitData() {
-  var stress = document.getElementById('stress').value;
-  var energy = document.getElementById('energy').value;
-  var health = document.getElementById('health').value;
-  var score = document.getElementById('sleep_score').value;
-  var duration = document.getElementById('sleep_duration').value;
-  var hr_min = document.getElementById('hr_min').value;
-  var hr_max = document.getElementById('hr_max').value;
+// ── Draft (today's in-progress entry) ───────────────────────────────────────
+function getToggle(key){ return document.querySelector('.toggle[data-key="'+key+'"]').classList.contains('on'); }
+function setToggle(key,on){ document.querySelector('.toggle[data-key="'+key+'"]').classList.toggle('on', !!on); }
+function setSeg(v){
+  document.getElementById('training_type').value = v||'';
+  document.querySelectorAll('#training_seg .opt').forEach(function(o){ o.classList.toggle('on', o.getAttribute('data-val')===v); });
+}
 
-  if (!stress || !energy || !health || !score || !duration || !hr_min || !hr_max) {
-    showStatus('⚠️ Please fill in all fields', 'error');
-    return;
-  }
+function saveDraft(){
+  var d={ date: todayKey(), values:{}, sick:getToggle('sick'), late_meal:getToggle('late_meal'), training_type:val('training_type') };
+  DRAFT_FIELDS.forEach(function(id){ d.values[id]=val(id); });
+  try{ localStorage.setItem('forge-log-draft', JSON.stringify(d)); }catch(e){}
+}
+function loadDraft(){
+  var raw; try{ raw=localStorage.getItem('forge-log-draft'); }catch(e){ return false; }
+  if(!raw) return false;
+  var d; try{ d=JSON.parse(raw); }catch(e){ return false; }
+  if(d.date !== todayKey()){ try{ localStorage.removeItem('forge-log-draft'); }catch(e){} return false; }
+  var any=false;
+  DRAFT_FIELDS.forEach(function(id){
+    var el=document.getElementById(id);
+    if(el && d.values && d.values[id]!=null && d.values[id]!==''){ el.value=d.values[id]; any=true; }
+  });
+  if(d.training_type){ setSeg(d.training_type); any=true; }
+  if(d.sick){ setToggle('sick',true); any=true; }
+  if(d.late_meal){ setToggle('late_meal',true); any=true; }
+  return any;
+}
 
-  var data = {
-    welltory: {
-      stress: parseInt(stress),
-      energy: parseInt(energy),
-      health: parseInt(health)
-    },
-    sleep: {
-      score: parseInt(score),
-      duration: duration,
-      hr_range: hr_min + '–' + hr_max
-    },
-    updated: new Date().toISOString()
+function clearToday(){
+  try{ localStorage.removeItem('forge-log-draft'); }catch(e){}
+  DRAFT_FIELDS.forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  setSeg(''); setToggle('sick',false); setToggle('late_meal',false);
+  document.getElementById('saved-flag').style.display='none';
+  showStatus('Cleared today\u2019s entry.', 'white');
+}
+
+// ── CSV export (backbone backup + Excel door) ───────────────────────────────
+var CSV_COLS = ['date','hrv_stress','hrv_energy','hrv_health','sleep_score','sleep_duration',
+  'hr_range','weight','body_fat','muscle_mass','bmi','visceral_fat',
+  'alcohol_units','alcohol_time','nicotine_units','nicotine_time',
+  'stress_rating','busyness_rating','training_type','training_min','sick','late_meal','note'];
+function csvCell(v){
+  if(v===null||v===undefined) return '';
+  if(v===true) return '1'; if(v===false) return '0';
+  var s=String(v);
+  return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+}
+function exportCSV(){
+  var h=loadHistory();
+  var dates=Object.keys(h).sort();
+  if(dates.length===0){ showStatus('No history to export yet.', 'white'); return; }
+  var lines=[CSV_COLS.join(',')];
+  dates.forEach(function(dk){
+    var r=h[dk];
+    lines.push(CSV_COLS.map(function(c){ return csvCell(r[c]); }).join(','));
+  });
+  var blob=new Blob([lines.join('\n')], {type:'text/csv'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url; a.download='forge-health-history-'+todayKey()+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showStatus('Exported '+dates.length+' day(s).', 'green');
+}
+
+// ── Submit: measures → today, factors → yesterday, then POST brief ──────────
+function submitData(){
+  var need=['hrv_stress','hrv_energy','hrv_health','sleep_score','sleep_duration','hr_min','hr_max'];
+  for(var i=0;i<need.length;i++){ if(val(need[i])===''){ showStatus('Fill in all HRV + Sleep fields (This Morning).','red'); return; } }
+  showStatus('Saving...', 'white');
+
+  var history=loadHistory();
+
+  // This morning's recovery → TODAY's record
+  mergeInto(history, todayKey(), {
+    hrv_stress:num('hrv_stress'), hrv_energy:num('hrv_energy'), hrv_health:num('hrv_health'),
+    sleep_score:num('sleep_score'), sleep_duration:val('sleep_duration'),
+    hr_range: (val('hr_min')&&val('hr_max'))? (val('hr_min')+'-'+val('hr_max')) : null,
+    weight:num('bc_weight'), body_fat:num('bc_fat'), muscle_mass:num('bc_muscle'),
+    bmi:num('bc_bmi'), visceral_fat:num('bc_visceral')
+  });
+
+  // Yesterday's inputs → YESTERDAY's record (true-dated)
+  mergeInto(history, yesterdayKey(), {
+    alcohol_units:num('alcohol_units'), alcohol_time:val('alcohol_time')||null,
+    nicotine_units:num('nicotine_units'), nicotine_time:val('nicotine_time')||null,
+    stress_rating:num('stress_rating'), busyness_rating:num('busyness_rating'),
+    training_type:val('training_type')||null, training_min:num('training_min'),
+    sick: getToggle('sick'), late_meal: getToggle('late_meal'),
+    note: val('y_note')||null
+  });
+
+  saveHistory(history);
+  saveDraft();
+  updateCount();
+
+  // Brief still gets today's measures, unchanged shape — keeps the Brief working.
+  var brief={
+    welltory:{ stress:parseInt(val('hrv_stress')), energy:parseInt(val('hrv_energy')), health:parseInt(val('hrv_health')) },
+    body_comp:{ weight:num('bc_weight'), body_fat:num('bc_fat'), muscle_mass:num('bc_muscle'), bmi:num('bc_bmi'), visceral_fat:num('bc_visceral') },
+    sleep:{ score:parseInt(val('sleep_score')), duration:val('sleep_duration'), hr_range:val('hr_min')+'-'+val('hr_max') },
+    notes: val('y_note')||'',
+    updated:new Date().toISOString()
   };
 
-  var content = btoa(JSON.stringify(data, null, 2));
-
-  try {
-    // Get current file SHA (needed for update)
-    var shaResponse = await fetch(
-      'https://api.github.com/repos/' + GITHUB_REPO + '/contents/data.json?ref=' + GITHUB_BRANCH,
-      { headers: { 'Authorization': 'token ' + GITHUB_TOKEN } }
-    );
-    
-    var sha = null;
-    if (shaResponse.ok) {
-      var shaData = await shaResponse.json();
-      sha = shaData.sha;
-    }
-
-    // Update the file
-    var body = {
-      message: 'Update FORGE data ' + new Date().toLocaleTimeString(),
-      content: content,
-      branch: GITHUB_BRANCH
-    };
-    if (sha) body.sha = sha;
-
-    var response = await fetch(
-      'https://api.github.com/repos/' + GITHUB_REPO + '/contents/data.json',
-      {
-        method: 'PUT',
-        headers: {
-          'Authorization': 'token ' + GITHUB_TOKEN,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(body)
-      }
-    );
-
-    if (response.ok) {
-      showStatus('✅ Data saved! Brief will update at 6 AM.', 'success');
-    } else {
-      var err = await response.json();
-      showStatus('❌ Error: ' + (err.message || 'Unknown error'), 'error');
-    }
-
-  } catch(e) {
-    showStatus('❌ Network error. Check connection.', 'error');
-  }
+  fetch('https://forge-input.yoseanreid.workers.dev', {
+    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(brief)
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if(d.ok){ showStatus('Saved! Brief updating...', 'green'); setTimeout(function(){ window.location='https://theseanman.github.io/forge-daily-brief'; }, 2000); }
+    else { showStatus('Saved on device. Brief update failed: '+(d.error||'unknown'), 'red'); }
+  })
+  .catch(function(e){ showStatus('Saved on device. Brief update failed: '+e.message, 'red'); });
 }
+
+function updateCount(){
+  var h=loadHistory(); var n=Object.keys(h).length;
+  document.getElementById('count').textContent = n? (n+' day(s) logged on this device') : '';
+}
+
+// ── Init ────────────────────────────────────────────────────────────────────
+window.onload=function(){
+  document.querySelectorAll('#training_seg .opt').forEach(function(o){
+    o.addEventListener('click', function(){ setSeg(o.getAttribute('data-val')); saveDraft(); document.getElementById('saved-flag').style.display='block'; });
+  });
+  document.querySelectorAll('.toggle').forEach(function(t){
+    t.addEventListener('click', function(){ t.classList.toggle('on'); saveDraft(); document.getElementById('saved-flag').style.display='block'; });
+  });
+  DRAFT_FIELDS.forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.addEventListener('input', function(){ saveDraft(); document.getElementById('saved-flag').style.display='block'; });
+  });
+  var restored=loadDraft();
+  if(restored) document.getElementById('saved-flag').style.display='block';
+  updateCount();
+};
 </script>
 </body>
 </html>
