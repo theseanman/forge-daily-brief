@@ -40,6 +40,15 @@
     }
     .row input:focus { outline: none; background: rgba(255,255,255,0.5); border-radius: 6px; }
     .row input::placeholder { color: rgba(0,0,0,0.28); }
+    .cell { flex: 1; display: flex; flex-direction: column; }
+    .cell input { flex: none; width: 100%; }
+    .evt { font-size: 12px; font-weight: 700; color: #4a2200; padding: 6px 8px 0; line-height: 1.3; }
+    .row.now .evt { color: #ffe082; }
+    .allday {
+      display: none; font-size: 13px; font-weight: 700; color: #5a2a00;
+      background: rgba(255,255,255,0.28); border: 2px solid rgba(0,0,0,0.4);
+      border-radius: 10px; padding: 10px 12px; margin-bottom: 14px;
+    }
     .btn-secondary {
       width: 100%; padding: 12px; font-size: 14px; font-weight: 700; margin-top: 14px;
       background: rgba(255,255,255,0.3); color: #0d0d0d; border: 2px solid #0d0d0d;
@@ -57,6 +66,7 @@
   <h1>🌴 FORGE Day Plan</h1>
   <div class="date" id="date"></div>
   <div class="banner" id="banner"></div>
+  <div class="allday" id="allday"></div>
   <div class="grid" id="grid"></div>
   <div class="saved" id="saved"></div>
   <button class="btn-secondary" onclick="clearDay()">Clear today's plan</button>
@@ -118,7 +128,15 @@ function buildGrid(){
       savePlan(p);
       flashSaved();
     });
-    row.appendChild(lab); row.appendChild(inp);
+    var cell = document.createElement('div'); cell.className = 'cell';
+    var evs = (window.FORGE_EVENTS && window.FORGE_EVENTS[h]) || [];
+    evs.forEach(function(t){
+      var e = document.createElement('div'); e.className = 'evt';
+      e.textContent = '\uD83D\uDCC5 ' + t;   // 📅
+      cell.appendChild(e);
+    });
+    cell.appendChild(inp);
+    row.appendChild(lab); row.appendChild(cell);
     grid.appendChild(row);
   }
 }
@@ -153,12 +171,65 @@ function clearDay(){
   buildGrid(); applyTrainingSeed(); buildGrid();
 }
 
+// ── Calendar auto-fill: read today's events from data.json (already published
+//    by the brief) and bucket them into the hour grid. No brief edit needed. ──
+window.FORGE_EVENTS = {};   // hour -> [ "3:30 PM Title", ... ]
+window.FORGE_ALLDAY = [];
+
+function todayCalLabel(){
+  var d = new Date();
+  var wd = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+  var mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+  var dd = String(d.getDate()).padStart(2,'0');
+  return wd + ' ' + mo + ' ' + dd;          // matches data.json's "%a %b %d", e.g. "Mon Jun 29"
+}
+
+function parseHour(t){
+  var m = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec((t||'').trim());
+  if(!m) return null;
+  var h = parseInt(m[1],10) % 12;
+  if(/PM/i.test(m[3])) h += 12;
+  return h;
+}
+
+function renderAllDay(){
+  var el = document.getElementById('allday');
+  if(!el) return;
+  if(window.FORGE_ALLDAY.length === 0){ el.style.display = 'none'; el.textContent = ''; return; }
+  el.style.display = 'block';
+  el.textContent = '\uD83D\uDCC5 All day: ' + window.FORGE_ALLDAY.join('  \u00B7  ');
+}
+
+function fetchCalendar(){
+  fetch('data.json?t=' + Date.now())
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var cal = (d && d.calendar) || [];
+      var label = todayCalLabel();
+      window.FORGE_EVENTS = {}; window.FORGE_ALLDAY = [];
+      cal.forEach(function(e){
+        if(e.date !== label) return;                 // today only
+        if((e.time||'').toLowerCase() === 'all day'){ window.FORGE_ALLDAY.push(e.title); return; }
+        var h = parseHour(e.time);
+        if(h === null) return;
+        if(h < START_HOUR) h = START_HOUR;           // clamp into visible grid (chip still shows real time)
+        if(h > END_HOUR) h = END_HOUR;
+        var chip = e.time.replace(/^0/, '') + '  ' + e.title;
+        (window.FORGE_EVENTS[h] = window.FORGE_EVENTS[h] || []).push(chip);
+      });
+      renderAllDay();
+      buildGrid();                                   // re-render now that events are loaded
+    })
+    .catch(function(){ /* offline / no data.json — planner still works without calendar */ });
+}
+
 window.onload = function(){
   var now = new Date();
   document.getElementById('date').textContent =
     now.toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric' });
   applyTrainingSeed();   // sets banner + seeds workout
   buildGrid();           // renders grid (picks up the seed) + highlights current hour
+  fetchCalendar();       // pull today's calendar events from data.json, then re-render
   // Re-highlight the current hour as time passes (every minute)
   setInterval(buildGrid, 60000);
 };
