@@ -142,23 +142,13 @@ function buildGrid(){
 }
 
 function applyTrainingSeed(){
+  // Auto-seed removed (summer schedule is flexible). Keeps a light day-type
+  // heads-up banner only; no workout is written into any hour slot.
   var dow = new Date().getDay();
   var type = TRAINING[dow];
-  var label = type === 'Rest' ? '🛌 Rest day — no training scheduled'
-            : (type === 'Lift' ? '🏋️ Today is a LIFT day' : '🔥 Today is a HIIT day');
+  var label = type === 'Rest' ? '🛌 Rest day'
+            : (type === 'Lift' ? '🏋️ Lift day (whenever suits you)' : '🔥 HIIT day (whenever suits you)');
   document.getElementById('banner').textContent = label;
-
-  if (type === 'Rest') return;
-  // Seed the workout into a default slot once per day, only if that slot is empty
-  // and we haven't already seeded today (so deleting it won't make it reappear).
-  var seededKey = 'forge-dayplan-seeded-' + todayKey();
-  if (localStorage.getItem(seededKey)) return;
-  var plan = loadPlan();
-  if (!plan[SEED_HOUR]){
-    plan[SEED_HOUR] = (type === 'Lift' ? '🏋️ Lift' : '🔥 HIIT') + ' (planned)';
-    savePlan(plan);
-  }
-  try { localStorage.setItem(seededKey, '1'); } catch(e){}
 }
 
 function clearDay(){
