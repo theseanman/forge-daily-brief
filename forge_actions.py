@@ -1608,6 +1608,11 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
 
 {concert_cards_html}
 
+  <div class="card">
+    <div class="card-header"><span class="card-icon">\U0001F5D3\uFE0F\U0001F334</span><span>Day Planner</span></div>
+    <div class="mini-card"><div class="mini-detail"><a href="https://theseanman.github.io/forge-daily-brief/planner.html">Open today's hour-by-hour plan &#8594;</a><br><span style="font-size:12px;">Your calendar auto-fills; type tasks into the open hours.</span></div></div>
+  </div>
+
   <div class="footer">🌴 FORGE OS · {date_str.upper()} · {time_str} · theseanman.github.io/forge-daily-brief</div>
 
 </div>
