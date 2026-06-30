@@ -228,6 +228,7 @@
     <div class="toggle-row">
       <div class="toggle" id="t_warrior" data-key="p_warrior">⚔️ Warrior Promise</div>
     </div>
+    <button class="btn" style="margin-top:14px; background:#ff6d00; color:#fff;" onclick="saveProtocolOnly()">🔥 Save Protocol Reps</button>
   </div>
 
   <button class="btn" onclick="submitData()">🚀 Save &amp; Update Brief</button>
@@ -354,6 +355,17 @@ function getProtocolReps(){
   PROTO_COUNTERS.forEach(function(k){ r[k]=protoCounts[k]||0; });
   PROTO_TOGGLES.forEach(function(k){ r[k]=getProtoToggle(k); });
   return r;
+}
+
+function saveProtocolOnly(){
+  showStatus('Saving protocol reps...', 'white');
+  var history=loadHistory();
+  mergeInto(history, todayKey(), { protocol_reps: getProtocolReps() });
+  saveHistory(history);
+  saveDraft();
+  updateCount();
+  syncToCloud([ history[todayKey()] ]);
+  showStatus('Protocol reps saved and synced!', 'green');
 }
 
 // ── CSV export (backbone backup + Excel door) ───────────────────────────────
