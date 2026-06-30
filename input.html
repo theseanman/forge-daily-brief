@@ -85,6 +85,18 @@
       color: #0d0d0d; text-decoration: none; border-bottom: 2px solid #0d0d0d;
     }
     .count { font-size: 11px; color: #5a4a3a; font-weight: 600; text-align: center; margin-top: 14px; }
+    .counter-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.1); }
+    .counter-row:last-of-type { border-bottom: none; }
+    .counter-row label { font-size: 13px; font-weight: 600; color: #1a1a1a; flex: 1; }
+    .counter-controls { display: flex; align-items: center; gap: 10px; }
+    .counter-controls span { font-size: 20px; font-weight: 800; min-width: 28px; text-align: center; color: #0d0d0d; }
+    .cbtn {
+      width: 38px; height: 38px; font-size: 20px; font-weight: 700;
+      border: 2px solid #0d0d0d; border-radius: 8px; background: rgba(255,255,255,0.3);
+      color: #0d0d0d; cursor: pointer; touch-action: manipulation; user-select: none;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cbtn:active { background: #0d0d0d; color: #ffc107; }
   </style>
 </head>
 <body>
@@ -172,6 +184,52 @@
     </div>
   </div>
 
+  <!-- SUMMER PROTOCOL REPS -->
+  <div class="card">
+    <h2>🔥 Summer Protocol Reps</h2>
+    <div class="when">Track today's reps — tap + to count, toggles for yes/no drills → today's record</div>
+
+    <div class="group-label">Countable drills</div>
+
+    <div class="counter-row">
+      <label>🚪 Pause — Trigger Breaths</label>
+      <div class="counter-controls"><button class="cbtn" onclick="decP('p_pause')">−</button><span id="p_pause_v">0</span><button class="cbtn" onclick="incP('p_pause')">+</button></div>
+    </div>
+    <div class="counter-row">
+      <label>🔍 Camera Off (learned something)</label>
+      <div class="counter-controls"><button class="cbtn" onclick="decP('p_camera')">−</button><span id="p_camera_v">0</span><button class="cbtn" onclick="incP('p_camera')">+</button></div>
+    </div>
+    <div class="counter-row">
+      <label>🧍 Posture Resets</label>
+      <div class="counter-controls"><button class="cbtn" onclick="decP('p_posture')">−</button><span id="p_posture_v">0</span><button class="cbtn" onclick="incP('p_posture')">+</button></div>
+    </div>
+    <div class="counter-row">
+      <label>⚡ Opportunity Questions</label>
+      <div class="counter-controls"><button class="cbtn" onclick="decP('p_opportunity')">−</button><span id="p_opportunity_v">0</span><button class="cbtn" onclick="incP('p_opportunity')">+</button></div>
+    </div>
+    <div class="counter-row">
+      <label>💬 Second Questions</label>
+      <div class="counter-controls"><button class="cbtn" onclick="decP('p_second_q')">−</button><span id="p_second_q_v">0</span><button class="cbtn" onclick="incP('p_second_q')">+</button></div>
+    </div>
+    <div class="counter-row">
+      <label>❤️ Warmth Reps</label>
+      <div class="counter-controls"><button class="cbtn" onclick="decP('p_warmth')">−</button><span id="p_warmth_v">0</span><button class="cbtn" onclick="incP('p_warmth')">+</button></div>
+    </div>
+    <div class="counter-row">
+      <label>🐢 Slow Down (intentional)</label>
+      <div class="counter-controls"><button class="cbtn" onclick="decP('p_slow')">−</button><span id="p_slow_v">0</span><button class="cbtn" onclick="incP('p_slow')">+</button></div>
+    </div>
+
+    <div class="group-label">Binary drills (yes / no)</div>
+    <div class="toggle-row">
+      <div class="toggle" id="t_fine" data-key="p_fine">🤝 Fine Either Way</div>
+      <div class="toggle" id="t_boundary" data-key="p_boundary">🛑 Boundary Rep</div>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle" id="t_warrior" data-key="p_warrior">⚔️ Warrior Promise</div>
+    </div>
+  </div>
+
   <button class="btn" onclick="submitData()">🚀 Save &amp; Update Brief</button>
   <button class="btn-secondary" onclick="exportCSV()">⬇︎ Export full history (CSV)</button>
   <button class="btn-secondary" onclick="clearToday()">Clear today's entry</button>
@@ -242,7 +300,7 @@ function setSeg(v){
 }
 
 function saveDraft(){
-  var d={ date: todayKey(), values:{}, sick:getToggle('sick'), late_meal:getToggle('late_meal'), training_type:val('training_type') };
+  var d={ date: todayKey(), values:{}, sick:getToggle('sick'), late_meal:getToggle('late_meal'), training_type:val('training_type'), protocol:getProtocolReps() };
   DRAFT_FIELDS.forEach(function(id){ d.values[id]=val(id); });
   try{ localStorage.setItem('forge-log-draft', JSON.stringify(d)); }catch(e){}
 }
@@ -259,6 +317,14 @@ function loadDraft(){
   if(d.training_type){ setSeg(d.training_type); any=true; }
   if(d.sick){ setToggle('sick',true); any=true; }
   if(d.late_meal){ setToggle('late_meal',true); any=true; }
+  if(d.protocol){
+    PROTO_COUNTERS.forEach(function(k){
+      if(d.protocol[k]!=null){ protoCounts[k]=d.protocol[k]; document.getElementById(k+'_v').textContent=protoCounts[k]; any=true; }
+    });
+    PROTO_TOGGLES.forEach(function(k){
+      if(d.protocol[k]){ setProtoToggle(k,true); any=true; }
+    });
+  }
   return any;
 }
 
@@ -266,8 +332,28 @@ function clearToday(){
   try{ localStorage.removeItem('forge-log-draft'); }catch(e){}
   DRAFT_FIELDS.forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
   setSeg(''); setToggle('sick',false); setToggle('late_meal',false);
+  PROTO_COUNTERS.forEach(function(k){ protoCounts[k]=0; document.getElementById(k+'_v').textContent='0'; });
+  PROTO_TOGGLES.forEach(function(k){ setProtoToggle(k,false); });
   document.getElementById('saved-flag').style.display='none';
   showStatus('Cleared today\u2019s entry.', 'white');
+}
+
+// ── Protocol counters ────────────────────────────────────────────────────
+var PROTO_COUNTERS = ['p_pause','p_camera','p_posture','p_opportunity','p_second_q','p_warmth','p_slow'];
+var PROTO_TOGGLES = ['p_fine','p_boundary','p_warrior'];
+var protoCounts = {};
+PROTO_COUNTERS.forEach(function(k){ protoCounts[k]=0; });
+
+function incP(k){ protoCounts[k]=(protoCounts[k]||0)+1; document.getElementById(k+'_v').textContent=protoCounts[k]; saveDraft(); document.getElementById('saved-flag').style.display='block'; }
+function decP(k){ if((protoCounts[k]||0)>0) protoCounts[k]--; document.getElementById(k+'_v').textContent=protoCounts[k]; saveDraft(); document.getElementById('saved-flag').style.display='block'; }
+function getProtoToggle(key){ var el=document.querySelector('.toggle[data-key="'+key+'"]'); return el?el.classList.contains('on'):false; }
+function setProtoToggle(key,on){ var el=document.querySelector('.toggle[data-key="'+key+'"]'); if(el) el.classList.toggle('on', !!on); }
+
+function getProtocolReps(){
+  var r={};
+  PROTO_COUNTERS.forEach(function(k){ r[k]=protoCounts[k]||0; });
+  PROTO_TOGGLES.forEach(function(k){ r[k]=getProtoToggle(k); });
+  return r;
 }
 
 // ── CSV export (backbone backup + Excel door) ───────────────────────────────
@@ -388,6 +474,11 @@ function submitData(){
     note: val('y_note')||null
   });
 
+  // Protocol reps → today's record (same day as HRV/sleep)
+  mergeInto(history, todayKey(), {
+    protocol_reps: getProtocolReps()
+  });
+
   saveHistory(history);
   saveDraft();
   updateCount();
@@ -426,7 +517,9 @@ window.onload=function(){
     o.addEventListener('click', function(){ setSeg(o.getAttribute('data-val')); saveDraft(); document.getElementById('saved-flag').style.display='block'; });
   });
   document.querySelectorAll('.toggle').forEach(function(t){
-    t.addEventListener('click', function(){ t.classList.toggle('on'); saveDraft(); document.getElementById('saved-flag').style.display='block'; });
+    t.addEventListener('click', function(){
+      t.classList.toggle('on'); saveDraft(); document.getElementById('saved-flag').style.display='block';
+    });
   });
   DRAFT_FIELDS.forEach(function(id){
     var el=document.getElementById(id);

@@ -697,6 +697,53 @@ def render_triad(day_of_year):
   </div>'''
 
 
+def render_summer_protocol():
+    """Build the Summer Protocol reference card — all 10 drills, always visible."""
+    drills = [
+        ("\U0001F6AA Pause — Trigger Breath",
+         "One slow nasal breath every doorway/kettle. Don\u2019t pause in conversations yet \u2014 just groove the breath on the cue.",
+         "Cue: doorway, kettle, red light"),
+        ("\U0001F50D Camera Off",
+         "In every conversation, find one genuine thing about the other person you didn\u2019t know. That\u2019s your only job.",
+         "Cue: every conversation"),
+        ("\U0001F9CD Posture Reset",
+         "Every time you stand up: shoulders down, chest open, head level. Just the reset.",
+         "Cue: every time you stand"),
+        ("\u26A1 Opportunity Question",
+         "First setback or new environment, ask: what\u2019s the opportunity here?",
+         "Cue: setback or threshold"),
+        ("\U0001F91D I\u2019m Fine Either Way",
+         "Before the first tense interaction, say it silently and mean it. You\u2019d like it to go well; you don\u2019t need it to.",
+         "Cue: before tension \u00b7 binary: yes/no"),
+        ("\U0001F4AC The Second Question",
+         "When someone answers you, don\u2019t pivot to yourself. Ask one follow-up that goes deeper into what they said.",
+         "Cue: every conversation"),
+        ("\U0001F6D1 Boundary Rep",
+         "State one preference or decline one small thing. No qualifier, no apology. Let the silence sit.",
+         "Cue: once daily \u00b7 binary: yes/no"),
+        ("\u2694\uFE0F Warrior Promise",
+         "Name the one hard thing you\u2019re avoiding. Do it first, before the easy stuff.",
+         "Cue: morning \u00b7 binary: yes/no"),
+        ("\u2764\uFE0F Warmth Rep",
+         "Give one specific, sincere appreciation to someone. Not \u2018you\u2019re great\u2019 \u2014 something true and particular.",
+         "Cue: once daily"),
+        ("\U0001F422 Slow Down",
+         "Move 20% slower than your impulse. Reach, turn, walk slower.",
+         "Cue: all day"),
+    ]
+    rows = ""
+    for name, instruction, trigger in drills:
+        rows += f'''<div class="proto-drill">
+      <div class="proto-name">{name}</div>
+      <div class="proto-inst">{instruction}</div>
+      <div class="proto-trigger">{trigger}</div>
+    </div>\n    '''
+    return f'''  <div class="card">
+    <div class="card-header"><span class="card-icon">&#x1F525;&#x1F334;</span><span>Summer Protocol \u2014 Today\u2019s Reps</span></div>
+    <div class="proto-intro">Train where it\u2019s easy. Groove the reflex. It shows up when it matters.</div>
+    {rows}</div>'''
+
+
 def get_sports_updates():
     """Comprehensive sports intel: API for MLB/NHL/NFL, hardcoded for CFL/Soccer/Rugby/NLL."""
     import urllib.request, json
@@ -1185,6 +1232,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     day_of_year = now.timetuple().tm_yday
     wisdom = get_wisdom(day_of_year)
     triad_block = render_triad(day_of_year)
+    protocol_block = render_summer_protocol()
     sports_text = get_sports_updates()
     reminders = fetch_reminders()
     sitrep_text = generate_sitrep(welltory, sleep, calendar_events, weather, reminders)
@@ -1358,6 +1406,11 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     .triad-anchor {{ background: rgba(255,255,255,0.1); border-left: 3px solid var(--text-bright); border-radius: 6px; padding: 10px 12px; margin-bottom: 6px; font-size: 13px; color: var(--text-light); line-height: 1.5; }}
     .triad-anchor-hi {{ background: rgba(255,255,255,0.28); border-left: 5px solid var(--text-bright); font-weight: 700; box-shadow: 0 0 0 1px var(--text-bright); }}
     .triad-text {{ background: rgba(255,255,255,0.1); border: 2px solid var(--text-bright); border-radius: 8px; padding: 12px; font-size: 13px; color: var(--text-light); line-height: 1.5; }}
+    .proto-intro {{ font-size: 13px; color: var(--muted); font-style: italic; margin-bottom: 14px; padding: 0 2px; }}
+    .proto-drill {{ background: rgba(255,255,255,0.1); border-left: 4px solid #ff6d00; border-radius: 6px; padding: 10px 12px; margin-bottom: 8px; }}
+    .proto-name {{ font-size: 14px; font-weight: 700; color: var(--text-bright); margin-bottom: 4px; }}
+    .proto-inst {{ font-size: 13px; color: var(--text-light); line-height: 1.5; margin-bottom: 4px; }}
+    .proto-trigger {{ font-size: 11px; color: var(--muted); font-weight: 600; }}
     .footer {{ text-align: center; margin-top: 20px; font-size: 11px; color: var(--muted); letter-spacing: 0.15em; padding-bottom: 30px; }}
     a {{ color: var(--text-bright); text-decoration: none; font-weight: 700; border-bottom: 2px solid var(--text-bright); }}
     .expandable {{ cursor: pointer; }}
@@ -1553,6 +1606,8 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
 
 {triad_block}
 
+{protocol_block}
+
 
   <div class="card">
     <div class="card-header"><span class="card-icon">🏆🌴</span><span>Sports Intel</span></div>
@@ -1659,7 +1714,16 @@ function tick() {{
   }}
 }}
 window.FORGE_CALENDAR = {cal_json};
-window.onload = function() {{ loadCounts(); setInterval(tick, 1000); }};
+window.FORGE_GEN_DATE = "{now.strftime('%Y-%m-%d')}";
+window.onload = function() {{
+  loadCounts(); setInterval(tick, 1000);
+  // Staleness fix: if the brief was generated on a different date, force a fresh load
+  var todayISO = new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0');
+  if (window.FORGE_GEN_DATE !== todayISO) {{
+    var url = location.href.split('?')[0] + '?v=' + Date.now();
+    location.replace(url);
+  }}
+}};
 </script>
 </body>
 </html>"""
