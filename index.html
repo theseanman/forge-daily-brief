@@ -372,24 +372,34 @@ function toggleSection(el) {
 }
 function updateDate() {
   var now = new Date();
-  var dayName = now.toLocaleDateString('en-US', {weekday:'long'});
-  var dateStr = now.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'});
-  var timeStr = now.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
+  var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   
-  var dayEl = document.getElementById('day-name');
-  if (dayEl) dayEl.textContent = dayName;
+  var dayName = days[now.getDay()];
+  var month = months[now.getMonth()];
+  var date = now.getDate();
+  var year = now.getFullYear();
+  var hours = String(now.getHours()).padStart(2, '0');
+  var mins = String(now.getMinutes()).padStart(2, '0');
   
-  var dateEl = document.getElementById('date-display');
-  if (dateEl) dateEl.textContent = dateStr;
+  var dateStr = month + ' ' + date + ', ' + year;
+  var timeStr = hours + ':' + mins;
   
-  var clockEl = document.getElementById('live-clock');
-  if (clockEl) clockEl.textContent = timeStr;
+  var el;
+  el = document.getElementById('day-name');
+  if (el) el.textContent = dayName;
   
-  var footerDateEl = document.getElementById('footer-date');
-  if (footerDateEl) footerDateEl.textContent = dateStr.toUpperCase();
+  el = document.getElementById('date-display');
+  if (el) el.textContent = dateStr;
   
-  var footerTimeEl = document.getElementById('footer-time');
-  if (footerTimeEl) footerTimeEl.textContent = timeStr;
+  el = document.getElementById('live-clock');
+  if (el) el.textContent = timeStr;
+  
+  el = document.getElementById('footer-date');
+  if (el) el.textContent = dateStr.toUpperCase();
+  
+  el = document.getElementById('footer-time');
+  if (el) el.textContent = timeStr;
 }
 updateDate();
 window.onload = function() { loadCounts(); setInterval(updateDate, 1000); };
