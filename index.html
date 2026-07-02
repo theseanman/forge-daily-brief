@@ -370,15 +370,28 @@ function toggleSection(el) {
   var c = el.querySelector('.expandable-content');
   if (c) c.style.display = c.style.display === 'block' ? 'none' : 'block';
 }
-function tick() {
-  var el = document.getElementById('live-clock');
-  if (el) {
-    var now = new Date();
-    el.textContent = now.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
-  }
+function updateDate() {
+  var now = new Date();
+  var dayName = now.toLocaleDateString('en-US', {weekday:'long'});
+  var dateStr = now.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'});
+  var timeStr = now.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
+  
+  var dayEl = document.getElementById('day-name');
+  if (dayEl) dayEl.textContent = dayName;
+  
+  var dateEl = document.getElementById('date-display');
+  if (dateEl) dateEl.textContent = dateStr;
+  
+  var clockEl = document.getElementById('live-clock');
+  if (clockEl) clockEl.textContent = timeStr;
+  
+  var footerDateEl = document.getElementById('footer-date');
+  if (footerDateEl) footerDateEl.textContent = dateStr.toUpperCase();
+  
+  var footerTimeEl = document.getElementById('footer-time');
+  if (footerTimeEl) footerTimeEl.textContent = timeStr;
 }
-window.FORGE_CALENDAR = [{"date": "Sat Jun 13", "time": "06:00 PM", "title": "Scotland Vs Haiti WC 2026 tartan army party"}, {"date": "Mon Jun 15", "time": "All day", "title": "Meal-less Monday "}, {"date": "Tue Jun 16", "time": "All day", "title": "Use Claude to increase daily messages from one"}, {"date": "Tue Jun 16", "time": "10:10 AM", "title": "Recess supervision door 26"}, {"date": "Wed Jun 17", "time": "All day", "title": "I work at Arrington tomorrow"}];
-window.onload = function() { loadCounts(); setInterval(tick, 1000); };
-</script>
+updateDate();
+window.onload = function() { loadCounts(); setInterval(updateDate, 1000); };
 </body>
 </html>
