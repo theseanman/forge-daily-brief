@@ -1,0 +1,565 @@
+{
+  "generated_at": "2026-07-03T14:58:28.715709+00:00",
+  "summary": "\ud83c\udfaf TODAY'S GAMES (Jul 03)\n\u2022 [CFL] Saskatchewan Roughriders @ Ottawa Redblacks | ML: Ottawa Redblacks 190 / Saskatchewan Roughriders -235\n\u2022 [CFL] Edmonton Elks @ BC Lions | ML: BC Lions -102 / Edmonton Elks -118\n\u2022 [CFL] Winnipeg Blue Bombers @ Hamilton Tiger-Cats | ML: Hamilton Tiger-Cats -172 / Winnipeg Blue Bombers 142\n\u2022 [UFC/MMA] Randy Mboyo @ Anas Nfaou | ML: Anas Nfaou -145 / Randy Mboyo 125\n\u2022 [UFC/MMA] Rony Henrique @ Damiano Scogna | ML: Damiano Scogna -275 / Rony Henrique 185\n\u2022 [UFC/MMA] David Allen @ Geoff Pavey | ML: Geoff Pavey -140 / David Allen 120\n\u2022 [UFC/MMA] Gabriele Galluccio @ Oscar Ownsworth | ML: Oscar Ownsworth -115 / Gabriele Galluccio -105\n\u2022 [UFC/MMA] Lincoln Strong @ Zanyar Kamaran | ML: Zanyar Kamaran -215 / Lincoln Strong 175\n\u2022 [UFC/MMA] Nell Ariano @ Norbert Pietrzak | ML: Norbert Pietrzak -163 / Nell Ariano 143\n\u2022 [UFC/MMA] Vladimir Stanca @ Stevie Lee | ML: Stevie Lee -400 / Vladimir Stanca 250\n\u2022 [UFC/MMA] Nicolas Savio @ George Hardwick | ML: George Hardwick -550 / Nicolas Savio 325\n\u2022 [UFC/MMA] Benoit Saint-Denis @ Paddy Pimblett | ML: Paddy Pimblett 130 / Benoit Saint-Denis -155\n\u2022 [UFC/MMA] Conor McGregor @ Max Holloway | ML: Max Holloway -238 / Conor McGregor 195\n\u2022 [UFC/MMA] Alessandro Costa @ Cody Durden | ML: Cody Durden 210 / Alessandro Costa -250\n\u2022 [UFC/MMA] Zachary Reese @ Ryan Gandra | ML: Ryan Gandra -151 / Zachary Reese 131\n\u2022 [UFC/MMA] Cesar Almeida @ Damian Pinas | ML: Damian Pinas -220 / Cesar Almeida 185\n\u2022 [UFC/MMA] Wang Cong @ Tracy Cortez | ML: Tracy Cortez -115 / Wang Cong -105\n\u2022 [UFC/MMA] Kai Kamaka @ Luke Riley | ML: Luke Riley -305 / Kai Kamaka 255\n\u2022 [UFC/MMA] Adrian Yanez @ Cody Garbrandt | ML: Cody Garbrandt 310 / Adrian Yanez -410\n\u2022 [UFC/MMA] Elisha Ellison @ Gable Steveson | ML: Gable Steveson -3500 / Elisha Ellison 1500\n\u2022 [UFC/MMA] Nikita Krylov @ Robert Whittaker | ML: Robert Whittaker -190 / Nikita Krylov 165\n\u2022 [UFC/MMA] Terrance Mckinney @ King Green | ML: King Green 145 / Terrance Mckinney -170\n\u2022 [UFC/MMA] Lone'er Kavanagh @ Brandon Royval | ML: Brandon Royval 187 / Lone'er Kavanagh -222\n\u2022 [UFC/MMA] Mario Bautista @ Cory Sandhagen | ML: Cory Sandhagen -150 / Mario Bautista 130\n\u2022 [UFC/MMA] Kamaru Usman @ Dricus Du Plessis | ML: Dricus Du Plessis -260 / Kamaru Usman 220\n\u2022 [UFC/MMA] Khalil Rountree @ Magomed Ankalaev | ML: Magomed Ankalaev -310 / Khalil Rountree 260\n\n\u26a1 EV SIGNALS\n\u2022 [UFC/MMA] Nicolas Savio @ George Hardwick \u2192 Savio ML +325 (EV +21.2%)\n\u2022 [UFC/MMA] Adrian Yanez @ Cody Garbrandt \u2192 Garbrandt ML +310 (EV +20.5%)\n\u2022 [CFL] Saskatchewan Roughriders @ Ottawa Redblacks \u2192 Redblacks ML +190 (EV +14.5%)\n\u2022 [CFL] Winnipeg Blue Bombers @ Hamilton Tiger-Cats \u2192 Bombers ML +142 (EV +12.1%)\n\nUpdated: 2026-07-03 07:58 PT",
+  "games_today": [
+    {
+      "sport": "CFL",
+      "matchup": "Saskatchewan Roughriders @ Ottawa Redblacks",
+      "time": "Fri Jul 03 \u00b7 04:30 PM PT",
+      "hours_until": 8.5,
+      "home_ml": 190,
+      "away_ml": -235,
+      "signal": "Redblacks ML +190 (EV +14.5%)",
+      "ev": 14.5
+    },
+    {
+      "sport": "CFL",
+      "matchup": "Edmonton Elks @ BC Lions",
+      "time": "Sat Jul 04 \u00b7 04:00 PM PT",
+      "hours_until": 32.0,
+      "home_ml": -102,
+      "away_ml": -118,
+      "signal": "Elks ML -118 (EV +9.2%)",
+      "ev": 9.2
+    },
+    {
+      "sport": "CFL",
+      "matchup": "Winnipeg Blue Bombers @ Hamilton Tiger-Cats",
+      "time": "Sun Jul 05 \u00b7 04:00 PM PT",
+      "hours_until": 56.0,
+      "home_ml": -172,
+      "away_ml": 142,
+      "signal": "Bombers ML +142 (EV +12.1%)",
+      "ev": 12.1
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Randy Mboyo @ Anas Nfaou",
+      "time": "Sat Jul 04 \u00b7 09:00 AM PT",
+      "hours_until": 25.0,
+      "home_ml": -145,
+      "away_ml": 125,
+      "signal": "Mboyo ML +125 (EV +11.2%)",
+      "ev": 11.2
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Rony Henrique @ Damiano Scogna",
+      "time": "Sat Jul 04 \u00b7 09:00 AM PT",
+      "hours_until": 25.0,
+      "home_ml": -275,
+      "away_ml": 185,
+      "signal": "Henrique ML +185 (EV +14.2%)",
+      "ev": 14.2
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "David Allen @ Geoff Pavey",
+      "time": "Sat Jul 04 \u00b7 09:00 AM PT",
+      "hours_until": 25.0,
+      "home_ml": -140,
+      "away_ml": 120,
+      "signal": "Allen ML +120 (EV +11.0%)",
+      "ev": 11.0
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Gabriele Galluccio @ Oscar Ownsworth",
+      "time": "Sat Jul 04 \u00b7 09:00 AM PT",
+      "hours_until": 25.0,
+      "home_ml": -115,
+      "away_ml": -105,
+      "signal": "Galluccio ML -105 (EV +9.8%)",
+      "ev": 9.8
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Lincoln Strong @ Zanyar Kamaran",
+      "time": "Sat Jul 04 \u00b7 09:00 AM PT",
+      "hours_until": 25.0,
+      "home_ml": -215,
+      "away_ml": 175,
+      "signal": "Strong ML +175 (EV +13.7%)",
+      "ev": 13.7
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Nell Ariano @ Norbert Pietrzak",
+      "time": "Sat Jul 04 \u00b7 09:00 AM PT",
+      "hours_until": 25.0,
+      "home_ml": -163,
+      "away_ml": 143,
+      "signal": "Ariano ML +143 (EV +12.1%)",
+      "ev": 12.1
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Vladimir Stanca @ Stevie Lee",
+      "time": "Sat Jul 04 \u00b7 09:00 AM PT",
+      "hours_until": 25.0,
+      "home_ml": -400,
+      "away_ml": 250,
+      "signal": "Stanca ML +250 (EV +17.5%)",
+      "ev": 17.5
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Nicolas Savio @ George Hardwick",
+      "time": "Sat Jul 04 \u00b7 10:00 AM PT",
+      "hours_until": 26.0,
+      "home_ml": -550,
+      "away_ml": 325,
+      "signal": "Savio ML +325 (EV +21.2%)",
+      "ev": 21.2
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Benoit Saint-Denis @ Paddy Pimblett",
+      "time": "Sat Jul 11 \u00b7 02:00 PM PT",
+      "hours_until": 198.0,
+      "home_ml": 130,
+      "away_ml": -155,
+      "signal": "Pimblett ML +130 (EV +11.5%)",
+      "ev": 11.5
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Conor McGregor @ Max Holloway",
+      "time": "Sat Jul 11 \u00b7 02:00 PM PT",
+      "hours_until": 198.0,
+      "home_ml": -238,
+      "away_ml": 195,
+      "signal": "McGregor ML +195 (EV +14.7%)",
+      "ev": 14.7
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Alessandro Costa @ Cody Durden",
+      "time": "Sat Jul 11 \u00b7 02:05 PM PT",
+      "hours_until": 198.1,
+      "home_ml": 210,
+      "away_ml": -250,
+      "signal": "Durden ML +210 (EV +15.5%)",
+      "ev": 15.5
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Zachary Reese @ Ryan Gandra",
+      "time": "Sat Jul 11 \u00b7 02:30 PM PT",
+      "hours_until": 198.5,
+      "home_ml": -151,
+      "away_ml": 131,
+      "signal": "Reese ML +131 (EV +11.6%)",
+      "ev": 11.6
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Cesar Almeida @ Damian Pinas",
+      "time": "Sat Jul 11 \u00b7 03:15 PM PT",
+      "hours_until": 199.3,
+      "home_ml": -220,
+      "away_ml": 185,
+      "signal": "Almeida ML +185 (EV +14.2%)",
+      "ev": 14.2
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Wang Cong @ Tracy Cortez",
+      "time": "Sat Jul 11 \u00b7 03:40 PM PT",
+      "hours_until": 199.7,
+      "home_ml": -115,
+      "away_ml": -105,
+      "signal": "Cong ML -105 (EV +9.8%)",
+      "ev": 9.8
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Kai Kamaka @ Luke Riley",
+      "time": "Sat Jul 11 \u00b7 04:15 PM PT",
+      "hours_until": 200.3,
+      "home_ml": -305,
+      "away_ml": 255,
+      "signal": "Kamaka ML +255 (EV +17.8%)",
+      "ev": 17.8
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Adrian Yanez @ Cody Garbrandt",
+      "time": "Sat Jul 11 \u00b7 04:40 PM PT",
+      "hours_until": 200.7,
+      "home_ml": 310,
+      "away_ml": -410,
+      "signal": "Garbrandt ML +310 (EV +20.5%)",
+      "ev": 20.5
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Elisha Ellison @ Gable Steveson",
+      "time": "Sat Jul 11 \u00b7 05:15 PM PT",
+      "hours_until": 201.3,
+      "home_ml": -3500,
+      "away_ml": 1500,
+      "signal": null,
+      "ev": null
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Nikita Krylov @ Robert Whittaker",
+      "time": "Sat Jul 11 \u00b7 05:35 PM PT",
+      "hours_until": 201.6,
+      "home_ml": -190,
+      "away_ml": 165,
+      "signal": "Krylov ML +165 (EV +13.2%)",
+      "ev": 13.2
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Terrance Mckinney @ King Green",
+      "time": "Sat Jul 11 \u00b7 06:15 PM PT",
+      "hours_until": 202.3,
+      "home_ml": 145,
+      "away_ml": -170,
+      "signal": "Green ML +145 (EV +12.3%)",
+      "ev": 12.3
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Lone'er Kavanagh @ Brandon Royval",
+      "time": "Sat Jul 11 \u00b7 06:45 PM PT",
+      "hours_until": 202.8,
+      "home_ml": 187,
+      "away_ml": -222,
+      "signal": "Royval ML +187 (EV +14.4%)",
+      "ev": 14.4
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Mario Bautista @ Cory Sandhagen",
+      "time": "Sat Jul 11 \u00b7 07:15 PM PT",
+      "hours_until": 203.3,
+      "home_ml": -150,
+      "away_ml": 130,
+      "signal": "Bautista ML +130 (EV +11.5%)",
+      "ev": 11.5
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Kamaru Usman @ Dricus Du Plessis",
+      "time": "Sat Jul 18 \u00b7 09:30 PM PT",
+      "hours_until": 373.5,
+      "home_ml": -260,
+      "away_ml": 220,
+      "signal": "Usman ML +220 (EV +16.0%)",
+      "ev": 16.0
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Khalil Rountree @ Magomed Ankalaev",
+      "time": "Sat Jul 25 \u00b7 09:00 AM PT",
+      "hours_until": 529.0,
+      "home_ml": -310,
+      "away_ml": 260,
+      "signal": "Rountree ML +260 (EV +18.0%)",
+      "ev": 18.0
+    }
+  ],
+  "ev_signals": [
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Nicolas Savio @ George Hardwick",
+      "time": "Sat Jul 04 \u00b7 10:00 AM PT",
+      "hours_until": 26.0,
+      "home_ml": -550,
+      "away_ml": 325,
+      "signal": "Savio ML +325 (EV +21.2%)",
+      "ev": 21.2
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Adrian Yanez @ Cody Garbrandt",
+      "time": "Sat Jul 11 \u00b7 04:40 PM PT",
+      "hours_until": 200.7,
+      "home_ml": 310,
+      "away_ml": -410,
+      "signal": "Garbrandt ML +310 (EV +20.5%)",
+      "ev": 20.5
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Khalil Rountree @ Magomed Ankalaev",
+      "time": "Sat Jul 25 \u00b7 09:00 AM PT",
+      "hours_until": 529.0,
+      "home_ml": -310,
+      "away_ml": 260,
+      "signal": "Rountree ML +260 (EV +18.0%)",
+      "ev": 18.0
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Kai Kamaka @ Luke Riley",
+      "time": "Sat Jul 11 \u00b7 04:15 PM PT",
+      "hours_until": 200.3,
+      "home_ml": -305,
+      "away_ml": 255,
+      "signal": "Kamaka ML +255 (EV +17.8%)",
+      "ev": 17.8
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Vladimir Stanca @ Stevie Lee",
+      "time": "Sat Jul 04 \u00b7 09:00 AM PT",
+      "hours_until": 25.0,
+      "home_ml": -400,
+      "away_ml": 250,
+      "signal": "Stanca ML +250 (EV +17.5%)",
+      "ev": 17.5
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Kamaru Usman @ Dricus Du Plessis",
+      "time": "Sat Jul 18 \u00b7 09:30 PM PT",
+      "hours_until": 373.5,
+      "home_ml": -260,
+      "away_ml": 220,
+      "signal": "Usman ML +220 (EV +16.0%)",
+      "ev": 16.0
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Alessandro Costa @ Cody Durden",
+      "time": "Sat Jul 11 \u00b7 02:05 PM PT",
+      "hours_until": 198.1,
+      "home_ml": 210,
+      "away_ml": -250,
+      "signal": "Durden ML +210 (EV +15.5%)",
+      "ev": 15.5
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Conor McGregor @ Max Holloway",
+      "time": "Sat Jul 11 \u00b7 02:00 PM PT",
+      "hours_until": 198.0,
+      "home_ml": -238,
+      "away_ml": 195,
+      "signal": "McGregor ML +195 (EV +14.7%)",
+      "ev": 14.7
+    },
+    {
+      "sport": "CFL",
+      "matchup": "Saskatchewan Roughriders @ Ottawa Redblacks",
+      "time": "Fri Jul 03 \u00b7 04:30 PM PT",
+      "hours_until": 8.5,
+      "home_ml": 190,
+      "away_ml": -235,
+      "signal": "Redblacks ML +190 (EV +14.5%)",
+      "ev": 14.5
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Lone'er Kavanagh @ Brandon Royval",
+      "time": "Sat Jul 11 \u00b7 06:45 PM PT",
+      "hours_until": 202.8,
+      "home_ml": 187,
+      "away_ml": -222,
+      "signal": "Royval ML +187 (EV +14.4%)",
+      "ev": 14.4
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Rony Henrique @ Damiano Scogna",
+      "time": "Sat Jul 04 \u00b7 09:00 AM PT",
+      "hours_until": 25.0,
+      "home_ml": -275,
+      "away_ml": 185,
+      "signal": "Henrique ML +185 (EV +14.2%)",
+      "ev": 14.2
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Cesar Almeida @ Damian Pinas",
+      "time": "Sat Jul 11 \u00b7 03:15 PM PT",
+      "hours_until": 199.3,
+      "home_ml": -220,
+      "away_ml": 185,
+      "signal": "Almeida ML +185 (EV +14.2%)",
+      "ev": 14.2
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Lincoln Strong @ Zanyar Kamaran",
+      "time": "Sat Jul 04 \u00b7 09:00 AM PT",
+      "hours_until": 25.0,
+      "home_ml": -215,
+      "away_ml": 175,
+      "signal": "Strong ML +175 (EV +13.7%)",
+      "ev": 13.7
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Nikita Krylov @ Robert Whittaker",
+      "time": "Sat Jul 11 \u00b7 05:35 PM PT",
+      "hours_until": 201.6,
+      "home_ml": -190,
+      "away_ml": 165,
+      "signal": "Krylov ML +165 (EV +13.2%)",
+      "ev": 13.2
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Terrance Mckinney @ King Green",
+      "time": "Sat Jul 11 \u00b7 06:15 PM PT",
+      "hours_until": 202.3,
+      "home_ml": 145,
+      "away_ml": -170,
+      "signal": "Green ML +145 (EV +12.3%)",
+      "ev": 12.3
+    },
+    {
+      "sport": "CFL",
+      "matchup": "Winnipeg Blue Bombers @ Hamilton Tiger-Cats",
+      "time": "Sun Jul 05 \u00b7 04:00 PM PT",
+      "hours_until": 56.0,
+      "home_ml": -172,
+      "away_ml": 142,
+      "signal": "Bombers ML +142 (EV +12.1%)",
+      "ev": 12.1
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Nell Ariano @ Norbert Pietrzak",
+      "time": "Sat Jul 04 \u00b7 09:00 AM PT",
+      "hours_until": 25.0,
+      "home_ml": -163,
+      "away_ml": 143,
+      "signal": "Ariano ML +143 (EV +12.1%)",
+      "ev": 12.1
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Zachary Reese @ Ryan Gandra",
+      "time": "Sat Jul 11 \u00b7 02:30 PM PT",
+      "hours_until": 198.5,
+      "home_ml": -151,
+      "away_ml": 131,
+      "signal": "Reese ML +131 (EV +11.6%)",
+      "ev": 11.6
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Benoit Saint-Denis @ Paddy Pimblett",
+      "time": "Sat Jul 11 \u00b7 02:00 PM PT",
+      "hours_until": 198.0,
+      "home_ml": 130,
+      "away_ml": -155,
+      "signal": "Pimblett ML +130 (EV +11.5%)",
+      "ev": 11.5
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Mario Bautista @ Cory Sandhagen",
+      "time": "Sat Jul 11 \u00b7 07:15 PM PT",
+      "hours_until": 203.3,
+      "home_ml": -150,
+      "away_ml": 130,
+      "signal": "Bautista ML +130 (EV +11.5%)",
+      "ev": 11.5
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Randy Mboyo @ Anas Nfaou",
+      "time": "Sat Jul 04 \u00b7 09:00 AM PT",
+      "hours_until": 25.0,
+      "home_ml": -145,
+      "away_ml": 125,
+      "signal": "Mboyo ML +125 (EV +11.2%)",
+      "ev": 11.2
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "David Allen @ Geoff Pavey",
+      "time": "Sat Jul 04 \u00b7 09:00 AM PT",
+      "hours_until": 25.0,
+      "home_ml": -140,
+      "away_ml": 120,
+      "signal": "Allen ML +120 (EV +11.0%)",
+      "ev": 11.0
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Gabriele Galluccio @ Oscar Ownsworth",
+      "time": "Sat Jul 04 \u00b7 09:00 AM PT",
+      "hours_until": 25.0,
+      "home_ml": -115,
+      "away_ml": -105,
+      "signal": "Galluccio ML -105 (EV +9.8%)",
+      "ev": 9.8
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Wang Cong @ Tracy Cortez",
+      "time": "Sat Jul 11 \u00b7 03:40 PM PT",
+      "hours_until": 199.7,
+      "home_ml": -115,
+      "away_ml": -105,
+      "signal": "Cong ML -105 (EV +9.8%)",
+      "ev": 9.8
+    },
+    {
+      "sport": "CFL",
+      "matchup": "Edmonton Elks @ BC Lions",
+      "time": "Sat Jul 04 \u00b7 04:00 PM PT",
+      "hours_until": 32.0,
+      "home_ml": -102,
+      "away_ml": -118,
+      "signal": "Elks ML -118 (EV +9.2%)",
+      "ev": 9.2
+    }
+  ],
+  "ev_signals_by_sport": {
+    "UFC/MMA": [
+      {
+        "sport": "UFC/MMA",
+        "matchup": "Nicolas Savio @ George Hardwick",
+        "time": "Sat Jul 04 \u00b7 10:00 AM PT",
+        "hours_until": 26.0,
+        "home_ml": -550,
+        "away_ml": 325,
+        "signal": "Savio ML +325 (EV +21.2%)",
+        "ev": 21.2
+      },
+      {
+        "sport": "UFC/MMA",
+        "matchup": "Adrian Yanez @ Cody Garbrandt",
+        "time": "Sat Jul 11 \u00b7 04:40 PM PT",
+        "hours_until": 200.7,
+        "home_ml": 310,
+        "away_ml": -410,
+        "signal": "Garbrandt ML +310 (EV +20.5%)",
+        "ev": 20.5
+      }
+    ],
+    "CFL": [
+      {
+        "sport": "CFL",
+        "matchup": "Saskatchewan Roughriders @ Ottawa Redblacks",
+        "time": "Fri Jul 03 \u00b7 04:30 PM PT",
+        "hours_until": 8.5,
+        "home_ml": 190,
+        "away_ml": -235,
+        "signal": "Redblacks ML +190 (EV +14.5%)",
+        "ev": 14.5
+      },
+      {
+        "sport": "CFL",
+        "matchup": "Winnipeg Blue Bombers @ Hamilton Tiger-Cats",
+        "time": "Sun Jul 05 \u00b7 04:00 PM PT",
+        "hours_until": 56.0,
+        "home_ml": -172,
+        "away_ml": 142,
+        "signal": "Bombers ML +142 (EV +12.1%)",
+        "ev": 12.1
+      }
+    ]
+  },
+  "total_games_scanned": 26
+}
