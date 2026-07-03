@@ -1,1 +1,21 @@
-{"welltory": {"stress": 72, "energy": 45, "health": 100}, "body_comp": {"weight": 197.4, "body_fat": 28.2, "muscle_mass": 131.6, "bmi": 25.8, "visceral_fat": null}, "sleep": {"score": 92, "duration": "7h55", "hr_range": "48-69"}, "updated": "2026-06-12T14:44:09.443Z", "calendar": [{"date": "Fri Jul 03", "time": "12:00 PM", "title": "Doctors appointment for Kiyomi and I"}, {"date": "Mon Jul 06", "time": "All day", "title": "Meal-less Monday "}, {"date": "Tue Jul 07", "time": "All day", "title": "TD statement available online banking"}, {"date": "Tue Jul 07", "time": "10:10 AM", "title": "Recess supervision door 26"}]}
+{
+  "welltory": {
+    "stress": 28,
+    "energy": 72,
+    "health": 45
+  },
+  "body_comp": {
+    "weight": null,
+    "body_fat": null,
+    "muscle_mass": null,
+    "bmi": null,
+    "visceral_fat": null
+  },
+  "sleep": {
+    "score": 96,
+    "duration": "7h 57m",
+    "hr_range": "52-82"
+  },
+  "notes": "",
+  "updated": "2026-07-03T17:08:18.656Z"
+}
