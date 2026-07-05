@@ -1,1 +1,21 @@
-{"welltory": {"stress": 40, "energy": 48, "health": 100}, "body_comp": {"weight": null, "body_fat": null, "muscle_mass": null, "bmi": null, "visceral_fat": null}, "sleep": {"score": 97, "duration": "7h 43", "hr_range": "48-73"}, "notes": "", "updated": "2026-07-04T16:45:50.668Z", "calendar": [{"date": "Mon Jul 06", "time": "All day", "title": "Meal-less Monday "}, {"date": "Tue Jul 07", "time": "All day", "title": "TD statement available online banking"}, {"date": "Tue Jul 07", "time": "10:10 AM", "title": "Recess supervision door 26"}, {"date": "Fri Jul 10", "time": "02:30 PM", "title": "Rowland massage "}]}
+{
+  "welltory": {
+    "stress": 24,
+    "energy": 82,
+    "health": 45
+  },
+  "body_comp": {
+    "weight": null,
+    "body_fat": null,
+    "muscle_mass": null,
+    "bmi": null,
+    "visceral_fat": null
+  },
+  "sleep": {
+    "score": 95,
+    "duration": "8h 11m",
+    "hr_range": "53-87"
+  },
+  "notes": "",
+  "updated": "2026-07-05T17:07:26.322Z"
+}
