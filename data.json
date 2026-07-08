@@ -1,1 +1,21 @@
-{"welltory": {"stress": 66, "energy": 43, "health": 45}, "body_comp": {"weight": null, "body_fat": null, "muscle_mass": null, "bmi": null, "visceral_fat": null}, "sleep": {"score": 99, "duration": "9h 36", "hr_range": "56-82"}, "notes": "", "updated": "2026-07-07T16:33:14.374Z", "calendar": [{"date": "Fri Jul 10", "time": "02:30 PM", "title": "Rowland massage "}, {"date": "Mon Jul 13", "time": "All day", "title": "Meal-less Monday "}]}
+{
+  "welltory": {
+    "stress": 90,
+    "energy": 20,
+    "health": 45
+  },
+  "body_comp": {
+    "weight": null,
+    "body_fat": null,
+    "muscle_mass": null,
+    "bmi": null,
+    "visceral_fat": null
+  },
+  "sleep": {
+    "score": 0,
+    "duration": "  ",
+    "hr_range": "00-00"
+  },
+  "notes": "",
+  "updated": "2026-07-08T17:53:21.437Z"
+}
