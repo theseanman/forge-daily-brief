@@ -1,1 +1,21 @@
-{"welltory": {"stress": 90, "energy": 20, "health": 45}, "body_comp": {"weight": null, "body_fat": null, "muscle_mass": null, "bmi": null, "visceral_fat": null}, "sleep": {"score": 0, "duration": "  ", "hr_range": "00-00"}, "notes": "", "updated": "2026-07-08T17:53:23.449Z", "calendar": [{"date": "Thu Jul 09", "time": "01:30 PM", "title": "Blood sample"}, {"date": "Fri Jul 10", "time": "02:30 PM", "title": "Rowland massage "}, {"date": "Mon Jul 13", "time": "All day", "title": "Meal-less Monday "}, {"date": "Wed Jul 15", "time": "09:00 AM", "title": "Kayla asthma test "}]}
+{
+  "welltory": {
+    "stress": 66,
+    "energy": 43,
+    "health": 45
+  },
+  "body_comp": {
+    "weight": null,
+    "body_fat": null,
+    "muscle_mass": null,
+    "bmi": null,
+    "visceral_fat": null
+  },
+  "sleep": {
+    "score": 80,
+    "duration": "6h",
+    "hr_range": "52-78"
+  },
+  "notes": "",
+  "updated": "2026-07-09T18:08:16.745Z"
+}
