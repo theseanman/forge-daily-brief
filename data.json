@@ -1,1 +1,21 @@
-{"welltory": {"stress": 80, "energy": 32, "health": 45}, "body_comp": {"weight": null, "body_fat": null, "muscle_mass": null, "bmi": null, "visceral_fat": null}, "sleep": {"score": 98, "duration": "8h 04m", "hr_range": "52-86"}, "notes": "", "updated": "2026-07-14T17:28:42.831Z", "calendar": [{"date": "Sun Jul 19", "time": "All day", "title": "Mungy\u2019s World Cup party"}, {"date": "Mon Jul 20", "time": "All day", "title": "Meal-less Monday "}]}
+{
+  "welltory": {
+    "stress": 72,
+    "energy": 42,
+    "health": 45
+  },
+  "body_comp": {
+    "weight": null,
+    "body_fat": null,
+    "muscle_mass": null,
+    "bmi": null,
+    "visceral_fat": null
+  },
+  "sleep": {
+    "score": 87,
+    "duration": "7h 12m",
+    "hr_range": "52-90"
+  },
+  "notes": "",
+  "updated": "2026-07-16T17:43:59.431Z"
+}
