@@ -1,32 +1,62 @@
 {
-  "generated_at": "2026-07-19T14:15:14.828797+00:00",
-  "summary": "\ud83c\udfaf TODAY'S GAMES (Jul 19)\n\u2022 [CFL] Winnipeg Blue Bombers @ Ottawa Redblacks | ML: Ottawa Redblacks 198 / Winnipeg Blue Bombers -245\n\u2022 [UFC/MMA] Axel Sola @ Ismael Bonfim | ML: Ismael Bonfim 155 / Axel Sola -180\n\u2022 [UFC/MMA] Bogdan Guskov @ Magomed Ankalaev | ML: Magomed Ankalaev -550 / Bogdan Guskov 400\n\u2022 [UFC/MMA] Damian Rzepecki @ Magomed Zaynukov | ML: Magomed Zaynukov -400 / Damian Rzepecki 300\n\u2022 [UFC/MMA] Wellington Turman @ Islam Dulatov | ML: Islam Dulatov -700 / Wellington Turman 500\n\u2022 [UFC/MMA] Mike Davis @ Nurullo Aliev | ML: Nurullo Aliev -157 / Mike Davis 137\n\u2022 [UFC/MMA] Ramazonbek Temirov @ Stephen Erceg | ML: Stephen Erceg -116 / Ramazonbek Temirov -104\n\u2022 [UFC/MMA] Tyrell Fortune @ Rizvan Kuniev | ML: Rizvan Kuniev -255 / Tyrell Fortune 215\n\u2022 [UFC/MMA] Sam Patterson @ Santiago Ponzinibbio | ML: Santiago Ponzinibbio 310 / Sam Patterson -410\n\u2022 [UFC/MMA] Thomas Petersen @ Valter Walker | ML: Valter Walker -190 / Thomas Petersen 165\n\u2022 [UFC/MMA] Abdul Hussein @ Cody Gibson | ML: Cody Gibson 290 / Abdul Hussein -400\n\u2022 [UFC/MMA] Brendson Ribeiro @ Magomed Tuchalov | ML: Magomed Tuchalov -700 / Brendson Ribeiro 475\n\u2022 [UFC/MMA] Gillian Robertson @ Mackenzie Dern | ML: Mackenzie Dern -198 / Gillian Robertson 164\n\u2022 [UFC/MMA] Ian Garry @ Islam Makhachev | ML: Islam Makhachev -345 / Ian Garry 275\n\n\u26a1 EV SIGNALS\n\u2022 [UFC/MMA] Bogdan Guskov @ Magomed Ankalaev \u2192 Guskov ML +400 (EV +25.0%)\n\u2022 [UFC/MMA] Sam Patterson @ Santiago Ponzinibbio \u2192 Ponzinibbio ML +310 (EV +20.5%)\n\u2022 [CFL] Winnipeg Blue Bombers @ Ottawa Redblacks \u2192 Redblacks ML +198 (EV +14.9%)\n\nUpdated: 2026-07-19 07:15 PT",
+  "generated_at": "2026-07-20T14:58:24.470665+00:00",
+  "summary": "\ud83c\udfaf TODAY'S GAMES (Jul 20)\n\u2022 [CFL] Edmonton Elks @ Saskatchewan Roughriders | ML: Saskatchewan Roughriders -192 / Edmonton Elks 158\n\u2022 [CFL] Calgary Stampeders @ Winnipeg Blue Bombers | ML: Winnipeg Blue Bombers -110 / Calgary Stampeders -110\n\u2022 [CFL] Toronto Argonauts @ BC Lions | ML: BC Lions 152 / Toronto Argonauts -184\n\u2022 [CFL] Hamilton Tiger-Cats @ Montreal Alouettes | ML: Montreal Alouettes -650 / Hamilton Tiger-Cats 460\n\u2022 [UFC/MMA] Axel Sola @ Ismael Bonfim | ML: Ismael Bonfim 160 / Axel Sola -185\n\u2022 [UFC/MMA] Bogdan Guskov @ Magomed Ankalaev | ML: Magomed Ankalaev -550 / Bogdan Guskov 400\n\u2022 [UFC/MMA] Damian Rzepecki @ Magomed Zaynukov | ML: Magomed Zaynukov -355 / Damian Rzepecki 290\n\u2022 [UFC/MMA] Wellington Turman @ Islam Dulatov | ML: Islam Dulatov -850 / Wellington Turman 625\n\u2022 [UFC/MMA] Mike Davis @ Nurullo Aliev | ML: Nurullo Aliev -180 / Mike Davis 155\n\u2022 [UFC/MMA] Ramazonbek Temirov @ Stephen Erceg | ML: Stephen Erceg -118 / Ramazonbek Temirov -102\n\u2022 [UFC/MMA] Tyrell Fortune @ Rizvan Kuniev | ML: Rizvan Kuniev -267 / Tyrell Fortune 227\n\u2022 [UFC/MMA] Sam Patterson @ Santiago Ponzinibbio | ML: Santiago Ponzinibbio 300 / Sam Patterson -400\n\u2022 [UFC/MMA] Thomas Petersen @ Valter Walker | ML: Valter Walker -175 / Thomas Petersen 150\n\u2022 [UFC/MMA] Abdul Hussein @ Cody Gibson | ML: Cody Gibson 290 / Abdul Hussein -400\n\u2022 [UFC/MMA] Brendson Ribeiro @ Magomed Tuchalov | ML: Magomed Tuchalov -725 / Brendson Ribeiro 490\n\u2022 [UFC/MMA] Gillian Robertson @ Mackenzie Dern | ML: Mackenzie Dern -198 / Gillian Robertson 164\n\u2022 [UFC/MMA] Ian Garry @ Islam Makhachev | ML: Islam Makhachev -345 / Ian Garry 275\n\n\u26a1 EV SIGNALS\n\u2022 [UFC/MMA] Bogdan Guskov @ Magomed Ankalaev \u2192 Guskov ML +400 (EV +25.0%)\n\u2022 [UFC/MMA] Sam Patterson @ Santiago Ponzinibbio \u2192 Ponzinibbio ML +300 (EV +20.0%)\n\u2022 [CFL] Edmonton Elks @ Saskatchewan Roughriders \u2192 Elks ML +158 (EV +12.9%)\n\u2022 [CFL] Toronto Argonauts @ BC Lions \u2192 Lions ML +152 (EV +12.6%)\n\nUpdated: 2026-07-20 07:58 PT",
   "games_today": [
     {
       "sport": "CFL",
-      "matchup": "Winnipeg Blue Bombers @ Ottawa Redblacks",
-      "time": "Sun Jul 19 \u00b7 04:07 PM PT",
-      "hours_until": 8.9,
-      "home_ml": 198,
-      "away_ml": -245,
-      "signal": "Redblacks ML +198 (EV +14.9%)",
-      "ev": 14.9
+      "matchup": "Edmonton Elks @ Saskatchewan Roughriders",
+      "time": "Thu Jul 23 \u00b7 06:00 PM PT",
+      "hours_until": 82.0,
+      "home_ml": -192,
+      "away_ml": 158,
+      "signal": "Elks ML +158 (EV +12.9%)",
+      "ev": 12.9
+    },
+    {
+      "sport": "CFL",
+      "matchup": "Calgary Stampeders @ Winnipeg Blue Bombers",
+      "time": "Fri Jul 24 \u00b7 05:30 PM PT",
+      "hours_until": 105.5,
+      "home_ml": -110,
+      "away_ml": -110,
+      "signal": "Stampeders ML -110 (EV +9.5%)",
+      "ev": 9.5
+    },
+    {
+      "sport": "CFL",
+      "matchup": "Toronto Argonauts @ BC Lions",
+      "time": "Sat Jul 25 \u00b7 04:00 PM PT",
+      "hours_until": 128.0,
+      "home_ml": 152,
+      "away_ml": -184,
+      "signal": "Lions ML +152 (EV +12.6%)",
+      "ev": 12.6
+    },
+    {
+      "sport": "CFL",
+      "matchup": "Hamilton Tiger-Cats @ Montreal Alouettes",
+      "time": "Sun Jul 26 \u00b7 04:00 PM PT",
+      "hours_until": 152.0,
+      "home_ml": -650,
+      "away_ml": 460,
+      "signal": null,
+      "ev": null
     },
     {
       "sport": "UFC/MMA",
       "matchup": "Axel Sola @ Ismael Bonfim",
       "time": "Sat Jul 25 \u00b7 02:00 AM PT",
-      "hours_until": 138.7,
-      "home_ml": 155,
-      "away_ml": -180,
-      "signal": "Bonfim ML +155 (EV +12.7%)",
-      "ev": 12.7
+      "hours_until": 114.0,
+      "home_ml": 160,
+      "away_ml": -185,
+      "signal": "Bonfim ML +160 (EV +13.0%)",
+      "ev": 13.0
     },
     {
       "sport": "UFC/MMA",
       "matchup": "Bogdan Guskov @ Magomed Ankalaev",
       "time": "Sat Jul 25 \u00b7 02:00 AM PT",
-      "hours_until": 138.7,
+      "hours_until": 114.0,
       "home_ml": -550,
       "away_ml": 400,
       "signal": "Guskov ML +400 (EV +25.0%)",
@@ -36,19 +66,19 @@
       "sport": "UFC/MMA",
       "matchup": "Damian Rzepecki @ Magomed Zaynukov",
       "time": "Sat Jul 25 \u00b7 02:00 AM PT",
-      "hours_until": 138.7,
-      "home_ml": -400,
-      "away_ml": 300,
-      "signal": "Rzepecki ML +300 (EV +20.0%)",
-      "ev": 20.0
+      "hours_until": 114.0,
+      "home_ml": -355,
+      "away_ml": 290,
+      "signal": "Rzepecki ML +290 (EV +19.5%)",
+      "ev": 19.5
     },
     {
       "sport": "UFC/MMA",
       "matchup": "Wellington Turman @ Islam Dulatov",
       "time": "Sat Jul 25 \u00b7 02:00 AM PT",
-      "hours_until": 138.7,
-      "home_ml": -700,
-      "away_ml": 500,
+      "hours_until": 114.0,
+      "home_ml": -850,
+      "away_ml": 625,
       "signal": null,
       "ev": null
     },
@@ -56,57 +86,57 @@
       "sport": "UFC/MMA",
       "matchup": "Mike Davis @ Nurullo Aliev",
       "time": "Sat Jul 25 \u00b7 02:00 AM PT",
-      "hours_until": 138.7,
-      "home_ml": -157,
-      "away_ml": 137,
-      "signal": "Davis ML +137 (EV +11.9%)",
-      "ev": 11.9
+      "hours_until": 114.0,
+      "home_ml": -180,
+      "away_ml": 155,
+      "signal": "Davis ML +155 (EV +12.7%)",
+      "ev": 12.7
     },
     {
       "sport": "UFC/MMA",
       "matchup": "Ramazonbek Temirov @ Stephen Erceg",
       "time": "Sat Jul 25 \u00b7 02:00 AM PT",
-      "hours_until": 138.7,
-      "home_ml": -116,
-      "away_ml": -104,
-      "signal": "Temirov ML -104 (EV +9.8%)",
-      "ev": 9.8
+      "hours_until": 114.0,
+      "home_ml": -118,
+      "away_ml": -102,
+      "signal": "Temirov ML -102 (EV +9.9%)",
+      "ev": 9.9
     },
     {
       "sport": "UFC/MMA",
       "matchup": "Tyrell Fortune @ Rizvan Kuniev",
       "time": "Sat Jul 25 \u00b7 02:00 AM PT",
-      "hours_until": 138.7,
-      "home_ml": -255,
-      "away_ml": 215,
-      "signal": "Fortune ML +215 (EV +15.7%)",
-      "ev": 15.7
+      "hours_until": 114.0,
+      "home_ml": -267,
+      "away_ml": 227,
+      "signal": "Fortune ML +227 (EV +16.3%)",
+      "ev": 16.3
     },
     {
       "sport": "UFC/MMA",
       "matchup": "Sam Patterson @ Santiago Ponzinibbio",
       "time": "Sat Jul 25 \u00b7 02:00 AM PT",
-      "hours_until": 138.7,
-      "home_ml": 310,
-      "away_ml": -410,
-      "signal": "Ponzinibbio ML +310 (EV +20.5%)",
-      "ev": 20.5
+      "hours_until": 114.0,
+      "home_ml": 300,
+      "away_ml": -400,
+      "signal": "Ponzinibbio ML +300 (EV +20.0%)",
+      "ev": 20.0
     },
     {
       "sport": "UFC/MMA",
       "matchup": "Thomas Petersen @ Valter Walker",
       "time": "Sat Jul 25 \u00b7 02:00 AM PT",
-      "hours_until": 138.7,
-      "home_ml": -190,
-      "away_ml": 165,
-      "signal": "Petersen ML +165 (EV +13.2%)",
-      "ev": 13.2
+      "hours_until": 114.0,
+      "home_ml": -175,
+      "away_ml": 150,
+      "signal": "Petersen ML +150 (EV +12.5%)",
+      "ev": 12.5
     },
     {
       "sport": "UFC/MMA",
       "matchup": "Abdul Hussein @ Cody Gibson",
       "time": "Sat Jul 25 \u00b7 06:35 AM PT",
-      "hours_until": 143.3,
+      "hours_until": 118.6,
       "home_ml": 290,
       "away_ml": -400,
       "signal": "Gibson ML +290 (EV +19.5%)",
@@ -116,9 +146,9 @@
       "sport": "UFC/MMA",
       "matchup": "Brendson Ribeiro @ Magomed Tuchalov",
       "time": "Sat Jul 25 \u00b7 06:45 AM PT",
-      "hours_until": 143.5,
-      "home_ml": -700,
-      "away_ml": 475,
+      "hours_until": 118.8,
+      "home_ml": -725,
+      "away_ml": 490,
       "signal": null,
       "ev": null
     },
@@ -126,7 +156,7 @@
       "sport": "UFC/MMA",
       "matchup": "Gillian Robertson @ Mackenzie Dern",
       "time": "Sat Aug 15 \u00b7 08:00 PM PT",
-      "hours_until": 660.7,
+      "hours_until": 636.0,
       "home_ml": -198,
       "away_ml": 164,
       "signal": "Robertson ML +164 (EV +13.2%)",
@@ -136,7 +166,7 @@
       "sport": "UFC/MMA",
       "matchup": "Ian Garry @ Islam Makhachev",
       "time": "Sat Aug 15 \u00b7 09:00 PM PT",
-      "hours_until": 661.7,
+      "hours_until": 637.0,
       "home_ml": -345,
       "away_ml": 275,
       "signal": "Garry ML +275 (EV +18.8%)",
@@ -148,7 +178,7 @@
       "sport": "UFC/MMA",
       "matchup": "Bogdan Guskov @ Magomed Ankalaev",
       "time": "Sat Jul 25 \u00b7 02:00 AM PT",
-      "hours_until": 138.7,
+      "hours_until": 114.0,
       "home_ml": -550,
       "away_ml": 400,
       "signal": "Guskov ML +400 (EV +25.0%)",
@@ -158,27 +188,27 @@
       "sport": "UFC/MMA",
       "matchup": "Sam Patterson @ Santiago Ponzinibbio",
       "time": "Sat Jul 25 \u00b7 02:00 AM PT",
-      "hours_until": 138.7,
-      "home_ml": 310,
-      "away_ml": -410,
-      "signal": "Ponzinibbio ML +310 (EV +20.5%)",
-      "ev": 20.5
+      "hours_until": 114.0,
+      "home_ml": 300,
+      "away_ml": -400,
+      "signal": "Ponzinibbio ML +300 (EV +20.0%)",
+      "ev": 20.0
     },
     {
       "sport": "UFC/MMA",
       "matchup": "Damian Rzepecki @ Magomed Zaynukov",
       "time": "Sat Jul 25 \u00b7 02:00 AM PT",
-      "hours_until": 138.7,
-      "home_ml": -400,
-      "away_ml": 300,
-      "signal": "Rzepecki ML +300 (EV +20.0%)",
-      "ev": 20.0
+      "hours_until": 114.0,
+      "home_ml": -355,
+      "away_ml": 290,
+      "signal": "Rzepecki ML +290 (EV +19.5%)",
+      "ev": 19.5
     },
     {
       "sport": "UFC/MMA",
       "matchup": "Abdul Hussein @ Cody Gibson",
       "time": "Sat Jul 25 \u00b7 06:35 AM PT",
-      "hours_until": 143.3,
+      "hours_until": 118.6,
       "home_ml": 290,
       "away_ml": -400,
       "signal": "Gibson ML +290 (EV +19.5%)",
@@ -188,7 +218,7 @@
       "sport": "UFC/MMA",
       "matchup": "Ian Garry @ Islam Makhachev",
       "time": "Sat Aug 15 \u00b7 09:00 PM PT",
-      "hours_until": 661.7,
+      "hours_until": 637.0,
       "home_ml": -345,
       "away_ml": 275,
       "signal": "Garry ML +275 (EV +18.8%)",
@@ -198,37 +228,17 @@
       "sport": "UFC/MMA",
       "matchup": "Tyrell Fortune @ Rizvan Kuniev",
       "time": "Sat Jul 25 \u00b7 02:00 AM PT",
-      "hours_until": 138.7,
-      "home_ml": -255,
-      "away_ml": 215,
-      "signal": "Fortune ML +215 (EV +15.7%)",
-      "ev": 15.7
-    },
-    {
-      "sport": "CFL",
-      "matchup": "Winnipeg Blue Bombers @ Ottawa Redblacks",
-      "time": "Sun Jul 19 \u00b7 04:07 PM PT",
-      "hours_until": 8.9,
-      "home_ml": 198,
-      "away_ml": -245,
-      "signal": "Redblacks ML +198 (EV +14.9%)",
-      "ev": 14.9
-    },
-    {
-      "sport": "UFC/MMA",
-      "matchup": "Thomas Petersen @ Valter Walker",
-      "time": "Sat Jul 25 \u00b7 02:00 AM PT",
-      "hours_until": 138.7,
-      "home_ml": -190,
-      "away_ml": 165,
-      "signal": "Petersen ML +165 (EV +13.2%)",
-      "ev": 13.2
+      "hours_until": 114.0,
+      "home_ml": -267,
+      "away_ml": 227,
+      "signal": "Fortune ML +227 (EV +16.3%)",
+      "ev": 16.3
     },
     {
       "sport": "UFC/MMA",
       "matchup": "Gillian Robertson @ Mackenzie Dern",
       "time": "Sat Aug 15 \u00b7 08:00 PM PT",
-      "hours_until": 660.7,
+      "hours_until": 636.0,
       "home_ml": -198,
       "away_ml": 164,
       "signal": "Robertson ML +164 (EV +13.2%)",
@@ -238,31 +248,71 @@
       "sport": "UFC/MMA",
       "matchup": "Axel Sola @ Ismael Bonfim",
       "time": "Sat Jul 25 \u00b7 02:00 AM PT",
-      "hours_until": 138.7,
-      "home_ml": 155,
-      "away_ml": -180,
-      "signal": "Bonfim ML +155 (EV +12.7%)",
-      "ev": 12.7
+      "hours_until": 114.0,
+      "home_ml": 160,
+      "away_ml": -185,
+      "signal": "Bonfim ML +160 (EV +13.0%)",
+      "ev": 13.0
+    },
+    {
+      "sport": "CFL",
+      "matchup": "Edmonton Elks @ Saskatchewan Roughriders",
+      "time": "Thu Jul 23 \u00b7 06:00 PM PT",
+      "hours_until": 82.0,
+      "home_ml": -192,
+      "away_ml": 158,
+      "signal": "Elks ML +158 (EV +12.9%)",
+      "ev": 12.9
     },
     {
       "sport": "UFC/MMA",
       "matchup": "Mike Davis @ Nurullo Aliev",
       "time": "Sat Jul 25 \u00b7 02:00 AM PT",
-      "hours_until": 138.7,
-      "home_ml": -157,
-      "away_ml": 137,
-      "signal": "Davis ML +137 (EV +11.9%)",
-      "ev": 11.9
+      "hours_until": 114.0,
+      "home_ml": -180,
+      "away_ml": 155,
+      "signal": "Davis ML +155 (EV +12.7%)",
+      "ev": 12.7
+    },
+    {
+      "sport": "CFL",
+      "matchup": "Toronto Argonauts @ BC Lions",
+      "time": "Sat Jul 25 \u00b7 04:00 PM PT",
+      "hours_until": 128.0,
+      "home_ml": 152,
+      "away_ml": -184,
+      "signal": "Lions ML +152 (EV +12.6%)",
+      "ev": 12.6
+    },
+    {
+      "sport": "UFC/MMA",
+      "matchup": "Thomas Petersen @ Valter Walker",
+      "time": "Sat Jul 25 \u00b7 02:00 AM PT",
+      "hours_until": 114.0,
+      "home_ml": -175,
+      "away_ml": 150,
+      "signal": "Petersen ML +150 (EV +12.5%)",
+      "ev": 12.5
     },
     {
       "sport": "UFC/MMA",
       "matchup": "Ramazonbek Temirov @ Stephen Erceg",
       "time": "Sat Jul 25 \u00b7 02:00 AM PT",
-      "hours_until": 138.7,
-      "home_ml": -116,
-      "away_ml": -104,
-      "signal": "Temirov ML -104 (EV +9.8%)",
-      "ev": 9.8
+      "hours_until": 114.0,
+      "home_ml": -118,
+      "away_ml": -102,
+      "signal": "Temirov ML -102 (EV +9.9%)",
+      "ev": 9.9
+    },
+    {
+      "sport": "CFL",
+      "matchup": "Calgary Stampeders @ Winnipeg Blue Bombers",
+      "time": "Fri Jul 24 \u00b7 05:30 PM PT",
+      "hours_until": 105.5,
+      "home_ml": -110,
+      "away_ml": -110,
+      "signal": "Stampeders ML -110 (EV +9.5%)",
+      "ev": 9.5
     }
   ],
   "ev_signals_by_sport": {
@@ -271,7 +321,7 @@
         "sport": "UFC/MMA",
         "matchup": "Bogdan Guskov @ Magomed Ankalaev",
         "time": "Sat Jul 25 \u00b7 02:00 AM PT",
-        "hours_until": 138.7,
+        "hours_until": 114.0,
         "home_ml": -550,
         "away_ml": 400,
         "signal": "Guskov ML +400 (EV +25.0%)",
@@ -281,25 +331,35 @@
         "sport": "UFC/MMA",
         "matchup": "Sam Patterson @ Santiago Ponzinibbio",
         "time": "Sat Jul 25 \u00b7 02:00 AM PT",
-        "hours_until": 138.7,
-        "home_ml": 310,
-        "away_ml": -410,
-        "signal": "Ponzinibbio ML +310 (EV +20.5%)",
-        "ev": 20.5
+        "hours_until": 114.0,
+        "home_ml": 300,
+        "away_ml": -400,
+        "signal": "Ponzinibbio ML +300 (EV +20.0%)",
+        "ev": 20.0
       }
     ],
     "CFL": [
       {
         "sport": "CFL",
-        "matchup": "Winnipeg Blue Bombers @ Ottawa Redblacks",
-        "time": "Sun Jul 19 \u00b7 04:07 PM PT",
-        "hours_until": 8.9,
-        "home_ml": 198,
-        "away_ml": -245,
-        "signal": "Redblacks ML +198 (EV +14.9%)",
-        "ev": 14.9
+        "matchup": "Edmonton Elks @ Saskatchewan Roughriders",
+        "time": "Thu Jul 23 \u00b7 06:00 PM PT",
+        "hours_until": 82.0,
+        "home_ml": -192,
+        "away_ml": 158,
+        "signal": "Elks ML +158 (EV +12.9%)",
+        "ev": 12.9
+      },
+      {
+        "sport": "CFL",
+        "matchup": "Toronto Argonauts @ BC Lions",
+        "time": "Sat Jul 25 \u00b7 04:00 PM PT",
+        "hours_until": 128.0,
+        "home_ml": 152,
+        "away_ml": -184,
+        "signal": "Lions ML +152 (EV +12.6%)",
+        "ev": 12.6
       }
     ]
   },
-  "total_games_scanned": 14
+  "total_games_scanned": 17
 }
