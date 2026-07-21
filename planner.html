@@ -240,8 +240,8 @@ function loadPlan(){ var all = readJSON(K_PLAN, {}); return all[dayKey()] || {};
 function savePlan(plan){
   var all = readJSON(K_PLAN, {});
   all[dayKey()] = plan;
-  writeJSON(K_PLAN, prune(all));
-  afterSave();
+  var ok = writeJSON(K_PLAN, prune(all));
+  afterSave(ok);
 }
 function loadTop5(){
   var all = readJSON(K_TOP5, {});
@@ -255,11 +255,11 @@ function loadTop5(){
 function saveTop5(arr){
   var all = readJSON(K_TOP5, {});
   all[dayKey()] = arr;
-  writeJSON(K_TOP5, prune(all));
-  afterSave();
+  var ok = writeJSON(K_TOP5, prune(all));
+  afterSave(ok);
 }
 function loadList(key){ var a = readJSON(key, []); return Object.prototype.toString.call(a) === '[object Array]' ? a : []; }
-function saveList(key, arr){ writeJSON(key, arr); afterSave(); }
+function saveList(key, arr){ afterSave(writeJSON(key, arr)); }
 
 /* keep 21 days of history; never delete silently beyond that */
 function prune(all){
@@ -282,9 +282,10 @@ function snapshot(){
     fun: loadList(K_FUN)
   };
 }
-function afterSave(){
+function afterSave(ok){
+  if (ok === false){ flashSaved(false); return; }
   writeJSON(K_BACKUP, snapshot());
-  flashSaved();
+  flashSaved(true);
   paintMeta();
 }
 function restoreBackup(){
@@ -355,18 +356,18 @@ function renderTop5(){
       var chk = document.createElement('button');
       chk.className = 't5chk' + (it.done ? ' on' : '');
       chk.innerHTML = it.done ? '&#10003;' : '&nbsp;';
-      chk.onclick = function(){ var a = loadTop5(); a[i].done = !a[i].done; saveTop5(a); renderAll(); };
+      chk.onclick = function(){ var a = loadTop5(); a[i].done = !a[i].done; saveTop5(a); renderTop5(); paintNext(); paintChips(); };
 
       var txt = document.createElement('input');
       txt.type = 'text'; txt.className = 't5txt' + (it.done ? ' done' : '');
       txt.value = it.t; txt.placeholder = 'actionable ' + (i + 1);
-      txt.oninput = function(){ var a = loadTop5(); a[i].t = this.value; saveTop5(a); paintNext(); };
-      txt.onblur = function(){ renderGrid(); };
+      txt.oninput = function(){ var a = loadTop5(); a[i].t = this.value; saveTop5(a); paintNext(); paintChips(); };
+      txt.onblur = function(){ paintChips(); };
 
       var sel = document.createElement('select');
       sel.className = 't5hr';
       sel.innerHTML = hourOptions(it.h);
-      sel.onchange = function(){ var a = loadTop5(); a[i].h = this.value; saveTop5(a); renderAll(); };
+      sel.onchange = function(){ var a = loadTop5(); a[i].h = this.value; saveTop5(a); renderTop5(); paintNext(); paintChips(); };
 
       row.appendChild(num); row.appendChild(chk); row.appendChild(txt); row.appendChild(sel);
       host.appendChild(row);
@@ -427,7 +428,7 @@ function renderList(key, hostId, placeholder, promotable){
       }
       var del = document.createElement('button');
       del.className = 'li-btn'; del.innerHTML = '&times;';
-      del.onclick = function(){ var a = loadList(key); a.splice(i,1); saveList(key,a); renderAll(); };
+      del.onclick = function(){ var a = loadList(key); a.splice(i,1); saveList(key,a); renderLists(); };
       row.appendChild(del);
       host.appendChild(row);
     })(i);
@@ -444,7 +445,7 @@ function renderList(key, hostId, placeholder, promotable){
     var v = inp.value.trim();
     if (!v) return;
     var a = loadList(key); a.push(v); saveList(key, a);
-    inp.value = ''; renderAll();
+    inp.value = ''; renderLists();
   }
   add.appendChild(inp); add.appendChild(btn);
   host.appendChild(add);
@@ -452,7 +453,7 @@ function renderList(key, hostId, placeholder, promotable){
 function promote(text){
   var a = loadTop5();
   for (var i = 0; i < 5; i++){
-    if (!a[i].t){ a[i].t = text; saveTop5(a); renderAll(); return; }
+    if (!a[i].t){ a[i].t = text; saveTop5(a); renderTop5(); paintNext(); paintChips(); return; }
   }
   alert('All five slots are full. Clear one first.');
 }
@@ -461,12 +462,23 @@ function promote(text){
 window.FORGE_EVENTS = {};
 window.FORGE_ALLDAY = [];
 
-function renderGrid(){
+var gridCells = {};
+var gridInputs = {};
+var pendingRebuild = false;
+
+function isEditing(){
+  var a = document.activeElement;
+  return !!(a && (a.tagName === 'INPUT' || a.tagName === 'SELECT' || a.tagName === 'TEXTAREA'));
+}
+
+/* Full rebuild of the hour grid. Only safe when nothing has focus. */
+function buildGrid(){
   var plan = loadPlan();
-  var t5 = loadTop5();
   var nowH = new Date().getHours();
   var grid = document.getElementById('grid');
+  if (!grid) return;
   grid.innerHTML = '';
+  gridCells = {}; gridInputs = {};
   for (var h = START_HOUR; h <= END_HOUR; h++){
     (function(h){
       var row = document.createElement('div');
@@ -476,34 +488,57 @@ function renderGrid(){
       var cell = document.createElement('div');
       cell.className = 'cell';
 
-      var evs = window.FORGE_EVENTS[h] || [];
-      for (var e = 0; e < evs.length; e++){
-        var c = document.createElement('span');
-        c.className = 'chip'; c.textContent = '\uD83D\uDCC5 ' + evs[e];
-        cell.appendChild(c);
-      }
-      for (var i = 0; i < 5; i++){
-        if (t5[i].t && String(t5[i].h) === String(h)){
-          var tc = document.createElement('span');
-          tc.className = 'chip task' + (t5[i].done ? ' done' : '');
-          tc.textContent = '\u25B6 ' + (i + 1) + '. ' + t5[i].t;
-          cell.appendChild(tc);
-        }
-      }
       var inp = document.createElement('input');
       inp.type = 'text';
-      inp.placeholder = (isToday() && h === nowH ? 'now —' : '');
+      inp.placeholder = (isToday() && h === nowH ? 'now \u2014' : '');
       if (plan[h]) inp.value = plan[h];
       inp.oninput = function(){
         var p = loadPlan();
         if (this.value === '') delete p[h]; else p[h] = this.value;
         savePlan(p);
       };
+      inp.onblur = function(){
+        if (pendingRebuild && !isEditing()){ pendingRebuild = false; buildGrid(); }
+      };
       cell.appendChild(inp);
       row.appendChild(lab); row.appendChild(cell);
       grid.appendChild(row);
+      gridCells[h] = cell; gridInputs[h] = inp;
     })(h);
   }
+  paintChips();
+}
+
+/* Update only the chips. Never touches the text inputs, so it is safe mid-typing. */
+function paintChips(){
+  var t5 = loadTop5();
+  for (var h = START_HOUR; h <= END_HOUR; h++){
+    var cell = gridCells[h];
+    if (!cell) continue;
+    var old = cell.querySelectorAll('.chip');
+    for (var j = 0; j < old.length; j++) cell.removeChild(old[j]);
+    var inp = gridInputs[h];
+    var evs = window.FORGE_EVENTS[h] || [];
+    for (var e = 0; e < evs.length; e++){
+      var c = document.createElement('span');
+      c.className = 'chip'; c.textContent = '\uD83D\uDCC5 ' + evs[e];
+      cell.insertBefore(c, inp);
+    }
+    for (var i = 0; i < 5; i++){
+      if (t5[i].t && String(t5[i].h) === String(h)){
+        var tc = document.createElement('span');
+        tc.className = 'chip task' + (t5[i].done ? ' done' : '');
+        tc.textContent = '\u25B6 ' + (i + 1) + '. ' + t5[i].t;
+        cell.insertBefore(tc, inp);
+      }
+    }
+  }
+}
+
+/* Safe entry point: rebuild only when idle, otherwise just refresh chips. */
+function renderGrid(){
+  if (isEditing()){ pendingRebuild = true; paintChips(); return; }
+  buildGrid();
 }
 
 /* ---------- calendar auto-fill ---------- */
@@ -561,7 +596,7 @@ function fetchReminders(){
       items.forEach(function(it){
         if (existing.indexOf(it) === -1){ existing.push(it); added++; }
       });
-      if (added){ saveList(K_BACKLOG, existing); renderAll(); }
+      if (added){ saveList(K_BACKLOG, existing); renderLists(); }
       document.getElementById('blsrc').textContent = 'synced from Reminders';
     })
     .catch(function(){
@@ -570,8 +605,14 @@ function fetchReminders(){
 }
 
 /* ---------- misc ---------- */
-function flashSaved(){
+function flashSaved(ok){
   var el = document.getElementById('saved');
+  if (ok === false){
+    el.style.color = '#8a1010';
+    el.textContent = '\u26A0 NOT SAVED \u2014 storage is blocked in this browser';
+    return;
+  }
+  el.style.color = '';
   el.textContent = '\u2713 saved';
   clearTimeout(window._sv);
   window._sv = setTimeout(function(){ el.textContent = ''; }, 1200);
@@ -625,11 +666,14 @@ function paintDate(){
   document.getElementById('date').textContent =
     viewDate().toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'});
 }
+function renderLists(){
+  renderList(K_BACKLOG, 'backlog', 'add to backlog…', true);
+  renderList(K_FUN, 'fun', 'add a family idea…', true);
+}
 function renderAll(){
   paintDate(); trainingBanner(); paintMeta();
   renderTop5(); paintNext();
-  renderList(K_BACKLOG, 'backlog', 'add to backlog…', true);
-  renderList(K_FUN, 'fun', 'add a family idea…', true);
+  renderLists();
   renderGrid(); checkEmptyWarning();
 }
 
