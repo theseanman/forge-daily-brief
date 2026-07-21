@@ -13,215 +13,631 @@
       font-family: -apple-system, sans-serif;
       min-height: 100vh; padding: 18px; color: #0d0d0d;
     }
-    .shell { max-width: 560px; margin: 0 auto; }
+    .shell { max-width: 560px; margin: 0 auto; padding-bottom: 40px; }
     h1 { font-size: 22px; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 4px; }
-    .date { font-size: 14px; font-weight: 600; color: #5a2a00; margin-bottom: 14px; }
+    .date { font-size: 14px; font-weight: 600; color: #5a2a00; margin-bottom: 10px; }
+
+    .ctxbar {
+      display: flex; justify-content: space-between; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 700; color: #5a2a00; margin-bottom: 12px;
+    }
+    .ctxbar .jar { background: rgba(255,255,255,0.45); padding: 4px 8px; border-radius: 6px; }
+
+    .daytabs { display: flex; gap: 8px; margin-bottom: 14px; }
+    .daytab {
+      flex: 1; padding: 10px; border: 3px solid #0d0d0d; border-radius: 10px;
+      background: rgba(255,255,255,0.25); font-weight: 800; font-size: 14px;
+      text-align: center; cursor: pointer; touch-action: manipulation;
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .daytab.active { background: #0d0d0d; color: #ffc107; }
+
+    .nextbar {
+      background: rgba(0,0,0,0.88); color: #ffc107; border-radius: 10px;
+      padding: 12px 14px; margin-bottom: 14px;
+    }
+    .nextbar .lbl { font-size: 10px; letter-spacing: 0.18em; opacity: 0.75; margin-bottom: 4px; }
+    .nextbar .val { font-size: 17px; font-weight: 800; line-height: 1.35; }
+
     .banner {
       background: rgba(0,0,0,0.85); color: #ffc107; font-weight: 800; font-size: 15px;
       padding: 12px 14px; border-radius: 10px; margin-bottom: 16px; letter-spacing: 0.04em;
     }
-    .grid {
-      background: rgba(255,255,255,0.18); border: 3px solid #0d0d0d; border-radius: 12px;
-      padding: 8px; overflow: hidden;
+    .allday {
+      background: rgba(255,255,255,0.4); border: 2px solid #0d0d0d; border-radius: 10px;
+      padding: 10px 12px; margin-bottom: 14px; font-size: 13px; font-weight: 600; display: none;
     }
+
+    .sect { margin-bottom: 18px; }
+    .sect-h {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 13px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 8px; color: #0d0d0d;
+    }
+    .sect-h .hint { font-size: 10px; font-weight: 600; letter-spacing: 0; color: #5a2a00; text-transform: none; }
+    .panel {
+      background: rgba(255,255,255,0.22); border: 3px solid #0d0d0d;
+      border-radius: 12px; padding: 8px; overflow: hidden;
+    }
+
+    .t5row { display: flex; align-items: center; gap: 6px; padding: 7px 4px; border-bottom: 1px solid rgba(0,0,0,0.18); }
+    .t5row:last-child { border-bottom: none; }
+    .t5num { width: 20px; font-weight: 800; font-size: 14px; flex-shrink: 0; }
+    .t5chk {
+      width: 26px; height: 26px; flex-shrink: 0; border: 2px solid #0d0d0d; border-radius: 6px;
+      background: rgba(255,255,255,0.6); font-size: 15px; font-weight: 800; line-height: 1;
+      cursor: pointer; touch-action: manipulation; padding: 0;
+    }
+    .t5chk.on { background: #0d0d0d; color: #ffc107; }
+    .t5txt {
+      flex: 1; min-width: 0; border: none; background: rgba(255,255,255,0.55);
+      border-radius: 6px; padding: 8px; font-size: 15px; font-family: inherit; color: #0d0d0d;
+    }
+    .t5txt.done { text-decoration: line-through; opacity: 0.55; }
+    .t5hr {
+      width: 78px; flex-shrink: 0; border: 2px solid #0d0d0d; border-radius: 6px;
+      background: rgba(255,255,255,0.6); font-size: 13px; font-weight: 700;
+      font-family: inherit; padding: 6px 2px; color: #0d0d0d;
+    }
+    .t5row.past .t5hr { background: #ffe0b2; }
+
+    .li { display: flex; align-items: center; gap: 6px; padding: 6px 4px; border-bottom: 1px solid rgba(0,0,0,0.15); }
+    .li:last-child { border-bottom: none; }
+    .li-txt { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; word-break: break-word; }
+    .li-btn {
+      flex-shrink: 0; border: 2px solid #0d0d0d; border-radius: 6px; background: rgba(255,255,255,0.6);
+      font-size: 12px; font-weight: 800; padding: 5px 8px; cursor: pointer; touch-action: manipulation;
+      font-family: inherit; color: #0d0d0d;
+    }
+    .li-btn.go { background: #0d0d0d; color: #ffc107; }
+    .addrow { display: flex; gap: 6px; padding: 8px 4px 4px; }
+    .addrow input {
+      flex: 1; min-width: 0; border: 2px solid #0d0d0d; border-radius: 6px;
+      background: rgba(255,255,255,0.7); padding: 8px; font-size: 14px; font-family: inherit; color: #0d0d0d;
+    }
+    .empty { font-size: 13px; font-weight: 600; color: #5a2a00; padding: 10px 4px; font-style: italic; }
+
     .row { display: flex; align-items: stretch; border-bottom: 1px solid rgba(0,0,0,0.18); }
     .row:last-child { border-bottom: none; }
     .row.now { background: rgba(0,0,0,0.85); border-radius: 8px; }
     .row.now .hr { color: #ffc107; }
-    .row.now input { color: #fff; font-weight: 700; }
-    .row.now input::placeholder { color: rgba(255,255,255,0.5); }
-    .hr {
-      width: 64px; flex: none; display: flex; align-items: center; justify-content: flex-end;
-      padding: 0 10px; font-size: 13px; font-weight: 800; color: #5a2a00;
+    .hr { width: 62px; flex-shrink: 0; font-size: 13px; font-weight: 800; padding: 10px 6px; }
+    .cell { flex: 1; min-width: 0; padding: 6px 4px; }
+    .cell input {
+      width: 100%; border: none; background: transparent; font-size: 15px;
+      font-family: inherit; color: #0d0d0d; padding: 4px 2px;
     }
-    .row input {
-      flex: 1; border: none; background: transparent; font-size: 15px; padding: 13px 8px;
-      color: #0d0d0d; font-family: inherit; -webkit-appearance: none;
+    .row.now .cell input { color: #ffc107; }
+    .chip {
+      display: block; font-size: 12px; font-weight: 700; background: rgba(255,255,255,0.55);
+      border-radius: 5px; padding: 3px 6px; margin-bottom: 3px; word-break: break-word;
     }
-    .row input:focus { outline: none; background: rgba(255,255,255,0.5); border-radius: 6px; }
-    .row input::placeholder { color: rgba(0,0,0,0.28); }
-    .cell { flex: 1; display: flex; flex-direction: column; }
-    .cell input { flex: none; width: 100%; }
-    .evt { font-size: 12px; font-weight: 700; color: #4a2200; padding: 6px 8px 0; line-height: 1.3; }
-    .row.now .evt { color: #ffe082; }
-    .allday {
-      display: none; font-size: 13px; font-weight: 700; color: #5a2a00;
-      background: rgba(255,255,255,0.28); border: 2px solid rgba(0,0,0,0.4);
-      border-radius: 10px; padding: 10px 12px; margin-bottom: 14px;
-    }
+    .chip.task { background: #0d0d0d; color: #ffc107; }
+    .chip.task.done { opacity: 0.5; text-decoration: line-through; }
+
     .btn-secondary {
-      width: 100%; padding: 12px; font-size: 14px; font-weight: 700; margin-top: 14px;
-      background: rgba(255,255,255,0.3); color: #0d0d0d; border: 2px solid #0d0d0d;
-      border-radius: 12px; cursor: pointer; touch-action: manipulation;
+      display: block; width: 100%; margin-top: 10px; padding: 12px;
+      background: rgba(255,255,255,0.3); border: 3px solid #0d0d0d; font-weight: 800;
+      font-size: 14px; border-radius: 12px; cursor: pointer; touch-action: manipulation;
+      font-family: inherit; color: #0d0d0d;
     }
+    .btn-row { display: flex; gap: 8px; margin-top: 10px; }
+    .btn-row .btn-secondary { margin-top: 0; }
     .back-link {
       display: block; text-align: center; margin-top: 14px; font-size: 15px; font-weight: 700;
       color: #0d0d0d; text-decoration: none; border-bottom: 2px solid #0d0d0d;
     }
     .saved { font-size: 12px; font-weight: 600; color: #1b5e20; text-align: center; margin-top: 10px; min-height: 16px; }
+    .warn {
+      background: #b71c1c; color: #fff; border-radius: 10px; padding: 10px 12px;
+      font-size: 13px; font-weight: 700; margin-bottom: 12px; display: none;
+    }
+    .warn button {
+      margin-top: 8px; background: #fff; color: #b71c1c; border: none; border-radius: 6px;
+      padding: 7px 10px; font-weight: 800; font-size: 13px; font-family: inherit;
+      cursor: pointer; touch-action: manipulation;
+    }
+    textarea.io {
+      width: 100%; height: 120px; margin-top: 10px; border: 3px solid #0d0d0d; border-radius: 10px;
+      padding: 8px; font-size: 12px; font-family: ui-monospace, monospace; display: none;
+      background: rgba(255,255,255,0.75); color: #0d0d0d;
+    }
   </style>
 </head>
 <body>
 <div class="shell">
-  <h1>🌴 FORGE Day Plan</h1>
+  <h1>&#127796; FORGE Day Plan</h1>
   <div class="date" id="date"></div>
+
+  <div class="ctxbar">
+    <span class="jar" id="jar">&nbsp;</span>
+    <span class="jar" id="lastsave">&nbsp;</span>
+  </div>
+
+  <div class="warn" id="warn">
+    <span id="warntext"></span>
+    <button onclick="restoreBackup()">Restore last backup</button>
+  </div>
+
+  <div class="daytabs">
+    <div class="daytab active" id="tab-today" onclick="setDay(0)">Today</div>
+    <div class="daytab" id="tab-tom" onclick="setDay(1)">Tomorrow</div>
+  </div>
+
+  <div class="nextbar">
+    <div class="lbl">NEXT ACTION</div>
+    <div class="val" id="nextval">&mdash;</div>
+  </div>
+
   <div class="banner" id="banner"></div>
   <div class="allday" id="allday"></div>
-  <div class="grid" id="grid"></div>
+
+  <div class="sect">
+    <div class="sect-h"><span>&#127919; Top 5 &mdash; <span id="t5day">Today</span></span><span class="hint">set an hour to place it below</span></div>
+    <div class="panel" id="top5"></div>
+  </div>
+
+  <div class="sect">
+    <div class="sect-h"><span>&#128203; Backlog</span><span class="hint" id="blsrc">everything on the list</span></div>
+    <div class="panel" id="backlog"></div>
+  </div>
+
+  <div class="sect">
+    <div class="sect-h"><span>&#127968; Family &amp; Fun</span><span class="hint">pick one most days</span></div>
+    <div class="panel" id="fun"></div>
+  </div>
+
+  <div class="sect">
+    <div class="sect-h"><span>&#128336; Hour by Hour</span><span class="hint">nothing is ever removed</span></div>
+    <div class="grid panel" id="grid"></div>
+  </div>
+
   <div class="saved" id="saved"></div>
-  <button class="btn-secondary" onclick="clearDay()">Clear today's plan</button>
-  <a href="https://theseanman.github.io/forge-daily-brief" class="back-link">← Back to Brief</a>
+
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="toggleIO()">Backup / Restore</button>
+    <button class="btn-secondary" onclick="clearDay()">Clear this day</button>
+  </div>
+  <textarea class="io" id="io" spellcheck="false"></textarea>
+  <div class="btn-row" id="iobtns" style="display:none;">
+    <button class="btn-secondary" onclick="copyIO()">Copy</button>
+    <button class="btn-secondary" onclick="importIO()">Restore from text</button>
+  </div>
+
+  <a href="https://theseanman.github.io/forge-daily-brief" class="back-link">&larr; Back to Brief</a>
 </div>
+
 <script>
-var START_HOUR = 6, END_HOUR = 23;   // 6 AM through 11 PM
-// Training schedule: 0=Sun ... 6=Sat. Lift Mon/Wed/Fri, HIIT Tue/Thu/Sun, Rest Sat.
+var START_HOUR = 6, END_HOUR = 23;
 var TRAINING = { 0:'HIIT', 1:'Lift', 2:'HIIT', 3:'Lift', 4:'HIIT', 5:'Lift', 6:'Rest' };
-var SEED_HOUR = 17;                   // default slot for the auto-seeded workout (editable)
+var REMINDERS_URL = 'https://forge-input.yoseanreid.workers.dev/reminders';
 
+var K_PLAN = 'forge-dayplan';
+var K_TOP5 = 'forge-top5';
+var K_BACKLOG = 'forge-backlog';
+var K_FUN = 'forge-fun';
+var K_BACKUP = 'forge-backup';
+
+var dayOffset = 0;
+
+/* ---------- date helpers ---------- */
 function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-function todayKey(){ return ymd(new Date()); }
-function hourLabel(h){
-  var ampm = h < 12 ? 'AM' : 'PM';
-  var hr = h % 12; if (hr === 0) hr = 12;
-  return hr + ' ' + ampm;
-}
+function viewDate(){ var d = new Date(); d.setDate(d.getDate() + dayOffset); return d; }
+function dayKey(){ return ymd(viewDate()); }
+function isToday(){ return dayOffset === 0; }
+function hourLabel(h){ var ap = h < 12 ? 'AM' : 'PM'; var hr = h % 12; if (hr === 0) hr = 12; return hr + ' ' + ap; }
 
-function loadPlan(){
-  try {
-    var all = JSON.parse(localStorage.getItem('forge-dayplan') || '{}');
-    return all[todayKey()] || {};
-  } catch(e){ return {}; }
+/* ---------- storage ---------- */
+function readJSON(key, fallback){
+  try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch(e){ return fallback; }
 }
+function writeJSON(key, val){
+  try { localStorage.setItem(key, JSON.stringify(val)); return true; }
+  catch(e){ return false; }
+}
+function loadPlan(){ var all = readJSON(K_PLAN, {}); return all[dayKey()] || {}; }
 function savePlan(plan){
-  try {
-    var all = JSON.parse(localStorage.getItem('forge-dayplan') || '{}');
-    all[todayKey()] = plan;
-    localStorage.setItem('forge-dayplan', JSON.stringify(all));
-  } catch(e){}
+  var all = readJSON(K_PLAN, {});
+  all[dayKey()] = plan;
+  writeJSON(K_PLAN, prune(all));
+  afterSave();
 }
-function flashSaved(){
-  var el = document.getElementById('saved');
-  el.textContent = '✓ saved';
-  clearTimeout(window._sv);
-  window._sv = setTimeout(function(){ el.textContent=''; }, 1200);
+function loadTop5(){
+  var all = readJSON(K_TOP5, {});
+  var arr = all[dayKey()];
+  if (!arr || arr.length !== 5) {
+    arr = [];
+    for (var i = 0; i < 5; i++) arr.push({ t:'', h:'', done:false });
+  }
+  return arr;
+}
+function saveTop5(arr){
+  var all = readJSON(K_TOP5, {});
+  all[dayKey()] = arr;
+  writeJSON(K_TOP5, prune(all));
+  afterSave();
+}
+function loadList(key){ var a = readJSON(key, []); return Object.prototype.toString.call(a) === '[object Array]' ? a : []; }
+function saveList(key, arr){ writeJSON(key, arr); afterSave(); }
+
+/* keep 21 days of history; never delete silently beyond that */
+function prune(all){
+  var keys = [];
+  for (var k in all) if (all.hasOwnProperty(k)) keys.push(k);
+  if (keys.length <= 21) return all;
+  keys.sort();
+  var out = {};
+  for (var i = keys.length - 21; i < keys.length; i++) out[keys[i]] = all[keys[i]];
+  return out;
 }
 
-function buildGrid(){
+/* ---------- backup ---------- */
+function snapshot(){
+  return {
+    saved: new Date().toISOString(),
+    plan: readJSON(K_PLAN, {}),
+    top5: readJSON(K_TOP5, {}),
+    backlog: loadList(K_BACKLOG),
+    fun: loadList(K_FUN)
+  };
+}
+function afterSave(){
+  writeJSON(K_BACKUP, snapshot());
+  flashSaved();
+  paintMeta();
+}
+function restoreBackup(){
+  var b = readJSON(K_BACKUP, null);
+  if (!b) { alert('No backup found in this browser.'); return; }
+  if (!confirm('Restore the last backup from ' + new Date(b.saved).toLocaleString() + '? Anything currently here will be replaced.')) return;
+  writeJSON(K_PLAN, b.plan || {});
+  writeJSON(K_TOP5, b.top5 || {});
+  writeJSON(K_BACKLOG, b.backlog || []);
+  writeJSON(K_FUN, b.fun || []);
+  document.getElementById('warn').style.display = 'none';
+  renderAll();
+}
+
+/* ---------- context badge ---------- */
+function isStandalone(){
+  try {
+    if (window.navigator && window.navigator.standalone === true) return true;
+    if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return true;
+  } catch(e){}
+  return false;
+}
+function paintMeta(){
+  document.getElementById('jar').textContent = isStandalone() ? 'HOME-SCREEN APP' : 'BROWSER TAB';
+  var b = readJSON(K_BACKUP, null);
+  document.getElementById('lastsave').textContent = b && b.saved
+    ? 'saved ' + new Date(b.saved).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})
+    : 'no saves yet';
+}
+function checkEmptyWarning(){
+  var w = document.getElementById('warn');
+  var b = readJSON(K_BACKUP, null);
   var plan = loadPlan();
+  var t5 = loadTop5();
+  var planEmpty = true; for (var k in plan) if (plan[k]) planEmpty = false;
+  var t5Empty = true; for (var i = 0; i < 5; i++) if (t5[i].t) t5Empty = false;
+  if (planEmpty && t5Empty && b && (Object.keys(b.plan||{}).length || Object.keys(b.top5||{}).length)) {
+    document.getElementById('warntext').textContent =
+      'This day looks empty, but a backup exists from ' + new Date(b.saved).toLocaleString() + '.';
+    w.style.display = 'block';
+  } else {
+    w.style.display = 'none';
+  }
+}
+
+/* ---------- Top 5 ---------- */
+function hourOptions(sel){
+  var s = '<option value="">--</option>';
+  for (var h = START_HOUR; h <= END_HOUR; h++){
+    s += '<option value="' + h + '"' + (String(sel) === String(h) ? ' selected' : '') + '>' + hourLabel(h) + '</option>';
+  }
+  return s;
+}
+function renderTop5(){
+  var arr = loadTop5();
+  var nowH = new Date().getHours();
+  var host = document.getElementById('top5');
+  host.innerHTML = '';
+  for (var i = 0; i < 5; i++){
+    (function(i){
+      var it = arr[i];
+      var row = document.createElement('div');
+      row.className = 't5row' + (isToday() && it.h !== '' && Number(it.h) < nowH && !it.done ? ' past' : '');
+
+      var num = document.createElement('div');
+      num.className = 't5num'; num.textContent = (i + 1);
+
+      var chk = document.createElement('button');
+      chk.className = 't5chk' + (it.done ? ' on' : '');
+      chk.innerHTML = it.done ? '&#10003;' : '&nbsp;';
+      chk.onclick = function(){ var a = loadTop5(); a[i].done = !a[i].done; saveTop5(a); renderAll(); };
+
+      var txt = document.createElement('input');
+      txt.type = 'text'; txt.className = 't5txt' + (it.done ? ' done' : '');
+      txt.value = it.t; txt.placeholder = 'actionable ' + (i + 1);
+      txt.oninput = function(){ var a = loadTop5(); a[i].t = this.value; saveTop5(a); paintNext(); };
+      txt.onblur = function(){ renderGrid(); };
+
+      var sel = document.createElement('select');
+      sel.className = 't5hr';
+      sel.innerHTML = hourOptions(it.h);
+      sel.onchange = function(){ var a = loadTop5(); a[i].h = this.value; saveTop5(a); renderAll(); };
+
+      row.appendChild(num); row.appendChild(chk); row.appendChild(txt); row.appendChild(sel);
+      host.appendChild(row);
+    })(i);
+  }
+  document.getElementById('t5day').textContent = isToday() ? 'Today' : 'Tomorrow';
+}
+function paintNext(){
+  var arr = loadTop5();
+  var nowH = new Date().getHours();
+  var timed = [], untimed = [];
+  for (var i = 0; i < 5; i++){
+    var it = arr[i];
+    if (!it.t || it.done) continue;
+    if (it.h !== '' && it.h !== null) timed.push(it); else untimed.push(it);
+  }
+  timed.sort(function(a,b){ return Number(a.h) - Number(b.h); });
+  var pick = null;
+  if (isToday()){
+    for (var j = 0; j < timed.length; j++){ if (Number(timed[j].h) >= nowH){ pick = timed[j]; break; } }
+    if (!pick && timed.length) pick = timed[0];
+  } else if (timed.length) {
+    pick = timed[0];
+  }
+  if (!pick && untimed.length) pick = untimed[0];
+  var el = document.getElementById('nextval');
+  if (!pick){
+    var anyText = false;
+    for (var k = 0; k < 5; k++) if (arr[k].t) anyText = true;
+    el.innerHTML = anyText ? 'All five done. &#127881;' : 'Set your five below.';
+  } else {
+    el.textContent = (pick.h !== '' ? hourLabel(Number(pick.h)) + ' — ' : '') + pick.t;
+  }
+}
+
+/* ---------- lists ---------- */
+function renderList(key, hostId, placeholder, promotable){
+  var arr = loadList(key);
+  var host = document.getElementById(hostId);
+  host.innerHTML = '';
+  if (!arr.length){
+    var e = document.createElement('div');
+    e.className = 'empty'; e.textContent = 'Nothing here yet.';
+    host.appendChild(e);
+  }
+  for (var i = 0; i < arr.length; i++){
+    (function(i){
+      var row = document.createElement('div');
+      row.className = 'li';
+      var t = document.createElement('div');
+      t.className = 'li-txt'; t.textContent = arr[i];
+      row.appendChild(t);
+      if (promotable){
+        var go = document.createElement('button');
+        go.className = 'li-btn go'; go.textContent = 'Top 5';
+        go.onclick = function(){ promote(arr[i]); };
+        row.appendChild(go);
+      }
+      var del = document.createElement('button');
+      del.className = 'li-btn'; del.innerHTML = '&times;';
+      del.onclick = function(){ var a = loadList(key); a.splice(i,1); saveList(key,a); renderAll(); };
+      row.appendChild(del);
+      host.appendChild(row);
+    })(i);
+  }
+  var add = document.createElement('div');
+  add.className = 'addrow';
+  var inp = document.createElement('input');
+  inp.type = 'text'; inp.placeholder = placeholder;
+  inp.onkeydown = function(ev){ if (ev.key === 'Enter'){ commit(); } };
+  var btn = document.createElement('button');
+  btn.className = 'li-btn'; btn.textContent = 'Add';
+  btn.onclick = commit;
+  function commit(){
+    var v = inp.value.trim();
+    if (!v) return;
+    var a = loadList(key); a.push(v); saveList(key, a);
+    inp.value = ''; renderAll();
+  }
+  add.appendChild(inp); add.appendChild(btn);
+  host.appendChild(add);
+}
+function promote(text){
+  var a = loadTop5();
+  for (var i = 0; i < 5; i++){
+    if (!a[i].t){ a[i].t = text; saveTop5(a); renderAll(); return; }
+  }
+  alert('All five slots are full. Clear one first.');
+}
+
+/* ---------- hour grid ---------- */
+window.FORGE_EVENTS = {};
+window.FORGE_ALLDAY = [];
+
+function renderGrid(){
+  var plan = loadPlan();
+  var t5 = loadTop5();
   var nowH = new Date().getHours();
   var grid = document.getElementById('grid');
   grid.innerHTML = '';
   for (var h = START_HOUR; h <= END_HOUR; h++){
-    var row = document.createElement('div');
-    row.className = 'row' + (h === nowH ? ' now' : '');
-    var lab = document.createElement('div');
-    lab.className = 'hr'; lab.textContent = hourLabel(h);
-    var inp = document.createElement('input');
-    inp.type = 'text';
-    inp.setAttribute('data-h', h);
-    inp.placeholder = (h === nowH ? 'now —' : '');
-    if (plan[h]) inp.value = plan[h];
-    inp.addEventListener('input', function(){
-      var p = loadPlan();
-      var hh = this.getAttribute('data-h');
-      if (this.value === '') { delete p[hh]; } else { p[hh] = this.value; }
-      savePlan(p);
-      flashSaved();
-    });
-    var cell = document.createElement('div'); cell.className = 'cell';
-    var evs = (window.FORGE_EVENTS && window.FORGE_EVENTS[h]) || [];
-    evs.forEach(function(t){
-      var e = document.createElement('div'); e.className = 'evt';
-      e.textContent = '\uD83D\uDCC5 ' + t;   // 📅
-      cell.appendChild(e);
-    });
-    cell.appendChild(inp);
-    row.appendChild(lab); row.appendChild(cell);
-    grid.appendChild(row);
+    (function(h){
+      var row = document.createElement('div');
+      row.className = 'row' + (isToday() && h === nowH ? ' now' : '');
+      var lab = document.createElement('div');
+      lab.className = 'hr'; lab.textContent = hourLabel(h);
+      var cell = document.createElement('div');
+      cell.className = 'cell';
+
+      var evs = window.FORGE_EVENTS[h] || [];
+      for (var e = 0; e < evs.length; e++){
+        var c = document.createElement('span');
+        c.className = 'chip'; c.textContent = '\uD83D\uDCC5 ' + evs[e];
+        cell.appendChild(c);
+      }
+      for (var i = 0; i < 5; i++){
+        if (t5[i].t && String(t5[i].h) === String(h)){
+          var tc = document.createElement('span');
+          tc.className = 'chip task' + (t5[i].done ? ' done' : '');
+          tc.textContent = '\u25B6 ' + (i + 1) + '. ' + t5[i].t;
+          cell.appendChild(tc);
+        }
+      }
+      var inp = document.createElement('input');
+      inp.type = 'text';
+      inp.placeholder = (isToday() && h === nowH ? 'now —' : '');
+      if (plan[h]) inp.value = plan[h];
+      inp.oninput = function(){
+        var p = loadPlan();
+        if (this.value === '') delete p[h]; else p[h] = this.value;
+        savePlan(p);
+      };
+      cell.appendChild(inp);
+      row.appendChild(lab); row.appendChild(cell);
+      grid.appendChild(row);
+    })(h);
   }
 }
 
-function applyTrainingSeed(){
-  // Auto-seed removed (summer schedule is flexible). Keeps a light day-type
-  // heads-up banner only; no workout is written into any hour slot.
-  var dow = new Date().getDay();
-  var type = TRAINING[dow];
-  var label = type === 'Rest' ? '🛌 Rest day'
-            : (type === 'Lift' ? '🏋️ Lift day (whenever suits you)' : '🔥 HIIT day (whenever suits you)');
-  document.getElementById('banner').textContent = label;
-}
-
-function clearDay(){
-  try {
-    var all = JSON.parse(localStorage.getItem('forge-dayplan') || '{}');
-    delete all[todayKey()];
-    localStorage.setItem('forge-dayplan', JSON.stringify(all));
-    localStorage.removeItem('forge-dayplan-seeded-' + todayKey());
-  } catch(e){}
-  buildGrid(); applyTrainingSeed(); buildGrid();
-}
-
-// ── Calendar auto-fill: read today's events from data.json (already published
-//    by the brief) and bucket them into the hour grid. No brief edit needed. ──
-window.FORGE_EVENTS = {};   // hour -> [ "3:30 PM Title", ... ]
-window.FORGE_ALLDAY = [];
-
-function todayCalLabel(){
-  var d = new Date();
+/* ---------- calendar auto-fill ---------- */
+function calLabel(){
+  var d = viewDate();
   var wd = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
   var mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
-  var dd = String(d.getDate()).padStart(2,'0');
-  return wd + ' ' + mo + ' ' + dd;          // matches data.json's "%a %b %d", e.g. "Mon Jun 29"
+  return wd + ' ' + mo + ' ' + String(d.getDate()).padStart(2,'0');
 }
-
 function parseHour(t){
   var m = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec((t||'').trim());
-  if(!m) return null;
+  if (!m) return null;
   var h = parseInt(m[1],10) % 12;
-  if(/PM/i.test(m[3])) h += 12;
+  if (/PM/i.test(m[3])) h += 12;
   return h;
 }
-
 function renderAllDay(){
   var el = document.getElementById('allday');
-  if(!el) return;
-  if(window.FORGE_ALLDAY.length === 0){ el.style.display = 'none'; el.textContent = ''; return; }
+  if (!window.FORGE_ALLDAY.length){ el.style.display = 'none'; el.textContent = ''; return; }
   el.style.display = 'block';
   el.textContent = '\uD83D\uDCC5 All day: ' + window.FORGE_ALLDAY.join('  \u00B7  ');
 }
-
 function fetchCalendar(){
   fetch('data.json?t=' + Date.now())
     .then(function(r){ return r.json(); })
     .then(function(d){
       var cal = (d && d.calendar) || [];
-      var label = todayCalLabel();
+      var label = calLabel();
       window.FORGE_EVENTS = {}; window.FORGE_ALLDAY = [];
       cal.forEach(function(e){
-        if(e.date !== label) return;                 // today only
-        if((e.time||'').toLowerCase() === 'all day'){ window.FORGE_ALLDAY.push(e.title); return; }
+        if (e.date !== label) return;
+        if ((e.time||'').toLowerCase() === 'all day'){ window.FORGE_ALLDAY.push(e.title); return; }
         var h = parseHour(e.time);
-        if(h === null) return;
-        if(h < START_HOUR) h = START_HOUR;           // clamp into visible grid (chip still shows real time)
-        if(h > END_HOUR) h = END_HOUR;
-        var chip = e.time.replace(/^0/, '') + '  ' + e.title;
-        (window.FORGE_EVENTS[h] = window.FORGE_EVENTS[h] || []).push(chip);
+        if (h === null) return;
+        if (h < START_HOUR) h = START_HOUR;
+        if (h > END_HOUR) h = END_HOUR;
+        (window.FORGE_EVENTS[h] = window.FORGE_EVENTS[h] || []).push(e.time.replace(/^0/,'') + '  ' + e.title);
       });
-      renderAllDay();
-      buildGrid();                                   // re-render now that events are loaded
+      renderAllDay(); renderGrid();
     })
-    .catch(function(){ /* offline / no data.json — planner still works without calendar */ });
+    .catch(function(){ /* offline — planner still works */ });
+}
+
+/* ---------- reminders -> backlog (best effort) ---------- */
+function fetchReminders(){
+  fetch(REMINDERS_URL, { headers: { 'Accept':'application/json' } })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var text = (d && d.week) || '';
+      if (!text) return;
+      var items = text.split('\n').map(function(s){ return s.trim(); }).filter(function(s){ return s; });
+      if (!items.length) return;
+      var existing = loadList(K_BACKLOG);
+      var added = 0;
+      items.forEach(function(it){
+        if (existing.indexOf(it) === -1){ existing.push(it); added++; }
+      });
+      if (added){ saveList(K_BACKLOG, existing); renderAll(); }
+      document.getElementById('blsrc').textContent = 'synced from Reminders';
+    })
+    .catch(function(){
+      document.getElementById('blsrc').textContent = 'manual list';
+    });
+}
+
+/* ---------- misc ---------- */
+function flashSaved(){
+  var el = document.getElementById('saved');
+  el.textContent = '\u2713 saved';
+  clearTimeout(window._sv);
+  window._sv = setTimeout(function(){ el.textContent = ''; }, 1200);
+}
+function trainingBanner(){
+  var type = TRAINING[viewDate().getDay()];
+  document.getElementById('banner').textContent =
+    type === 'Rest' ? '\uD83D\uDECC Rest day'
+    : (type === 'Lift' ? '\uD83C\uDFCB\uFE0F Lift day (whenever suits you)'
+                       : '\uD83D\uDD25 HIIT day (whenever suits you)');
+}
+function setDay(off){
+  dayOffset = off;
+  document.getElementById('tab-today').className = 'daytab' + (off === 0 ? ' active' : '');
+  document.getElementById('tab-tom').className = 'daytab' + (off === 1 ? ' active' : '');
+  renderAll();
+  fetchCalendar();
+}
+function clearDay(){
+  var label = isToday() ? "today's" : "tomorrow's";
+  if (!confirm('Clear ' + label + ' hour grid AND Top 5?\n\nThis cannot be undone from here (a backup is kept).')) return;
+  if (!confirm('Really clear ' + label + ' plan?')) return;
+  var all = readJSON(K_PLAN, {}); delete all[dayKey()]; writeJSON(K_PLAN, all);
+  var t5 = readJSON(K_TOP5, {}); delete t5[dayKey()]; writeJSON(K_TOP5, t5);
+  afterSave(); renderAll();
+}
+function toggleIO(){
+  var io = document.getElementById('io'), b = document.getElementById('iobtns');
+  if (io.style.display === 'block'){ io.style.display = 'none'; b.style.display = 'none'; return; }
+  io.value = JSON.stringify(snapshot());
+  io.style.display = 'block'; b.style.display = 'flex';
+}
+function copyIO(){
+  var io = document.getElementById('io');
+  io.select(); io.setSelectionRange(0, 999999);
+  try { document.execCommand('copy'); alert('Copied. Paste it somewhere safe.'); }
+  catch(e){ alert('Select the text and copy manually.'); }
+}
+function importIO(){
+  var io = document.getElementById('io');
+  var b;
+  try { b = JSON.parse(io.value); } catch(e){ alert('That is not valid backup text.'); return; }
+  if (!confirm('Replace everything with this backup?')) return;
+  writeJSON(K_PLAN, b.plan || {});
+  writeJSON(K_TOP5, b.top5 || {});
+  writeJSON(K_BACKLOG, b.backlog || []);
+  writeJSON(K_FUN, b.fun || []);
+  renderAll(); alert('Restored.');
+}
+function paintDate(){
+  document.getElementById('date').textContent =
+    viewDate().toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'});
+}
+function renderAll(){
+  paintDate(); trainingBanner(); paintMeta();
+  renderTop5(); paintNext();
+  renderList(K_BACKLOG, 'backlog', 'add to backlog…', true);
+  renderList(K_FUN, 'fun', 'add a family idea…', true);
+  renderGrid(); checkEmptyWarning();
 }
 
 window.onload = function(){
-  var now = new Date();
-  document.getElementById('date').textContent =
-    now.toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric' });
-  applyTrainingSeed();   // sets banner + seeds workout
-  buildGrid();           // renders grid (picks up the seed) + highlights current hour
-  fetchCalendar();       // pull today's calendar events from data.json, then re-render
-  // Re-highlight the current hour as time passes (every minute)
-  setInterval(buildGrid, 60000);
+  renderAll();
+  fetchCalendar();
+  fetchReminders();
+  setInterval(function(){ paintNext(); }, 60000);
 };
 </script>
 </body>
