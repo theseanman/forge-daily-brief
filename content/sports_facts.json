@@ -1,0 +1,76 @@
+{
+  "_meta": {
+    "name": "Manually-maintained sports facts",
+    "note": "These are NOT fetched live. Every entry carries verified_on. The brief shows the age and turns amber past warn_days, red past stale_days. When you update a line, update its date.",
+    "warn_days": 21,
+    "stale_days": 45
+  },
+  "teams": [
+    {
+      "key": "rangers",
+      "icon": "\ud83c\udff4",
+      "label": "Glasgow Rangers",
+      "status": "Europa League 2nd qualifying round vs Jagiellonia Bia\u0142ystok. Scottish Premiership opens Fri Jul 31 away to Dundee United.",
+      "verified_on": "2026-07-22",
+      "source": "UEFA.com / Sky Sports"
+    },
+    {
+      "key": "canucks",
+      "icon": "\ud83c\udfd2",
+      "label": "Vancouver Canucks",
+      "status": "Offseason \u2014 next season Oct 2026",
+      "verified_on": "2026-07-22",
+      "source": "hardcoded, unverified this session"
+    },
+    {
+      "key": "goldeneyes",
+      "icon": "\ud83c\udfd2",
+      "label": "Vancouver Goldeneyes (PWHL)",
+      "status": "Offseason \u2014 next season Nov 2026, Pacific Coliseum",
+      "verified_on": "2026-07-22",
+      "source": "hardcoded, unverified this session"
+    },
+    {
+      "key": "warriors",
+      "icon": "\ud83e\udd4d",
+      "label": "Vancouver Warriors",
+      "status": "Offseason \u2014 NLL season Nov 2026",
+      "verified_on": "2026-07-22",
+      "source": "hardcoded, unverified this session"
+    },
+    {
+      "key": "raiders",
+      "icon": "\ud83c\udfc8",
+      "label": "Las Vegas Raiders",
+      "status": "Offseason \u2014 NFL preseason Aug 2026",
+      "verified_on": "2026-07-22",
+      "source": "hardcoded, unverified this session"
+    }
+  ],
+  "fighters": [
+    {
+      "name": "Sean Strickland",
+      "last": "W def. Chimaev (Split Dec) UFC 328 May 9 \u2014 MW CHAMP",
+      "next": "No next fight announced",
+      "verified_on": "2026-05-09"
+    },
+    {
+      "name": "Conor McGregor",
+      "last": "L TKO R1 (1:09) to Max Holloway, UFC 329 Jul 11 \u2014 knee injury on opening flying kick",
+      "next": "No next fight announced \u2014 recovering",
+      "verified_on": "2026-07-22"
+    },
+    {
+      "name": "Chris Duncan",
+      "last": "L sub R2 to Moicano, UFC FN Mar 30",
+      "next": "No next fight announced",
+      "verified_on": "2026-03-30"
+    },
+    {
+      "name": "Mike Malott",
+      "last": "W KO R3 vs Burns, UFC FN Winnipeg Apr 18",
+      "next": "No next fight announced",
+      "verified_on": "2026-04-18"
+    }
+  ]
+}
