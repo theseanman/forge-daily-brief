@@ -60,8 +60,7 @@
       border-radius: 12px; padding: 8px; overflow: hidden;
     }
 
-    .t5row { display: flex; align-items: center; gap: 6px; padding: 7px 4px; border-bottom: 1px solid rgba(0,0,0,0.18); }
-    .t5row:last-child { border-bottom: none; }
+    .t5row { display: flex; align-items: center; gap: 6px; padding: 2px 4px; }
     .t5num { width: 20px; font-weight: 800; font-size: 14px; flex-shrink: 0; }
     .t5chk {
       width: 26px; height: 26px; flex-shrink: 0; border: 2px solid #0d0d0d; border-radius: 6px;
@@ -137,6 +136,52 @@
       padding: 7px 10px; font-weight: 800; font-size: 13px; font-family: inherit;
       cursor: pointer; touch-action: manipulation;
     }
+
+    .t5block { border-bottom: 1px solid rgba(0,0,0,0.18); padding: 6px 0 8px; }
+    .t5block:last-child { border-bottom: none; }
+    .t5row2 { display: flex; align-items: center; gap: 6px; padding: 5px 4px 0 26px; }
+    .t5mins {
+      width: 66px; flex-shrink: 0; border: 2px solid #0d0d0d; border-radius: 6px;
+      background: rgba(255,255,255,0.6); font-size: 13px; font-weight: 700;
+      font-family: inherit; padding: 6px 4px; color: #0d0d0d; text-align: center;
+    }
+    .t5dw {
+      flex: 1; min-width: 0; border: 2px solid #0d0d0d; border-radius: 6px;
+      background: rgba(255,255,255,0.45); padding: 6px 8px; font-size: 13px;
+      font-family: inherit; color: #0d0d0d;
+    }
+    .t5dw::placeholder { font-style: italic; opacity: 0.6; }
+
+    .sessionbox {
+      background: rgba(0,0,0,0.88); color: #ffc107; border-radius: 12px;
+      padding: 14px; margin-bottom: 14px;
+    }
+    .sessionbox.ringing { background: #8a1010; color: #fff; }
+    .sess-lbl { font-size: 10px; letter-spacing: 0.18em; opacity: 0.75; margin-bottom: 6px; }
+    .sess-task { font-size: 15px; font-weight: 800; line-height: 1.35; margin-bottom: 2px; }
+    .sess-dw { font-size: 12px; opacity: 0.85; line-height: 1.45; margin-bottom: 10px; }
+    .sess-clock { font-size: 40px; font-weight: 800; letter-spacing: 0.04em; line-height: 1; margin-bottom: 10px; }
+    .sess-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+    .sess-btn {
+      flex: 1; min-width: 92px; border: 2px solid #ffc107; border-radius: 8px;
+      background: transparent; color: #ffc107; font-weight: 800; font-size: 13px;
+      padding: 10px 8px; cursor: pointer; touch-action: manipulation; font-family: inherit;
+    }
+    .sessionbox.ringing .sess-btn { border-color: #fff; color: #fff; }
+    .sess-btn.solid { background: #ffc107; color: #0d0d0d; }
+    .sessionbox.ringing .sess-btn.solid { background: #fff; color: #8a1010; }
+    .sess-start {
+      display: block; width: 100%; padding: 14px; background: rgba(0,0,0,0.88);
+      color: #ffc107; border: none; border-radius: 12px; font-weight: 800;
+      font-size: 15px; letter-spacing: 0.06em; cursor: pointer; touch-action: manipulation;
+      font-family: inherit; margin-bottom: 14px;
+    }
+    .sess-pick { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    .sess-pickbtn {
+      border: 2px solid #ffc107; border-radius: 20px; background: transparent; color: #ffc107;
+      font-size: 12px; font-weight: 700; padding: 6px 12px; cursor: pointer;
+      touch-action: manipulation; font-family: inherit;
+    }
     textarea.io {
       width: 100%; height: 120px; margin-top: 10px; border: 3px solid #0d0d0d; border-radius: 10px;
       padding: 8px; font-size: 12px; font-family: ui-monospace, monospace; display: none;
@@ -169,6 +214,8 @@
     <div class="val" id="nextval">&mdash;</div>
   </div>
 
+  <div id="session-host"></div>
+
   <div class="banner" id="banner"></div>
   <div class="allday" id="allday"></div>
 
@@ -177,9 +224,11 @@
     <div class="panel" id="top5"></div>
   </div>
 
+
+
   <div class="sect">
-    <div class="sect-h"><span>&#128203; Backlog</span><span class="hint" id="blsrc">everything on the list</span></div>
-    <div class="panel" id="backlog"></div>
+    <div class="sect-h"><span>&#128336; Hour by Hour</span><span class="hint">nothing is ever removed</span></div>
+    <div class="grid panel" id="grid"></div>
   </div>
 
   <div class="sect">
@@ -188,8 +237,8 @@
   </div>
 
   <div class="sect">
-    <div class="sect-h"><span>&#128336; Hour by Hour</span><span class="hint">nothing is ever removed</span></div>
-    <div class="grid panel" id="grid"></div>
+    <div class="sect-h"><span>&#128203; Backlog</span><span class="hint" id="blsrc">everything on the list</span></div>
+    <div class="panel" id="backlog"></div>
   </div>
 
   <div class="saved" id="saved"></div>
@@ -370,7 +419,29 @@ function renderTop5(){
       sel.onchange = function(){ var a = loadTop5(); a[i].h = this.value; saveTop5(a); renderTop5(); paintNext(); paintChips(); };
 
       row.appendChild(num); row.appendChild(chk); row.appendChild(txt); row.appendChild(sel);
-      host.appendChild(row);
+
+      var row2 = document.createElement('div');
+      row2.className = 't5row2';
+
+      var mins = document.createElement('input');
+      mins.type = 'number'; mins.className = 't5mins'; mins.min = '5'; mins.max = '180';
+      mins.placeholder = 'min'; mins.value = (it.m === undefined || it.m === null) ? '' : it.m;
+      mins.oninput = function(){
+        var a = loadTop5(); a[i].m = this.value === '' ? '' : Number(this.value); saveTop5(a);
+      };
+
+      var dw = document.createElement('input');
+      dw.type = 'text'; dw.className = 't5dw';
+      dw.value = it.dw || '';
+      dw.placeholder = 'done when \u2026 (what would someone else see?)';
+      dw.oninput = function(){ var a = loadTop5(); a[i].dw = this.value; saveTop5(a); };
+
+      row2.appendChild(mins); row2.appendChild(dw);
+
+      var block = document.createElement('div');
+      block.className = 't5block';
+      block.appendChild(row); block.appendChild(row2);
+      host.appendChild(block);
     })(i);
   }
   document.getElementById('t5day').textContent = isToday() ? 'Today' : 'Tomorrow';
@@ -604,6 +675,211 @@ function fetchReminders(){
     });
 }
 
+
+/* ================= WORK SESSION TIMER ==================================== */
+/* The break is a decision checkpoint, not just a rest. When the clock runs
+   out the only question is whether the done-when condition is met.          */
+var K_SESSION = 'forge-session';
+var DEFAULT_MINS = 50;
+var BREAK_MINS = 12;
+var _tick = null, _rang = false, _origTitle = document.title;
+
+function loadSession(){ return readJSON(K_SESSION, null); }
+function saveSession(v){
+  if (v === null){ try { localStorage.removeItem(K_SESSION); } catch(e){} }
+  else { writeJSON(K_SESSION, v); }
+}
+function mmss(ms){
+  if (ms < 0) ms = 0;
+  var t = Math.round(ms / 1000);
+  var m = Math.floor(t / 60), sec = t % 60;
+  return m + ':' + (sec < 10 ? '0' : '') + sec;
+}
+function firstUnfinished(){
+  var a = loadTop5();
+  for (var i = 0; i < 5; i++) if (a[i].t && !a[i].done) return i;
+  return -1;
+}
+
+/* ---------- starting ---------- */
+function startPrompt(){
+  var idx = firstUnfinished();
+  var a = loadTop5();
+  var label = idx >= 0 ? a[idx].t : '';
+  var task = prompt('What are you working on?', label);
+  if (task === null) return;
+  task = task.trim();
+  if (!task) return;
+
+  var preMins = (idx >= 0 && a[idx].m) ? a[idx].m : DEFAULT_MINS;
+  var mRaw = prompt('How many minutes?\n\n(50 is a good default for demanding work.)', String(preMins));
+  if (mRaw === null) return;
+  var mins = parseInt(mRaw, 10);
+  if (!mins || mins < 1) mins = DEFAULT_MINS;
+
+  var preDw = (idx >= 0 && a[idx].dw) ? a[idx].dw : '';
+  var dw = prompt('Done when what?\n\nWrite something someone else could check.\nNot "make it good" \u2014 "ten decks generated and validated".', preDw);
+  if (dw === null) return;
+  dw = dw.trim();
+
+  /* write it back onto the Top 5 item so it is not lost */
+  if (idx >= 0){
+    a[idx].m = mins;
+    if (dw) a[idx].dw = dw;
+    saveTop5(a);
+    renderTop5();
+  }
+
+  saveSession({ task: task, mins: mins, dw: dw, startedAt: Date.now(), kind: 'work' });
+  _rang = false;
+  renderSession();
+}
+
+function startBreak(){
+  saveSession({ task: 'Break \u2014 get away from the screen', mins: BREAK_MINS, dw: '',
+                startedAt: Date.now(), kind: 'break' });
+  _rang = false;
+  renderSession();
+}
+
+function endSession(){
+  saveSession(null);
+  _rang = false;
+  document.title = _origTitle;
+  renderSession();
+}
+
+/* ---------- the checkpoint ---------- */
+function checkpoint(){
+  var s = loadSession();
+  if (!s) return;
+  if (s.kind === 'break'){ endSession(); return; }
+
+  var q = s.dw ? ('Done when: ' + s.dw + '\n\nIs that met?') : 'Is the task finished?';
+  if (confirm(q + '\n\nOK = yes, finished.\nCancel = not yet.')){
+    var idx = firstUnfinished();
+    var a = loadTop5();
+    if (idx >= 0 && a[idx].t === s.task){ a[idx].done = true; saveTop5(a); }
+    endSession();
+    renderAll();
+    alert('Finished. Take the break \u2014 away from the screen.');
+    startBreak();
+    return;
+  }
+  /* not met: another block, or park it */
+  if (confirm('Not met.\n\nOK = one more block (same length).\nCancel = park the rest in the backlog and stop.')){
+    saveSession({ task: s.task, mins: s.mins, dw: s.dw, startedAt: Date.now(), kind: 'work' });
+    _rang = false;
+    renderSession();
+  } else {
+    var note = prompt('What is left? This goes to the backlog.', s.task + ' \u2014 remaining: ');
+    if (note && note.trim()){
+      var b = loadList(K_BACKLOG);
+      if (b.indexOf(note.trim()) === -1){ b.push(note.trim()); saveList(K_BACKLOG, b); }
+      renderLists();
+    }
+    endSession();
+    startBreak();
+  }
+}
+
+/* ---------- rendering ---------- */
+function renderSession(){
+  var host = document.getElementById('session-host');
+  if (!host) return;
+  var s = loadSession();
+
+  if (!s){
+    host.innerHTML = '';
+    var b = document.createElement('button');
+    b.className = 'sess-start';
+    b.innerHTML = '\u25B6 START WORK';
+    b.onclick = startPrompt;
+    host.appendChild(b);
+    var br = document.createElement('button');
+    br.className = 'sess-start';
+    br.style.background = 'rgba(255,255,255,0.30)';
+    br.style.color = '#0d0d0d';
+    br.innerHTML = '\u2615 Just take a break (' + BREAK_MINS + ' min)';
+    br.onclick = startBreak;
+    host.appendChild(br);
+    if (_tick){ clearInterval(_tick); _tick = null; }
+    document.title = _origTitle;
+    return;
+  }
+
+  var left = (s.startedAt + s.mins * 60000) - Date.now();
+  var over = left <= 0;
+
+  host.innerHTML =
+    '<div class="sessionbox' + (over ? ' ringing' : '') + '">' +
+      '<div class="sess-lbl">' + (s.kind === 'break' ? 'BREAK' : 'WORKING ON') + '</div>' +
+      '<div class="sess-task"></div>' +
+      (s.dw ? '<div class="sess-dw"></div>' : '') +
+      '<div class="sess-clock">' + (over ? 'TIME' : mmss(left)) + '</div>' +
+      '<div class="sess-btns"></div>' +
+    '</div>';
+
+  host.querySelector('.sess-task').textContent = s.task;
+  if (s.dw) host.querySelector('.sess-dw').textContent = 'Done when: ' + s.dw;
+
+  var btns = host.querySelector('.sess-btns');
+  function mk(label, solid, fn){
+    var b = document.createElement('button');
+    b.className = 'sess-btn' + (solid ? ' solid' : '');
+    b.textContent = label; b.onclick = fn;
+    btns.appendChild(b);
+  }
+  if (over){
+    if (s.kind === 'break') mk('Back to work', true, function(){ endSession(); startPrompt(); });
+    else mk('Check it', true, checkpoint);
+    mk('+10 min', false, function(){
+      var c = loadSession(); c.mins = c.mins + 10; saveSession(c); _rang = false; renderSession();
+    });
+  } else {
+    mk(s.kind === 'break' ? 'End break' : 'Done early', true, s.kind === 'break' ? endSession : checkpoint);
+    mk('Cancel', false, function(){ if (confirm('Cancel this session?')) endSession(); });
+  }
+
+  if (over && !_rang){
+    _rang = true;
+    ring();
+  }
+  document.title = over ? ('\u23F0 TIME \u2014 ' + _origTitle) : (mmss(left) + ' \u2014 ' + _origTitle);
+
+  if (!_tick) _tick = setInterval(renderSession, 1000);
+}
+
+/* ---------- the alert itself ---------- */
+function ring(){
+  try {
+    var Ctx = window.AudioContext || window.webkitAudioContext;
+    if (Ctx){
+      var ctx = new Ctx();
+      [0, 300, 600].forEach(function(delay){
+        setTimeout(function(){
+          var o = ctx.createOscillator(), g = ctx.createGain();
+          o.connect(g); g.connect(ctx.destination);
+          o.frequency.value = 660; g.gain.value = 0.12;
+          o.start(); setTimeout(function(){ o.stop(); }, 180);
+        }, delay);
+      });
+    }
+  } catch(e){}
+  try {
+    if (window.Notification && Notification.permission === 'granted'){
+      var s = loadSession();
+      new Notification(s && s.kind === 'break' ? 'Break over' : 'Time is up',
+                       { body: s && s.dw ? ('Done when: ' + s.dw) : 'Check your done-when.' });
+    }
+  } catch(e){}
+}
+function askNotify(){
+  try {
+    if (window.Notification && Notification.permission === 'default') Notification.requestPermission();
+  } catch(e){}
+}
+
 /* ---------- misc ---------- */
 function flashSaved(ok){
   var el = document.getElementById('saved');
@@ -672,6 +948,7 @@ function renderLists(){
 }
 function renderAll(){
   paintDate(); trainingBanner(); paintMeta();
+  renderSession();
   renderTop5(); paintNext();
   renderLists();
   renderGrid(); checkEmptyWarning();
@@ -679,6 +956,7 @@ function renderAll(){
 
 window.onload = function(){
   renderAll();
+  askNotify();
   fetchCalendar();
   fetchReminders();
   setInterval(function(){ paintNext(); }, 60000);

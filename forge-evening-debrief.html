@@ -119,6 +119,15 @@
                 padding:8px; color:#f0f0f8; font-size:13px; font-family:inherit; }
     .plan-hr { width:74px; flex-shrink:0; background:#111118; border:1px solid #33334a; border-radius:7px;
                padding:8px 2px; color:#f0f0f8; font-size:12px; font-family:inherit; }
+    .plan-row2 { display:flex; align-items:center; gap:6px; padding:4px 2px 8px 23px;
+                 border-bottom:1px solid #26263a; }
+    .plan-row2:last-of-type { border-bottom:none; }
+    .plan-mins { width:60px; flex-shrink:0; background:#111118; border:1px solid #33334a;
+                 border-radius:7px; padding:7px 4px; color:#f0f0f8; font-size:12px;
+                 font-family:inherit; text-align:center; }
+    .plan-dw { flex:1; min-width:0; background:#111118; border:1px solid #33334a;
+               border-radius:7px; padding:7px 8px; color:#f0f0f8; font-size:12px; font-family:inherit; }
+    .plan-dw::placeholder { font-style:italic; color:#4a4a60; }
     .pick-wrap { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
     .pick { background:#1e1e2e; border:1px solid #33334a; border-radius:20px; padding:6px 11px;
             font-size:11px; color:#f0f0f8; cursor:pointer; font-family:inherit; }
@@ -636,12 +645,25 @@ function renderPlanRows(){
     hr.onchange=function(){ planRows[i].h=this.value; checkPlan(); };
     row.appendChild(n); row.appendChild(st); row.appendChild(tx); row.appendChild(hr);
     host.appendChild(row);
+
+    var row2=document.createElement('div'); row2.className='plan-row2';
+    var mn=document.createElement('input'); mn.type='number'; mn.className='plan-mins';
+    mn.min='5'; mn.max='180'; mn.placeholder='min';
+    mn.value=(it.m===undefined||it.m===null)?'':it.m;
+    mn.oninput=function(){ planRows[i].m = this.value===''?'':Number(this.value); checkPlan(); };
+    var dw=document.createElement('input'); dw.type='text'; dw.className='plan-dw';
+    dw.value=it.dw||''; dw.placeholder='done when \u2026 (what would someone else see?)';
+    dw.oninput=function(){ planRows[i].dw=this.value; checkPlan(); };
+    row2.appendChild(mn); row2.appendChild(dw);
+    host.appendChild(row2);
   });
 }
 function addToPlan(text, hour, carryCount){
   for(var i=0;i<5;i++){
     if(!planRows[i].t){
       planRows[i].t=text; planRows[i].h=hour||''; planRows[i].done=false;
+      if(planRows[i].m===undefined) planRows[i].m='';
+      if(planRows[i].dw===undefined) planRows[i].dw='';
       if(carryCount) planRows[i].c=carryCount;
       renderPlanRows(); checkPlan(); return;
     }
@@ -676,7 +698,9 @@ function checkPlan(){
   var key=filled.filter(function(r){return r.k;});
   var bits=[];
   if(!filled.length){ w.textContent='Nothing set yet — even one is better than none.'; return; }
+  var nodw=filled.filter(function(r){return !r.dw;});
   if(!key.length) bits.push('No keystone marked yet.');
+  if(nodw.length) bits.push(nodw.length+' with no done-when \u2014 you can add it in the morning.');
   if(!timed.length) bits.push('None have a time — an unscheduled task is a wish.');
   else if(timed.length<filled.length) bits.push(timed.length+' of '+filled.length+' have a time.');
   w.textContent = bits.length ? bits.join('  ') : 'All set. '+filled.length+' planned, keystone marked, times assigned.';
@@ -700,6 +724,8 @@ function saveTomorrow(){
     var o={t:r.t||'',h:r.h||'',done:false};
     if(r.k) o.k=true;
     if(r.c) o.c=r.c;
+    if(r.m) o.m=r.m;
+    if(r.dw) o.dw=r.dw;
     return o;
   });
   var keys=Object.keys(all).sort();
