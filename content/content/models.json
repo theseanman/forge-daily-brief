@@ -1,0 +1,339 @@
+{
+  "_meta": {
+    "name": "Mental Model of the Day",
+    "count": 30,
+    "note": "Thinking tools — how to see clearly. Keys: name, origin, what, examples[], focus. The focus line is what renders large; everything else sits behind the tap."
+  },
+  "entries": [
+    {
+      "name": "Inversion",
+      "origin": "Carl Jacobi, via Charlie Munger",
+      "what": "Instead of asking how to succeed, ask what would guarantee failure — then avoid that. Failure conditions are usually more obvious and more actionable than success conditions.",
+      "examples": [
+        "Rather than 'how do I grow the Substack', ask 'what would guarantee nobody reads it' — publishing erratically, writing for everyone, no clear promise.",
+        "Rather than 'how do I have a good day', ask 'what would wreck it' — no sleep, no plan, the hard thing deferred until 4pm.",
+        "Rather than 'how do I teach this well', ask 'what would make this lesson fail' — no comprehension check, no wait time, instructions given once."
+      ],
+      "focus": "Name the outcome you want today. Now name the three fastest ways to ruin it — and don't do those."
+    },
+    {
+      "name": "Second-Order Thinking",
+      "origin": "Howard Marks",
+      "what": "Every action has consequences, and those consequences have consequences. First-order thinking stops at the immediate result; second-order asks 'and then what?'",
+      "examples": [
+        "Taking on an extra committee looks like influence. And then what? Less time for the thing that actually replaces the salary.",
+        "Saying yes to a favour buys goodwill today. And then what? It sets the expectation for the next four asks.",
+        "Cutting sleep to finish a chapter gains two hours. And then what? Three days of degraded output."
+      ],
+      "focus": "Take the biggest decision on today's plate and ask 'and then what?' three times."
+    },
+    {
+      "name": "Opportunity Cost",
+      "origin": "Classical economics",
+      "what": "The true cost of anything is the best alternative you gave up to get it. Money is the obvious version; time and attention are the ones that actually bite.",
+      "examples": [
+        "An hour on the betting system is an hour not spent on the Forge book. Both are legitimate — the question is whether you chose or drifted.",
+        "The real cost of a low-value meeting isn't the hour. It's the deep work block it fragmented on either side.",
+        "Every yes is a no to something unnamed. The unnamed thing is usually the important one."
+      ],
+      "focus": "Look at your five. For each one, name what you're not doing instead. Still worth it?"
+    },
+    {
+      "name": "Base Rates",
+      "origin": "Kahneman and Tversky",
+      "what": "Before asking how special this case is, ask what usually happens in cases like it. People systematically ignore the outside view in favour of the vivid inside story.",
+      "examples": [
+        "Most self-published books sell under 100 copies. That's the base rate you're working against — which tells you distribution matters more than the manuscript.",
+        "Most side projects die in month four. Knowing that changes what you build: something that survives a bad month.",
+        "Most people who say they'll join a pilot don't. Ask ten to get three."
+      ],
+      "focus": "Take one thing you're optimistic about. What happens to most people who try it?"
+    },
+    {
+      "name": "Circle of Competence",
+      "origin": "Warren Buffett",
+      "what": "You have a domain where your judgement is genuinely better than average, and a much larger one where it isn't. Value comes from knowing the boundary, not from the circle being large.",
+      "examples": [
+        "Twenty years reading adolescents in a classroom is a real edge. Stock picking is not — which is why the scoring system is rules-based rather than intuitive.",
+        "You know how to build a system that changes behaviour. You don't know distribution yet. Name the gap, then buy or learn it.",
+        "Forge's authority comes from the part you've actually lived. Everything else is research and should be presented as such."
+      ],
+      "focus": "Name one thing you're about to decide from outside your circle. Who actually knows?"
+    },
+    {
+      "name": "Via Negativa",
+      "origin": "Nassim Taleb",
+      "what": "Improvement more often comes from removal than addition. Subtracting a harm is more reliable than adding a benefit, because you know the harm exists.",
+      "examples": [
+        "Sleep improves more from cutting late screens than from adding a supplement.",
+        "The brief got better when art and music came off, not when cards were added.",
+        "Most productivity gains are one recurring obligation removed, not a new system installed."
+      ],
+      "focus": "What could you remove today that would improve things more than anything you could add?"
+    },
+    {
+      "name": "Sunk Cost",
+      "origin": "Behavioural economics",
+      "what": "Money and effort already spent are gone regardless of what you choose next. The only relevant question is what happens from here — but spent effort feels like a reason to continue.",
+      "examples": [
+        "Eighteen months into a project that isn't working, the eighteen months are gone either way. Continue only if the next month is worth it on its own.",
+        "A course you paid for and don't need is a loss whether you finish it or not. Finishing adds a second loss.",
+        "The career you've built is real value — but 'I've already put in twenty years' is not, by itself, a reason for year twenty-one."
+      ],
+      "focus": "Name something you're continuing partly because of what it already cost. Would you start it today?"
+    },
+    {
+      "name": "Signal and Noise",
+      "origin": "Information theory, via Nate Silver",
+      "what": "Most variation in any measurement is noise. Reacting to noise as though it were signal produces worse decisions than not measuring at all.",
+      "examples": [
+        "One bad HRV reading is noise. A two-week trend is signal — which is why your action research compares conditions rather than days.",
+        "One subscriber unsubscribing is noise. A pattern in who leaves is signal.",
+        "One lesson going badly is noise. The same lesson going badly across three classes is signal."
+      ],
+      "focus": "What have you reacted to this week that was probably just noise?"
+    },
+    {
+      "name": "The Map Is Not the Territory",
+      "origin": "Alfred Korzybski",
+      "what": "Every model, plan, and metric is a simplification of reality, useful precisely because it leaves things out. Trouble comes when you start defending the map against the territory.",
+      "examples": [
+        "The lesson plan is the map. The thirty humans in the room are the territory. When they diverge, the room wins.",
+        "A tracking app's calorie figure is a model, not a measurement. Useful for comparison, not for truth.",
+        "Your plan for the day is a hypothesis about the day, not a description of it."
+      ],
+      "focus": "Where are you defending a plan against what's actually in front of you?"
+    },
+    {
+      "name": "Falsification",
+      "origin": "Karl Popper",
+      "what": "A belief that no possible evidence could overturn isn't knowledge, it's an attachment. Strong thinking specifies in advance what would prove it wrong.",
+      "examples": [
+        "Before running the sleep experiment, write down what result would make you abandon the hypothesis. Otherwise you'll find support either way.",
+        "'This teaching approach works' — what would you have to see to conclude it doesn't?",
+        "If every market outcome confirms your thesis, you don't have a thesis."
+      ],
+      "focus": "Take a belief you're acting on. What would have to happen for you to drop it?"
+    },
+    {
+      "name": "Survivorship Bias",
+      "origin": "Abraham Wald, WWII aircraft analysis",
+      "what": "You only see the ones that made it. The evidence you're reasoning from has already been filtered by the outcome you're trying to explain.",
+      "examples": [
+        "Every visible creator advising you to 'just be consistent' is a survivor. The consistent ones who failed didn't write a thread about it.",
+        "Studying successful courses tells you what successful courses look like, not what causes success.",
+        "'Everyone who quit teaching to build something says it was worth it' — the ones who went back don't post."
+      ],
+      "focus": "Whose advice are you following, and what happened to the people who did the same thing and failed?"
+    },
+    {
+      "name": "Chesterton's Fence",
+      "origin": "G.K. Chesterton",
+      "what": "Before removing something that seems pointless, work out why it was put there. Most systems that look stupid were solving a problem you can't currently see.",
+      "examples": [
+        "A school policy that seems absurd usually encodes an incident from before your time. Find the incident before campaigning against the policy.",
+        "The step in your own process that feels redundant may be the one preventing a failure you've forgotten about.",
+        "Before cutting a card from the brief, ask what it was doing when you added it."
+      ],
+      "focus": "What are you about to remove or override? Do you actually know why it exists?"
+    },
+    {
+      "name": "Compounding",
+      "origin": "Finance, generalised",
+      "what": "Small consistent inputs produce non-linear returns given time, and the returns arrive almost entirely at the end. The mechanism is invisible during the period when quitting feels rational.",
+      "examples": [
+        "A hundred essays is a body of work. The first twenty feel like shouting into a room.",
+        "Ten minutes of Japanese daily beats a three-hour Sunday session, because retention compounds and cramming doesn't.",
+        "Reputation compounds. So does its opposite."
+      ],
+      "focus": "Name one thing you did today that will still be paying you in two years."
+    },
+    {
+      "name": "The Pareto Principle",
+      "origin": "Vilfredo Pareto",
+      "what": "Outputs are usually distributed unevenly across inputs — a small fraction of causes produces most of the effect. The useful move is identifying the fraction, not the ratio itself.",
+      "examples": [
+        "A handful of your lessons carry most of the year's learning. Those are the ones worth rebuilding properly.",
+        "One or two pieces of content will bring most of your audience. You can't pick which in advance, which is the argument for volume.",
+        "Most of your stress this term probably comes from two specific recurring situations."
+      ],
+      "focus": "What's the twenty percent of today that will produce most of the value?"
+    },
+    {
+      "name": "Bottlenecks",
+      "origin": "Eliyahu Goldratt, Theory of Constraints",
+      "what": "A system's throughput is set by its single tightest constraint. Improving anything else produces no gain and often makes things worse by piling up inventory behind the bottleneck.",
+      "examples": [
+        "If the constraint on Forge is distribution, writing more chapters increases the pile without increasing readers.",
+        "If the constraint on your mornings is decision fatigue, a better app doesn't help — a decided-in-advance plan does.",
+        "If the constraint is energy, not time, then freeing up hours changes nothing."
+      ],
+      "focus": "What is the single constraint on the thing you most want to move? Is today's work aimed at it?"
+    },
+    {
+      "name": "Margin of Safety",
+      "origin": "Benjamin Graham",
+      "what": "Build in more slack than your estimate requires, because your estimate is wrong in ways you can't specify. The size of the margin should scale with the cost of being wrong.",
+      "examples": [
+        "Plan the day at seventy percent capacity. The other thirty is where reality lives.",
+        "Don't quit the salary at the point where the numbers just barely work.",
+        "If a lesson needs the full block with no slack, it will fail the first time the projector doesn't work."
+      ],
+      "focus": "Where in today's plan is there no margin? What happens when that piece runs long?"
+    },
+    {
+      "name": "Antifragility",
+      "origin": "Nassim Taleb",
+      "what": "Some things break under stress, some resist it, and some get stronger from it. The third category is rare and worth deliberately building toward.",
+      "examples": [
+        "A single income source is fragile. Two unrelated ones are robust. A skill that gets more valuable when conditions worsen is antifragile.",
+        "Training stress makes muscle stronger. The same principle applies to controlled exposure in speaking, writing, and negotiation.",
+        "A system that surfaces its own failures loudly gets stronger each time one occurs. One that fails silently just rots."
+      ],
+      "focus": "Name one thing in your life that would get better from a shock, not just survive it."
+    },
+    {
+      "name": "One-Way and Two-Way Doors",
+      "origin": "Jeff Bezos",
+      "what": "Reversible decisions should be made fast and cheaply; irreversible ones deserve real deliberation. Most people apply the same care to both, which means slow on the trivial and rushed on the serious.",
+      "examples": [
+        "Which app to use is a two-way door. Walk through it and stop researching.",
+        "Publishing under your real name is closer to one-way. That one earns the deliberation.",
+        "Accepting a role for next year is one-way for at least a year. Treat it accordingly."
+      ],
+      "focus": "Which decision are you overthinking? Is it actually reversible?"
+    },
+    {
+      "name": "Goodhart's Law",
+      "origin": "Charles Goodhart",
+      "what": "When a measure becomes a target, it stops measuring what it did. People optimise the number, and the number detaches from the thing it was standing in for.",
+      "examples": [
+        "Track streaks and you'll protect the streak, sometimes at the cost of the underlying habit.",
+        "Measure completion of five tasks and you'll start choosing easy fives.",
+        "Grade participation and you get talking, not thinking."
+      ],
+      "focus": "Which of your metrics are you now serving instead of using?"
+    },
+    {
+      "name": "Hanlon's Razor",
+      "origin": "Attributed to Robert Hanlon",
+      "what": "Don't attribute to malice what is adequately explained by tiredness, distraction, or incompetence. Most slights weren't aimed at you, and most people are thinking about themselves.",
+      "examples": [
+        "The colleague who didn't reply is behind on email, not sending a message.",
+        "The administrator who overruled you was managing a constraint you can't see.",
+        "The friend who was short with you had a day of their own."
+      ],
+      "focus": "What have you taken personally this week that probably wasn't personal?"
+    },
+    {
+      "name": "Diminishing Returns",
+      "origin": "Classical economics",
+      "what": "Beyond a point, additional input produces progressively less output. Recognising that point is what separates finishing from fiddling.",
+      "examples": [
+        "The fourth revision of a lesson adds less than the first. Ship it.",
+        "Hour six of work produces a fraction of hour two, and can produce negative value if it costs you sleep.",
+        "Past a certain fidelity, more research is procrastination wearing a lab coat."
+      ],
+      "focus": "What are you still polishing that stopped improving two passes ago?"
+    },
+    {
+      "name": "Availability Heuristic",
+      "origin": "Kahneman and Tversky",
+      "what": "You judge how likely something is by how easily an example comes to mind — which tracks vividness and recency, not frequency.",
+      "examples": [
+        "One difficult parent email colours your view of the whole cohort.",
+        "A dramatic market story feels more probable than the boring outcome that usually happens.",
+        "The last thing that went wrong feels like the biggest risk. It usually isn't."
+      ],
+      "focus": "What are you worried about because it's vivid rather than because it's likely?"
+    },
+    {
+      "name": "Loss Aversion",
+      "origin": "Kahneman and Tversky",
+      "what": "Losses feel roughly twice as heavy as equivalent gains. This makes people defend what they have past the point where it's worth defending.",
+      "examples": [
+        "Giving up a stable salary feels worse than gaining an equivalent amount elsewhere feels good — which is why the exit needs a plan, not just courage.",
+        "You'll fight harder to keep a habit streak than you would to start one.",
+        "Framing the same choice as avoiding a loss rather than making a gain changes what people do."
+      ],
+      "focus": "Where is fear of losing something keeping you in place?"
+    },
+    {
+      "name": "Parkinson's Law",
+      "origin": "Cyril Northcote Parkinson",
+      "what": "Work expands to fill the time available for its completion. Constraint isn't the enemy of quality — it's frequently the cause of it.",
+      "examples": [
+        "A report with a month's runway takes a month. The same report with two days takes two days and is usually similar.",
+        "An open-ended writing session produces less than a timed one.",
+        "Giving students the whole block guarantees the task takes the whole block."
+      ],
+      "focus": "Put a hard time limit on one task today and stop when it's up."
+    },
+    {
+      "name": "The Lindy Effect",
+      "origin": "Nassim Taleb",
+      "what": "For non-perishable things — ideas, books, technologies — life expectancy increases with age. What has survived fifty years will likely survive fifty more; what launched last year probably won't.",
+      "examples": [
+        "Stoicism has been useful for two thousand years. This quarter's productivity framework has not yet been tested.",
+        "Reading old books is a higher-yield use of time than reading new ones, on average.",
+        "Skills that were valuable in 1990 and are still valuable now are safer bets than skills that appeared in 2024."
+      ],
+      "focus": "What are you spending attention on that probably won't exist in five years?"
+    },
+    {
+      "name": "Local and Global Optima",
+      "origin": "Optimisation theory",
+      "what": "You can be at the best point in your immediate neighbourhood and still be far from the best point overall. Getting to the global optimum usually requires going downhill first.",
+      "examples": [
+        "The best version of your current job may still be worse than a worse version of a different one.",
+        "Improving a system incrementally can lock you into an architecture that caps what's possible.",
+        "Every rebuild costs you performance before it gains you any."
+      ],
+      "focus": "Are you optimising something you should be replacing?"
+    },
+    {
+      "name": "Confirmation Bias",
+      "origin": "Peter Wason",
+      "what": "You search for, notice, and remember evidence that fits what you already believe, and you subject disconfirming evidence to much harder scrutiny.",
+      "examples": [
+        "You'll remember the sessions that supported your hypothesis and file the others as anomalies.",
+        "The moment you decide a student is capable, you start seeing evidence of it — which is useful, and also not evidence.",
+        "You'll read the review that agrees with your purchase more carefully than the one that doesn't."
+      ],
+      "focus": "What's the strongest argument against something you currently believe? Can you state it fairly?"
+    },
+    {
+      "name": "Feedback Loops",
+      "origin": "Systems thinking",
+      "what": "Reinforcing loops amplify change; balancing loops resist it. Most stubborn situations are stubborn because a balancing loop is quietly undoing your effort.",
+      "examples": [
+        "Sleep and stress form a reinforcing loop in both directions. Which direction it runs is set by small daily inputs.",
+        "Publishing brings readers, readers bring feedback, feedback improves publishing. The loop takes months to close, which is why most people quit before it does.",
+        "Every time you take on extra work to relieve pressure, you increase the pressure that made you take it on."
+      ],
+      "focus": "What loop are you inside right now, and is it running toward you or against you?"
+    },
+    {
+      "name": "Occam's Razor",
+      "origin": "William of Ockham",
+      "what": "When explanations compete, prefer the one requiring fewest assumptions. Not because simple is always true, but because complex explanations have more places to be wrong.",
+      "examples": [
+        "Data disappearing from an app: a browser setting, not a conspiracy of storage bugs. Check the boring explanation first.",
+        "A student who won't engage is more often tired or lost than defiant.",
+        "The plan failed because nobody had time, not because of a subtle strategic error."
+      ],
+      "focus": "What's the most boring possible explanation for the thing puzzling you? Have you ruled it out?"
+    },
+    {
+      "name": "The Reversal Test",
+      "origin": "Nick Bostrom and Toby Ord",
+      "what": "If you resist a change in one direction, ask whether you'd equally resist it in the other. If not, you're defending the status quo rather than the position.",
+      "examples": [
+        "You wouldn't add a fourth committee. So would you drop to two? If not, three isn't a judgement, it's inertia.",
+        "You resist cutting a card from the brief. Would you add it today if it weren't there?",
+        "If you wouldn't buy this stock at today's price, why are you holding it?"
+      ],
+      "focus": "Pick something you're keeping. Would you choose it fresh today?"
+    }
+  ]
+}
