@@ -563,7 +563,10 @@ function toggleT5(i){
 function recordHistory(){
   var real = todayT5.filter(function(i){ return i && i.t; });
   var h = fdRead(K_HIST, {});
-  h[fdToday()] = { done: real.filter(function(i){ return i.done; }).length, total: real.length, debriefed: true };
+  var keyItem = real.filter(function(i){ return i.k; })[0];
+  h[fdToday()] = { done: real.filter(function(i){ return i.done; }).length, total: real.length,
+                   debriefed: true,
+                   key: keyItem ? 1 : 0, keyDone: (keyItem && keyItem.done) ? 1 : 0 };
   var keys=Object.keys(h).sort(); if(keys.length>120){ var o={}; keys.slice(-120).forEach(function(k){o[k]=h[k];}); h=o; }
   fdWrite(K_HIST, h);
   return h;
@@ -583,6 +586,21 @@ function bestStreak(h){
   });
   return best;
 }
+function keystoneStats(h){
+  var keys = Object.keys(h).sort();
+  var cut = new Date(); cut.setDate(cut.getDate() - 30);
+  var cutKey = fdYmd(cut);
+  var n = 0, hit = 0, tasks = 0, tasksDone = 0;
+  keys.forEach(function(k){
+    if (k < cutKey) return;
+    var e = h[k];
+    if (e.key){ n++; if (e.keyDone) hit++; }
+    if (e.total){ tasks += e.total; tasksDone += e.done; }
+  });
+  return { n: n, pct: n ? Math.round(hit / n * 100) : null,
+           allPct: tasks ? Math.round(tasksDone / tasks * 100) : null };
+}
+
 function weekStats(h){
   var out=[], d=new Date();
   d.setDate(d.getDate()-6);
@@ -745,6 +763,19 @@ function renderScorecard(){
   var done=real.filter(function(i){ return i.done; }).length;
   var st=streakFrom(h), best=bestStreak(h), wk=weekStats(h);
   var planned=planRows.filter(function(r){return r.t;}).length;
+  var ks=keystoneStats(h);
+  var keyRowHtml='';
+  if(ks.n>=3 && ks.pct!==null && ks.allPct!==null){
+    var gap=ks.allPct-ks.pct;
+    var note = gap>=15 ? 'Your keystone lags the rest \u2014 the hardest one is getting deferred.'
+             : gap<=-15 ? 'You protect the keystone even when the rest slips. That is the right order.'
+             : 'Keystone and the rest move together.';
+    keyRowHtml='<div class="streak-row">'+
+      '<div class="streak-box"><div class="streak-val" style="color:#e8c84a;">'+ks.pct+'%</div><div class="streak-lbl">Keystone (30d)</div></div>'+
+      '<div class="streak-box"><div class="streak-val">'+ks.allPct+'%</div><div class="streak-lbl">All tasks</div></div>'+
+      '</div>'+
+      '<div class="score-msg" style="opacity:.8;">'+note+'</div>';
+  }
   var bars=wk.map(function(d){
     var cls = d.pct===1?'week-bar hit' : d.pct>0?'week-bar part':'week-bar';
     var hgt = d.has ? Math.max(4, Math.round(d.pct*34)) : 3;
@@ -762,6 +793,7 @@ function renderScorecard(){
         '<div class="streak-box"><div class="streak-val">'+best+'</div><div class="streak-lbl">Best</div></div>'+
         '<div class="streak-box"><div class="streak-val">'+Math.round(wk.reduce(function(a,b){return a+b.pct;},0)/7*100)+'%</div><div class="streak-lbl">7-day</div></div>'+
       '</div>'+
+      keyRowHtml+
       '<div class="week-bars">'+bars+'</div>'+
     '</div>';
   var badge=document.getElementById('badge-pop');

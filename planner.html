@@ -182,6 +182,18 @@
       font-size: 12px; font-weight: 700; padding: 6px 12px; cursor: pointer;
       touch-action: manipulation; font-family: inherit;
     }
+    .statline { background: rgba(255,255,255,0.32); border-left: 4px solid #0d0d0d;
+                border-radius: 8px; padding: 10px 12px; margin: 12px 0;
+                font-size: 12px; line-height: 1.6; }
+    .offline { background: rgba(255,255,255,0.22); border-radius: 8px; padding: 9px 12px;
+               margin-bottom: 12px; font-size: 12px; font-weight: 600; line-height: 1.5; }
+    .offline.off-due { background: rgba(170,30,15,0.32); }
+    .offline.off-today { background: rgba(20,110,60,0.28); }
+    .sound-link { display: block; text-align: center; font-size: 11px; font-weight: 700;
+                  letter-spacing: 0.08em; color: #5a2a00; margin: -4px 0 12px;
+                  cursor: pointer; touch-action: manipulation; }
+    .sound-head { font-size: 11px; font-weight: 800; letter-spacing: 0.1em;
+                  text-transform: uppercase; padding: 4px 4px 8px; }
     textarea.io {
       width: 100%; height: 120px; margin-top: 10px; border: 3px solid #0d0d0d; border-radius: 10px;
       padding: 8px; font-size: 12px; font-family: ui-monospace, monospace; display: none;
@@ -215,6 +227,9 @@
   </div>
 
   <div id="session-host"></div>
+  <div class="sound-link" onclick="openSoundPicker()">⚙ alarm sound</div>
+  <div id="sound-host"></div>
+  <div id="off-host"></div>
 
   <div class="banner" id="banner"></div>
   <div class="allday" id="allday"></div>
@@ -240,6 +255,8 @@
     <div class="sect-h"><span>&#128203; Backlog</span><span class="hint" id="blsrc">everything on the list</span></div>
     <div class="panel" id="backlog"></div>
   </div>
+
+  <div id="stats-host"></div>
 
   <div class="saved" id="saved"></div>
 
@@ -653,22 +670,54 @@ function fetchCalendar(){
     .catch(function(){ /* offline — planner still works */ });
 }
 
-/* ---------- reminders -> backlog (best effort) ---------- */
+/* ---------- reminders -> backlog: MIRRORS the list, not append-only ------
+   Items you typed here yourself, and remainders parked by the timer, are
+   never touched. Only items that came from Reminders are removed when they
+   disappear from Reminders.                                                */
+var K_RSEEN = 'forge-reminders-seen';
+
 function fetchReminders(){
   fetch(REMINDERS_URL, { headers: { 'Accept':'application/json' } })
     .then(function(r){ return r.json(); })
     .then(function(d){
       var text = (d && d.week) || '';
-      if (!text) return;
-      var items = text.split('\n').map(function(s){ return s.trim(); }).filter(function(s){ return s; });
-      if (!items.length) return;
+      var items = text.split('\n').map(function(x){ return x.trim(); }).filter(function(x){ return x; });
+      var seen = readJSON(K_RSEEN, null);
       var existing = loadList(K_BACKLOG);
-      var added = 0;
-      items.forEach(function(it){
-        if (existing.indexOf(it) === -1){ existing.push(it); added++; }
+      var removed = 0, added = 0;
+
+      if (seen === null){
+        items.forEach(function(it){
+          if (existing.indexOf(it) === -1){ existing.push(it); added++; }
+        });
+        writeJSON(K_RSEEN, items);
+        saveList(K_BACKLOG, existing);
+        renderLists();
+        document.getElementById('blsrc').textContent = 'baseline set \u2014 deletions sync from now on';
+        return;
+      }
+
+      var seenSet = {}, nowSet = {};
+      seen.forEach(function(x){ seenSet[x] = 1; });
+      items.forEach(function(x){ nowSet[x] = 1; });
+
+      var kept = existing.filter(function(x){
+        if (!seenSet[x]) return true;
+        if (nowSet[x]) return true;
+        removed++; return false;
       });
-      if (added){ saveList(K_BACKLOG, existing); renderLists(); }
-      document.getElementById('blsrc').textContent = 'synced from Reminders';
+      items.forEach(function(it){
+        if (kept.indexOf(it) === -1){ kept.push(it); added++; }
+      });
+
+      writeJSON(K_RSEEN, items);
+      if (added || removed){ saveList(K_BACKLOG, kept); renderLists(); }
+      var msg = 'synced from Reminders';
+      if (added || removed){
+        msg += ' (' + (added ? '+' + added : '') + (added && removed ? ', ' : '') +
+               (removed ? '\u2212' + removed : '') + ')';
+      }
+      document.getElementById('blsrc').textContent = msg;
     })
     .catch(function(){
       document.getElementById('blsrc').textContent = 'manual list';
@@ -703,6 +752,7 @@ function firstUnfinished(){
 
 /* ---------- starting ---------- */
 function startPrompt(){
+  unlockAudio();
   var idx = firstUnfinished();
   var a = loadTop5();
   var label = idx >= 0 ? a[idx].t : '';
@@ -730,12 +780,15 @@ function startPrompt(){
     renderTop5();
   }
 
-  saveSession({ task: task, mins: mins, dw: dw, startedAt: Date.now(), kind: 'work' });
+  var now = Date.now();
+  saveSession({ task: task, mins: mins, dw: dw, startedAt: now, firstStartedAt: now,
+                blocks: 1, kind: 'work', wasKeystone: (idx >= 0 && !!a[idx].k) });
   _rang = false;
   renderSession();
 }
 
 function startBreak(){
+  unlockAudio();
   saveSession({ task: 'Break \u2014 get away from the screen', mins: BREAK_MINS, dw: '',
                 startedAt: Date.now(), kind: 'break' });
   _rang = false;
@@ -760,6 +813,7 @@ function checkpoint(){
     var idx = firstUnfinished();
     var a = loadTop5();
     if (idx >= 0 && a[idx].t === s.task){ a[idx].done = true; saveTop5(a); }
+    logSession(s, true);
     endSession();
     renderAll();
     alert('Finished. Take the break \u2014 away from the screen.');
@@ -768,7 +822,9 @@ function checkpoint(){
   }
   /* not met: another block, or park it */
   if (confirm('Not met.\n\nOK = one more block (same length).\nCancel = park the rest in the backlog and stop.')){
-    saveSession({ task: s.task, mins: s.mins, dw: s.dw, startedAt: Date.now(), kind: 'work' });
+    saveSession({ task: s.task, mins: s.mins, dw: s.dw, startedAt: Date.now(),
+                  firstStartedAt: s.firstStartedAt || s.startedAt,
+                  blocks: (s.blocks || 1) + 1, kind: 'work', wasKeystone: s.wasKeystone });
     _rang = false;
     renderSession();
   } else {
@@ -778,6 +834,7 @@ function checkpoint(){
       if (b.indexOf(note.trim()) === -1){ b.push(note.trim()); saveList(K_BACKLOG, b); }
       renderLists();
     }
+    logSession(s, false);
     endSession();
     startBreak();
   }
@@ -850,22 +907,197 @@ function renderSession(){
   if (!_tick) _tick = setInterval(renderSession, 1000);
 }
 
-/* ---------- the alert itself ---------- */
-function ring(){
+/* ---------- session log: estimate vs actual ----------------------------- */
+var K_LOG = 'forge-sessions';
+
+function logSession(sess, met){
+  if (!sess || sess.kind === 'break') return;
+  var actual = Math.round((Date.now() - (sess.firstStartedAt || sess.startedAt)) / 60000);
+  var log = readJSON(K_LOG, []);
+  if (Object.prototype.toString.call(log) !== '[object Array]') log = [];
+  log.push({ d: ymd(new Date()), task: sess.task, est: sess.mins || 0, act: actual,
+             blocks: sess.blocks || 1, met: !!met, key: !!sess.wasKeystone });
+  if (log.length > 300) log = log.slice(log.length - 300);
+  writeJSON(K_LOG, log);
+}
+
+function estimateStats(days){
+  var log = readJSON(K_LOG, []);
+  if (Object.prototype.toString.call(log) !== '[object Array]' || !log.length) return null;
+  var c = new Date(); c.setDate(c.getDate() - (days || 30));
+  var cut = ymd(c);
+  var rows = log.filter(function(r){ return r.d >= cut && r.est > 0 && r.act > 0; });
+  if (rows.length < 3) return { n: rows.length, ratio: null };
+  var te = 0, ta = 0, over = 0, met = 0, keyRows = 0, keyMet = 0;
+  rows.forEach(function(r){
+    te += r.est; ta += r.act;
+    if (r.act > r.est * 1.1) over++;
+    if (r.met) met++;
+    if (r.key){ keyRows++; if (r.met) keyMet++; }
+  });
+  return { n: rows.length, ratio: ta / te,
+           overPct: Math.round(over / rows.length * 100),
+           metPct: Math.round(met / rows.length * 100),
+           keyN: keyRows, keyPct: keyRows ? Math.round(keyMet / keyRows * 100) : null };
+}
+
+function renderStats(){
+  var host = document.getElementById('stats-host');
+  if (!host) return;
+  var st = estimateStats(30);
+  if (!st){ host.innerHTML = ''; return; }
+  if (st.ratio === null){
+    host.innerHTML = '<div class="statline">Logging your sessions \u2014 ' + st.n +
+      ' so far. Three are needed before a pattern shows.</div>';
+    return;
+  }
+  var r = st.ratio.toFixed(2);
+  var verdict = st.ratio > 1.35 ? 'Your estimates run short. Try padding them by about ' + Math.round((st.ratio - 1) * 100) + '%.'
+              : st.ratio > 1.10 ? 'Slightly optimistic, but close.'
+              : st.ratio < 0.85 ? 'You over-budget. You could plan more into a day.'
+              : 'Your estimates are accurate. Trust them.';
+  var key = st.keyN ? ('<br>Keystone sessions: <b>' + st.keyPct + '%</b> finished (' + st.keyN + ' logged).') : '';
+  host.innerHTML = '<div class="statline"><b>Estimate vs actual</b> \u00B7 last 30 days, ' + st.n + ' sessions<br>' +
+    'You take <b>' + r + '\u00D7</b> what you estimate. ' + st.overPct + '% ran over. ' +
+    st.metPct + '% ended with the done-when met.' + key +
+    '<br><span style="opacity:.75;">' + verdict + '</span></div>';
+}
+
+/* ---------- off-day tracker: a nudge, never a rule ---------------------- */
+var K_OFF = 'forge-offdays';
+
+function offDays(){
+  var a = readJSON(K_OFF, []);
+  return Object.prototype.toString.call(a) === '[object Array]' ? a : [];
+}
+function daysSinceOff(){
+  var a = offDays();
+  if (!a.length) return null;
+  a.sort();
+  var last = new Date(a[a.length - 1] + 'T00:00:00');
+  return Math.round((new Date(ymd(new Date()) + 'T00:00:00') - last) / 86400000);
+}
+function markOffDay(){
+  var a = offDays(), t = ymd(new Date());
+  if (a.indexOf(t) === -1) a.push(t);
+  if (a.length > 200) a = a.slice(a.length - 200);
+  writeJSON(K_OFF, a);
+  renderOffDay();
+}
+function renderOffDay(){
+  var host = document.getElementById('off-host');
+  if (!host) return;
+  host.innerHTML = '';
+  var n = daysSinceOff();
+  var isOff = offDays().indexOf(ymd(new Date())) !== -1;
+  var box = document.createElement('div');
+  if (isOff){
+    box.className = 'offline off-today';
+    box.innerHTML = '\u2600\uFE0F <b>Today is an off day.</b> Goals are allowed \u2014 rest, a film, the girls. Nothing else is owed.';
+    host.appendChild(box);
+    return;
+  }
+  if (n === null){ box.className = 'offline'; box.innerHTML = 'No off day recorded yet.'; }
+  else if (n >= 7){ box.className = 'offline off-due'; box.innerHTML = '\u26A0 <b>' + n + ' days</b> since your last off day. You are due one.'; }
+  else { box.className = 'offline'; box.innerHTML = n + ' day' + (n === 1 ? '' : 's') + ' since an off day.'; }
+  var b = document.createElement('button');
+  b.className = 'li-btn'; b.style.marginTop = '7px';
+  b.textContent = 'Mark today as an off day';
+  b.onclick = markOffDay;
+  box.appendChild(document.createElement('br'));
+  box.appendChild(b);
+  host.appendChild(box);
+}
+
+/* ---------- the alert: MUST be unlocked by a real tap or it stays silent -- */
+var _ac = null;
+var K_SOUND = 'forge-sound';
+
+var COLONEL_BREAK_LINES = [
+  "Time. Put it down and walk away for a minute.",
+  "That's your block. Stand up. Colonel's orders.",
+  "Clock's out. Go get some air and come back sharper.",
+  "Stop. The work will still be there in twelve minutes.",
+  "Time's up. A tired man makes expensive decisions.",
+  "That's the block. Rest is part of the operation.",
+  "Down tools. Nobody wins the second hour by skipping the break.",
+  "Time. Go and look at something that isn't a screen."
+];
+
+var SOUNDS = [
+  { id:'chime',  name:'Soft chime',   desc:'three descending notes' },
+  { id:'bell',   name:'Single bell',  desc:'one note, long decay' },
+  { id:'beep',   name:'Triple beep',  desc:'sharp and unmissable' },
+  { id:'gong',   name:'Low gong',     desc:'deep, slow fade' },
+  { id:'alert',  name:'Rising alert', desc:'two tones, urgent' },
+  { id:'speak',  name:'The Colonel',  desc:'speaks a line out loud' },
+  { id:'silent', name:'Silent',       desc:'red flash only' }
+];
+
+function soundChoice(){
+  try { return localStorage.getItem(K_SOUND) || 'chime'; } catch(e){ return 'chime'; }
+}
+function setSoundChoice(v){ try { localStorage.setItem(K_SOUND, v); } catch(e){} }
+
+function unlockAudio(){
   try {
     var Ctx = window.AudioContext || window.webkitAudioContext;
-    if (Ctx){
-      var ctx = new Ctx();
-      [0, 300, 600].forEach(function(delay){
-        setTimeout(function(){
-          var o = ctx.createOscillator(), g = ctx.createGain();
-          o.connect(g); g.connect(ctx.destination);
-          o.frequency.value = 660; g.gain.value = 0.12;
-          o.start(); setTimeout(function(){ o.stop(); }, 180);
-        }, delay);
-      });
-    }
+    if (!Ctx) return;
+    if (!_ac) _ac = new Ctx();
+    if (_ac.state === 'suspended') _ac.resume();
+    var o = _ac.createOscillator(), g = _ac.createGain();
+    g.gain.value = 0.0001; o.connect(g); g.connect(_ac.destination);
+    o.start(); o.stop(_ac.currentTime + 0.01);
   } catch(e){}
+}
+
+function tone(freq, startAt, dur, vol, type){
+  if (!_ac) return;
+  try {
+    var o = _ac.createOscillator(), g = _ac.createGain();
+    o.type = type || 'sine';
+    o.frequency.value = freq;
+    o.connect(g); g.connect(_ac.destination);
+    var t = _ac.currentTime + startAt;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.start(t); o.stop(t + dur + 0.05);
+  } catch(e){}
+}
+
+function speakLine(){
+  try {
+    if (!window.speechSynthesis) return false;
+    var line = COLONEL_BREAK_LINES[Math.floor(Math.random() * COLONEL_BREAK_LINES.length)];
+    var u = new SpeechSynthesisUtterance(line);
+    u.rate = 0.92; u.pitch = 0.8; u.volume = 1;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+    return true;
+  } catch(e){ return false; }
+}
+
+function playSound(which){
+  which = which || soundChoice();
+  if (which === 'silent') return;
+  if (which === 'speak'){ if (speakLine()) return; which = 'chime'; }
+  if (!_ac) return;
+  if (which === 'chime'){
+    tone(784, 0, 0.55, 0.22); tone(659, 0.28, 0.55, 0.22); tone(523, 0.56, 0.95, 0.22);
+  } else if (which === 'bell'){
+    tone(880, 0, 1.9, 0.25); tone(1760, 0, 1.2, 0.06);
+  } else if (which === 'beep'){
+    tone(880, 0, 0.16, 0.28, 'square'); tone(880, 0.26, 0.16, 0.28, 'square'); tone(880, 0.52, 0.16, 0.28, 'square');
+  } else if (which === 'gong'){
+    tone(110, 0, 2.8, 0.30, 'triangle'); tone(165, 0, 2.2, 0.14, 'triangle'); tone(220, 0, 1.6, 0.08);
+  } else if (which === 'alert'){
+    tone(587, 0, 0.28, 0.26, 'sawtooth'); tone(880, 0.30, 0.45, 0.26, 'sawtooth');
+  }
+}
+
+function ring(){
+  playSound();
   try {
     if (window.Notification && Notification.permission === 'granted'){
       var s = loadSession();
@@ -874,6 +1106,42 @@ function ring(){
     }
   } catch(e){}
 }
+
+function openSoundPicker(){
+  unlockAudio();
+  var host = document.getElementById('sound-host');
+  if (!host) return;
+  if (host.innerHTML){ host.innerHTML = ''; return; }
+  var cur = soundChoice();
+  var wrap = document.createElement('div');
+  wrap.className = 'panel';
+  var head = document.createElement('div');
+  head.className = 'sound-head';
+  head.textContent = 'Alarm sound \u2014 tap Hear to try one';
+  wrap.appendChild(head);
+  SOUNDS.forEach(function(sd){
+    var row = document.createElement('div');
+    row.className = 'li';
+    var t = document.createElement('div');
+    t.className = 'li-txt';
+    t.innerHTML = (sd.id === cur ? '\u2713 ' : '') + sd.name +
+                  ' <span style="font-weight:600;opacity:.6;">\u00B7 ' + sd.desc + '</span>';
+    var hear = document.createElement('button');
+    hear.className = 'li-btn'; hear.textContent = 'Hear';
+    hear.onclick = function(){ unlockAudio(); playSound(sd.id); };
+    var pick = document.createElement('button');
+    pick.className = 'li-btn go'; pick.textContent = 'Use';
+    pick.onclick = function(){ setSoundChoice(sd.id); host.innerHTML = ''; openSoundPicker(); };
+    row.appendChild(t); row.appendChild(hear); row.appendChild(pick);
+    wrap.appendChild(row);
+  });
+  var note = document.createElement('div');
+  note.className = 'empty';
+  note.textContent = 'Sound plays only while this tab is open. For alarms behind other apps, set your phone Clock timer as well.';
+  wrap.appendChild(note);
+  host.appendChild(wrap);
+}
+
 function askNotify(){
   try {
     if (window.Notification && Notification.permission === 'default') Notification.requestPermission();
@@ -952,6 +1220,7 @@ function renderAll(){
   renderTop5(); paintNext();
   renderLists();
   renderGrid(); checkEmptyWarning();
+  renderOffDay(); renderStats();
 }
 
 window.onload = function(){
