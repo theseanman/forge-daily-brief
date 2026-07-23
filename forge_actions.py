@@ -30,166 +30,99 @@ def today_pt():
     """Return current date in Pacific time."""
     return _dt.datetime.now(PACIFIC).date()
 
-JLPT_WORDS = [
-    {"word": "刹那 (Setsuna)", "level": "N1", "meaning": "A fleeting moment; the infinitesimal instant.", "example": "人生は刹那の連続だ", "translation": "Life is a succession of fleeting moments."},
-    {"word": "余韻 (Yoin)", "level": "N1", "meaning": "Lingering reverberation; an afterglow of feeling.", "example": "音楽の余韻に浸る", "translation": "To be immersed in the lingering notes of music."},
-    {"word": "葛藤 (Kattou)", "level": "N1", "meaning": "Inner conflict; mental struggle.", "example": "葛藤を乗り越えた", "translation": "He overcame his inner conflict."},
-    {"word": "侘寂 (Wabi-sabi)", "level": "N1", "meaning": "Beauty in imperfection and impermanence.", "example": "古い茶碗に侘寂を感じる", "translation": "I feel wabi-sabi in the old tea bowl."},
-    {"word": "幽玄 (Yuugen)", "level": "N1", "meaning": "Profound, mysterious sense of the universe.", "example": "能楽には幽玄の美がある", "translation": "Noh theater has the beauty of yuugen."},
-    {"word": "物の哀れ (Mono no aware)", "level": "N1", "meaning": "Bittersweet awareness of impermanence.", "example": "桜の散る様に物の哀れを感じる", "translation": "I feel it in falling cherry blossoms."},
-    {"word": "矜持 (Kyouji)", "level": "N1", "meaning": "Pride; self-respect; sense of dignity.", "example": "プロとしての矜持を持つ", "translation": "To have pride as a professional."},
-    {"word": "僥倖 (Gyoukou)", "level": "N1", "meaning": "Unexpected good fortune; windfall luck.", "example": "それは僥倖だった", "translation": "That was a stroke of unexpected luck."},
-    {"word": "懸念 (Kenen)", "level": "N2", "meaning": "Concern; worry; apprehension.", "example": "健康への懸念がある", "translation": "There is concern about health."},
-    {"word": "顕著 (Kenchyo)", "level": "N2", "meaning": "Remarkable; conspicuous; notable.", "example": "顕著な改善が見られた", "translation": "A remarkable improvement was observed."},
-    {"word": "体裁 (Teisai)", "level": "N2", "meaning": "Outward appearance; keeping up appearances.", "example": "体裁を気にしすぎる", "translation": "To care too much about appearances."},
-    {"word": "逡巡 (Shunjun)", "level": "N2", "meaning": "Hesitation; wavering indecision.", "example": "逡巡せずに決断した", "translation": "He decided without hesitation."},
-    {"word": "慮る (Omonpakaru)", "level": "N1", "meaning": "To give careful consideration.", "example": "相手の立場を慮る", "translation": "To consider the other person's position."},
-    {"word": "凛然 (Rinzen)", "level": "N1", "meaning": "Dignified and resolute; commanding.", "example": "凛然とした態度", "translation": "A dignified and resolute attitude."},
-]
 
-ART_ENTRIES = [
-    {"title": "Hokusai — The Great Wave off Kanagawa", "url": "https://artsandculture.google.com/search?q=hokusai+great+wave"},
-    {"title": "Kusama Yayoi — Infinity Mirror Room", "url": "https://artsandculture.google.com/search?q=kusama+infinity+mirror"},
-    {"title": "Basquiat — Untitled (1982)", "url": "https://artsandculture.google.com/search?q=basquiat+untitled+1982"},
-    {"title": "Rothko — No. 61 (Rust and Blue)", "url": "https://artsandculture.google.com/search?q=rothko+rust+blue"},
-    {"title": "Francis Bacon — Three Studies for Figures", "url": "https://artsandculture.google.com/search?q=francis+bacon+three+studies"},
-    {"title": "Egon Schiele — Self-Portrait (1912)", "url": "https://artsandculture.google.com/search?q=egon+schiele+self+portrait"},
-    {"title": "Hiroshi Sugimoto — Seascapes", "url": "https://artsandculture.google.com/search?q=hiroshi+sugimoto+seascapes"},
-    {"title": "Goya — Saturn Devouring His Son", "url": "https://artsandculture.google.com/search?q=goya+saturn+devouring"},
-    {"title": "Caravaggio — Judith Beheading Holofernes", "url": "https://artsandculture.google.com/search?q=caravaggio+judith"},
-    {"title": "Turner — The Fighting Temeraire", "url": "https://artsandculture.google.com/search?q=turner+fighting+temeraire"},
-    {"title": "Frida Kahlo — The Two Fridas", "url": "https://artsandculture.google.com/search?q=frida+kahlo+two+fridas"},
-    {"title": "William Blake — Ancient of Days", "url": "https://artsandculture.google.com/search?q=william+blake+ancient+of+days"},
-    {"title": "Jenny Saville — Propped", "url": "https://artsandculture.google.com/search?q=jenny+saville+propped"},
-    {"title": "Monet — Water Lilies Series", "url": "https://artsandculture.google.com/search?q=monet+water+lilies"},
-    {"title": "Hokusai — Under the Wave at Kanagawa (alt view)", "url": "https://artsandculture.google.com/search?q=hokusai+kanagawa+woodblock"},
-    {"title": "Goya — The Dog (1820)", "url": "https://artsandculture.google.com/search?q=goya+the+dog+black+painting"},
-    {"title": "Caravaggio — The Calling of Saint Matthew", "url": "https://artsandculture.google.com/search?q=caravaggio+calling+saint+matthew"},
-    {"title": "Egon Schiele — The Embrace (1917)", "url": "https://artsandculture.google.com/search?q=egon+schiele+embrace+1917"},
-    {"title": "Francis Bacon — Study After Velazquez's Portrait of Pope Innocent X", "url": "https://artsandculture.google.com/search?q=francis+bacon+screaming+pope"},
-    {"title": "Hiroshige — One Hundred Famous Views of Edo", "url": "https://artsandculture.google.com/search?q=hiroshige+famous+views+edo"},
-    {"title": "Yoshitoshi — One Hundred Aspects of the Moon", "url": "https://artsandculture.google.com/search?q=yoshitoshi+hundred+aspects+moon"},
-    {"title": "Basquiat — Skull (1981)", "url": "https://artsandculture.google.com/search?q=basquiat+skull+1981"},
-    {"title": "Klimt — Death and Life (1915)", "url": "https://artsandculture.google.com/search?q=klimt+death+and+life"},
-    {"title": "Munch — The Scream (1893)", "url": "https://artsandculture.google.com/search?q=munch+the+scream"},
-    {"title": "Zdzislaw Beksinski — Untitled dystopian landscape", "url": "https://artsandculture.google.com/search?q=beksinski+dystopian"},
-    {"title": "H.R. Giger — Necronom IV", "url": "https://artsandculture.google.com/search?q=hr+giger+necronom"},
-    {"title": "Rembrandt — The Anatomy Lesson of Dr. Nicolaes Tulp", "url": "https://artsandculture.google.com/search?q=rembrandt+anatomy+lesson"},
-    {"title": "Theodore Gericault — The Raft of the Medusa", "url": "https://artsandculture.google.com/search?q=gericault+raft+of+medusa"},
-    {"title": "Hieronymus Bosch — The Garden of Earthly Delights", "url": "https://artsandculture.google.com/search?q=bosch+garden+earthly+delights"},
-    {"title": "Pieter Bruegel — The Triumph of Death", "url": "https://artsandculture.google.com/search?q=bruegel+triumph+of+death"},
-    {"title": "William Blake — The Great Red Dragon", "url": "https://artsandculture.google.com/search?q=william+blake+great+red+dragon"},
-    {"title": "Katsushika Hokusai — Feminine Wave", "url": "https://artsandculture.google.com/search?q=hokusai+feminine+wave"},
-    {"title": "Cy Twombly — Leda and the Swan (1962)", "url": "https://artsandculture.google.com/search?q=cy+twombly+leda+swan"},
-    {"title": "Anselm Kiefer — To the Unknown Painter (1983)", "url": "https://artsandculture.google.com/search?q=anselm+kiefer+unknown+painter"},
-    {"title": "Leon Golub — Mercenaries IV (1980)", "url": "https://artsandculture.google.com/search?q=leon+golub+mercenaries"},
-    {"title": "Odd Nerdrum — Dawn (1990)", "url": "https://artsandculture.google.com/search?q=odd+nerdrum+dawn"},
-    {"title": "Lucian Freud — Benefits Supervisor Sleeping (1995)", "url": "https://artsandculture.google.com/search?q=lucian+freud+benefits+supervisor"},
-    {"title": "Takato Yamamoto — Sacrifice (detail)", "url": "https://artsandculture.google.com/search?q=takato+yamamoto+sacrifice"},
-    {"title": "Junji Ito — Uzumaki illustration", "url": "https://artsandculture.google.com/search?q=junji+ito+uzumaki"},
-    {"title": "Goya — Witches' Sabbath (1798)", "url": "https://artsandculture.google.com/search?q=goya+witches+sabbath"},
-    {"title": "Velazquez — Las Meninas (1656)", "url": "https://artsandculture.google.com/search?q=velazquez+las+meninas"},
-    {"title": "Michelangelo — The Last Judgment (Sistine Chapel)", "url": "https://artsandculture.google.com/search?q=michelangelo+last+judgment"},
-    {"title": "Alberto Giacometti — Walking Man I (1960)", "url": "https://artsandculture.google.com/search?q=giacometti+walking+man"},
-    {"title": "Kentaro Miura — Berserk manga panels", "url": "https://artsandculture.google.com/search?q=berserk+miura+art"},
-    {"title": "Yoshitaka Amano — Final Fantasy concept art", "url": "https://artsandculture.google.com/search?q=yoshitaka+amano+concept+art"},
-    {"title": "Caspar David Friedrich — Wanderer above the Sea of Fog", "url": "https://artsandculture.google.com/search?q=friedrich+wanderer+sea+of+fog"},
-    {"title": "Gustave Dore — Illustrations for Dante's Inferno", "url": "https://artsandculture.google.com/search?q=gustave+dore+dante+inferno"},
-    {"title": "Zdzislaw Beksinski — Apocalyptic Cathedral", "url": "https://artsandculture.google.com/search?q=beksinski+cathedral"},
-    {"title": "Mark Ryden — Snow White (2008)", "url": "https://artsandculture.google.com/search?q=mark+ryden+snow+white"},
-    {"title": "Nele Zirnite — Dark forest photography", "url": "https://artsandculture.google.com/search?q=dark+forest+fine+art+photography"},
-    {"title": "Dave McKean — Arkham Asylum painted pages", "url": "https://artsandculture.google.com/search?q=dave+mckean+arkham+asylum"},
-    {"title": "Simon Bisley — Slaine painted covers", "url": "https://artsandculture.google.com/search?q=simon+bisley+slaine"},
-    {"title": "Boris Vallejo — Fantasy paintings", "url": "https://artsandculture.google.com/search?q=boris+vallejo+fantasy"},
-    {"title": "John Martin — The Great Day of His Wrath (1853)", "url": "https://artsandculture.google.com/search?q=john+martin+great+day+wrath"},
-    {"title": "Piranesi — Imaginary Prisons (Carceri d'invenzione)", "url": "https://artsandculture.google.com/search?q=piranesi+imaginary+prisons"},
-    {"title": "Utagawa Kuniyoshi — Warriors and Demons", "url": "https://artsandculture.google.com/search?q=kuniyoshi+warriors+demons"},
-    {"title": "Tsukioka Yoshitoshi — New Forms of Thirty-six Ghosts", "url": "https://artsandculture.google.com/search?q=yoshitoshi+thirty+six+ghosts"},
-    {"title": "Ernst Fuchs — Moses and the Burning Bush", "url": "https://artsandculture.google.com/search?q=ernst+fuchs+moses"},
-    {"title": "Peter Howson — Croatian and Muslim (1994)", "url": "https://artsandculture.google.com/search?q=peter+howson+croatian+muslim"},
-    {"title": "Odd Nerdrum — The Murder of Andreas Baader (1978)", "url": "https://artsandculture.google.com/search?q=odd+nerdrum+murder+baader"},
-    {"title": "Jake and Dinos Chapman — Hell (2000)", "url": "https://artsandculture.google.com/search?q=chapman+brothers+hell"},
-]
+EPOCH = _dt.date(2026, 1, 1)
 
-MUSIC_ENTRIES = [
-    {"title": "Panopticon — Roads to the North (2014) | FFO: Saor, atmospheric black", "spotify": "https://open.spotify.com/search/panopticon%20roads%20to%20the%20north", "youtube": "https://music.youtube.com/search?q=panopticon+roads+to+the+north"},
-    {"title": "Mgla — Exercises in Futility (2015) | FFO: Dissection, black metal", "spotify": "https://open.spotify.com/search/mgla%20exercises%20in%20futility", "youtube": "https://music.youtube.com/search?q=mgla+exercises+in+futility"},
-    {"title": "Uada — Devoid of Light (2016) | FFO: Dissection, Dark Funeral", "spotify": "https://open.spotify.com/search/uada%20devoid%20of%20light", "youtube": "https://music.youtube.com/search?q=uada+devoid+of+light"},
-    {"title": "Deafheaven — Sunbather (2013) | FFO: Saor, atmospheric black", "spotify": "https://open.spotify.com/search/deafheaven%20sunbather", "youtube": "https://music.youtube.com/search?q=deafheaven+sunbather"},
-    {"title": "Bolt Thrower — ...For Victory (1994) | FFO: Carcass, death metal", "spotify": "https://open.spotify.com/search/bolt%20thrower%20for%20victory", "youtube": "https://music.youtube.com/search?q=bolt+thrower+for+victory"},
-    {"title": "Obituary — Cause of Death (1990) | FFO: Entombed, death metal", "spotify": "https://open.spotify.com/search/obituary%20cause%20of%20death", "youtube": "https://music.youtube.com/search?q=obituary+cause+of+death"},
-    {"title": "Grave — Into the Grave (1991) | FFO: Entombed, Swedish death", "spotify": "https://open.spotify.com/search/grave%20into%20the%20grave", "youtube": "https://music.youtube.com/search?q=grave+into+the+grave+1991"},
-    {"title": "Tribulation — The Children of the Night (2015) | FFO: Dissection, dark rock", "spotify": "https://open.spotify.com/search/tribulation%20children%20of%20the%20night", "youtube": "https://music.youtube.com/search?q=tribulation+children+of+the+night"},
-    {"title": "Power Trip — Nightmare Logic (2017) | FFO: Slayer, crossover thrash", "spotify": "https://open.spotify.com/search/power%20trip%20nightmare%20logic", "youtube": "https://music.youtube.com/search?q=power+trip+nightmare+logic"},
-    {"title": "Integrity — Those Who Fear Tomorrow (1991) | FFO: Black Flag, metallic hardcore", "spotify": "https://open.spotify.com/search/integrity%20those%20who%20fear%20tomorrow", "youtube": "https://music.youtube.com/search?q=integrity+those+who+fear+tomorrow"},
-    {"title": "Converge — Jane Doe (2001) | FFO: Black Flag, hardcore/metal", "spotify": "https://open.spotify.com/search/converge%20jane%20doe", "youtube": "https://music.youtube.com/search?q=converge+jane+doe"},
-    {"title": "His Hero Is Gone — Fifteen Counts of Arson (1996) | FFO: Black Flag, crust punk", "spotify": "https://open.spotify.com/search/his%20hero%20is%20gone%20fifteen%20counts", "youtube": "https://music.youtube.com/search?q=his+hero+is+gone+fifteen+counts+of+arson"},
-    {"title": "Trap Them — Darker Handcraft (2011) | FFO: Black Flag, crust/grind", "spotify": "https://open.spotify.com/search/trap%20them%20darker%20handcraft", "youtube": "https://music.youtube.com/search?q=trap+them+darker+handcraft"},
-    {"title": "Tombs — Path of Totality (2011) | FFO: Neurosis, blackened sludge", "spotify": "https://open.spotify.com/search/tombs%20path%20of%20totality", "youtube": "https://music.youtube.com/search?q=tombs+path+of+totality"},
-    {"title": "Thou — Heathen (2014) | FFO: Eyehategod, sludge doom", "spotify": "https://open.spotify.com/search/thou%20heathen", "youtube": "https://music.youtube.com/search?q=thou+heathen+2014"},
-    {"title": "Amenra — Mass VI (2012) | FFO: Neurosis, post-metal", "spotify": "https://open.spotify.com/search/amenra%20mass%20vi", "youtube": "https://music.youtube.com/search?q=amenra+mass+vi"},
-    {"title": "Batushka — Litourgiya (2015) | FFO: Emperor, orthodox black metal", "spotify": "https://open.spotify.com/search/batushka%20litourgiya", "youtube": "https://music.youtube.com/search?q=batushka+litourgiya"},
-    {"title": "Deathspell Omega — Paracletus (2010) | FFO: Behemoth, dissonant black", "spotify": "https://open.spotify.com/search/deathspell%20omega%20paracletus", "youtube": "https://music.youtube.com/search?q=deathspell+omega+paracletus"},
-    {"title": "Mayhem — De Mysteriis Dom Sathanas (1994) | FFO: Emperor, Norwegian black", "spotify": "https://open.spotify.com/search/mayhem%20de%20mysteriis", "youtube": "https://music.youtube.com/search?q=mayhem+de+mysteriis+dom+sathanas"},
-    {"title": "Carpathian Forest — Black Shining Leather (1998) | FFO: Immortal, black metal", "spotify": "https://open.spotify.com/search/carpathian%20forest%20black%20shining%20leather", "youtube": "https://music.youtube.com/search?q=carpathian+forest+black+shining+leather"},
-    {"title": "Vektor — Black Future (2009) | FFO: Slayer, technical thrash", "spotify": "https://open.spotify.com/search/vektor%20black%20future", "youtube": "https://music.youtube.com/search?q=vektor+black+future"},
-    {"title": "Havok — Unnatural Selection (2013) | FFO: Slayer, modern thrash", "spotify": "https://open.spotify.com/search/havok%20unnatural%20selection", "youtube": "https://music.youtube.com/search?q=havok+unnatural+selection"},
-    {"title": "Harms Way — Rust (2015) | FFO: Biohazard, metallic hardcore", "spotify": "https://open.spotify.com/search/harms%20way%20rust", "youtube": "https://music.youtube.com/search?q=harms+way+rust+2015"},
-    {"title": "Knocked Loose — A Different Shade of Blue (2019) | FFO: Biohazard, hardcore", "spotify": "https://open.spotify.com/search/knocked%20loose%20different%20shade%20of%20blue", "youtube": "https://music.youtube.com/search?q=knocked+loose+a+different+shade+of+blue"},
-    {"title": "Code Orange — Forever (2017) | FFO: Converge, modern hardcore", "spotify": "https://open.spotify.com/search/code%20orange%20forever", "youtube": "https://music.youtube.com/search?q=code+orange+forever+2017"},
-    {"title": "Midnight — Satanic Royalty (2011) | FFO: Motörhead, black/speed metal", "spotify": "https://open.spotify.com/search/midnight%20satanic%20royalty", "youtube": "https://music.youtube.com/search?q=midnight+satanic+royalty"},
-    {"title": "Venom — Black Metal (1982) | FFO: Motörhead, proto-black metal", "spotify": "https://open.spotify.com/search/venom%20black%20metal%201982", "youtube": "https://music.youtube.com/search?q=venom+black+metal+1982"},
-    {"title": "Celtic Frost — To Mega Therion (1985) | FFO: Behemoth, extreme metal", "spotify": "https://open.spotify.com/search/celtic%20frost%20to%20mega%20therion", "youtube": "https://music.youtube.com/search?q=celtic+frost+to+mega+therion"},
-    {"title": "Celtic Frost — Monotheist (2006) | FFO: Type O Negative, doom/extreme", "spotify": "https://open.spotify.com/search/celtic%20frost%20monotheist", "youtube": "https://music.youtube.com/search?q=celtic+frost+monotheist"},
-    {"title": "Paradise Lost — Gothic (1991) | FFO: Type O Negative, doom/death", "spotify": "https://open.spotify.com/search/paradise%20lost%20gothic%201991", "youtube": "https://music.youtube.com/search?q=paradise+lost+gothic+1991"},
-    {"title": "My Dying Bride — Turn Loose the Swans (1993) | FFO: Type O Negative, doom", "spotify": "https://open.spotify.com/search/my%20dying%20bride%20turn%20loose%20swans", "youtube": "https://music.youtube.com/search?q=my+dying+bride+turn+loose+the+swans"},
-    {"title": "Anathema — The Silent Enigma (1995) | FFO: Type O Negative, doom/death", "spotify": "https://open.spotify.com/search/anathema%20silent%20enigma", "youtube": "https://music.youtube.com/search?q=anathema+the+silent+enigma"},
-    {"title": "Goatwhore — Blood for the Master (2012) | FFO: Pantera, blackened death", "spotify": "https://open.spotify.com/search/goatwhore%20blood%20for%20the%20master", "youtube": "https://music.youtube.com/search?q=goatwhore+blood+for+the+master"},
-    {"title": "Nails — Abandon All Life (2013) | FFO: Black Flag, powerviolence/metal", "spotify": "https://open.spotify.com/search/nails%20abandon%20all%20life", "youtube": "https://music.youtube.com/search?q=nails+abandon+all+life"},
-    {"title": "Oranssi Pazuzu — Mestarin kynsi (2020) | FFO: Emperor, psychedelic black", "spotify": "https://open.spotify.com/search/oranssi%20pazuzu%20mestarin%20kynsi", "youtube": "https://music.youtube.com/search?q=oranssi+pazuzu+mestarin+kynsi"},
-    {"title": "Svalbard — It's Hard to Have Hope (2018) | FFO: Converge, post-hardcore", "spotify": "https://open.spotify.com/search/svalbard%20its%20hard%20to%20have%20hope", "youtube": "https://music.youtube.com/search?q=svalbard+its+hard+to+have+hope"},
-    {"title": "Cattle Decapitation — Monolith of Inhumanity (2012) | FFO: Carcass, death/grind", "spotify": "https://open.spotify.com/search/cattle%20decapitation%20monolith%20inhumanity", "youtube": "https://music.youtube.com/search?q=cattle+decapitation+monolith+of+inhumanity"},
-    {"title": "Napalm Death — Utilitarianism (2012) | FFO: Carcass, grindcore", "spotify": "https://open.spotify.com/search/napalm%20death%20utilitarian", "youtube": "https://music.youtube.com/search?q=napalm+death+utilitarian"},
-    {"title": "Drudkh — Autumn Aurora (2004) | FFO: Saor, Ukrainian atmospheric black", "spotify": "https://open.spotify.com/search/drudkh%20autumn%20aurora", "youtube": "https://music.youtube.com/search?q=drudkh+autumn+aurora"},
-    {"title": "Primordial — To the Nameless Dead (2007) | FFO: Saor, Irish black/folk metal", "spotify": "https://open.spotify.com/search/primordial%20to%20the%20nameless%20dead", "youtube": "https://music.youtube.com/search?q=primordial+to+the+nameless+dead"},
-    {"title": "Moonsorrow — Voimasta ja Kunniasta (2001) | FFO: Saor, Finnish folk black", "spotify": "https://open.spotify.com/search/moonsorrow%20voimasta%20ja%20kunniasta", "youtube": "https://music.youtube.com/search?q=moonsorrow+voimasta+ja+kunniasta"},
-    {"title": "Enslaved — Isa (2004) | FFO: Emperor, progressive black metal", "spotify": "https://open.spotify.com/search/enslaved%20isa%202004", "youtube": "https://music.youtube.com/search?q=enslaved+isa+2004"},
-    {"title": "Mgla — With Hearts Toward None (2012) | FFO: Dissection, Polish black", "spotify": "https://open.spotify.com/search/mgla%20with%20hearts%20toward%20none", "youtube": "https://music.youtube.com/search?q=mgla+with+hearts+toward+none"},
-    {"title": "Marduk — Panzer Division Marduk (1999) | FFO: Dark Funeral, war black metal", "spotify": "https://open.spotify.com/search/marduk%20panzer%20division", "youtube": "https://music.youtube.com/search?q=marduk+panzer+division+marduk"},
-    {"title": "Watain — Sworn to the Dark (2007) | FFO: Dissection, Swedish black", "spotify": "https://open.spotify.com/search/watain%20sworn%20to%20the%20dark", "youtube": "https://music.youtube.com/search?q=watain+sworn+to+the+dark"},
-    {"title": "High on Fire — Blessed Black Wings (2005) | FFO: Motörhead, stoner/doom", "spotify": "https://open.spotify.com/search/high%20on%20fire%20blessed%20black%20wings", "youtube": "https://music.youtube.com/search?q=high+on+fire+blessed+black+wings"},
-    {"title": "Orange Goblin — Coup de Grace (2002) | FFO: Down, stoner/doom", "spotify": "https://open.spotify.com/search/orange%20goblin%20coup%20de%20grace", "youtube": "https://music.youtube.com/search?q=orange+goblin+coup+de+grace"},
-    {"title": "Acid Bath — When the Kite String Pops (1994) | FFO: Down, sludge/doom", "spotify": "https://open.spotify.com/search/acid%20bath%20when%20the%20kite%20string%20pops", "youtube": "https://music.youtube.com/search?q=acid+bath+when+the+kite+string+pops"},
-    {"title": "Weedeater — God Luck and Good Speed (2007) | FFO: Eyehategod, sludge", "spotify": "https://open.spotify.com/search/weedeater%20god%20luck%20good%20speed", "youtube": "https://music.youtube.com/search?q=weedeater+god+luck+and+good+speed"},
-    {"title": "Buzzov•en — At a Loss (1998) | FFO: Eyehategod, sludge metal", "spotify": "https://open.spotify.com/search/buzzoven%20at%20a%20loss", "youtube": "https://music.youtube.com/search?q=buzzoven+at+a+loss"},
-    {"title": "16 — Zoloft Smile (2002) | FFO: Crowbar, sludge/groove", "spotify": "https://open.spotify.com/search/16%20zoloft%20smile", "youtube": "https://music.youtube.com/search?q=16+zoloft+smile+sludge"},
-    {"title": "Burning Love — Rotten Thing to Say (2012) | FFO: Black Flag, hardcore punk", "spotify": "https://open.spotify.com/search/burning%20love%20rotten%20thing%20to%20say", "youtube": "https://music.youtube.com/search?q=burning+love+rotten+thing+to+say"},
-    {"title": "Negative Approach — Tied Down (1983) | FFO: Black Flag, hardcore", "spotify": "https://open.spotify.com/search/negative%20approach%20tied%20down", "youtube": "https://music.youtube.com/search?q=negative+approach+tied+down"},
-    {"title": "D.R.I. — Crossover (1987) | FFO: Suicidal Tendencies, crossover thrash", "spotify": "https://open.spotify.com/search/dri%20crossover%201987", "youtube": "https://music.youtube.com/search?q=dri+crossover+1987"},
-    {"title": "Municipal Waste — The Art of Partying (2007) | FFO: Suicidal Tendencies, thrash", "spotify": "https://open.spotify.com/search/municipal%20waste%20art%20of%20partying", "youtube": "https://music.youtube.com/search?q=municipal+waste+art+of+partying"},
-    {"title": "Sepultura — Chaos A.D. (1993) | FFO: RATM, groove/thrash", "spotify": "https://open.spotify.com/search/sepultura%20chaos%20ad", "youtube": "https://music.youtube.com/search?q=sepultura+chaos+ad"},
-    {"title": "Prong — Cleansing (1994) | FFO: RATM, groove metal", "spotify": "https://open.spotify.com/search/prong%20cleansing%201994", "youtube": "https://music.youtube.com/search?q=prong+cleansing+1994"},
-    {"title": "Exhorder — Slaughter in the Vatican (1990) | FFO: Pantera, groove/thrash", "spotify": "https://open.spotify.com/search/exhorder%20slaughter%20in%20the%20vatican", "youtube": "https://music.youtube.com/search?q=exhorder+slaughter+in+the+vatican"},
-    {"title": "Corrosion of Conformity — Deliverance (1994) | FFO: Pantera, groove metal", "spotify": "https://open.spotify.com/search/corrosion%20of%20conformity%20deliverance", "youtube": "https://music.youtube.com/search?q=corrosion+of+conformity+deliverance"},
-    {"title": "Crowbar — Odd Fellows Rest (1998) | FFO: Down, sludge/doom", "spotify": "https://open.spotify.com/search/crowbar%20odd%20fellows%20rest", "youtube": "https://music.youtube.com/search?q=crowbar+odd+fellows+rest"},
-]
 
-CHARACTER_QUOTES = [
-    {"name": "Hannibal Smith", "quote": "I love it when a plan comes together.", "show": "The A-Team", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/d/da/Hannibal_Smith.jpg/220px-Hannibal_Smith.jpg"},
-    {"name": "Zack Morris", "quote": "The more rules they make, the more ways I find to get around them.", "show": "Saved by the Bell", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/0/0f/Zack_Morris.jpg/220px-Zack_Morris.jpg"},
-    {"name": "Eddie Haskell", "quote": "Gee Beaver, I would love to help, but something just came up.", "show": "Leave it to Beaver", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/3/32/Eddie_Haskell.jpg/220px-Eddie_Haskell.jpg"},
-    {"name": "Al Bundy", "quote": "I had it all once. Now I am married with children.", "show": "Married... with Children", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/c/c5/Al_Bundy.jpg/220px-Al_Bundy.jpg"},
-    {"name": "Hannibal Smith", "quote": "The best thing about being underestimated is the look on their face when you win.", "show": "The A-Team", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/d/da/Hannibal_Smith.jpg/220px-Hannibal_Smith.jpg"},
-    {"name": "Al Bundy", "quote": "Women. You cannot live with them, period.", "show": "Married... with Children", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/c/c5/Al_Bundy.jpg/220px-Al_Bundy.jpg"},
-    {"name": "Zack Morris", "quote": "Time out. Let me think about this.", "show": "Saved by the Bell", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/0/0f/Zack_Morris.jpg/220px-Zack_Morris.jpg"},
-    {"name": "Hannibal Smith", "quote": "In war, the most dangerous weapon is the element of surprise.", "show": "The A-Team", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/d/da/Hannibal_Smith.jpg/220px-Hannibal_Smith.jpg"},
-    {"name": "Eddie Haskell", "quote": "That is a very lovely dress, Mrs. Cleaver.", "show": "Leave it to Beaver", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/3/32/Eddie_Haskell.jpg/220px-Eddie_Haskell.jpg"},
-    {"name": "Al Bundy", "quote": "Every day above ground is a good day. Every day in this house is debatable.", "show": "Married... with Children", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/c/c5/Al_Bundy.jpg/220px-Al_Bundy.jpg"},
-    {"name": "Hannibal Smith", "quote": "You know, sometimes the best disguise is no disguise at all.", "show": "The A-Team", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/d/da/Hannibal_Smith.jpg/220px-Hannibal_Smith.jpg"},
-    {"name": "Zack Morris", "quote": "When life gives you lemons, sell them.", "show": "Saved by the Bell", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/0/0f/Zack_Morris.jpg/220px-Zack_Morris.jpg"},
-    {"name": "Eddie Haskell", "quote": "I was merely trying to be helpful, sir.", "show": "Leave it to Beaver", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/3/32/Eddie_Haskell.jpg/220px-Eddie_Haskell.jpg"},
-    {"name": "Al Bundy", "quote": "A man can take just so much. Then he snaps.", "show": "Married... with Children", "image": "https://upload.wikimedia.org/wikipedia/en/thumb/c/c5/Al_Bundy.jpg/220px-Al_Bundy.jpg"},
-]
+def _day_count():
+    """Days since a fixed epoch. Advances continuously instead of resetting each Jan 1."""
+    return (_dt.date.today() - EPOCH).days
+
+
+def get_daily_index(list_len):
+    if not list_len:
+        return 0
+    return _day_count() % list_len
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# CONTENT POOLS — loaded from content/*.json so they can be edited without
+# touching this file. A malformed file must never take the brief down: it falls
+# back to a minimal built-in set and records a loud error for the banner.
+# ══════════════════════════════════════════════════════════════════════════════
+CONTENT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "content")
+POOL_ERRORS = []
+
+_FALLBACKS = {
+    "japanese": [{"word": "\u7cbe\u9032 (Shoujin)", "level": "N1",
+                  "meaning": "Devoted, disciplined application.",
+                  "example": "\u65e5\u3005\u7cbe\u9032\u3092\u91cd\u306d\u308b",
+                  "translation": "To apply oneself diligently, day after day."}],
+    "colonel": [{"line": "A plan doesn\u2019t come together because it\u2019s clever. "
+                         "It comes together because somebody kept showing up.", "tag": "Execution"}],
+    "models": [{"name": "Inversion", "origin": "Carl Jacobi",
+                "what": "Ask what would guarantee failure, then avoid that.",
+                "examples": [], "focus": "Name the three fastest ways to ruin today \u2014 and don\u2019t do those."}],
+    "strategy": [{"name": "Distribution Beats Production", "category": "Leverage",
+                  "what": "Getting the work to people matters more than making more of it.",
+                  "examples": [], "focus": "Name one thing you made this month that nobody saw."}],
+}
+
+
+def load_pool(name):
+    """Load content/<name>.json -> list of entries. Never raises."""
+    path = os.path.join(CONTENT_DIR, name + ".json")
+    try:
+        with open(path, encoding="utf-8") as fh:
+            data = json.load(fh)
+        entries = data.get("entries")
+        if not isinstance(entries, list) or not entries:
+            raise ValueError("no entries array")
+        return entries
+    except Exception as e:
+        msg = f"{name}.json failed to load: {type(e).__name__}: {e}"
+        print("POOL ERROR: " + msg)
+        POOL_ERRORS.append(msg)
+        return _FALLBACKS.get(name, [{}])
+
+
+def load_facts():
+    """Load content/sports_facts.json. Never raises."""
+    path = os.path.join(CONTENT_DIR, "sports_facts.json")
+    try:
+        with open(path, encoding="utf-8") as fh:
+            return json.load(fh)
+    except Exception as e:
+        msg = f"sports_facts.json failed to load: {type(e).__name__}: {e}"
+        print("POOL ERROR: " + msg)
+        POOL_ERRORS.append(msg)
+        return {"_meta": {"warn_days": 21, "stale_days": 45}, "teams": [], "fighters": []}
+
+
+def fact_age_badge(verified_on, meta):
+    """Return (days_old, css_class, label) for a verified_on date string."""
+    try:
+        d = _dt.datetime.strptime(verified_on, "%Y-%m-%d").date()
+    except Exception:
+        return (9999, "fact-stale", "unverified")
+    age = (_dt.date.today() - d).days
+    warn = meta.get("warn_days", 21)
+    stale = meta.get("stale_days", 45)
+    if age >= stale:
+        return (age, "fact-stale", f"{age}d old \u2014 CHECK THIS")
+    if age >= warn:
+        return (age, "fact-warn", f"{age}d old")
+    return (age, "fact-fresh", f"{age}d")
+
+
+JLPT_WORDS = load_pool("japanese")
+
+
+
+COLONEL_LINES = load_pool("colonel")
+MENTAL_MODELS = load_pool("models")
+STRATEGIES = load_pool("strategy")
+SPORTS_FACTS = load_facts()
 
 
 STOIC_QUOTES = [
@@ -223,8 +156,6 @@ STOIC_QUOTES = [
     {"text": "The most courageous act is still to think for yourself. Aloud.", "source": "Coco Chanel"},
 ]
 
-def get_daily_index(list_len):
-    return _dt.date.today().timetuple().tm_yday % list_len
 
 RICHMOND_COORDS = (49.1895, -123.1724)
 ICLOUD_EMAIL = os.environ.get("ICLOUD_EMAIL", "yoseanreid@icloud.com")
@@ -452,8 +383,18 @@ def push_calendar_to_jsonbin(week_structured):
     except Exception as e:
         print(f"⚠️ Calendar embed failed: {e}")
 
-def get_character_quote(day_of_week):
-    return CHARACTER_QUOTES[get_daily_index(len(CHARACTER_QUOTES))]
+def get_colonel_line(day_of_week=None):
+    return COLONEL_LINES[get_daily_index(len(COLONEL_LINES))]
+
+
+def get_mental_model():
+    return MENTAL_MODELS[get_daily_index(len(MENTAL_MODELS))]
+
+
+def get_strategy():
+    # offset so the model and the strategy are not always the same pair
+    idx = (_day_count() + 7) % len(STRATEGIES) if STRATEGIES else 0
+    return STRATEGIES[idx]
 
 
 
@@ -1024,22 +965,21 @@ def get_sports_updates():
     except Exception as e:
         lines.append("🏒 Canucks — Offseason (next season Oct 2026)")
 
-    # ── Offseason notes ───────────────────────────────────────────────────────
-    lines.append("🏒 Vancouver Goldeneyes (PWHL) — Offseason (next season Nov 2026 | Pacific Coliseum)")
-    lines.append("🏴󠁧󠁢󠁳󠁣󠁴󠁿 Glasgow Rangers — Offseason (new season Aug 2, 2026)")
-    lines.append("🥍 Vancouver Warriors — Offseason (NLL season Nov 2026)")
-    lines.append("🏈 Las Vegas Raiders — Offseason (NFL preseason Aug 2026)")
+    # ── Manually-maintained facts, with visible staleness ─────────────────────
+    _meta = SPORTS_FACTS.get("_meta", {})
+    for t in SPORTS_FACTS.get("teams", []):
+        if t.get("key") == "canucks":
+            continue  # Canucks handled by the live block above
+        age, cls, label = fact_age_badge(t.get("verified_on", ""), _meta)
+        lines.append(f'{t.get("icon","")} {t.get("label","")} — {t.get("status","")} '
+                     f'<span class="fact-age {cls}">{label}</span>')
 
     # ── UFC Fighter Tracking ──────────────────────────────────────────────────
-    UFC_FIGHTERS = [
-        ("Sean Strickland", "W def. Chimaev (Split Dec) UFC 328 May 9 — MW CHAMP", "No next fight announced"),
-        ("Chris Duncan",    "L sub R2 to Moicano UFC FN Mar 30",                   "No next fight announced"),
-        ("Mike Malott",     "W KO R3 vs Burns UFC FN Winnipeg Apr 18",              "No next fight announced"),
-        ("Conor McGregor",  "Inactive — no 2026 bout",                               "No next fight announced"),
-    ]
     lines.append("\n🥊 UFC Fighter Watch:")
-    for name, last, nxt in UFC_FIGHTERS:
-        lines.append(f"  {name}: {last} | Next: {nxt}")
+    for f in SPORTS_FACTS.get("fighters", []):
+        age, cls, label = fact_age_badge(f.get("verified_on", ""), _meta)
+        lines.append(f'  {f.get("name","")}: {f.get("last","")} | Next: {f.get("next","")} '
+                     f'<span class="fact-age {cls}">{label}</span>')
 
     # ── UFC ───────────────────────────────────────────────────────────────────
     try:
@@ -1251,7 +1191,24 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
         mode = "NORMAL PROTOCOL ACTIVE"
         mode_advice = "Execute as planned. Stay sharp."
 
-    char = get_character_quote(day_of_week)
+    colonel = get_colonel_line()
+    model = get_mental_model()
+    strat = get_strategy()
+
+    def _examples_html(entry):
+        ex = entry.get("examples") or []
+        if not ex:
+            return ""
+        rows = "".join(f'<div class="depth-ex">{e}</div>' for e in ex)
+        return f'<div class="depth-ex-wrap"><div class="depth-ex-head">In practice</div>{rows}</div>'
+
+    model_examples_html = _examples_html(model)
+    strat_examples_html = _examples_html(strat)
+    if POOL_ERRORS:
+        _rows = "".join(f"<div>&#9888; {e}</div>" for e in POOL_ERRORS)
+        pool_error_html = f'<div class="pool-error">CONTENT POOLS FAILED TO LOAD &mdash; showing fallbacks{_rows}</div>'
+    else:
+        pool_error_html = ""
 
     cal_json = json.dumps(week_structured or [])
     cal_today = calendar_events.get("today", "No events today.")
@@ -1294,10 +1251,6 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     jlpt = JLPT_WORDS[get_daily_index(len(JLPT_WORDS))]
     jlpt_word = jlpt["word"]; jlpt_level = jlpt["level"]; jlpt_meaning = jlpt["meaning"]
     jlpt_example = jlpt["example"]; jlpt_translation = jlpt["translation"]
-    art = ART_ENTRIES[get_daily_index(len(ART_ENTRIES))]
-    art_title = art["title"]; art_url = art["url"]
-    music = MUSIC_ENTRIES[get_daily_index(len(MUSIC_ENTRIES))]
-    music_title = music["title"]; music_spotify = music["spotify"]; music_youtube = music["youtube"]
     cal_week = calendar_events.get("week", "No events this week.")
     cal_month = calendar_events.get("month", "No events this month.")
 
@@ -1371,6 +1324,48 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     .date-main {{ font-size: 28px; color: var(--text-bright); font-weight: 700; }}
     .date-time {{ font-size: 16px; color: var(--muted); margin-top: 4px; }}
     .card {{ background: rgba(255,255,255,0.15); border: 3px solid var(--text-bright); border-radius: 12px; padding: 18px; margin-bottom: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }}
+    /* ── Forge redesign: focus prompt, depth panel, staleness, collapse ── */
+    .focus-prompt {{ font-size: 21px; line-height: 1.5; font-weight: 700; color: var(--text-bright);
+                     background: rgba(255,255,255,0.16); border-left: 5px solid var(--text-bright);
+                     border-radius: 10px; padding: 16px 18px; margin-bottom: 12px; }}
+    .strat-cat {{ display: inline-block; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+                  background: rgba(255,255,255,0.25); border-radius: 5px; padding: 3px 9px;
+                  margin-bottom: 10px; font-weight: 700; }}
+    .depth-toggle {{ display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+                     touch-action: manipulation; font-size: 12px; letter-spacing: 0.1em; font-weight: 700;
+                     text-transform: uppercase; color: var(--text-light); padding: 10px 2px;
+                     border-top: 1px solid rgba(255,255,255,0.25); }}
+    .depth-chevron {{ transition: transform 0.2s; font-size: 15px; }}
+    .depth-toggle.open .depth-chevron {{ transform: rotate(180deg); }}
+    .depth-body {{ display: none; padding-top: 4px; }}
+    .depth-body.open {{ display: block; }}
+    .depth-origin {{ font-size: 11px; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }}
+    .depth-what {{ font-size: 14px; line-height: 1.65; margin-bottom: 12px; }}
+    .depth-ex-wrap {{ margin-top: 6px; }}
+    .depth-ex-head {{ font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+                      color: var(--muted); margin-bottom: 6px; font-weight: 700; }}
+    .depth-ex {{ font-size: 13px; line-height: 1.6; padding: 8px 0 8px 12px;
+                 border-left: 2px solid rgba(255,255,255,0.3); margin-bottom: 6px; }}
+    .fact-age {{ font-size: 10px; letter-spacing: 0.08em; padding: 2px 7px; border-radius: 4px;
+                 margin-left: 6px; font-weight: 700; }}
+    .fact-fresh {{ background: rgba(255,255,255,0.18); color: var(--muted); }}
+    .fact-warn {{ background: rgba(230,160,20,0.35); color: #4a2c00; }}
+    .fact-stale {{ background: rgba(200,30,30,0.55); color: #fff; }}
+    .pool-error {{ background: #8a1010; color: #fff; border-radius: 10px; padding: 12px 14px;
+                   margin-bottom: 14px; font-size: 13px; font-weight: 700; line-height: 1.5; }}
+    .card.collapsed .card-body {{ display: none; }}
+    .card-collapse {{ float: right; cursor: pointer; touch-action: manipulation;
+                      font-size: 15px; opacity: 0.7; padding: 0 4px; }}
+    .yday-line {{ background: rgba(0,0,0,0.35); color: var(--text-bright); border-radius: 10px;
+                  padding: 10px 14px; margin-bottom: 12px; font-size: 14px; font-weight: 700; }}
+    .rocks-line {{ background: rgba(255,255,255,0.16); border: 2px solid var(--text-bright);
+                   border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; font-size: 13px; }}
+    .rocks-head {{ font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+                   margin-bottom: 6px; font-weight: 700; }}
+    .rock-item {{ padding: 4px 0; line-height: 1.5; }}
+    .new-flag {{ display: inline-block; background: rgba(74,232,160,0.85); color: #062012;
+                 font-size: 9px; font-weight: 800; letter-spacing: 0.1em; padding: 2px 6px;
+                 border-radius: 4px; margin-right: 6px; vertical-align: middle; }}
     .card-header {{ font-size: 16px; letter-spacing: 0.2em; color: var(--text-bright); text-transform: uppercase; margin-bottom: 14px; font-weight: 700; display: flex; align-items: center; gap: 10px; }}
     .card-icon {{ font-size: 32px; }}
     .stat-row {{ display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 14px; }}
@@ -1442,13 +1437,16 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
   </div>
 
   <div class="character-quote-box">
-    <img class="character-image" src="{char['image']}" alt="{char['name']}" onerror="this.style.display='none'">
+    <img class="character-image" src="hannibal.jpg" alt="The Colonel" onerror="this.style.display='none'">
     <div>
-      <div class="character-quote">"{char['quote']}"</div>
-      <div class="character-name">— {char['name']}, {char['show']}</div>
+      <div class="character-quote">{colonel['line']}</div>
+      <div class="character-name">— The Colonel&rsquo;s Take &middot; {colonel.get('tag','')}</div>
     </div>
   </div>
 
+  {pool_error_html}
+  <div id="yday-host"></div>
+  <div id="rocks-host"></div>
   <div class="alert-banner">🚨 {mode} {mode_advice}</div>
 
   <div class="card" style="background: linear-gradient(135deg, rgba(0,0,0,0.25), rgba(30,10,0,0.2)); border: 3px solid var(--text-bright);">
@@ -1535,6 +1533,10 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     <div class="mini-detail" style="margin-top:12px; font-size:12px; color:var(--muted);">💡 Tap +/− to track. Counters reset at midnight.</div>
   </div>
 
+{protocol_block}
+
+{triad_block}
+
   <div class="card" style="background: linear-gradient(135deg, rgba(100,150,200,0.2), rgba(70,120,170,0.1)); border: 3px solid var(--text-bright);">
     <div class="card-header"><span class="card-icon">🎭🌴</span><span>Identityless Protocol</span></div>
     <div class="mini-card expandable" onclick="toggleSection(this)">
@@ -1574,12 +1576,12 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     <div class="mini-card"><div class="mini-detail">{weather}</div></div>
   </div>
 
-  <div class="card">
+  <div class="card" data-newscan>
     <div class="card-header"><span class="card-icon">📅🌴</span><span>Today — {date_str}</span></div>
     <div class="mini-card"><div class="mini-detail"><pre style="font-size:13px; color:var(--text-light); white-space:pre-wrap; word-wrap:break-word; font-family:-apple-system,sans-serif;">{cal_today}</pre></div></div>
   </div>
 
-  <div class="card">
+  <div class="card" data-newscan>
     <div class="card-header"><span class="card-icon">📆🌴</span><span>This Week (Next 7 Days)</span></div>
     <div class="mini-card"><div class="mini-detail"><pre style="font-size:13px; color:var(--text-light); white-space:pre-wrap; word-wrap:break-word; font-family:-apple-system,sans-serif;">{cal_week}</pre></div></div>
   </div>
@@ -1604,9 +1606,6 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     </div>
   </div>
 
-{triad_block}
-
-{protocol_block}
 
 
   <div class="card">
@@ -1643,20 +1642,29 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-header"><span class="card-icon">🎨🌴</span><span>Art & Music</span></div>
-    <div class="mini-card">
-      <div class="mini-title">🎨 {art_title}</div>
-      <div class="mini-detail">
-        <a href="{art_url}" target="_blank">Google Arts & Culture →</a>
-      </div>
+  <div class="card" data-card="model">
+    <div class="card-header"><span class="card-icon">&#x1F9E0;&#x1F334;</span><span>Mental Model &mdash; {model['name']}</span></div>
+    <div class="focus-prompt">{model['focus']}</div>
+    <div class="depth-toggle" onclick="toggleDepth(this)">
+      <span class="depth-label">What it is &amp; how it applies</span><span class="depth-chevron">&#x25BE;</span>
     </div>
-    <div class="mini-card">
-      <div class="mini-title">🎵 {music_title}</div>
-      <div class="mini-detail">
-        <a href="{music_spotify}" target="_blank">Spotify →</a> &nbsp;
-        <a href="{music_youtube}" target="_blank">YouTube Music →</a>
-      </div>
+    <div class="depth-body">
+      <div class="depth-origin">{model.get('origin','')}</div>
+      <div class="depth-what">{model['what']}</div>
+      {model_examples_html}
+    </div>
+  </div>
+
+  <div class="card" data-card="strategy">
+    <div class="card-header"><span class="card-icon">&#x265F;&#xFE0F;&#x1F334;</span><span>Strategy &mdash; {strat['name']}</span></div>
+    <div class="strat-cat">{strat.get('category','')}</div>
+    <div class="focus-prompt">{strat['focus']}</div>
+    <div class="depth-toggle" onclick="toggleDepth(this)">
+      <span class="depth-label">What it is &amp; how it applies</span><span class="depth-chevron">&#x25BE;</span>
+    </div>
+    <div class="depth-body">
+      <div class="depth-what">{strat['what']}</div>
+      {strat_examples_html}
     </div>
   </div>
 
@@ -1724,6 +1732,133 @@ window.onload = function() {{
     location.replace(url);
   }}
 }};
+/* ── Depth panels: expand the explanation behind the focus prompt ───────── */
+function toggleDepth(el) {{
+  el.classList.toggle('open');
+  var body = el.nextElementSibling;
+  if (body) body.classList.toggle('open');
+}}
+
+/* ── Collapsible cards that remember what you left closed ───────────────── */
+var FORGE_COLLAPSE_KEY = 'forge-collapsed-cards';
+function readCollapsed() {{
+  try {{ var v = localStorage.getItem(FORGE_COLLAPSE_KEY); return v ? JSON.parse(v) : []; }}
+  catch (e) {{ return []; }}
+}}
+function writeCollapsed(a) {{
+  try {{ localStorage.setItem(FORGE_COLLAPSE_KEY, JSON.stringify(a)); }} catch (e) {{}}
+}}
+function initCollapse() {{
+  var closed = readCollapsed();
+  var cards = document.querySelectorAll('.card');
+  for (var i = 0; i < cards.length; i++) {{
+    (function (card, i) {{
+      var header = card.querySelector('.card-header');
+      if (!header) return;
+      var id = card.getAttribute('data-card') ||
+               (header.textContent || '').trim().slice(0, 40) || ('card' + i);
+      card.setAttribute('data-cid', id);
+
+      /* wrap everything after the header so it can be hidden */
+      if (!card.querySelector('.card-body')) {{
+        var body = document.createElement('div');
+        body.className = 'card-body';
+        while (header.nextSibling) body.appendChild(header.nextSibling);
+        card.appendChild(body);
+      }}
+
+      var btn = document.createElement('span');
+      btn.className = 'card-collapse';
+      btn.innerHTML = '&#x25BE;';
+      header.appendChild(btn);
+
+      if (closed.indexOf(id) !== -1) {{
+        card.classList.add('collapsed');
+        btn.innerHTML = '&#x25B8;';
+      }}
+      header.style.cursor = 'pointer';
+      header.onclick = function (ev) {{
+        if (ev.target.tagName === 'A' || ev.target.tagName === 'BUTTON') return;
+        card.classList.toggle('collapsed');
+        var isClosed = card.classList.contains('collapsed');
+        btn.innerHTML = isClosed ? '&#x25B8;' : '&#x25BE;';
+        var list = readCollapsed();
+        var at = list.indexOf(id);
+        if (isClosed && at === -1) list.push(id);
+        if (!isClosed && at !== -1) list.splice(at, 1);
+        writeCollapsed(list);
+      }};
+    }})(cards[i], i);
+  }}
+}}
+
+/* ── Yesterday's completion + this week's big rocks, read from planner storage ── */
+function ymdOffset(days) {{
+  var d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') +
+         '-' + String(d.getDate()).padStart(2, '0');
+}}
+function readJSONKey(k, fb) {{
+  try {{ var v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; }}
+  catch (e) {{ return fb; }}
+}}
+function paintYesterday() {{
+  var host = document.getElementById('yday-host');
+  if (!host) return;
+  var all = readJSONKey('forge-top5', {{}});
+  var arr = all[ymdOffset(-1)];
+  if (!arr) {{ host.innerHTML = ''; return; }}
+  var real = arr.filter(function (i) {{ return i && i.t; }});
+  if (!real.length) {{ host.innerHTML = ''; return; }}
+  var done = real.filter(function (i) {{ return i.done; }}).length;
+  var msg = done === real.length ? 'Clean sweep.'
+          : done === 0 ? 'Nothing closed. Fresh start.'
+          : 'Roll the rest forward.';
+  host.innerHTML = '<div class="yday-line">Yesterday: ' + done + ' of ' + real.length +
+                   ' &nbsp;&middot;&nbsp; <span style="font-weight:400;">' + msg + '</span></div>';
+}}
+function paintRocks() {{
+  var host = document.getElementById('rocks-host');
+  if (!host) return;
+  var r = readJSONKey('forge-week-rocks', null);
+  if (!r || !r.items || !r.items.length) {{ host.innerHTML = ''; return; }}
+  var rows = r.items.map(function (t, i) {{
+    return '<div class="rock-item">' + (i + 1) + '. ' + t + '</div>';
+  }}).join('');
+  host.innerHTML = '<div class="rocks-line"><div class="rocks-head">&#x1FAA8; This week&rsquo;s big rocks</div>' +
+                   rows + '</div>';
+}}
+
+/* ── "New since yesterday" markers on calendar and reminder lines ────────── */
+var FORGE_SEEN_KEY = 'forge-seen-lines';
+function markNew() {{
+  var seen = readJSONKey(FORGE_SEEN_KEY, {{}});
+  var prev = seen.lines || [];
+  var current = [];
+  var targets = document.querySelectorAll('[data-newscan] .mini-title, [data-newscan] .mini-detail');
+  for (var i = 0; i < targets.length; i++) {{
+    var txt = (targets[i].textContent || '').trim();
+    if (!txt) continue;
+    current.push(txt);
+    if (prev.length && prev.indexOf(txt) === -1) {{
+      var flag = document.createElement('span');
+      flag.className = 'new-flag';
+      flag.textContent = 'NEW';
+      targets[i].insertBefore(flag, targets[i].firstChild);
+    }}
+  }}
+  try {{
+    localStorage.setItem(FORGE_SEEN_KEY, JSON.stringify({{ lines: current, on: ymdOffset(0) }}));
+  }} catch (e) {{}}
+}}
+
+window.addEventListener('load', function () {{
+  try {{ paintYesterday(); }} catch (e) {{}}
+  try {{ paintRocks(); }} catch (e) {{}}
+  try {{ markNew(); }} catch (e) {{}}
+  try {{ initCollapse(); }} catch (e) {{}}
+}});
 </script>
 </body>
 </html>"""
