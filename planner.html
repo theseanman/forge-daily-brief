@@ -1039,6 +1039,8 @@ function soundChoice(){
 }
 function setSoundChoice(v){ try { localStorage.setItem(K_SOUND, v); } catch(e){} }
 
+try { if (window.speechSynthesis) window.speechSynthesis.onvoiceschanged = refreshVoices; } catch(e){}
+
 function unlockAudio(){
   try {
     var Ctx = window.AudioContext || window.webkitAudioContext;
@@ -1066,12 +1068,59 @@ function tone(freq, startAt, dur, vol, type){
   } catch(e){}
 }
 
-function speakLine(){
+var K_VOICE = 'forge-voice';
+var _voices = [];
+
+function refreshVoices(){
+  try {
+    if (!window.speechSynthesis) return;
+    _voices = window.speechSynthesis.getVoices() || [];
+  } catch(e){ _voices = []; }
+}
+
+/* English voices only, male-sounding ones first */
+function usableVoices(){
+  refreshVoices();
+  var en = _voices.filter(function(v){ return /^en/i.test(v.lang || ''); });
+  if (!en.length) en = _voices.slice();
+  var MALE = /daniel|alex|arthur|fred|gordon|oliver|rishi|aaron|tom|james|george|male/i;
+  var males = en.filter(function(v){ return MALE.test(v.name || ''); });
+  var rest  = en.filter(function(v){ return !MALE.test(v.name || ''); });
+  return males.concat(rest);
+}
+
+function chosenVoice(){
+  var list = usableVoices();
+  if (!list.length) return null;
+  var want = null;
+  try { want = localStorage.getItem(K_VOICE); } catch(e){}
+  if (want){
+    for (var i = 0; i < list.length; i++) if (list[i].name === want) return list[i];
+  }
+  return list[0];            /* best male match, or first English voice */
+}
+
+function cycleVoice(){
+  var list = usableVoices();
+  if (!list.length){ alert('No speech voices are available in this browser.'); return; }
+  var cur = chosenVoice();
+  var idx = 0;
+  for (var i = 0; i < list.length; i++) if (cur && list[i].name === cur.name) idx = i;
+  var next = list[(idx + 1) % list.length];
+  try { localStorage.setItem(K_VOICE, next.name); } catch(e){}
+  speakLine(next);
+  var lbl = document.getElementById('voice-name');
+  if (lbl) lbl.textContent = next.name;
+}
+
+function speakLine(forceVoice){
   try {
     if (!window.speechSynthesis) return false;
     var line = COLONEL_BREAK_LINES[Math.floor(Math.random() * COLONEL_BREAK_LINES.length)];
     var u = new SpeechSynthesisUtterance(line);
-    u.rate = 0.92; u.pitch = 0.8; u.volume = 1;
+    var v = forceVoice || chosenVoice();
+    if (v) u.voice = v;
+    u.rate = 0.88; u.pitch = 0.6; u.volume = 1;
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(u);
     return true;
@@ -1135,6 +1184,19 @@ function openSoundPicker(){
     row.appendChild(t); row.appendChild(hear); row.appendChild(pick);
     wrap.appendChild(row);
   });
+  var vrow = document.createElement('div');
+  vrow.className = 'li';
+  var vt = document.createElement('div');
+  vt.className = 'li-txt';
+  var cv = chosenVoice();
+  vt.innerHTML = 'Speaking voice: <span id="voice-name" style="font-weight:800;">' +
+                 (cv ? cv.name : 'none available') + '</span>';
+  var vb = document.createElement('button');
+  vb.className = 'li-btn go'; vb.textContent = 'Next voice';
+  vb.onclick = cycleVoice;
+  vrow.appendChild(vt); vrow.appendChild(vb);
+  wrap.appendChild(vrow);
+
   var note = document.createElement('div');
   note.className = 'empty';
   note.textContent = 'Sound plays only while this tab is open. For alarms behind other apps, set your phone Clock timer as well.';

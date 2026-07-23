@@ -136,6 +136,12 @@
     .rocks-card { background:#1a2740; border:1px solid #4a9de8; border-radius:12px; padding:12px; margin-bottom:12px; display:none; }
     .rocks-card.show { display:block; }
     .note-line { font-size:11px; color:#666680; margin-top:8px; line-height:1.5; }
+    .csv-box { width:100%; height:180px; margin:10px 0; border:1px solid #33334a; border-radius:10px;
+               padding:8px; font-size:10px; font-family:ui-monospace,monospace;
+               background:#111118; color:#f0f0f8; }
+    .csv-info { font-size:11px; color:#666680; margin-top:10px; }
+    .saved-note { background:#1e1e2e; border:1px solid #4ae8a0; border-radius:10px;
+                  padding:10px 12px; margin-top:12px; font-size:12px; color:#4ae8a0; line-height:1.5; }
     .badge-pop { background:#1e1e2e; border:1px solid #e8c84a; border-radius:10px; padding:10px 12px;
                  margin-top:12px; font-size:12px; color:#e8c84a; display:none; }
     .badge-pop.show { display:block; }
@@ -345,6 +351,9 @@
       <div class="tomorrow-header"><i class="ti ti-arrow-right"></i> Carry into tomorrow</div>
       <div style="font-size:13px; line-height:1.6;" id="carry-display"></div>
     </div>
+    <div class="saved-note" id="saved-note"></div>
+    <button class="close-btn" onclick="showCSV()" style="margin-top:12px;">Export all data as CSV</button>
+    <div id="csv-host"></div>
     <div class="night-msg">Rest well, Sean.</div>
   </div>
 </div>
@@ -367,6 +376,7 @@ function init() {
   setTomorrowWorkout();
   loadReminders();
   loadTodayTop5();
+  backfillHealth();
 }
 
 function buildPips() {
@@ -807,8 +817,194 @@ function renderScorecard(){
   }
 }
 
+
+/* ================= DAILY RECORD =========================================
+   One row per date holding everything: the journal (which was previously
+   thrown away), the five, session totals, and a snapshot of that morning's
+   health numbers pulled from data.json. This is the join that makes
+   correlation possible.                                                   */
+var K_DAILY = 'forge-daily-log';
+var K_BACKFILLED = 'forge-health-backfilled';
+
+/* A zero from a sensor means NO DATA, not a terrible score. Recording it as 0
+   would wreck any correlation, so it is stored as missing instead.        */
+function deadReading(v){
+  if (v === undefined || v === null || v === '' || v === '--') return true;
+  var t = String(v).replace(/[\s:hm\-]/g, '');
+  return t === '' || /^0+$/.test(t);
+}
+
+function val(id){
+  var el = document.getElementById(id);
+  if (!el) return '';
+  var v = (el.value === undefined || el.value === null) ? '' : String(el.value).trim();
+  return v;
+}
+function num(id){
+  var v = val(id);
+  if (v === '') return '';
+  var n = parseFloat(v);
+  return isNaN(n) ? '' : n;
+}
+
+function collectDaily(){
+  var real = todayT5.filter(function(i){ return i && i.t; });
+  var keyItem = real.filter(function(i){ return i.k; })[0];
+
+  var esp = [];
+  for (var n = 1; n <= 3; n++){
+    var ev = val('esp' + n + '-event');
+    if (!ev) continue;
+    esp.push({ event: ev,
+               e: espRatings['esp' + n + '-e'] || '',
+               s: espRatings['esp' + n + '-s'] || '',
+               p: espRatings['esp' + n + '-p'] || '',
+               notes: val('esp' + n + '-notes') });
+  }
+
+  var today = fdToday();
+  var sess = fdRead('forge-sessions', []);
+  if (Object.prototype.toString.call(sess) !== '[object Array]') sess = [];
+  var mine = sess.filter(function(r){ return r.d === today; });
+  var estSum = 0, actSum = 0, metN = 0;
+  mine.forEach(function(r){ estSum += (r.est || 0); actSum += (r.act || 0); if (r.met) metN++; });
+
+  return {
+    d: today,
+    mood: selectedMood || '',
+    note: val('day-note'),
+    esp: esp,
+    workout: { type: selectedWorkout || '', mins: num('workout-duration'),
+               feel: num('workout-feel'), notes: val('workout-notes') },
+    nutrition: { cal: num('cal-in'), protein: num('protein'),
+                 carbs: num('carbs'), fat: num('fat'), notes: val('nutrition-notes') },
+    win: val('win'), miss: val('miss'), carry: val('carry'),
+    reminders: { done: Object.values(todoChecked).filter(Boolean).length, total: reminders.length },
+    t5: {
+      total: real.length,
+      done: real.filter(function(i){ return i.done; }).length,
+      keySet: keyItem ? 1 : 0,
+      keyDone: (keyItem && keyItem.done) ? 1 : 0,
+      items: real.map(function(i){
+        return { t: i.t, done: !!i.done, k: !!i.k, m: i.m || '', dw: i.dw || '',
+                 src: i.src || '', carry: i.c || 0 };
+      })
+    },
+    sessions: { n: mine.length, est: estSum, act: actSum, met: metN },
+    health: null,
+    saved: new Date().toISOString()
+  };
+}
+
+function saveDailyLog(){
+  var log = fdRead(K_DAILY, {});
+  var rec = collectDaily();
+  log[rec.d] = rec;
+  var keys = Object.keys(log).sort();
+  if (keys.length > 400){ var o = {}; keys.slice(-400).forEach(function(k){ o[k] = log[k]; }); log = o; }
+  fdWrite(K_DAILY, log);
+
+  /* attach this morning's health numbers once data.json answers */
+  fetch('data.json?t=' + Date.now())
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var w = d.welltory || {}, sl = d.sleep || {}, b = d.body_comp || {};
+      var h = {};
+      [['energy', w.energy], ['health', w.health], ['stress', w.stress],
+       ['sleep_score', sl.score], ['sleep_dur', sl.duration], ['sleep_hr', sl.hr_range],
+       ['weight', b.weight], ['body_fat', b.body_fat], ['muscle', b.muscle_mass],
+       ['bmi', b.bmi], ['visceral', b.visceral_fat]].forEach(function(p){
+        if (!deadReading(p[1])) h[p[0]] = p[1];
+      });
+      var lg = fdRead(K_DAILY, {});
+      if (lg[rec.d]){ lg[rec.d].health = h; fdWrite(K_DAILY, lg); }
+    })
+    .catch(function(){ /* offline: the journal is saved regardless */ });
+}
+
+/* one-time import of health recovered from the repo's git history */
+function backfillHealth(){
+  if (fdRead(K_BACKFILLED, false)) return;
+  fetch('content/health_history.json?t=' + Date.now())
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var days = d.days || {};
+      var log = fdRead(K_DAILY, {});
+      var n = 0;
+      Object.keys(days).forEach(function(k){
+        if (!log[k]) { log[k] = { d: k, health: days[k], backfilled: true }; n++; }
+        else if (!log[k].health){ log[k].health = days[k]; n++; }
+      });
+      if (n){ fdWrite(K_DAILY, log); }
+      fdWrite(K_BACKFILLED, true);
+      console.log('health backfill: ' + n + ' days');
+    })
+    .catch(function(){});
+}
+
+/* ---------- CSV export ---------- */
+var CSV_COLS = ['date','mood','sleep_score','sleep_dur','energy','health','stress',
+                'weight','body_fat','t5_total','t5_done','keystone_set','keystone_done',
+                'sessions','est_mins','act_mins','done_when_met','reminders_done','reminders_total',
+                'workout_type','workout_mins','workout_feel',
+                'calories','protein','carbs','fat',
+                'esp1_event','esp1_effort','esp1_success','esp1_progress',
+                'win','miss','carry','note'];
+
+function csvCell(v){
+  if (v === undefined || v === null) return '';
+  var s = String(v);
+  if (s.indexOf(',') >= 0 || s.indexOf('"') >= 0 || s.indexOf('\n') >= 0){
+    return '"' + s.replace(/"/g, '""').replace(/\n/g, ' ') + '"';
+  }
+  return s;
+}
+
+function buildCSV(){
+  var log = fdRead(K_DAILY, {});
+  var keys = Object.keys(log).sort();
+  var rows = [CSV_COLS.join(',')];
+  keys.forEach(function(k){
+    var r = log[k] || {};
+    var h = r.health || {}, t = r.t5 || {}, se = r.sessions || {},
+        w = r.workout || {}, nu = r.nutrition || {}, rm = r.reminders || {};
+    var e1 = (r.esp && r.esp[0]) || {};
+    rows.push([
+      k, r.mood, h.sleep_score, h.sleep_dur, h.energy, h.health, h.stress,
+      h.weight, h.body_fat, t.total, t.done, t.keySet, t.keyDone,
+      se.n, se.est, se.act, se.met, rm.done, rm.total,
+      w.type, w.mins, w.feel,
+      nu.cal, nu.protein, nu.carbs, nu.fat,
+      e1.event, e1.e, e1.s, e1.p,
+      r.win, r.miss, r.carry, r.note
+    ].map(csvCell).join(','));
+  });
+  return rows.join('\n');
+}
+
+function showCSV(){
+  var host = document.getElementById('csv-host');
+  if (!host) return;
+  if (host.innerHTML){ host.innerHTML = ''; return; }
+  var log = fdRead(K_DAILY, {});
+  var n = Object.keys(log).length;
+  var ta = document.createElement('textarea');
+  ta.className = 'csv-box';
+  ta.value = buildCSV();
+  ta.spellcheck = false;
+  var info = document.createElement('div');
+  info.className = 'csv-info';
+  info.textContent = n + ' days. Select all, copy, and paste into a spreadsheet.';
+  var copy = document.createElement('button');
+  copy.className = 'close-btn';
+  copy.textContent = 'Select all';
+  copy.onclick = function(){ ta.focus(); ta.select(); try { document.execCommand('copy'); } catch(e){} };
+  host.appendChild(info); host.appendChild(ta); host.appendChild(copy);
+}
+
 function finishDebrief() {
   saveTomorrow();
+  saveDailyLog();
   document.getElementById('debrief-flow').style.display = 'none';
   document.getElementById('clear-screen').classList.add('show');
   const doneCount = Object.values(todoChecked).filter(Boolean).length;
@@ -835,6 +1031,13 @@ function finishDebrief() {
   const carry = document.getElementById('carry')?.value;
   if (carry) { document.getElementById('carry-card').style.display='block'; document.getElementById('carry-display').textContent=carry; }
   renderScorecard();
+  try {
+    var _lg = fdRead(K_DAILY, {});
+    var _n = Object.keys(_lg).length;
+    var _el = document.getElementById('saved-note');
+    if (_el) _el.textContent = '\u2713 Tonight\u2019s journal is saved \u2014 mood, ESP, workout, nutrition, wins and misses. ' +
+                               _n + ' days on record.';
+  } catch(e){}
   setTomorrowWorkout();
 }
 

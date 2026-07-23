@@ -246,6 +246,8 @@ def fetch_events_structured(calendars, start, end):
     return [{"date": e["date"], "time": e["time"], "title": e["title"]} for e in all_events]
 
 
+CALENDAR_ERRORS = []
+
 SUBSCRIBED_ICS_URLS = [
     ("Physio Steveston", "https://physiosteveston.janeapp.com/ical/kl9n5cYxfi2zzYub3Mw7/appointments.ics"),
     ("Doctor", "https://p147-caldav.icloud.com/published/2/MjA4NzgzMDU5MjA4NzgzMKp8OzvkKcO0VBjXnAPWsZ3_SOkZblhgb63Ap9fXTp8mTVpP7f2Zhhi6oPiqkT8_u9GgW7cNm2tkWygB88NaKao"),
@@ -316,10 +318,106 @@ def fetch_ics_events(start_dt, end_dt):
     all_events.sort(key=lambda x: x[0])
     return [e[1] for e in all_events]
 
+def fetch_ics_structured(start_dt, end_dt):
+    """Same feeds as fetch_ics_events, but returns {date,time,title} dicts so
+    subscribed calendars reach data.json and the day planner, not just the
+    text lists on the brief."""
+    import urllib.request
+    import re as _re
+    import zoneinfo as _zi
+    from datetime import datetime, timezone as _tz
+    PT = _zi.ZoneInfo("America/Vancouver")
+    out = []
+
+    for feed_name, url in SUBSCRIBED_ICS_URLS:
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=10) as r:
+                raw = r.read().decode("utf-8", errors="ignore")
+        except Exception as e:
+            CALENDAR_ERRORS.append(f"{feed_name}: {type(e).__name__} {e}")
+            print(f"ICS fetch failed ({feed_name}): {e}")
+            continue
+
+        # unfold RFC5545 line continuations before parsing
+        raw = raw.replace("\r\n", "\n").replace("\n ", "").replace("\n\t", "")
+        found = 0
+        for block in raw.split("BEGIN:VEVENT")[1:]:
+            try:
+                summary = feed_name
+                dtstart_raw = ""
+                for line in block.splitlines():
+                    if line.startswith("SUMMARY") and not summary_set(summary, feed_name):
+                        pass
+                    if line.startswith("SUMMARY"):
+                        summary = line.split(":", 1)[-1].strip()
+                    elif line.startswith("DTSTART") and not dtstart_raw:
+                        dtstart_raw = line.split(":", 1)[-1].strip()
+                if not dtstart_raw:
+                    continue
+
+                if _re.match(r"^\d{8}$", dtstart_raw):
+                    d = datetime.strptime(dtstart_raw, "%Y%m%d").date()
+                    dt_sort = datetime.combine(d, datetime.min.time()).replace(tzinfo=PT)
+                    time_label = "All day"
+                elif dtstart_raw.endswith("Z"):
+                    dt_sort = datetime.strptime(dtstart_raw, "%Y%m%dT%H%M%SZ").replace(tzinfo=_tz.utc).astimezone(PT)
+                    time_label = dt_sort.strftime("%I:%M %p")
+                elif "T" in dtstart_raw and len(dtstart_raw) >= 15:
+                    dt_sort = datetime.strptime(dtstart_raw[:15], "%Y%m%dT%H%M%S").replace(tzinfo=PT)
+                    time_label = dt_sort.strftime("%I:%M %p")
+                else:
+                    continue
+
+                if start_dt <= dt_sort < end_dt:
+                    out.append({
+                        "date": dt_sort.strftime("%a %b %d"),
+                        "time": time_label,
+                        "title": summary,
+                        "_sort": dt_sort.isoformat(),
+                    })
+                    found += 1
+            except Exception:
+                continue
+        print(f"  ICS {feed_name}: {found} events in range")
+
+    return out
+
+
+def summary_set(current, feed_name):
+    return current != feed_name
+
+
+def dedupe_events(events):
+    """Same event arriving from both iCloud and a subscribed feed should appear
+    once. Match on date + time + a normalised title."""
+    seen = set()
+    out = []
+    for e in events:
+        title = (e.get("title") or "").strip().lower()
+        title = " ".join(title.split())
+        key = (e.get("date"), e.get("time"), title)
+        if key in seen:
+            continue
+        # also treat one title being a prefix of another as the same event
+        dup = False
+        for d0, t0, ti0 in seen:
+            if d0 == e.get("date") and t0 == e.get("time") and title and ti0:
+                if title.startswith(ti0) or ti0.startswith(title):
+                    dup = True
+                    break
+        if dup:
+            continue
+        seen.add(key)
+        out.append(e)
+    return out
+
+
 def get_calendar_events():
     """Fetch today, week, and 7-day structured events from iCloud via CalDAV."""
     if not ICLOUD_PASSWORD:
-        return {"today": "No iCloud password configured.", "week": "", "month": "", "week_structured": []}
+        CALENDAR_ERRORS.append("iCloud CalDAV: ICLOUD_PASSWORD secret is not set")
+        return {"today": "\u26A0 Calendar unavailable \u2014 ICLOUD_PASSWORD is not set", "week": "", "month": "", "week_structured": []}
     
     try:
         client = caldav.DAVClient(
@@ -354,6 +452,18 @@ def get_calendar_events():
         week_events = week_events + ics_week
         month_events = month_events + ics_month
 
+        # THE FIX: subscribed feeds must reach data.json and the day planner too,
+        # not just the text lists above.
+        ics_structured = fetch_ics_structured(today_start, week_end)
+        before = len(week_structured)
+        week_structured = week_structured + ics_structured
+        week_structured = dedupe_events(week_structured)
+        week_structured.sort(key=lambda e: (e.get("_sort") or ""))
+        for e in week_structured:
+            e.pop("_sort", None)
+        print(f"\u2713 Structured calendar: {before} iCloud + {len(ics_structured)} subscribed "
+              f"\u2192 {len(week_structured)} after dedupe")
+
         print(f"✓ Today: {len(today_events)} | Week: {len(week_events)} | Month: {len(month_events)} events (ICS: {len(ics_today)} today)")
 
         return {
@@ -365,8 +475,10 @@ def get_calendar_events():
 
     except Exception as e:
         import traceback; traceback.print_exc()
-        print(f"Calendar fetch failed: {e}")
-        return {"today": "Calendar unavailable.", "week": "", "month": "", "week_structured": []}
+        msg = f"{type(e).__name__}: {e}"
+        print(f"Calendar fetch failed: {msg}")
+        CALENDAR_ERRORS.append(f"iCloud CalDAV: {msg}")
+        return {"today": f"\u26A0 Calendar unavailable \u2014 {msg}", "week": "", "month": "", "week_structured": []}
 
 def push_calendar_to_jsonbin(week_structured):
     """Embed calendar data into data.json for Evening Debrief."""
@@ -1209,6 +1321,9 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
         pool_error_html = f'<div class="pool-error">CONTENT POOLS FAILED TO LOAD &mdash; showing fallbacks{_rows}</div>'
     else:
         pool_error_html = ""
+    if CALENDAR_ERRORS:
+        _crows = "".join(f"<div>&#9888; {e}</div>" for e in CALENDAR_ERRORS)
+        pool_error_html += f'<div class="pool-error">CALENDAR FEED PROBLEM &mdash; some events may be missing{_crows}</div>' 
 
     cal_json = json.dumps(week_structured or [])
     cal_today = calendar_events.get("today", "No events today.")

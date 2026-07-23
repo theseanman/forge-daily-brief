@@ -1,0 +1,205 @@
+{
+ "_meta": {
+  "note": "Health snapshots recovered from data.json git history, one row per day. Zero/blank sensor readings are omitted rather than recorded as 0, so a broken watch reads as missing data rather than a terrible night.",
+  "generated": "2026-07-23",
+  "days": 25
+ },
+ "days": {
+  "2026-06-08": {
+   "energy": 38,
+   "health": 20,
+   "stress": 71,
+   "sleep_score": 97,
+   "sleep_dur": "7h 43",
+   "sleep_hr": "51-72"
+  },
+  "2026-06-10": {
+   "energy": 39,
+   "health": 20,
+   "stress": 72,
+   "sleep_score": 97,
+   "sleep_dur": "7h02",
+   "sleep_hr": "48-72"
+  },
+  "2026-06-11": {
+   "energy": 26,
+   "health": 45,
+   "stress": 76,
+   "sleep_score": 96,
+   "sleep_dur": "7h23",
+   "sleep_hr": "52-73",
+   "weight": 201.8,
+   "body_fat": 26.2,
+   "muscle": 133.4,
+   "bmi": 28.8,
+   "visceral": 14
+  },
+  "2026-06-12": {
+   "energy": 45,
+   "health": 100,
+   "stress": 72,
+   "sleep_score": 92,
+   "sleep_dur": "7h55",
+   "sleep_hr": "48-69",
+   "weight": 197.4,
+   "body_fat": 28.2,
+   "muscle": 131.6,
+   "bmi": 25.8
+  },
+  "2026-07-02": {
+   "energy": 45,
+   "health": 100,
+   "stress": 72,
+   "sleep_score": 92,
+   "sleep_dur": "7h55",
+   "sleep_hr": "48-69",
+   "weight": 197.4,
+   "body_fat": 28.2,
+   "muscle": 131.6,
+   "bmi": 25.8
+  },
+  "2026-07-03": {
+   "energy": 72,
+   "health": 45,
+   "stress": 28,
+   "sleep_score": 96,
+   "sleep_dur": "7h 57m",
+   "sleep_hr": "52-82"
+  },
+  "2026-07-04": {
+   "energy": 48,
+   "health": 100,
+   "stress": 40,
+   "sleep_score": 97,
+   "sleep_dur": "7h 43",
+   "sleep_hr": "48-73"
+  },
+  "2026-07-05": {
+   "energy": 82,
+   "health": 45,
+   "stress": 24,
+   "sleep_score": 95,
+   "sleep_dur": "8h 11m",
+   "sleep_hr": "53-87"
+  },
+  "2026-07-07": {
+   "energy": 43,
+   "health": 45,
+   "stress": 66,
+   "sleep_score": 99,
+   "sleep_dur": "9h 36",
+   "sleep_hr": "56-82"
+  },
+  "2026-07-08": {
+   "energy": 20,
+   "health": 45,
+   "stress": 90,
+   "sleep_dur": "  "
+  },
+  "2026-07-09": {
+   "energy": 43,
+   "health": 45,
+   "stress": 66,
+   "sleep_score": 80,
+   "sleep_dur": "6h",
+   "sleep_hr": "52-78"
+  },
+  "2026-07-10": {
+   "energy": 49,
+   "health": 45,
+   "stress": 46
+  },
+  "2026-07-11": {
+   "energy": 39,
+   "health": 45,
+   "stress": 43,
+   "sleep_score": 93,
+   "sleep_dur": "9h 40m ",
+   "sleep_hr": "50-68"
+  },
+  "2026-07-12": {
+   "energy": 48,
+   "health": 45,
+   "stress": 68,
+   "sleep_score": 93,
+   "sleep_dur": "10h 41m",
+   "sleep_hr": "49-90"
+  },
+  "2026-07-13": {
+   "energy": 48,
+   "health": 45,
+   "stress": 68,
+   "sleep_score": 93,
+   "sleep_dur": "10h 41m",
+   "sleep_hr": "49-90"
+  },
+  "2026-07-14": {
+   "energy": 32,
+   "health": 45,
+   "stress": 80,
+   "sleep_score": 98,
+   "sleep_dur": "8h 04m",
+   "sleep_hr": "52-86"
+  },
+  "2026-07-15": {
+   "energy": 32,
+   "health": 45,
+   "stress": 80,
+   "sleep_score": 98,
+   "sleep_dur": "8h 04m",
+   "sleep_hr": "52-86"
+  },
+  "2026-07-16": {
+   "energy": 42,
+   "health": 45,
+   "stress": 72,
+   "sleep_score": 87,
+   "sleep_dur": "7h 12m",
+   "sleep_hr": "52-90"
+  },
+  "2026-07-17": {
+   "energy": 45,
+   "health": 45,
+   "stress": 60,
+   "sleep_score": 98,
+   "sleep_dur": "7h 36m",
+   "sleep_hr": "52-73"
+  },
+  "2026-07-18": {
+   "energy": 45,
+   "health": 45,
+   "stress": 60,
+   "sleep_score": 98,
+   "sleep_dur": "7h 36m",
+   "sleep_hr": "52-73"
+  },
+  "2026-07-19": {
+   "energy": 45,
+   "health": 45,
+   "stress": 60,
+   "sleep_score": 98,
+   "sleep_dur": "7h 36m",
+   "sleep_hr": "52-73"
+  },
+  "2026-07-20": {
+   "energy": 37,
+   "health": 100,
+   "stress": 78
+  },
+  "2026-07-21": {
+   "energy": 56,
+   "health": 100,
+   "stress": 43
+  },
+  "2026-07-22": {
+   "energy": 66,
+   "health": 100,
+   "stress": 36
+  },
+  "2026-07-23": {
+   "energy": 27,
+   "health": 100,
+   "stress": 85
+  }
+ }
+}
