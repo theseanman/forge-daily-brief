@@ -1,0 +1,39 @@
+{
+  "_meta": {
+    "name": "The Colonel's Take",
+    "count": 30,
+    "note": "ORIGINAL lines written in Hannibal Smith's voice. These are NOT quotations from The A-Team and must never be presented as such. Add freely — keys: line, tag."
+  },
+  "entries": [
+    {"line": "A plan doesn't come together because it's clever. It comes together because somebody kept showing up while it was still ugly.", "tag": "Execution"},
+    {"line": "Everybody wants the part where it works. Nobody signs up for the eleven weeks before that.", "tag": "Patience"},
+    {"line": "You don't need the whole road lit. You need the next hundred feet and a full tank.", "tag": "Sequencing"},
+    {"line": "Being underestimated is a position, not an insult. Use the cover while you've got it.", "tag": "Positioning"},
+    {"line": "If the plan only survives when everything goes right, that's not a plan. That's a wish with a timeline.", "tag": "Planning"},
+    {"line": "Move slow enough that you're deciding, fast enough that you're not negotiating with yourself.", "tag": "Tempo"},
+    {"line": "The mission doesn't care how you feel about it at six in the morning.", "tag": "Discipline"},
+    {"line": "Improvise the method. Never improvise the objective.", "tag": "Clarity"},
+    {"line": "Most operations don't fail at the hard part. They fail because nobody did the boring part first.", "tag": "Preparation"},
+    {"line": "You want to know if a plan's any good? Ask what happens when the first piece breaks. Because it will.", "tag": "Planning"},
+    {"line": "Anybody can hold the line on a good day. The whole point is what you do on the bad one.", "tag": "Consistency"},
+    {"line": "Quit adding steps. Every step is somewhere it can come apart.", "tag": "Simplicity"},
+    {"line": "There's a difference between waiting and stalling. One has a trigger. The other has an excuse.", "tag": "Decision"},
+    {"line": "You don't win by being the loudest in the room. You win by being the one who already knows what happens next.", "tag": "Preparation"},
+    {"line": "Small team, clear objective, nobody guessing. That beats numbers every time.", "tag": "Leverage"},
+    {"line": "If you can't say the objective in one sentence, you haven't got one yet.", "tag": "Clarity"},
+    {"line": "Take the shot you've got. The perfect one isn't coming, and the window's closing.", "tag": "Decision"},
+    {"line": "Reputation is built on the jobs nobody watched you finish.", "tag": "Integrity"},
+    {"line": "When it goes sideways — and it goes sideways — the only question is how fast you stop arguing with reality.", "tag": "Adaptation"},
+    {"line": "Rest is part of the operation. A tired man makes expensive decisions.", "tag": "Recovery"},
+    {"line": "Don't confuse activity with progress. Plenty of men are busy going nowhere at speed.", "tag": "Focus"},
+    {"line": "You've got one hard thing today. Do it first, while you've still got something to spend.", "tag": "Priority"},
+    {"line": "The other side is counting on you giving up in week three. Be inconvenient.", "tag": "Persistence"},
+    {"line": "Contingency isn't pessimism. It's what lets you commit hard to plan A.", "tag": "Planning"},
+    {"line": "Nobody's coming to hand you the assignment. Pick the objective yourself and get moving.", "tag": "Ownership"},
+    {"line": "A promise you keep to yourself when nobody's checking — that's the whole thing right there.", "tag": "Integrity"},
+    {"line": "Know which fights are worth having. Most of them aren't, and every one costs you the same.", "tag": "Selection"},
+    {"line": "Surprise isn't luck. It's preparation the other side didn't see you doing.", "tag": "Preparation"},
+    {"line": "You're not behind. You're partway through something most people never start.", "tag": "Perspective"},
+    {"line": "Finish it. An unfinished operation teaches you nothing and costs you everything you already put in.", "tag": "Completion"}
+  ]
+}
