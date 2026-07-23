@@ -1,0 +1,345 @@
+{
+  "_meta": {
+    "name": "Strategy of the Day",
+    "count": 30,
+    "categories": ["Positioning", "Leverage", "Sequencing", "Asymmetry", "Distribution", "Attrition vs Manoeuvre"],
+    "note": "Choosing where to compete and how to win. Every entry must land on a concrete move available in the next seven days — if the focus line can't name one, the entry doesn't ship. Keys: name, category, what, examples[], focus."
+  },
+  "entries": [
+    {
+      "name": "Choose What You Refuse To Be",
+      "category": "Positioning",
+      "what": "Position is defined more by exclusion than inclusion. A thing that serves everyone is chosen by no one, because nobody can tell whether it was built for them.",
+      "examples": [
+        "Forge is not a general self-help framework. It's for people who want measurable behaviour change and will actually run the protocol — which means it is explicitly not for people who want inspiration.",
+        "Saying 'this isn't for beginners' loses you nobody who would have stayed and gains you everyone who was looking for exactly that.",
+        "A book that refuses a chapter is easier to describe than one that includes it."
+      ],
+      "focus": "Write one sentence beginning 'Forge is not for...' and see whether it makes the offer sharper or just smaller."
+    },
+    {
+      "name": "The Specific Beats the General",
+      "category": "Positioning",
+      "what": "Broad claims compete with everyone and are believed by no one. Narrow, concrete claims are checkable, memorable, and much harder to argue with.",
+      "examples": [
+        "'Improve your life' competes with a thousand books. 'A six-week protocol to change one behaviour, with the data to prove it moved' competes with almost nothing.",
+        "'Experienced teacher' says nothing. 'Twenty years teaching English to newcomers in one of the most linguistically diverse districts in Canada' is a position.",
+        "The specific version is also the one that survives being repeated by somebody else."
+      ],
+      "focus": "Take your one-line description of Forge and make it twice as specific. Does it get stronger or weaker?"
+    },
+    {
+      "name": "Authority Comes From the Scar",
+      "category": "Positioning",
+      "what": "Credibility attaches to what you have actually done and paid for, not what you have read. The lived part is defensible; the researched part is available to anyone.",
+      "examples": [
+        "Your authority on behaviour change comes from running the protocols on yourself with real data, not from citing the literature.",
+        "The chapter that will land hardest is the one about something that didn't work.",
+        "Where the material comes from research rather than experience, say so — the honesty is itself a differentiator in a field built on overclaiming."
+      ],
+      "focus": "Find one place in your material where you're borrowing authority. Either earn it or label it."
+    },
+    {
+      "name": "Category of One",
+      "category": "Positioning",
+      "what": "Competing inside an established category means competing on the category's terms. Combining two things you're credible in creates a space with no incumbents.",
+      "examples": [
+        "Behaviour-change protocols are crowded. Behaviour-change protocols built by a working teacher and validated with personal action research is a much emptier room.",
+        "The combination doesn't have to be exotic — it has to be genuinely yours and hard to assemble.",
+        "Two moderate strengths that rarely co-occur beat one strength you're merely good at."
+      ],
+      "focus": "Name the two things you combine that almost nobody else does. Is that combination visible on your front page?"
+    },
+    {
+      "name": "Price Signals Position",
+      "category": "Positioning",
+      "what": "Price is not just revenue, it's a claim about who this is for and how serious it is. Underpricing signals low stakes and attracts people who won't do the work.",
+      "examples": [
+        "A free protocol gets downloaded and ignored. A paid one gets run — which matters more than the money when you need case studies.",
+        "Cheap attracts the customers most likely to complain and least likely to finish.",
+        "The price you charge sets the expectation of what you'll deliver, in both directions."
+      ],
+      "focus": "Name the price you'd charge if you believed it worked. Why aren't you charging it?"
+    },
+
+    {
+      "name": "Distribution Beats Production",
+      "category": "Leverage",
+      "what": "Most builders over-invest in making the thing and under-invest in getting it to people. A mediocre product with a channel beats an excellent one without.",
+      "examples": [
+        "Another chapter is worth less right now than ten people who will read the chapters you have.",
+        "The Substack matters more than the book while the book is unfinished, because it builds the audience the book will need.",
+        "Every hour on the artifact assumes distribution is solved. Check whether it is."
+      ],
+      "focus": "Name one thing you made this month that nobody saw. Where should it have gone?"
+    },
+    {
+      "name": "Build Once, Sell Twice",
+      "category": "Leverage",
+      "what": "Work that can only be delivered by you being present doesn't scale past your calendar. Work captured in an artifact keeps earning while you sleep.",
+      "examples": [
+        "A workshop delivered live is trading hours. The same content recorded and sold is leverage.",
+        "The ELL units you've built are an asset that keeps working next year, and the year after, in someone else's classroom.",
+        "Coaching one person is income. The protocol that lets a hundred coach themselves is a business."
+      ],
+      "focus": "Name one thing you did this week that you'll have to do again. Can it be captured instead?"
+    },
+    {
+      "name": "Systems Over Effort",
+      "category": "Leverage",
+      "what": "Effort is capped by your energy and doesn't accumulate. A system produces output without proportional input and keeps working when you're depleted.",
+      "examples": [
+        "The morning brief runs whether or not you feel like being organised. That's the whole point of it.",
+        "A publishing schedule survives a bad week. Motivation does not.",
+        "Every recurring decision you can convert into a default buys back the attention it was consuming."
+      ],
+      "focus": "Name one recurring decision you made again this week. Turn it into a default."
+    },
+    {
+      "name": "Borrowed Audience",
+      "category": "Leverage",
+      "what": "Building an audience from zero is the slowest path. Appearing in front of audiences someone else has already assembled is faster and compounds into your own.",
+      "examples": [
+        "One guest post in front of an existing readership can outperform six months of publishing to nobody.",
+        "Podcasts, newsletters, and communities in adjacent niches are all assembled audiences with a content appetite.",
+        "The ask is smaller than it feels — most people with an audience are looking for material."
+      ],
+      "focus": "Name three people or publications with an audience you'd want. Contact one this week."
+    },
+    {
+      "name": "Permissionless Leverage",
+      "category": "Leverage",
+      "what": "Some leverage requires someone's permission — capital, headcount, a publisher. Some doesn't — writing, code, media. The permissionless kind is where a solo operator with a full-time job can actually operate.",
+      "examples": [
+        "You can't hire a team. You can publish tonight without asking anyone.",
+        "You can't buy distribution. You can build a system that runs while you teach.",
+        "Every hour spent seeking permission is an hour not spent on the leverage that doesn't require it."
+      ],
+      "focus": "Are you waiting on anyone's approval for something you could just do?"
+    },
+
+    {
+      "name": "What Has To Be True First",
+      "category": "Sequencing",
+      "what": "Most plans fail because a later step assumed something an earlier step never established. Working backward from the outcome exposes the assumption before it costs you.",
+      "examples": [
+        "For the book to sell, an audience has to exist. For the audience to exist, you have to publish consistently. So the book isn't first.",
+        "For pilot case studies to be credible, real people have to complete a full cycle. That takes weeks — so recruitment can't wait for the material to be perfect.",
+        "For the teaching exit to be safe, replacement income has to be demonstrated, not projected."
+      ],
+      "focus": "Take your biggest goal. Name the one thing that has to be true before it's possible. Is that what you're working on?"
+    },
+    {
+      "name": "Proof Before Scale",
+      "category": "Sequencing",
+      "what": "Scaling something unproven multiplies a mistake. Get one instance genuinely working before building the machine that produces many.",
+      "examples": [
+        "Ten pilot participants who finish and report results is worth more than a polished course nobody has tested.",
+        "One essay that clearly landed tells you more about what to write than twenty that didn't.",
+        "Build the thing that doesn't scale first — it's how you find out what the scaled version needs to do."
+      ],
+      "focus": "What are you scaling that hasn't yet worked once? Go get the one."
+    },
+    {
+      "name": "The Boring Prerequisite",
+      "category": "Sequencing",
+      "what": "Most exciting work sits on top of an unglamorous foundation that nobody wants to do. The foundation is usually the actual bottleneck.",
+      "examples": [
+        "The backlog triage isn't interesting, and until it's done the daily five can't pull from it.",
+        "Nobody wants to write the email list welcome sequence. It determines what happens to every subscriber you win.",
+        "The unsexy work is usually where the compounding starts."
+      ],
+      "focus": "Name the boring prerequisite you've been stepping around. Schedule it this week."
+    },
+    {
+      "name": "Don't Quit On A Bad Week",
+      "category": "Sequencing",
+      "what": "Decisions made at the low point of a cycle are systematically worse, because the low point is when the evidence looks worst and your judgement is most depleted.",
+      "examples": [
+        "Month four is when every side project looks like a mistake. That's a feature of the timeline, not information about the project.",
+        "Set the review date in advance, when you're clear-headed, and hold to it rather than reassessing every time it's hard.",
+        "The rule isn't 'never quit' — it's 'never quit on the day you most want to'."
+      ],
+      "focus": "Set a date to review one project honestly. Then stop reassessing it until then."
+    },
+    {
+      "name": "Sequence By Constraint",
+      "category": "Sequencing",
+      "what": "Order your work by what's blocking, not by what's ready. Doing available work while the bottleneck sits untouched feels productive and moves nothing.",
+      "examples": [
+        "If time is the constraint, more ideas don't help. If ideas are the constraint, more time doesn't.",
+        "Writing more units while the deployment route is broken just builds inventory.",
+        "The most-blocked thing should get the best hours of your day, not the leftovers."
+      ],
+      "focus": "What's blocked right now? Give it your best hour tomorrow, not your last."
+    },
+
+    {
+      "name": "Capped Downside, Uncapped Upside",
+      "category": "Asymmetry",
+      "what": "Look for bets where the worst case is survivable and bounded, and the best case isn't. You can be wrong most of the time and still come out well ahead.",
+      "examples": [
+        "Publishing an essay costs two hours and can't hurt you. It might do nothing, or it might find the reader who changes the trajectory.",
+        "Asking someone to join the pilot costs an email and mild awkwardness. Yes changes things materially.",
+        "Building while employed is the asymmetry — the salary caps the downside so the upside can stay open."
+      ],
+      "focus": "Name one bet available this week where the worst case is embarrassment and the best case is real."
+    },
+    {
+      "name": "The Solo Operator's Edge",
+      "category": "Asymmetry",
+      "what": "One person can't outspend or outstaff an institution. What one person can do is decide in an hour what takes a company a quarter, and serve a niche too small for anyone else to bother with.",
+      "examples": [
+        "A publisher needs a market of fifty thousand. You need two hundred people who'll pay properly.",
+        "You can change direction on Tuesday. A company can't.",
+        "Being small isn't a handicap to overcome — it's the specific advantage to press."
+      ],
+      "focus": "Where are you competing on someone else's terms instead of pressing the speed advantage?"
+    },
+    {
+      "name": "Small Bets, Many Shots",
+      "category": "Asymmetry",
+      "what": "When outcomes are unpredictable and individual costs are low, the number of attempts matters more than the quality of any one. You cannot pick the winner in advance, so buy more tickets.",
+      "examples": [
+        "Which essay finds an audience is essentially unpredictable. Volume is the only reliable strategy.",
+        "One big launch is a single draw. Twelve smaller ones is twelve draws with feedback between.",
+        "This argues against perfectionism on any individual piece — the polish costs you attempts."
+      ],
+      "focus": "Where are you making one big bet that should be five small ones?"
+    },
+    {
+      "name": "Cheap Tests First",
+      "category": "Asymmetry",
+      "what": "Before committing expensive resources, find the cheapest possible test of the assumption the commitment rests on. Most expensive failures were preceded by an available cheap test.",
+      "examples": [
+        "Before writing a course, sell the outline and see whether anyone buys.",
+        "Before rebuilding a system, check whether the problem is the system or how you're using it.",
+        "The cheap test is usually asking people directly rather than inferring."
+      ],
+      "focus": "What are you about to invest heavily in? What's the two-hour version that tests the assumption?"
+    },
+    {
+      "name": "Optionality Has a Price",
+      "category": "Asymmetry",
+      "what": "Keeping options open has value, but it isn't free — every option held is attention divided and commitment withheld. At some point the option costs more than the certainty would.",
+      "examples": [
+        "Running four projects preserves flexibility and guarantees none of them gets the concentration to work.",
+        "Not deciding is a decision, and usually the expensive one.",
+        "The point of optionality is to eventually exercise it."
+      ],
+      "focus": "Which open option are you paying for and no longer intend to use? Close it."
+    },
+
+    {
+      "name": "Nobody Finds You By Accident",
+      "category": "Distribution",
+      "what": "Discovery is not a passive process. Work that isn't deliberately placed in front of people does not get found, regardless of quality.",
+      "examples": [
+        "Publishing on a platform is not distribution. It's storage with a URL.",
+        "Every piece needs a specific answer to 'who sees this, and how'.",
+        "The best work you've done is probably the least seen, because you assumed quality would carry it."
+      ],
+      "focus": "For the next thing you publish, write down where it goes before you write it."
+    },
+    {
+      "name": "Own the Channel",
+      "category": "Distribution",
+      "what": "An audience on a platform is rented and can be taken away by an algorithm change. An email list is owned. Convert rented attention to owned attention at every opportunity.",
+      "examples": [
+        "Social reach is borrowed. The list is yours and travels with you.",
+        "Every piece of content should have one job beyond being read: moving someone one step closer to owned.",
+        "Platforms change their terms. Lists don't."
+      ],
+      "focus": "Does every piece you publish have a path to the list? Add one to the last three."
+    },
+    {
+      "name": "One Reader at a Time",
+      "category": "Distribution",
+      "what": "Early audiences are built individually, not in waves. The unscalable work of talking to individual people is what produces the first hundred, and the first hundred is what makes the rest possible.",
+      "examples": [
+        "Ten genuine conversations beat a thousand impressions at this stage.",
+        "The people who reply to you early become the ones who recommend you later.",
+        "This is the part everyone skips because it doesn't look like progress."
+      ],
+      "focus": "Reply properly to one person this week who engaged with something you made."
+    },
+    {
+      "name": "Repurpose Relentlessly",
+      "category": "Distribution",
+      "what": "Almost nobody saw it the first time. The same idea in a different form and place is not repetition to your audience — it's the first time for most of them.",
+      "examples": [
+        "A chapter becomes three essays, which become a talk, which becomes a module.",
+        "The constraint on your output isn't ideas, it's the assumption that each one gets used once.",
+        "Creators who feel prolific are usually recycling well, not generating more."
+      ],
+      "focus": "Take one thing you've already written. Publish it somewhere else this week in a different shape."
+    },
+    {
+      "name": "Ask Directly",
+      "category": "Distribution",
+      "what": "Most people never make the direct ask — to share, to join, to buy — and then conclude there was no demand. The ask is the cheapest and most reliably skipped step.",
+      "examples": [
+        "'Would you be willing to run this and tell me what happened?' is a sentence most people never send.",
+        "People who like your work generally want to help and don't know how. Tell them.",
+        "The awkwardness of asking is smaller than the cost of not knowing."
+      ],
+      "focus": "Make one direct ask this week that you've been circling."
+    },
+
+    {
+      "name": "Don't Fight Where They're Strong",
+      "category": "Attrition vs Manoeuvre",
+      "what": "Attacking an incumbent at their point of strength means winning on their terms with fewer resources. Find the ground they can't or won't defend.",
+      "examples": [
+        "You cannot outproduce a publishing house. You can serve two hundred people in a way that isn't worth their overhead.",
+        "Don't compete on production values. Compete on specificity and honesty, which cost you nothing and cost them their brand safety.",
+        "The unglamorous niche is unglamorous because bigger players declined it."
+      ],
+      "focus": "Where are you competing head-on? What ground is genuinely undefended?"
+    },
+    {
+      "name": "Tempo Beats Force",
+      "category": "Attrition vs Manoeuvre",
+      "what": "John Boyd's insight: whoever cycles through observe, orient, decide, act faster forces the other side to respond to a situation that has already changed. Speed of iteration beats size of resource.",
+      "examples": [
+        "Publish, read the response, adjust, publish again — in the time a larger operation is still in approvals.",
+        "Your action research cycles in two weeks. An institutional study takes two years.",
+        "The advantage isn't working harder. It's shortening the loop between doing and learning."
+      ],
+      "focus": "Where is your feedback loop longest? Cut it in half this week."
+    },
+    {
+      "name": "The Indirect Approach",
+      "category": "Attrition vs Manoeuvre",
+      "what": "Liddell Hart's argument: the direct assault on a prepared position is the most expensive route to any objective. The way in is usually round the side, through something adjacent nobody is guarding.",
+      "examples": [
+        "Selling a framework directly is hard. Being useful publicly until people ask what else you have is easier and slower.",
+        "The route out of teaching may run through teaching-adjacent work rather than a clean break.",
+        "Frontal effort feels virtuous, which is part of why it persists past the point of usefulness."
+      ],
+      "focus": "What are you attacking head-on? What's the adjacent route in?"
+    },
+    {
+      "name": "Know When Not To Fight",
+      "category": "Attrition vs Manoeuvre",
+      "what": "The strategic skill isn't winning engagements, it's declining the ones that cost more than they return. Every fight consumes the same finite attention regardless of its importance.",
+      "examples": [
+        "Most staffroom disputes cost real energy and change nothing. Decline them.",
+        "Not every criticism deserves a response. Answering elevates it.",
+        "Choosing your ground is most of the work. Everything after is execution."
+      ],
+      "focus": "Name a fight you're currently in. What does winning it actually get you?"
+    },
+    {
+      "name": "Concentrate, Don't Spread",
+      "category": "Attrition vs Manoeuvre",
+      "what": "Force divided across several objectives is usually insufficient for any of them. Concentration at a single decisive point beats presence everywhere.",
+      "examples": [
+        "Four projects at twenty-five percent each produces four unfinished things.",
+        "One channel done properly beats five done adequately.",
+        "The hardest strategic act for a curious person is deliberately neglecting something interesting."
+      ],
+      "focus": "Name the one thing that would matter most if it moved. What are you willing to neglect this week to move it?"
+    }
+  ]
+}
