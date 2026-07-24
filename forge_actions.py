@@ -320,7 +320,7 @@ SUBSCRIBED_ICS_URLS = [
     ("Doctor", "https://p147-caldav.icloud.com/published/2/MjA4NzgzMDU5MjA4NzgzMKp8OzvkKcO0VBjXnAPWsZ3_SOkZblhgb63Ap9fXTp8mTVpP7f2Zhhi6oPiqkT8_u9GgW7cNm2tkWygB88NaKao"),
     ("UFC Events", "https://raw.githubusercontent.com/clarencechaan/ufc-cal/ics/UFC.ics"),
     ("Austria Vancouver", "https://austriavancouverclub.ca/?post_type=tribe_events&ical=1&eventDisplay=list"),
-    ("Ringette", "https://api3.rampinteractive.com/teamapp/Calendar/GetCalendar/America-Vancouver/3178874,3178962/0"),
+    # ("Ringette", "https://api3.rampinteractive.com/teamapp/Calendar/GetCalendar/America-Vancouver/3178874,3178962/0"),  # dead link, 403 confirmed Jul 24 2026 — off-season; re-grab from RAMP when the 2026-27 schedule posts
     ("Doctor 2", "https://p147-caldav.icloud.com/published/2/MjA4NzgzMDU5MjA4NzgzMKp8OzvkKcO0VBjXnAPWsZ3QfUpZTMmqDhS1RS2Q4Unql2HwH_zVrF_S7pswdX5EkPscxgI5CxoYg1ulgXc7ME0"),
     ("Richmond Blundell Physio", "https://richmondblundellphysio.janeapp.com/ical/yphai5OwEVtmTOppT6Fx/appointments.ics"),
     ("ONE Championship", "https://calendar.onefc.com/ONE-Championship-events.ics"),
