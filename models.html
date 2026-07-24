@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Library — Models &amp; Strategies</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a1420;
+    --panel: #14243a;
+    --panel-up: #1a2e4a;
+    --line: #24405f;
+    --electric: #4a9de8;
+    --gold: #f5b83d;
+    --teal: #38c9ae;
+    --violet: #9b7fe8;
+    --coral: #f0876b;
+    --rose: #e86a8a;
+    --text: #eaf1fb;
+    --muted: #8fa5c4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background:
+      radial-gradient(1100px 500px at 85% -10%, rgba(74,157,232,0.16), transparent 60%),
+      radial-gradient(900px 480px at -10% 30%, rgba(155,127,232,0.10), transparent 55%),
+      var(--ink);
+    color: var(--text);
+    font-family: -apple-system, 'Segoe UI', Tahoma, sans-serif;
+    min-height: 100vh;
+    padding: 22px 16px 60px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+
+  /* ── Header ─────────────────────────────────────────── */
+  .eyebrow { font-size: 11px; letter-spacing: 3px; color: var(--electric); font-weight: 700; }
+  h1 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 40px; font-weight: 700; line-height: 1.05;
+    margin: 6px 0 8px;
+  }
+  .thesis { color: var(--muted); font-size: 14px; line-height: 1.6; max-width: 46ch; }
+  .thesis b { color: var(--text); }
+
+  /* ── Loud failure ───────────────────────────────────── */
+  .fail {
+    display: none; background: #5a1420; border: 2px solid #ff5470;
+    border-radius: 10px; padding: 12px 14px; margin: 16px 0;
+    color: #ffd9e0; font-size: 13px; line-height: 1.5; font-weight: 600;
+  }
+  .fail.show { display: block; }
+
+  /* ── Search + filters ───────────────────────────────── */
+  .tools { position: sticky; top: 0; z-index: 5; padding: 14px 0 10px;
+    background: linear-gradient(var(--ink) 78%, transparent); }
+  .search {
+    width: 100%; padding: 12px 14px; font-size: 16px;
+    background: var(--panel); color: var(--text);
+    border: 1px solid var(--line); border-radius: 10px; outline: none;
+  }
+  .search:focus { border-color: var(--electric); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .chip {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.4px;
+    padding: 5px 10px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--line); color: var(--muted); background: var(--panel);
+    user-select: none; -webkit-user-select: none;
+  }
+  .chip.on { color: var(--ink); }
+
+  /* ── Sections ───────────────────────────────────────── */
+  .section-head {
+    display: flex; align-items: baseline; gap: 10px;
+    margin: 30px 0 12px; border-bottom: 1px solid var(--line); padding-bottom: 8px;
+  }
+  .section-head h2 { font-family: 'Fraunces', Georgia, serif; font-size: 24px; font-weight: 700; }
+  .section-head .count { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .section-head .spine { width: 14px; height: 14px; border-radius: 4px; }
+
+  /* ── Entry cards ────────────────────────────────────── */
+  .entry {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    margin-bottom: 10px; overflow: hidden; border-left-width: 4px;
+  }
+  .entry.models { border-left-color: var(--teal); }
+  .entry.strategy { border-left-color: var(--violet); }
+  .entry-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 13px 14px; cursor: pointer;
+  }
+  .entry-name { font-family: 'Fraunces', Georgia, serif; font-size: 17px; font-weight: 700; }
+  .entry-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+    padding: 3px 8px; border-radius: 999px; white-space: nowrap; color: var(--ink); }
+  .entry-body { display: none; padding: 0 14px 14px; }
+  .entry.open .entry-body { display: block; }
+  .entry.open { background: var(--panel-up); }
+  .origin { font-size: 11px; color: var(--muted); margin-bottom: 8px; letter-spacing: 0.3px; }
+  .what { font-size: 14px; line-height: 1.65; margin-bottom: 10px; }
+  .ex { font-size: 13px; line-height: 1.6; color: var(--muted);
+    padding-left: 14px; position: relative; margin-bottom: 6px; }
+  .ex::before { content: "—"; position: absolute; left: 0; color: var(--electric); }
+  .focus {
+    margin-top: 12px; padding: 10px 12px; border-left: 3px solid var(--gold);
+    background: rgba(245,184,61,0.08); border-radius: 0 8px 8px 0;
+    font-size: 14px; line-height: 1.55;
+  }
+  .focus .label { display: block; font-size: 10px; letter-spacing: 2px;
+    color: var(--gold); font-weight: 700; margin-bottom: 4px; }
+  .copy-btn {
+    margin-top: 10px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+    background: none; border: 1px solid var(--line); color: var(--muted);
+    border-radius: 8px; padding: 6px 10px; cursor: pointer;
+  }
+  .copy-btn:active { border-color: var(--electric); color: var(--electric); }
+  .none { color: var(--muted); font-size: 13px; padding: 10px 2px; display: none; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .entry { transition: background 0.15s ease; }
+  }
+  @media (min-width: 700px) { h1 { font-size: 52px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">FORGE FIELD LIBRARY</div>
+  <h1>The Library</h1>
+  <div class="thesis" id="thesis">Loading the pools&hellip;</div>
+
+  <div class="fail" id="fail"></div>
+
+  <div class="tools">
+    <input class="search" id="search" type="search" placeholder="Search models and strategies&hellip;" autocomplete="off">
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <div class="section-head">
+    <div class="spine" style="background:var(--teal)"></div>
+    <h2>Mental Models</h2>
+    <span class="count" id="count-models"></span>
+  </div>
+  <div id="list-models"></div>
+  <div class="none" id="none-models">No models match.</div>
+
+  <div class="section-head">
+    <div class="spine" style="background:var(--violet)"></div>
+    <h2>Strategies</h2>
+    <span class="count" id="count-strategy"></span>
+  </div>
+  <div id="list-strategy"></div>
+  <div class="none" id="none-strategy">No strategies match.</div>
+
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var CAT_COLORS = {
+    'Positioning': 'var(--gold)',
+    'Leverage': 'var(--teal)',
+    'Sequencing': 'var(--electric)',
+    'Asymmetry': 'var(--violet)',
+    'Distribution': 'var(--coral)',
+    'Attrition vs Manoeuvre': 'var(--rose)'
+  };
+  var state = { models: [], strategy: [], q: '', cat: null };
+
+  function esc(s){
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function fail(name, err){
+    var f = document.getElementById('fail');
+    f.textContent = 'CONTENT POOLS FAILED TO LOAD \u2014 ' + name + ': ' + err;
+    f.classList.add('show');
+  }
+
+  function loadPool(file, key, done){
+    fetch('content/' + file, { cache: 'no-store' })
+      .then(function(r){
+        if(!r.ok) throw new Error('HTTP ' + r.status);
+        return r.text();
+      })
+      .then(function(t){
+        var j;
+        try { j = JSON.parse(t); }
+        catch(e){ throw new Error('JSON parse: ' + e.message); }
+        if(!j.entries || !j.entries.length) throw new Error('no entries array');
+        state[key] = j.entries;
+        done(null);
+      })
+      .catch(function(e){ fail(file, e.message); done(e); });
+  }
+
+  function entryText(e, kind){
+    var lines = [e.name.toUpperCase()];
+    lines.push(kind === 'models' ? (e.origin || '') : (e.category || ''));
+    lines.push('');
+    lines.push(e.what || '');
+    lines.push('');
+    (e.examples || []).forEach(function(x){ lines.push('\u2014 ' + x); });
+    lines.push('');
+    lines.push("TODAY'S MOVE: " + (e.focus || ''));
+    return lines.join('\n');
+  }
+
+  function copyEntry(btn, e, kind){
+    var txt = entryText(e, kind);
+    function ok(){ btn.textContent = 'COPIED'; setTimeout(function(){ btn.textContent = 'COPY AS TEXT'; }, 1400); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(ok, function(){ window.prompt('Copy:', txt); });
+    } else { window.prompt('Copy:', txt); }
+  }
+
+  function matches(e){
+    if (state.cat && (e.category || '') !== state.cat) return false;
+    if (!state.q) return true;
+    var hay = (e.name + ' ' + (e.origin||'') + ' ' + (e.category||'') + ' ' +
+               (e.what||'') + ' ' + (e.focus||'') + ' ' +
+               (e.examples||[]).join(' ')).toLowerCase();
+    return hay.indexOf(state.q) !== -1;
+  }
+
+  function render(kind){
+    var host = document.getElementById('list-' + kind);
+    var none = document.getElementById('none-' + kind);
+    host.innerHTML = '';
+    var shown = 0;
+    state[kind].forEach(function(e){
+      if (kind === 'models' && state.cat) return;      /* category chips apply to strategies only */
+      if (!matches(e)) return;
+      shown++;
+      var card = document.createElement('div');
+      card.className = 'entry ' + kind;
+      var tag = kind === 'models'
+        ? ''
+        : '<span class="entry-tag" style="background:' + (CAT_COLORS[e.category] || 'var(--electric)') + '">' + esc(e.category) + '</span>';
+      var exs = (e.examples || []).map(function(x){ return '<div class="ex">' + esc(x) + '</div>'; }).join('');
+      card.innerHTML =
+        '<div class="entry-head">' +
+          '<span class="entry-name">' + esc(e.name) + '</span>' + tag +
+        '</div>' +
+        '<div class="entry-body">' +
+          (e.origin ? '<div class="origin">' + esc(e.origin) + '</div>' : '') +
+          '<div class="what">' + esc(e.what) + '</div>' + exs +
+          '<div class="focus"><span class="label">TODAY\u2019S MOVE</span>' + esc(e.focus) + '</div>' +
+          '<button class="copy-btn" type="button">COPY AS TEXT</button>' +
+        '</div>';
+      card.querySelector('.entry-head').addEventListener('click', function(){
+        card.classList.toggle('open');
+      });
+      card.querySelector('.copy-btn').addEventListener('click', function(ev){
+        ev.stopPropagation(); copyEntry(ev.currentTarget, e, kind);
+      });
+      host.appendChild(card);
+    });
+    document.getElementById('count-' + kind).textContent =
+      shown + ' of ' + state[kind].length;
+    none.style.display = shown ? 'none' : 'block';
+  }
+
+  function renderAll(){ render('models'); render('strategy'); }
+
+  function buildChips(){
+    var cats = [];
+    state.strategy.forEach(function(e){
+      if (e.category && cats.indexOf(e.category) === -1) cats.push(e.category);
+    });
+    var host = document.getElementById('chips');
+    host.innerHTML = '';
+    cats.forEach(function(c){
+      var el = document.createElement('span');
+      el.className = 'chip'; el.textContent = c;
+      el.addEventListener('click', function(){
+        state.cat = (state.cat === c) ? null : c;
+        Array.prototype.forEach.call(host.children, function(ch){
+          var on = ch.textContent === state.cat;
+          ch.classList.toggle('on', on);
+          ch.style.background = on ? (CAT_COLORS[ch.textContent] || 'var(--electric)') : '';
+        });
+        renderAll();
+      });
+      host.appendChild(el);
+    });
+  }
+
+  document.getElementById('search').addEventListener('input', function(ev){
+    state.q = ev.target.value.trim().toLowerCase();
+    renderAll();
+  });
+
+  var pending = 2;
+  function loaded(){
+    pending--;
+    if (pending > 0) return;
+    var total = state.models.length + state.strategy.length;
+    document.getElementById('thesis').innerHTML =
+      '<b>' + total + ' tools.</b> ' + state.models.length +
+      ' models for seeing clearly, ' + state.strategy.length +
+      ' strategies for choosing where to fight. Tap any entry; the gold line is the move.';
+    buildChips();
+    renderAll();
+  }
+  loadPool('models.json', 'models', loaded);
+  loadPool('strategy.json', 'strategy', loaded);
+})();
+</script>
+</body>
+</html>

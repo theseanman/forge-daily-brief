@@ -751,20 +751,16 @@ def render_triad(day_of_year):
 
 
 def render_summer_protocol():
-    """Build the Summer Protocol reference card — all 10 drills, always visible."""
+    """Build the Summer Protocol reference card — 7 drills, always visible.
+    Pause/Trigger Breath, Opportunity Question and Slow Down were merged into
+    the Five Paramount Goals card (July 24, 2026) where they carry tap counters."""
     drills = [
-        ("\U0001F6AA Pause — Trigger Breath",
-         "One slow nasal breath every doorway/kettle. Don\u2019t pause in conversations yet \u2014 just groove the breath on the cue.",
-         "Cue: doorway, kettle, red light"),
         ("\U0001F50D Camera Off",
          "In every conversation, find one genuine thing about the other person you didn\u2019t know. That\u2019s your only job.",
          "Cue: every conversation"),
         ("\U0001F9CD Posture Reset",
          "Every time you stand up: shoulders down, chest open, head level. Just the reset.",
          "Cue: every time you stand"),
-        ("\u26A1 Opportunity Question",
-         "First setback or new environment, ask: what\u2019s the opportunity here?",
-         "Cue: setback or threshold"),
         ("\U0001F91D I\u2019m Fine Either Way",
          "Before the first tense interaction, say it silently and mean it. You\u2019d like it to go well; you don\u2019t need it to.",
          "Cue: before tension \u00b7 binary: yes/no"),
@@ -780,9 +776,6 @@ def render_summer_protocol():
         ("\u2764\uFE0F Warmth Rep",
          "Give one specific, sincere appreciation to someone. Not \u2018you\u2019re great\u2019 \u2014 something true and particular.",
          "Cue: once daily"),
-        ("\U0001F422 Slow Down",
-         "Move 20% slower than your impulse. Reach, turn, walk slower.",
-         "Cue: all day"),
     ]
     rows = ""
     for name, instruction, trigger in drills:
@@ -793,7 +786,7 @@ def render_summer_protocol():
     </div>\n    '''
     return f'''  <div class="card">
     <div class="card-header"><span class="card-icon">&#x1F525;&#x1F334;</span><span>Summer Protocol \u2014 Today\u2019s Reps</span></div>
-    <div class="proto-intro">Train where it\u2019s easy. Groove the reflex. It shows up when it matters.</div>
+    <div class="proto-intro">Train where it\u2019s easy. Groove the reflex. It shows up when it matters.<br><span style="font-size:11px; opacity:0.75;">Pause, Slow Down and the Opportunity Question now live in the Five Paramount Goals card above, with counters.</span></div>
     {rows}</div>'''
 
 
@@ -1603,7 +1596,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
           <button class="goal-btn" onclick="incrementGoal(0)">+</button>
         </div>
       </div>
-      Brief pause before any response. Conscious deliberation first.
+      Brief pause before any response. Conscious deliberation first.<br><span style="font-weight:400; font-size:13px;">🚪 Training rep: one slow nasal breath at every doorway, kettle, or red light. Don&rsquo;t force the pause in conversations yet &mdash; groove the breath on the cue and it shows up when it matters.</span>
     </div>
     <div class="paramount-goal">
       <div class="paramount-num"><span>2️⃣ CAL AI BEFORE MEALS</span>
@@ -1623,7 +1616,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
           <button class="goal-btn" onclick="incrementGoal(2)">+</button>
         </div>
       </div>
-      Deliberate, slower pace in all physical and verbal communication.
+      Deliberate, slower pace in all physical and verbal communication.<br><span style="font-weight:400; font-size:13px;">🐢 The rep: move 20% slower than your impulse &mdash; reach, turn, walk slower. Cue: all day.</span>
     </div>
     <div class="paramount-goal">
       <div class="paramount-num"><span>4️⃣ OPPORTUNITY SCANNING</span>
@@ -1633,7 +1626,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
           <button class="goal-btn" onclick="incrementGoal(3)">+</button>
         </div>
       </div>
-      Every setback: "What opportunity does this situation present me with?"
+      Every setback or new environment: "What opportunity does this situation present me with?"<br><span style="font-weight:400; font-size:13px;">⚡ Cue: setback or threshold &mdash; ask it at the first one of the day.</span>
     </div>
     <div class="paramount-goal">
       <div class="paramount-num"><span>5️⃣ NO NARRATIVES</span>
@@ -1767,6 +1760,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
       <div class="depth-origin">{model.get('origin','')}</div>
       <div class="depth-what">{model['what']}</div>
       {model_examples_html}
+      <div style="margin-top:8px; font-size:12px;"><a href="https://theseanman.github.io/forge-daily-brief/models.html">Browse the full library &#8594;</a></div>
     </div>
   </div>
 
@@ -1780,6 +1774,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     <div class="depth-body">
       <div class="depth-what">{strat['what']}</div>
       {strat_examples_html}
+      <div style="margin-top:8px; font-size:12px;"><a href="https://theseanman.github.io/forge-daily-brief/models.html">Browse the full library &#8594;</a></div>
     </div>
   </div>
 
