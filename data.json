@@ -1,1 +1,21 @@
-{"welltory": {"stress": 38, "energy": 68, "health": 100}, "body_comp": {"weight": 196.2, "body_fat": 25.5, "muscle_mass": 131.4, "bmi": 28.1, "visceral_fat": 14}, "sleep": {"score": 35, "duration": "4h 18m", "hr_range": "0-0"}, "notes": "Fasting night 2", "updated": "2026-07-26T15:14:49.367Z", "calendar": [{"date": "Mon Jul 27", "time": "All day", "title": "Meal-less Monday "}, {"date": "Mon Jul 27", "time": "All day", "title": "Leave for Japan"}, {"date": "Sat Aug 01", "time": "07:00 PM", "title": "Hang with biker guys"}, {"date": "Fri Jul 31", "time": "04:30 AM", "title": "ONE Friday Fights 164 & The Inner Circle 24"}, {"date": "Sat Aug 01", "time": "10:00 AM", "title": "UFC Fight Night: Medic vs Rodriguez"}]}
+{
+  "welltory": {
+    "stress": 66,
+    "energy": 39,
+    "health": 100
+  },
+  "body_comp": {
+    "weight": 194.2,
+    "body_fat": 25.3,
+    "muscle_mass": 130.6,
+    "bmi": 27.8,
+    "visceral_fat": 14
+  },
+  "sleep": {
+    "score": 80,
+    "duration": "6h 42",
+    "hr_range": "57-86"
+  },
+  "notes": "Fasting day 3",
+  "updated": "2026-07-27T16:43:31.341Z"
+}
