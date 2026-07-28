@@ -1471,6 +1471,18 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     .rocks-head {{ font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
                    margin-bottom: 6px; font-weight: 700; }}
     .rock-item {{ padding: 4px 0; line-height: 1.5; }}
+    .t5-count {{ font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+                 font-weight: 800; color: var(--text-bright); margin-bottom: 10px; opacity: 0.85; }}
+    .t5-row {{ display: flex; gap: 10px; align-items: flex-start; padding: 9px 0;
+               border-bottom: 1px solid rgba(255,255,255,0.14); }}
+    .t5-row:last-child {{ border-bottom: none; }}
+    .t5-tick {{ font-size: 16px; line-height: 1.35; min-width: 18px; color: var(--text-bright); }}
+    .t5-task {{ font-size: 15px; font-weight: 700; line-height: 1.45; }}
+    .t5-done .t5-task {{ opacity: 0.5; text-decoration: line-through; }}
+    .t5-star {{ color: #FFC94A; }}
+    .t5-meta {{ font-size: 11px; opacity: 0.75; margin-top: 3px; letter-spacing: 0.04em; }}
+    .t5-dw {{ font-size: 12px; opacity: 0.85; margin-top: 3px; font-style: italic; }}
+    .t5-empty {{ font-size: 14px; line-height: 1.6; opacity: 0.9; }}
     .new-flag {{ display: inline-block; background: rgba(74,232,160,0.85); color: #062012;
                  font-size: 9px; font-weight: 800; letter-spacing: 0.1em; padding: 2px 6px;
                  border-radius: 4px; margin-right: 6px; vertical-align: middle; }}
@@ -1566,6 +1578,12 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
            onerror="this.style.display='none'; this.nextElementSibling.style.marginLeft='0'">
       <div style="font-size:15px; color:var(--text-bright); line-height:1.9; font-weight:600; flex:1; min-width:0;">{sitrep_text}</div>
     </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-icon">&#x1F3AF;&#x1F334;</span><span>Today&rsquo;s Five</span></div>
+    <div id="today-five-host"></div>
+    <div class="mini-card"><div class="mini-detail"><a href="https://theseanman.github.io/forge-daily-brief/planner.html">Open the day planner &#8594;</a><br><span style="font-size:12px;">Hour-by-hour grid with the calendar auto-filled. Set or edit the five here.</span></div></div>
   </div>
 
   <div class="card">
@@ -1781,10 +1799,6 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
 
 {concert_cards_html}
 
-  <div class="card">
-    <div class="card-header"><span class="card-icon">\U0001F5D3\uFE0F\U0001F334</span><span>Day Planner</span></div>
-    <div class="mini-card"><div class="mini-detail"><a href="https://theseanman.github.io/forge-daily-brief/planner.html">Open today's hour-by-hour plan &#8594;</a><br><span style="font-size:12px;">Your calendar auto-fills; type tasks into the open hours.</span></div></div>
-  </div>
 
   <div class="footer">🌴 FORGE OS · {date_str.upper()} · {time_str} · theseanman.github.io/forge-daily-brief</div>
 
@@ -1913,6 +1927,35 @@ function readJSONKey(k, fb) {{
   try {{ var v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; }}
   catch (e) {{ return fb; }}
 }}
+function t5Esc(s) {{
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}}
+function paintTodayFive() {{
+  var host = document.getElementById('today-five-host');
+  if (!host) return;
+  var all = readJSONKey('forge-top5', {{}});
+  var arr = all[ymdOffset(0)];
+  var real = (arr || []).filter(function (i) {{ return i && i.t; }});
+  if (!real.length) {{
+    host.innerHTML = '<div class="t5-empty">No five set for today yet. Set them in the evening debrief or the planner &mdash; they appear here as soon as they exist.</div>';
+    return;
+  }}
+  var done = real.filter(function (i) {{ return i.done; }}).length;
+  var rows = real.map(function (i) {{
+    var meta = [];
+    if (i.h) meta.push(t5Esc(i.h));
+    if (i.m) meta.push(t5Esc(i.m) + ' min');
+    if (i.c) meta.push('carried &times;' + t5Esc(i.c));
+    return '<div class="t5-row' + (i.done ? ' t5-done' : '') + '">' +
+           '<span class="t5-tick">' + (i.done ? '&#10003;' : '&#9633;') + '</span>' +
+           '<div style="flex:1; min-width:0;">' +
+           '<div class="t5-task">' + (i.k ? '<span class="t5-star">&#9733;</span> ' : '') + t5Esc(i.t) + '</div>' +
+           (meta.length ? '<div class="t5-meta">' + meta.join(' &middot; ') + '</div>' : '') +
+           (i.dw ? '<div class="t5-dw">Done when: ' + t5Esc(i.dw) + '</div>' : '') +
+           '</div></div>';
+  }}).join('');
+  host.innerHTML = '<div class="t5-count">' + done + ' of ' + real.length + ' closed</div>' + rows;
+}}
 function paintYesterday() {{
   var host = document.getElementById('yday-host');
   if (!host) return;
@@ -1964,6 +2007,7 @@ function markNew() {{
 }}
 
 window.addEventListener('load', function () {{
+  try {{ paintTodayFive(); }} catch (e) {{}}
   try {{ paintYesterday(); }} catch (e) {{}}
   try {{ paintRocks(); }} catch (e) {{}}
   try {{ markNew(); }} catch (e) {{}}
