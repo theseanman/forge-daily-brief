@@ -82,6 +82,69 @@
   .esp-summary-item:last-child { border-bottom: none; }
   .close-btn { width: 100%; padding: 14px; background: rgba(74,232,160,0.15); border: 1px solid var(--green); border-radius: var(--radius-lg); color: var(--green); font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; margin-top: 1rem; }
   .night-msg { text-align: center; font-size: 13px; color: var(--dim); margin-top: 1.5rem; padding-bottom: 2rem; letter-spacing: 0.1em; }
+
+    /* ---- Forge OS loop additions ---- */
+    .scorecard { background:linear-gradient(135deg,#1a2740,#1e1e2e); border:1px solid #33334a; border-radius:14px; padding:14px; margin-bottom:14px; }
+    .score-top { display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+    .score-big { font-size:30px; font-weight:800; color:#4a9de8; line-height:1; }
+    .score-lbl { font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#666680; }
+    .score-msg { font-size:12px; color:#f0f0f8; margin-top:8px; line-height:1.5; }
+    .streak-row { display:flex; gap:8px; margin-top:12px; }
+    .streak-box { flex:1; background:#111118; border-radius:10px; padding:8px; text-align:center; }
+    .streak-val { font-size:17px; font-weight:800; color:#4ae8a0; }
+    .streak-lbl { font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:#666680; margin-top:2px; }
+    .week-bars { display:flex; gap:4px; align-items:flex-end; height:34px; margin-top:12px; }
+    .week-bar { flex:1; background:#33334a; border-radius:3px 3px 0 0; min-height:3px; position:relative; }
+    .week-bar.hit { background:#4ae8a0; }
+    .week-bar.part { background:#4a9de8; }
+    .week-day { font-size:8px; color:#666680; text-align:center; margin-top:3px; }
+
+    .t5review { display:flex; align-items:center; gap:9px; padding:9px 4px; border-bottom:1px solid #26263a; }
+    .t5review:last-child { border-bottom:none; }
+    .t5box { width:24px; height:24px; flex-shrink:0; border:2px solid #4a9de8; border-radius:6px; background:transparent;
+             color:#4a9de8; font-size:14px; font-weight:800; cursor:pointer; padding:0; line-height:1; }
+    .t5box.on { background:#4a9de8; color:#111118; }
+    .t5label { flex:1; min-width:0; font-size:13px; color:#f0f0f8; word-break:break-word; }
+    .t5label.done { text-decoration:line-through; color:#666680; }
+    .t5star { font-size:12px; color:#e8c84a; flex-shrink:0; }
+    .t5carry { font-size:9px; color:#e8844a; letter-spacing:.06em; flex-shrink:0; }
+
+    .plan-row { display:flex; align-items:center; gap:7px; padding:7px 2px; border-bottom:1px solid #26263a; }
+    .plan-row:last-child { border-bottom:none; }
+    .plan-num { width:16px; font-size:12px; font-weight:800; color:#666680; flex-shrink:0; }
+    .plan-star { width:28px; flex-shrink:0; background:transparent; border:1px solid #33334a; border-radius:6px;
+                 color:#33334a; font-size:13px; cursor:pointer; padding:4px 0; }
+    .plan-star.on { color:#e8c84a; border-color:#e8c84a; }
+    .plan-txt { flex:1; min-width:0; background:#111118; border:1px solid #33334a; border-radius:7px;
+                padding:8px; color:#f0f0f8; font-size:13px; font-family:inherit; }
+    .plan-hr { width:74px; flex-shrink:0; background:#111118; border:1px solid #33334a; border-radius:7px;
+               padding:8px 2px; color:#f0f0f8; font-size:12px; font-family:inherit; }
+    .plan-row2 { display:flex; align-items:center; gap:6px; padding:4px 2px 8px 23px;
+                 border-bottom:1px solid #26263a; }
+    .plan-row2:last-of-type { border-bottom:none; }
+    .plan-mins { width:60px; flex-shrink:0; background:#111118; border:1px solid #33334a;
+                 border-radius:7px; padding:7px 4px; color:#f0f0f8; font-size:12px;
+                 font-family:inherit; text-align:center; }
+    .plan-dw { flex:1; min-width:0; background:#111118; border:1px solid #33334a;
+               border-radius:7px; padding:7px 8px; color:#f0f0f8; font-size:12px; font-family:inherit; }
+    .plan-dw::placeholder { font-style:italic; color:#4a4a60; }
+    .pick-wrap { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+    .pick { background:#1e1e2e; border:1px solid #33334a; border-radius:20px; padding:6px 11px;
+            font-size:11px; color:#f0f0f8; cursor:pointer; font-family:inherit; }
+    .pick.fam { border-color:#9b4ae8; color:#c9a6f5; }
+    .pick:active { background:#33334a; }
+    .rocks-card { background:#1a2740; border:1px solid #4a9de8; border-radius:12px; padding:12px; margin-bottom:12px; display:none; }
+    .rocks-card.show { display:block; }
+    .note-line { font-size:11px; color:#666680; margin-top:8px; line-height:1.5; }
+    .csv-box { width:100%; height:180px; margin:10px 0; border:1px solid #33334a; border-radius:10px;
+               padding:8px; font-size:10px; font-family:ui-monospace,monospace;
+               background:#111118; color:#f0f0f8; }
+    .csv-info { font-size:11px; color:#666680; margin-top:10px; }
+    .saved-note { background:#1e1e2e; border:1px solid #4ae8a0; border-radius:10px;
+                  padding:10px 12px; margin-top:12px; font-size:12px; color:#4ae8a0; line-height:1.5; }
+    .badge-pop { background:#1e1e2e; border:1px solid #e8c84a; border-radius:10px; padding:10px 12px;
+                 margin-top:12px; font-size:12px; color:#e8c84a; display:none; }
+    .badge-pop.show { display:block; }
 </style>
 </head>
 <body>
@@ -153,6 +216,11 @@
       <div class="step-header">03 · To-do closeout</div>
       <div class="step-title">What got done today?</div>
       <div class="step-sub">Tap to mark complete. Live from your Reminders.</div>
+      <div class="field-label" style="margin-bottom:6px;">Today's Top 5 &mdash; from your Day Plan</div>
+      <div id="sync-badge" style="font-size:11px; letter-spacing:0.08em; margin:4px 0 8px; min-height:16px;"></div>
+      <div id="t5-review" style="margin-bottom:14px;"></div>
+      <div class="note-line" id="t5-note"></div>
+      <div class="field-label" style="margin:16px 0 6px;">Reminders</div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <span style="font-size:11px; color:var(--muted);" id="reminder-status">Loading reminders...</span>
         <button class="sync-btn" onclick="loadReminders()"><i class="ti ti-refresh"></i> Sync</button>
@@ -222,6 +290,42 @@
       <div class="field"><div class="field-label">One thing to carry into tomorrow</div><textarea id="carry" placeholder="e.g. do the hard thing first..." style="min-height:60px;"></textarea></div>
       <div class="btn-row">
         <button class="btn" onclick="prev()"><i class="ti ti-arrow-left"></i></button>
+        <button class="btn primary" onclick="next()">Next <i class="ti ti-arrow-right"></i></button>
+      </div>
+    </div>
+
+    <div class="step" id="step-6">
+      <div class="step-header">07 &middot; Tomorrow&rsquo;s five</div>
+      <div class="step-title">Set tomorrow before you sleep</div>
+      <div class="step-sub">These land straight in your Day Plan. Reflection is done &mdash; this is the handoff.</div>
+
+      <div class="rocks-card" id="rocks-card">
+        <div style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#4a9de8; margin-bottom:6px;">Sunday &middot; Week ahead</div>
+        <div style="font-size:12px; color:#f0f0f8; line-height:1.5; margin-bottom:8px;">Name the three big rocks for this week. Your daily fives should pull from these.</div>
+        <div class="field"><input class="plan-txt" id="rock-1" placeholder="Big rock 1" style="width:100%; margin-bottom:6px;"></div>
+        <div class="field"><input class="plan-txt" id="rock-2" placeholder="Big rock 2" style="width:100%; margin-bottom:6px;"></div>
+        <div class="field"><input class="plan-txt" id="rock-3" placeholder="Big rock 3" style="width:100%;"></div>
+      </div>
+
+      <div id="carry-forward-wrap" style="display:none; margin-bottom:14px;">
+        <div class="field-label" style="margin-bottom:6px;">Roll forward from today?</div>
+        <div class="pick-wrap" id="carry-forward"></div>
+      </div>
+
+      <div class="field-label" style="margin-bottom:2px;">Tomorrow&rsquo;s five</div>
+      <div class="note-line" style="margin:0 0 8px;">Tap the star to mark your keystone &mdash; the one that makes the day count.</div>
+      <div id="plan-rows"></div>
+
+      <div class="field-label" style="margin:16px 0 6px;">Pull from your backlog</div>
+      <div class="pick-wrap" id="backlog-picks"></div>
+
+      <div class="field-label" style="margin:16px 0 6px;">Family &amp; fun &mdash; give one a time</div>
+      <div class="pick-wrap" id="fun-picks"></div>
+
+      <div class="note-line" id="plan-warn"></div>
+
+      <div class="btn-row">
+        <button class="btn" onclick="prev()"><i class="ti ti-arrow-left"></i></button>
         <button class="btn primary" onclick="finishDebrief()">Close the chapter <i class="ti ti-moon"></i></button>
       </div>
     </div>
@@ -233,6 +337,8 @@
       <div class="clear-title" id="clear-status">FORGE CLEAR</div>
       <div class="clear-sub" id="clear-sub">Chapter closed. You're good to rest.</div>
     </div>
+    <div id="scorecard-host"></div>
+    <div class="badge-pop" id="badge-pop"></div>
     <div class="summary-grid" id="summary-grid"></div>
     <div class="tomorrow-card">
       <div class="tomorrow-header"><i class="ti ti-calendar"></i> Tomorrow at a glance</div>
@@ -246,13 +352,16 @@
       <div class="tomorrow-header"><i class="ti ti-arrow-right"></i> Carry into tomorrow</div>
       <div style="font-size:13px; line-height:1.6;" id="carry-display"></div>
     </div>
+    <div class="saved-note" id="saved-note"></div>
+    <button class="close-btn" onclick="showCSV()" style="margin-top:12px;">Export all data as CSV</button>
+    <div id="csv-host"></div>
     <div class="night-msg">Rest well, Sean.</div>
   </div>
 </div>
 
 <script>
 const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/6a1f705cda38895dfe7e4f97/latest';
-const STEPS = 6;
+const STEPS = 7;
 let currentStep = 0;
 const espRatings = {};
 let espCount = 1;
@@ -267,6 +376,8 @@ function init() {
   buildESPRatings();
   setTomorrowWorkout();
   loadReminders();
+  loadTodayTop5();
+  backfillHealth();
 }
 
 function buildPips() {
@@ -377,6 +488,7 @@ function selectWorkout(btn, val) {
 }
 
 function showStep(n) {
+  if (n === 6) initPlanRows();
   document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
   document.getElementById('step-'+n).classList.add('active');
   currentStep = n;
@@ -395,7 +507,528 @@ function setTomorrowWorkout() {
   if (el) el.textContent = hiit ? day+' — HIIT day. Push/upper + cardio. Protect ankles.' : day+' — Rest/skill day. Mobility, breathwork, or light walk.';
 }
 
+
+/* ================= FORGE OS LOOP ================= */
+/* Shares localStorage with planner.html — MUST be served from the same origin. */
+var K_TOP5='forge-top5', K_BACKLOG='forge-backlog', K_FUN='forge-fun',
+    K_HIST='forge-debrief-history', K_ROCKS='forge-week-rocks', K_BACKUP='forge-backup';
+var planRows = [{t:'',h:'',done:false},{t:'',h:'',done:false},{t:'',h:'',done:false},{t:'',h:'',done:false},{t:'',h:'',done:false}];
+var todayT5 = [];
+
+/* ---------- cloud sync ---------- */
+var SYNC_URL = 'https://forge-sync.yoseanreid.workers.dev';
+function syncBadge(state) {
+  var el = document.getElementById('sync-badge');
+  if (!el) return;
+  if (state === 'synced')       { el.textContent = '\u2601\uFE0F synced';  el.style.color = '#4ae8a0'; }
+  else if (state === 'pushing') { el.textContent = '\u2601\uFE0F saving\u2026'; el.style.color = '#aab'; }
+  else if (state === 'offline') { el.textContent = '\u26A0\uFE0F offline'; el.style.color = '#ff6b6b'; }
+  else { el.textContent = ''; }
+}
+function syncPush(key) {
+  var val = localStorage.getItem(key);
+  if (!val) return;
+  syncBadge('pushing');
+  fetch(SYNC_URL + '/' + encodeURIComponent(key), {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: val
+  }).then(function(r) { syncBadge(r.ok ? 'synced' : 'offline'); })
+    .catch(function() { syncBadge('offline'); });
+}
+
+function fdRead(k, fb){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):fb; }catch(e){ return fb; } }
+function fdWrite(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } }
+function fdYmd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function fdToday(){ return fdYmd(new Date()); }
+function fdTomorrow(){ var d=new Date(); d.setDate(d.getDate()+1); return fdYmd(d); }
+function fdHour(h){ var ap=h<12?'AM':'PM', x=h%12; if(x===0)x=12; return x+' '+ap; }
+
+/* ---------- today's Top 5 review ---------- */
+function loadTodayTop5(){
+  var all = fdRead(K_TOP5, {});
+  var arr = all[fdToday()];
+  todayT5 = (arr && arr.length===5) ? arr : [];
+  renderT5Review();
+}
+function renderT5Review(){
+  var host = document.getElementById('t5-review');
+  var note = document.getElementById('t5-note');
+  if (!host) return;
+  host.innerHTML='';
+  var real = todayT5.filter(function(i){ return i && i.t; });
+  if (!real.length){
+    host.innerHTML = '<div style="font-size:12px;color:#666680;font-style:italic;padding:6px 2px;">No Top 5 was set for today. Set tomorrow\'s at the end of this debrief.</div>';
+    if (note) note.textContent='';
+    return;
+  }
+  todayT5.forEach(function(it, i){
+    if (!it || !it.t) return;
+    var row=document.createElement('div'); row.className='t5review';
+    var b=document.createElement('button'); b.className='t5box'+(it.done?' on':''); b.innerHTML=it.done?'&#10003;':'&nbsp;';
+    b.onclick=function(){ toggleT5(i); };
+    var l=document.createElement('div'); l.className='t5label'+(it.done?' done':''); l.textContent=it.t;
+    row.appendChild(b); row.appendChild(l);
+    if (it.k){ var st=document.createElement('span'); st.className='t5star'; st.textContent='\u2605'; row.appendChild(st); }
+    if (it.c && it.c>=2){ var c=document.createElement('span'); c.className='t5carry'; c.textContent='carried '+it.c+'\u00D7'; row.appendChild(c); }
+    host.appendChild(row);
+  });
+  var done = real.filter(function(i){ return i.done; }).length;
+  if (note){
+    var key = real.filter(function(i){ return i.k; })[0];
+    var msg = done+' of '+real.length+' closed.';
+    if (key) msg += key.done ? '  Keystone done — that is the day won.' : '  Keystone still open: '+key.t;
+    note.textContent = msg;
+  }
+}
+function toggleT5(i){
+  var all = fdRead(K_TOP5, {});
+  var arr = all[fdToday()];
+  if (!arr) return;
+  arr[i].done = !arr[i].done;
+  all[fdToday()] = arr;
+  fdWrite(K_TOP5, all);
+  syncPush(K_TOP5);
+  todayT5 = arr;
+  renderT5Review();
+}
+
+/* ---------- history, streak, week ---------- */
+function recordHistory(){
+  var real = todayT5.filter(function(i){ return i && i.t; });
+  var h = fdRead(K_HIST, {});
+  var keyItem = real.filter(function(i){ return i.k; })[0];
+  h[fdToday()] = { done: real.filter(function(i){ return i.done; }).length, total: real.length,
+                   debriefed: true,
+                   key: keyItem ? 1 : 0, keyDone: (keyItem && keyItem.done) ? 1 : 0 };
+  var keys=Object.keys(h).sort(); if(keys.length>120){ var o={}; keys.slice(-120).forEach(function(k){o[k]=h[k];}); h=o; }
+  fdWrite(K_HIST, h);
+  return h;
+}
+function streakFrom(h){
+  var n=0, d=new Date();
+  for (var i=0;i<400;i++){ if (h[fdYmd(d)] && h[fdYmd(d)].debriefed){ n++; d.setDate(d.getDate()-1); } else break; }
+  return n;
+}
+function bestStreak(h){
+  var keys=Object.keys(h).filter(function(k){return h[k].debriefed;}).sort();
+  var best=0,run=0,prev=null;
+  keys.forEach(function(k){
+    if(prev){ var p=new Date(prev+'T00:00:00'), c=new Date(k+'T00:00:00');
+      run = Math.round((c-p)/86400000)===1 ? run+1 : 1; } else run=1;
+    if(run>best)best=run; prev=k;
+  });
+  return best;
+}
+function keystoneStats(h){
+  var keys = Object.keys(h).sort();
+  var cut = new Date(); cut.setDate(cut.getDate() - 30);
+  var cutKey = fdYmd(cut);
+  var n = 0, hit = 0, tasks = 0, tasksDone = 0;
+  keys.forEach(function(k){
+    if (k < cutKey) return;
+    var e = h[k];
+    if (e.key){ n++; if (e.keyDone) hit++; }
+    if (e.total){ tasks += e.total; tasksDone += e.done; }
+  });
+  return { n: n, pct: n ? Math.round(hit / n * 100) : null,
+           allPct: tasks ? Math.round(tasksDone / tasks * 100) : null };
+}
+
+function weekStats(h){
+  var out=[], d=new Date();
+  d.setDate(d.getDate()-6);
+  for(var i=0;i<7;i++){
+    var k=fdYmd(d), e=h[k];
+    out.push({ key:k, label:['S','M','T','W','T','F','S'][d.getDay()],
+               pct: e&&e.total ? e.done/e.total : 0, has: !!e });
+    d.setDate(d.getDate()+1);
+  }
+  return out;
+}
+function encouragement(done, total, streak){
+  if (!total) return 'No five set today. Tomorrow starts now — pick them below.';
+  var r = done/total;
+  if (r === 1) return 'Clean sweep. Five for five.' + (streak>1?' '+streak+' days in a row of showing up.':'');
+  if (r >= 0.6) return 'Solid day. The ones that moved, moved — that is the whole game.';
+  if (r > 0)    return 'Some progress beats none. Roll the rest forward and start clean.';
+  return 'A day where nothing closed still gets a debrief. That is the discipline, not the score.';
+}
+
+/* ---------- tomorrow's five ---------- */
+function initPlanRows(){
+  var all = fdRead(K_TOP5, {});
+  var existing = all[fdTomorrow()];
+  if (existing && existing.length===5) planRows = existing;
+  var carried = todayT5.filter(function(i){ return i && i.t && !i.done; });
+  var wrap=document.getElementById('carry-forward-wrap');
+  var host=document.getElementById('carry-forward');
+  if (host){
+    host.innerHTML='';
+    if (carried.length && wrap){
+      wrap.style.display='block';
+      carried.forEach(function(it){
+        var b=document.createElement('button'); b.className='pick';
+        b.textContent = it.t + (it.c&&it.c>=2 ? '  · '+(it.c+1)+'×' : '');
+        b.onclick=function(){ addToPlan(it.t, '', (it.c||1)+1); };
+        host.appendChild(b);
+      });
+    } else if (wrap) { wrap.style.display='none'; }
+  }
+  renderPlanRows(); renderPicks(); maybeShowRocks();
+}
+function hourOpts(sel){
+  var s='<option value="">--</option>';
+  for(var h=6;h<=23;h++) s+='<option value="'+h+'"'+(String(sel)===String(h)?' selected':'')+'>'+fdHour(h)+'</option>';
+  return s;
+}
+function renderPlanRows(){
+  var host=document.getElementById('plan-rows'); if(!host) return;
+  host.innerHTML='';
+  planRows.forEach(function(it,i){
+    var row=document.createElement('div'); row.className='plan-row';
+    var n=document.createElement('div'); n.className='plan-num'; n.textContent=(i+1);
+    var st=document.createElement('button'); st.className='plan-star'+(it.k?' on':''); st.innerHTML='&#9733;';
+    st.onclick=function(){ planRows.forEach(function(r,j){ r.k = (j===i && !it.k); }); renderPlanRows(); checkPlan(); };
+    var tx=document.createElement('input'); tx.className='plan-txt'; tx.type='text';
+    tx.value=it.t||''; tx.placeholder='actionable '+(i+1);
+    tx.oninput=function(){ planRows[i].t=this.value; checkPlan(); };
+    var hr=document.createElement('select'); hr.className='plan-hr'; hr.innerHTML=hourOpts(it.h);
+    hr.onchange=function(){ planRows[i].h=this.value; checkPlan(); };
+    row.appendChild(n); row.appendChild(st); row.appendChild(tx); row.appendChild(hr);
+    host.appendChild(row);
+
+    var row2=document.createElement('div'); row2.className='plan-row2';
+    var mn=document.createElement('input'); mn.type='number'; mn.className='plan-mins';
+    mn.min='5'; mn.max='180'; mn.placeholder='min';
+    mn.value=(it.m===undefined||it.m===null)?'':it.m;
+    mn.oninput=function(){ planRows[i].m = this.value===''?'':Number(this.value); checkPlan(); };
+    var dw=document.createElement('input'); dw.type='text'; dw.className='plan-dw';
+    dw.value=it.dw||''; dw.placeholder='done when \u2026 (what would someone else see?)';
+    dw.oninput=function(){ planRows[i].dw=this.value; checkPlan(); };
+    row2.appendChild(mn); row2.appendChild(dw);
+    host.appendChild(row2);
+  });
+}
+function addToPlan(text, hour, carryCount){
+  for(var i=0;i<5;i++){
+    if(!planRows[i].t){
+      planRows[i].t=text; planRows[i].h=hour||''; planRows[i].done=false;
+      if(planRows[i].m===undefined) planRows[i].m='';
+      if(planRows[i].dw===undefined) planRows[i].dw='';
+      if(carryCount) planRows[i].c=carryCount;
+      renderPlanRows(); checkPlan(); return;
+    }
+  }
+  alert('All five slots are full.');
+}
+function renderPicks(){
+  var bl=fdRead(K_BACKLOG,[]), fun=fdRead(K_FUN,[]);
+  var b=document.getElementById('backlog-picks');
+  if(b){
+    b.innerHTML='';
+    if(!bl.length) b.innerHTML='<span style="font-size:11px;color:#666680;font-style:italic;">Backlog is empty. Add items in the Day Plan.</span>';
+    bl.slice(0,12).forEach(function(t){
+      var x=document.createElement('button'); x.className='pick'; x.textContent=t;
+      x.onclick=function(){ addToPlan(t,''); }; b.appendChild(x);
+    });
+  }
+  var f=document.getElementById('fun-picks');
+  if(f){
+    f.innerHTML='';
+    if(!fun.length) f.innerHTML='<span style="font-size:11px;color:#666680;font-style:italic;">No family ideas yet. Add them in the Day Plan.</span>';
+    fun.slice(0,10).forEach(function(t){
+      var x=document.createElement('button'); x.className='pick fam'; x.textContent=t;
+      x.onclick=function(){ addToPlan(t,''); }; f.appendChild(x);
+    });
+  }
+}
+function checkPlan(){
+  var w=document.getElementById('plan-warn'); if(!w) return;
+  var filled=planRows.filter(function(r){return r.t;});
+  var timed=filled.filter(function(r){return r.h!=='';});
+  var key=filled.filter(function(r){return r.k;});
+  var bits=[];
+  if(!filled.length){ w.textContent='Nothing set yet — even one is better than none.'; return; }
+  var nodw=filled.filter(function(r){return !r.dw;});
+  if(!key.length) bits.push('No keystone marked yet.');
+  if(nodw.length) bits.push(nodw.length+' with no done-when \u2014 you can add it in the morning.');
+  if(!timed.length) bits.push('None have a time — an unscheduled task is a wish.');
+  else if(timed.length<filled.length) bits.push(timed.length+' of '+filled.length+' have a time.');
+  w.textContent = bits.length ? bits.join('  ') : 'All set. '+filled.length+' planned, keystone marked, times assigned.';
+}
+function maybeShowRocks(){
+  var t=new Date(); t.setDate(t.getDate()+1);
+  var card=document.getElementById('rocks-card');
+  if(!card) return;
+  if(t.getDay()===1 || new Date().getDay()===0){
+    card.classList.add('show');
+    var r=fdRead(K_ROCKS,{});
+    ['1','2','3'].forEach(function(n){
+      var el=document.getElementById('rock-'+n);
+      if(el){ el.value=(r.items&&r.items[n-1])||''; }
+    });
+  }
+}
+function saveTomorrow(){
+  var all=fdRead(K_TOP5,{});
+  all[fdTomorrow()] = planRows.map(function(r){
+    var o={t:r.t||'',h:r.h||'',done:false};
+    if(r.k) o.k=true;
+    if(r.c) o.c=r.c;
+    if(r.m) o.m=r.m;
+    if(r.dw) o.dw=r.dw;
+    return o;
+  });
+  var keys=Object.keys(all).sort();
+  if(keys.length>21){ var o={}; keys.slice(-21).forEach(function(k){o[k]=all[k];}); all=o; }
+  fdWrite(K_TOP5, all);
+  var rocks=['1','2','3'].map(function(n){ var e=document.getElementById('rock-'+n); return e?e.value.trim():''; }).filter(Boolean);
+  if(rocks.length) fdWrite(K_ROCKS,{ set:fdToday(), items:rocks });
+  var carryNote=document.getElementById('carry')?document.getElementById('carry').value.trim():'';
+  if(carryNote){ var b=fdRead(K_BACKLOG,[]); if(b.indexOf(carryNote)===-1){ b.push(carryNote); fdWrite(K_BACKLOG,b); } }
+  fdWrite(K_BACKUP,{ saved:new Date().toISOString(), plan:fdRead('forge-dayplan',{}), top5:fdRead(K_TOP5,{}),
+                     backlog:fdRead(K_BACKLOG,[]), fun:fdRead(K_FUN,[]) });
+}
+  syncPush(K_TOP5);
+  syncPush(K_BACKLOG);
+function renderScorecard(){
+  var host=document.getElementById('scorecard-host'); if(!host) return;
+  var h=recordHistory();
+  var real=todayT5.filter(function(i){ return i&&i.t; });
+  var done=real.filter(function(i){ return i.done; }).length;
+  var st=streakFrom(h), best=bestStreak(h), wk=weekStats(h);
+  var planned=planRows.filter(function(r){return r.t;}).length;
+  var ks=keystoneStats(h);
+  var keyRowHtml='';
+  if(ks.n>=3 && ks.pct!==null && ks.allPct!==null){
+    var gap=ks.allPct-ks.pct;
+    var note = gap>=15 ? 'Your keystone lags the rest \u2014 the hardest one is getting deferred.'
+             : gap<=-15 ? 'You protect the keystone even when the rest slips. That is the right order.'
+             : 'Keystone and the rest move together.';
+    keyRowHtml='<div class="streak-row">'+
+      '<div class="streak-box"><div class="streak-val" style="color:#e8c84a;">'+ks.pct+'%</div><div class="streak-lbl">Keystone (30d)</div></div>'+
+      '<div class="streak-box"><div class="streak-val">'+ks.allPct+'%</div><div class="streak-lbl">All tasks</div></div>'+
+      '</div>'+
+      '<div class="score-msg" style="opacity:.8;">'+note+'</div>';
+  }
+  var bars=wk.map(function(d){
+    var cls = d.pct===1?'week-bar hit' : d.pct>0?'week-bar part':'week-bar';
+    var hgt = d.has ? Math.max(4, Math.round(d.pct*34)) : 3;
+    return '<div style="flex:1;"><div class="'+cls+'" style="height:'+hgt+'px;"></div><div class="week-day">'+d.label+'</div></div>';
+  }).join('');
+  host.innerHTML =
+    '<div class="scorecard">'+
+      '<div class="score-top"><div><div class="score-lbl">Today</div>'+
+      '<div class="score-big">'+done+' <span style="font-size:16px;color:#666680;">of '+(real.length||5)+'</span></div></div>'+
+      '<div style="text-align:right;"><div class="score-lbl">Tomorrow</div>'+
+      '<div class="score-big" style="color:#4ae8a0;">'+planned+'</div></div></div>'+
+      '<div class="score-msg">'+encouragement(done, real.length, st)+'</div>'+
+      '<div class="streak-row">'+
+        '<div class="streak-box"><div class="streak-val">'+st+'</div><div class="streak-lbl">Day streak</div></div>'+
+        '<div class="streak-box"><div class="streak-val">'+best+'</div><div class="streak-lbl">Best</div></div>'+
+        '<div class="streak-box"><div class="streak-val">'+Math.round(wk.reduce(function(a,b){return a+b.pct;},0)/7*100)+'%</div><div class="streak-lbl">7-day</div></div>'+
+      '</div>'+
+      keyRowHtml+
+      '<div class="week-bars">'+bars+'</div>'+
+    '</div>';
+  var badge=document.getElementById('badge-pop');
+  if(badge){
+    var msg='';
+    if(st===7) msg='★ Seven straight days of closing the loop.';
+    else if(st===30) msg='★ Thirty days. This is a habit now, not an experiment.';
+    else if(st>1 && st===best && st>=3) msg='★ New best streak: '+st+' days.';
+    else if(real.length && done===real.length) msg='★ Five for five. Rare air.';
+    if(msg){ badge.textContent=msg; badge.classList.add('show'); }
+  }
+}
+
+
+/* ================= DAILY RECORD =========================================
+   One row per date holding everything: the journal (which was previously
+   thrown away), the five, session totals, and a snapshot of that morning's
+   health numbers pulled from data.json. This is the join that makes
+   correlation possible.                                                   */
+var K_DAILY = 'forge-daily-log';
+var K_BACKFILLED = 'forge-health-backfilled';
+
+/* A zero from a sensor means NO DATA, not a terrible score. Recording it as 0
+   would wreck any correlation, so it is stored as missing instead.        */
+function deadReading(v){
+  if (v === undefined || v === null || v === '' || v === '--') return true;
+  var t = String(v).replace(/[\s:hm\-]/g, '');
+  return t === '' || /^0+$/.test(t);
+}
+
+function val(id){
+  var el = document.getElementById(id);
+  if (!el) return '';
+  var v = (el.value === undefined || el.value === null) ? '' : String(el.value).trim();
+  return v;
+}
+function num(id){
+  var v = val(id);
+  if (v === '') return '';
+  var n = parseFloat(v);
+  return isNaN(n) ? '' : n;
+}
+
+function collectDaily(){
+  var real = todayT5.filter(function(i){ return i && i.t; });
+  var keyItem = real.filter(function(i){ return i.k; })[0];
+
+  var esp = [];
+  for (var n = 1; n <= 3; n++){
+    var ev = val('esp' + n + '-event');
+    if (!ev) continue;
+    esp.push({ event: ev,
+               e: espRatings['esp' + n + '-e'] || '',
+               s: espRatings['esp' + n + '-s'] || '',
+               p: espRatings['esp' + n + '-p'] || '',
+               notes: val('esp' + n + '-notes') });
+  }
+
+  var today = fdToday();
+  var sess = fdRead('forge-sessions', []);
+  if (Object.prototype.toString.call(sess) !== '[object Array]') sess = [];
+  var mine = sess.filter(function(r){ return r.d === today; });
+  var estSum = 0, actSum = 0, metN = 0;
+  mine.forEach(function(r){ estSum += (r.est || 0); actSum += (r.act || 0); if (r.met) metN++; });
+
+  return {
+    d: today,
+    mood: selectedMood || '',
+    note: val('day-note'),
+    esp: esp,
+    workout: { type: selectedWorkout || '', mins: num('workout-duration'),
+               feel: num('workout-feel'), notes: val('workout-notes') },
+    nutrition: { cal: num('cal-in'), protein: num('protein'),
+                 carbs: num('carbs'), fat: num('fat'), notes: val('nutrition-notes') },
+    win: val('win'), miss: val('miss'), carry: val('carry'),
+    reminders: { done: Object.values(todoChecked).filter(Boolean).length, total: reminders.length },
+    t5: {
+      total: real.length,
+      done: real.filter(function(i){ return i.done; }).length,
+      keySet: keyItem ? 1 : 0,
+      keyDone: (keyItem && keyItem.done) ? 1 : 0,
+      items: real.map(function(i){
+        return { t: i.t, done: !!i.done, k: !!i.k, m: i.m || '', dw: i.dw || '',
+                 src: i.src || '', carry: i.c || 0 };
+      })
+    },
+    sessions: { n: mine.length, est: estSum, act: actSum, met: metN },
+    health: null,
+    saved: new Date().toISOString()
+  };
+}
+
+function saveDailyLog(){
+  var log = fdRead(K_DAILY, {});
+  var rec = collectDaily();
+  log[rec.d] = rec;
+  var keys = Object.keys(log).sort();
+  if (keys.length > 400){ var o = {}; keys.slice(-400).forEach(function(k){ o[k] = log[k]; }); log = o; }
+  fdWrite(K_DAILY, log);
+
+  /* attach this morning's health numbers once data.json answers */
+  fetch('data.json?t=' + Date.now())
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var w = d.welltory || {}, sl = d.sleep || {}, b = d.body_comp || {};
+      var h = {};
+      [['energy', w.energy], ['health', w.health], ['stress', w.stress],
+       ['sleep_score', sl.score], ['sleep_dur', sl.duration], ['sleep_hr', sl.hr_range],
+       ['weight', b.weight], ['body_fat', b.body_fat], ['muscle', b.muscle_mass],
+       ['bmi', b.bmi], ['visceral', b.visceral_fat]].forEach(function(p){
+        if (!deadReading(p[1])) h[p[0]] = p[1];
+      });
+      var lg = fdRead(K_DAILY, {});
+      if (lg[rec.d]){ lg[rec.d].health = h; fdWrite(K_DAILY, lg); }
+    })
+    .catch(function(){ /* offline: the journal is saved regardless */ });
+}
+
+/* one-time import of health recovered from the repo's git history */
+function backfillHealth(){
+  if (fdRead(K_BACKFILLED, false)) return;
+  fetch('content/health_history.json?t=' + Date.now())
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var days = d.days || {};
+      var log = fdRead(K_DAILY, {});
+      var n = 0;
+      Object.keys(days).forEach(function(k){
+        if (!log[k]) { log[k] = { d: k, health: days[k], backfilled: true }; n++; }
+        else if (!log[k].health){ log[k].health = days[k]; n++; }
+      });
+      if (n){ fdWrite(K_DAILY, log); }
+      fdWrite(K_BACKFILLED, true);
+      console.log('health backfill: ' + n + ' days');
+    })
+    .catch(function(){});
+}
+
+/* ---------- CSV export ---------- */
+var CSV_COLS = ['date','mood','sleep_score','sleep_dur','energy','health','stress',
+                'weight','body_fat','t5_total','t5_done','keystone_set','keystone_done',
+                'sessions','est_mins','act_mins','done_when_met','reminders_done','reminders_total',
+                'workout_type','workout_mins','workout_feel',
+                'calories','protein','carbs','fat',
+                'esp1_event','esp1_effort','esp1_success','esp1_progress',
+                'win','miss','carry','note'];
+
+function csvCell(v){
+  if (v === undefined || v === null) return '';
+  var s = String(v);
+  if (s.indexOf(',') >= 0 || s.indexOf('"') >= 0 || s.indexOf('\n') >= 0){
+    return '"' + s.replace(/"/g, '""').replace(/\n/g, ' ') + '"';
+  }
+  return s;
+}
+
+function buildCSV(){
+  var log = fdRead(K_DAILY, {});
+  var keys = Object.keys(log).sort();
+  var rows = [CSV_COLS.join(',')];
+  keys.forEach(function(k){
+    var r = log[k] || {};
+    var h = r.health || {}, t = r.t5 || {}, se = r.sessions || {},
+        w = r.workout || {}, nu = r.nutrition || {}, rm = r.reminders || {};
+    var e1 = (r.esp && r.esp[0]) || {};
+    rows.push([
+      k, r.mood, h.sleep_score, h.sleep_dur, h.energy, h.health, h.stress,
+      h.weight, h.body_fat, t.total, t.done, t.keySet, t.keyDone,
+      se.n, se.est, se.act, se.met, rm.done, rm.total,
+      w.type, w.mins, w.feel,
+      nu.cal, nu.protein, nu.carbs, nu.fat,
+      e1.event, e1.e, e1.s, e1.p,
+      r.win, r.miss, r.carry, r.note
+    ].map(csvCell).join(','));
+  });
+  return rows.join('\n');
+}
+
+function showCSV(){
+  var host = document.getElementById('csv-host');
+  if (!host) return;
+  if (host.innerHTML){ host.innerHTML = ''; return; }
+  var log = fdRead(K_DAILY, {});
+  var n = Object.keys(log).length;
+  var ta = document.createElement('textarea');
+  ta.className = 'csv-box';
+  ta.value = buildCSV();
+  ta.spellcheck = false;
+  var info = document.createElement('div');
+  info.className = 'csv-info';
+  info.textContent = n + ' days. Select all, copy, and paste into a spreadsheet.';
+  var copy = document.createElement('button');
+  copy.className = 'close-btn';
+  copy.textContent = 'Select all';
+  copy.onclick = function(){ ta.focus(); ta.select(); try { document.execCommand('copy'); } catch(e){} };
+  host.appendChild(info); host.appendChild(ta); host.appendChild(copy);
+}
+
 function finishDebrief() {
+  saveTomorrow();
+  saveDailyLog();
   document.getElementById('debrief-flow').style.display = 'none';
   document.getElementById('clear-screen').classList.add('show');
   const doneCount = Object.values(todoChecked).filter(Boolean).length;
@@ -421,6 +1054,14 @@ function finishDebrief() {
   if (espItems.length) { document.getElementById('esp-summary-card').style.display='block'; document.getElementById('esp-summary-list').innerHTML=espItems.join(''); }
   const carry = document.getElementById('carry')?.value;
   if (carry) { document.getElementById('carry-card').style.display='block'; document.getElementById('carry-display').textContent=carry; }
+  renderScorecard();
+  try {
+    var _lg = fdRead(K_DAILY, {});
+    var _n = Object.keys(_lg).length;
+    var _el = document.getElementById('saved-note');
+    if (_el) _el.textContent = '\u2713 Tonight\u2019s journal is saved \u2014 mood, ESP, workout, nutrition, wins and misses. ' +
+                               _n + ' days on record.';
+  } catch(e){}
   setTomorrowWorkout();
 }
 
