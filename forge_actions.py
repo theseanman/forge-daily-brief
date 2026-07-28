@@ -1927,6 +1927,26 @@ function readJSONKey(k, fb) {{
   try {{ var v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; }}
   catch (e) {{ return fb; }}
 }}
+var SYNC_URL = 'https://forge-sync.yoseanreid.workers.dev';
+function syncPullBrief() {{
+  fetch(SYNC_URL + '/forge-top5')
+    .then(function(r) {{ if (!r.ok) throw new Error(r.status); return r.json(); }})
+    .then(function(cloud) {{
+      if (!cloud || typeof cloud !== 'object' || Array.isArray(cloud)) return;
+      var all = readJSONKey('forge-top5', {{}});
+      var changed = false;
+      for (var dk in cloud) {{
+        if (cloud.hasOwnProperty(dk) && JSON.stringify(all[dk]) !== JSON.stringify(cloud[dk])) {{
+          all[dk] = cloud[dk]; changed = true;
+        }}
+      }}
+      if (changed) {{
+        try {{ localStorage.setItem('forge-top5', JSON.stringify(all)); }} catch(e) {{}}
+        try {{ paintTodayFive(); }} catch(e) {{}}
+      }}
+    }})
+    .catch(function() {{}});
+}}
 function t5Esc(s) {{
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }}
@@ -2008,6 +2028,7 @@ function markNew() {{
 
 window.addEventListener('load', function () {{
   try {{ paintTodayFive(); }} catch (e) {{}}
+  try {{ syncPullBrief(); }} catch (e) {{}}
   try {{ paintYesterday(); }} catch (e) {{}}
   try {{ paintRocks(); }} catch (e) {{}}
   try {{ markNew(); }} catch (e) {{}}
