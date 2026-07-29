@@ -1849,12 +1849,27 @@ window.FORGE_CALENDAR = {cal_json};
 window.FORGE_GEN_DATE = "{now.strftime('%Y-%m-%d')}";
 window.onload = function() {{
   loadCounts(); setInterval(tick, 1000);
-  // Staleness fix: if the brief was generated on a different date, force a fresh load
-  var todayISO = new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0');
-  if (window.FORGE_GEN_DATE !== todayISO) {{
-    var url = location.href.split('?')[0] + '?v=' + Date.now();
-    location.replace(url);
-  }}
+  // Staleness check. FORGE_GEN_DATE is stamped in PACIFIC time, but the device may be in
+  // any timezone, so a gap of up to a day is normal and is NOT stale. Only a gap of a full
+  // day or more means the daily workflow actually failed to run.
+  // The reload is attempted at most ONCE per tab, so this can never loop.
+  try {{
+    var gen = new Date(window.FORGE_GEN_DATE + 'T12:00:00');
+    var days = Math.floor((new Date() - gen) / 86400000);
+    if (days >= 1) {{
+      if (!sessionStorage.getItem('forge-stale-reload')) {{
+        sessionStorage.setItem('forge-stale-reload', '1');
+        location.replace(location.href.split('?')[0] + '?v=' + Date.now());
+        return;
+      }}
+      var b = document.createElement('div');
+      b.style.cssText = 'background:#8b1a1a;color:#fff;padding:10px 14px;font-size:13px;' +
+                        'font-weight:800;text-align:center;letter-spacing:0.04em;';
+      b.textContent = 'STALE BRIEF \u2014 generated ' + window.FORGE_GEN_DATE +
+                      '. The daily workflow has not run since. Data below is out of date.';
+      document.body.insertBefore(b, document.body.firstChild);
+    }}
+  }} catch (e) {{}}
 }};
 /* ── Depth panels: expand the explanation behind the focus prompt ───────── */
 function toggleDepth(el) {{
