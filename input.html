@@ -119,7 +119,7 @@
       <div class="field"><label>Health %</label><input type="number" id="hrv_health" min="0" max="100" inputmode="numeric" placeholder="20"></div>
     </div>
 
-    <div class="group-label">Sleep</div>
+    <div class="group-label">Sleep <span style="font-weight:400;opacity:.72;font-size:.82em">— leave blank if the watch recorded nothing. Do not enter 0.</span></div>
     <div class="field"><label>Sleep score %</label><input type="number" id="sleep_score" min="0" max="100" inputmode="numeric" placeholder="94"></div>
     <div class="field"><label>Duration</label><input type="text" id="sleep_duration" placeholder="7h 15m"></div>
     <div class="row2">
@@ -262,6 +262,12 @@ function showStatus(msg, color){
 }
 function val(id){ var el=document.getElementById(id); return el?el.value:''; }
 function num(id){ var v=val(id); return v===''?null:parseFloat(v); }
+// install10: a sleep reading of 0 — or an impossible sentinel — means NOT MEASURED,
+// not "slept zero". Coerced to null here so mergeInto() omits it from the record
+// entirely. Typing 0 for a night the watch missed used to store a real 0, which
+// fabricated a low-sleep alarm on the brief and poisoned sleep/output correlation.
+function sleepNum(id){ var v=num(id); if(v===null||isNaN(v)) return null; return (v<=0||v>100)?null:v; }
+function sleepHr(id){ var v=num(id); return (v===null||isNaN(v)||v<=0)?'':String(v); }
 
 // ── History store: dict keyed by ISO date, fields merged per date ───────────
 function loadHistory(){
@@ -461,8 +467,11 @@ function syncToCloud(records){
 
 // ── Submit: measures → today, factors → yesterday, then POST brief ──────────
 function submitData(){
-  var need=['hrv_stress','hrv_energy','hrv_health','sleep_score','sleep_duration','hr_min','hr_max'];
-  for(var i=0;i<need.length;i++){ if(val(need[i])===''){ showStatus('Fill in all HRV + Sleep fields (This Morning).','red'); return; } }
+  // install10: sleep fields are OPTIONAL. num() returns null for a blank field and
+  // mergeInto() skips nulls, so a blank sleep field is simply ABSENT from the record
+  // rather than stored as 0. Only the three HRV numbers are genuinely required.
+  var need=['hrv_stress','hrv_energy','hrv_health'];
+  for(var i=0;i<need.length;i++){ if(val(need[i])===''){ showStatus('Fill in all three HRV fields (This Morning). Sleep may be left blank.','red'); return; } }
   showStatus('Saving...', 'white');
 
   var history=loadHistory();
@@ -470,7 +479,7 @@ function submitData(){
   // This morning's recovery → TODAY's record
   mergeInto(history, todayKey(), {
     hrv_stress:num('hrv_stress'), hrv_energy:num('hrv_energy'), hrv_health:num('hrv_health'),
-    sleep_score:num('sleep_score'), sleep_duration:val('sleep_duration'),
+    sleep_score:sleepNum('sleep_score'), sleep_duration:val('sleep_duration'),
     hr_range: (val('hr_min')&&val('hr_max'))? (val('hr_min')+'-'+val('hr_max')) : null,
     weight:num('bc_weight'), body_fat:num('bc_fat'), muscle_mass:num('bc_muscle'),
     bmi:num('bc_bmi'), visceral_fat:num('bc_visceral')
@@ -502,7 +511,8 @@ function submitData(){
   var brief={
     welltory:{ stress:parseInt(val('hrv_stress')), energy:parseInt(val('hrv_energy')), health:parseInt(val('hrv_health')) },
     body_comp:{ weight:num('bc_weight'), body_fat:num('bc_fat'), muscle_mass:num('bc_muscle'), bmi:num('bc_bmi'), visceral_fat:num('bc_visceral') },
-    sleep:{ score:parseInt(val('sleep_score')), duration:val('sleep_duration'), hr_range:val('hr_min')+'-'+val('hr_max') },
+    sleep:{ score:sleepNum('sleep_score'), duration:val('sleep_duration')||null,
+            hr_range:(sleepHr('hr_min')&&sleepHr('hr_max'))?(sleepHr('hr_min')+'-'+sleepHr('hr_max')):null },
     notes: val('y_note')||'',
     updated:new Date().toISOString()
   };

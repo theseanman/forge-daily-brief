@@ -171,7 +171,7 @@ def load_user_data():
     except:
         return {
             "welltory": {"stress": 50, "energy": 50, "health": 50},
-            "sleep": {"score": 85, "duration": "7h 0m", "hr_range": "50–70"},
+            "sleep": {"score": None, "duration": None, "hr_range": None},
             "body_comp": {"weight": None, "body_fat": None, "muscle_mass": None, "bmi": None, "visceral_fat": None}
         }
 
@@ -1162,6 +1162,32 @@ def fetch_betting_intel():
 
 HANNIBAL_IMG = "https://upload.wikimedia.org/wikipedia/en/thumb/d/da/Hannibal_Smith.jpg/220px-Hannibal_Smith.jpg"
 
+def sleep_is_missing(v):
+    """install10 (Jul 30 2026): True when a sleep score is absent, blank, zero,
+    or an impossible sentinel (<=0 or >100).
+
+    A watch that is broken, unpaired or simply not worn must read as MISSING,
+    never as a real 0. Recording it as data does two kinds of damage: it
+    fabricates a low-sleep alarm in the SITREP on a night that was never
+    measured, and it poisons any later correlation between sleep and output.
+    Sentinels above 100 are absorbed here too, so a placeholder typed into the
+    log to get past the old required-field check is treated as missing.
+    """
+    if v is None or isinstance(v, bool):
+        return True
+    if isinstance(v, str):
+        v = v.strip()
+        if v == "":
+            return True
+        try:
+            v = float(v)
+        except ValueError:
+            return True
+    if isinstance(v, (int, float)):
+        return v <= 0 or v > 100
+    return True
+
+
 def generate_sitrep(welltory, sleep, calendar_events, weather, reminders=None):
     """Rule-based FORGE SITREP. Reads data, outputs a terse commander briefing."""
     stress = welltory.get("stress", 50)
@@ -1169,6 +1195,13 @@ def generate_sitrep(welltory, sleep, calendar_events, weather, reminders=None):
     health = welltory.get("health", 50)
     sleep_score = sleep.get("score", 80)
     sleep_dur = sleep.get("duration", "7h 0m")
+    # install10: normalise before ANY comparison. sleep_score becomes None when
+    # missing, so every downstream branch must guard on sleep_missing first.
+    sleep_missing = sleep_is_missing(sleep_score)
+    if sleep_missing:
+        sleep_score = None
+    if sleep_dur is None or str(sleep_dur).strip() == "":
+        sleep_dur = "not recorded"
     today_events = calendar_events.get("today", "")
     now = now_pt()
     hour = now.hour
@@ -1189,7 +1222,7 @@ def generate_sitrep(welltory, sleep, calendar_events, weather, reminders=None):
             f"Running at reduced capacity. Energy {energy}%, stress {stress}%. "
             "Protect the morning window. Defer anything that can wait."
         )
-    elif sleep_score < 70:
+    elif (not sleep_missing) and sleep_score < 70:
         readiness = "AMBER"
         readiness_line = (
             f"Sleep score low at {sleep_score}% ({sleep_dur}). "
@@ -1197,8 +1230,9 @@ def generate_sitrep(welltory, sleep, calendar_events, weather, reminders=None):
         )
     else:
         readiness = "GREEN"
+        sleep_frag = "sleep not recorded" if sleep_missing else f"sleep {sleep_score}%"
         readiness_line = (
-            f"Systems nominal. Energy {energy}%, stress {stress}%, sleep {sleep_score}%. "
+            f"Systems nominal. Energy {energy}%, stress {stress}%, {sleep_frag}. "
             "Execute as planned. You have the bandwidth today — use it."
         )
 
@@ -1281,6 +1315,22 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     sports_text = get_sports_updates()
     reminders = fetch_reminders()
     sitrep_text = generate_sitrep(welltory, sleep, calendar_events, weather, reminders)
+
+    # install10: the Sleep card states MISSING in words rather than printing a
+    # number that was never measured. Silent fake data is worse than a gap.
+    _ss, _sd, _sh = sleep.get("score"), sleep.get("duration"), sleep.get("hr_range")
+    _ss_missing = sleep_is_missing(_ss)
+    sleep_score_disp = "NOT RECORDED" if _ss_missing else f"{_ss}%"
+    sleep_dur_disp = "—" if (_sd is None or str(_sd).strip() in ("", "-")) else str(_sd)
+    sleep_hr_disp = "—" if (_sh is None or str(_sh).strip() in ("", "-")) else str(_sh)
+    sleep_missing_note = ""
+    if _ss_missing:
+        sleep_missing_note = (
+            '<div style="margin-top:10px;padding:8px 10px;border-left:3px solid #e0a030;'
+            'background:rgba(224,160,48,0.12);font-size:0.9em;line-height:1.4">'
+            'No sleep reading for last night — <strong>not measured</strong>, not a zero. '
+            'Left out of the record so it cannot be mistaken for a bad night.</div>'
+        )
 
     stress_status = "Elevated" if welltory["stress"] >= 60 else "Moderate" if welltory["stress"] >= 40 else "Low"
     energy_status = "High" if welltory["energy"] >= 60 else "Moderate" if welltory["energy"] >= 40 else "Limited"
@@ -1598,10 +1648,11 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
   <div class="card">
     <div class="card-header"><span class="card-icon">😴🌴</span><span>Sleep Report</span></div>
     <div class="stat-row">
-      <div class="stat-block"><div class="stat-val">{sleep['score']}%</div><div class="stat-label">Score</div></div>
-      <div class="stat-block"><div class="stat-val">{sleep['duration']}</div><div class="stat-label">Duration</div></div>
-      <div class="stat-block"><div class="stat-val">{sleep['hr_range']}</div><div class="stat-label">HR Range</div></div>
+      <div class="stat-block"><div class="stat-val">{sleep_score_disp}</div><div class="stat-label">Score</div></div>
+      <div class="stat-block"><div class="stat-val">{sleep_dur_disp}</div><div class="stat-label">Duration</div></div>
+      <div class="stat-block"><div class="stat-val">{sleep_hr_disp}</div><div class="stat-label">HR Range</div></div>
     </div>
+    {sleep_missing_note}
   </div>
 
   <div class="card" style="background: linear-gradient(135deg, rgba(255,215,0,0.25), rgba(255,140,0,0.15)); border: 3px double var(--text-bright);">
@@ -2059,7 +2110,7 @@ def main():
     
     user_data = load_user_data()
     welltory = user_data.get("welltory", {"stress": 50, "energy": 50, "health": 50})
-    sleep = user_data.get("sleep", {"score": 85, "duration": "7h 0m", "hr_range": "50–70"})
+    sleep = user_data.get("sleep", {"score": None, "duration": None, "hr_range": None})
     body_comp = user_data.get("body_comp", {"weight": None, "body_fat": None, "muscle_mass": None, "bmi": None, "visceral_fat": None})
     
     print(f"✓ Loaded user data: Stress {welltory['stress']}%, Energy {welltory['energy']}%, Health {welltory['health']}%")
