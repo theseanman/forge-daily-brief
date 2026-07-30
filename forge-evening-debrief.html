@@ -787,9 +787,12 @@ function saveTomorrow(){
   if(carryNote){ var b=fdRead(K_BACKLOG,[]); if(b.indexOf(carryNote)===-1){ b.push(carryNote); fdWrite(K_BACKLOG,b); } }
   fdWrite(K_BACKUP,{ saved:new Date().toISOString(), plan:fdRead('forge-dayplan',{}), top5:fdRead(K_TOP5,{}),
                      backlog:fdRead(K_BACKLOG,[]), fun:fdRead(K_FUN,[]) });
-}
+  /* install11: sync-on-save. These two calls were stray top-level statements
+     below this function; the freshly saved five was never pushed to the worker,
+     and every page load clobbered the cloud with pre-debrief state. */
   syncPush(K_TOP5);
   syncPush(K_BACKLOG);
+}
 function renderScorecard(){
   var host=document.getElementById('scorecard-host'); if(!host) return;
   var h=recordHistory();
