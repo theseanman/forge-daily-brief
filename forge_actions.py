@@ -20,7 +20,20 @@ import datetime as _dt
 import zoneinfo
 
 # ── Timezone fix: all datetime.now() calls use Pacific time ──────────────────
-PACIFIC = zoneinfo.ZoneInfo("America/Vancouver")
+# ── install12: travel override ───────────────────────────────────────────────
+# FORGE_TZ / FORGE_LAT / FORGE_LON let the brief follow Sean while he travels.
+# With all three UNSET the generated brief is identical to the Richmond build.
+# TO REVERSE: delete the repository variables. No code change required.
+FORGE_HOME_TZ = "America/Vancouver"
+FORGE_TZ_NAME = os.environ.get("FORGE_TZ", "").strip() or FORGE_HOME_TZ
+try:
+    _FORGE_ZONE = zoneinfo.ZoneInfo(FORGE_TZ_NAME)
+except Exception as _tz_err:
+    print(f"FORGE_TZ {FORGE_TZ_NAME!r} invalid ({_tz_err}) - falling back to {FORGE_HOME_TZ}")
+    FORGE_TZ_NAME = FORGE_HOME_TZ
+    _FORGE_ZONE = zoneinfo.ZoneInfo(FORGE_TZ_NAME)
+FORGE_TZ_SUFFIX = "" if FORGE_TZ_NAME == FORGE_HOME_TZ else f" \u00b7 {FORGE_TZ_NAME}"
+PACIFIC = _FORGE_ZONE
 
 def now_pt():
     """Return current datetime in Pacific time."""
@@ -158,6 +171,15 @@ STOIC_QUOTES = [
 
 
 RICHMOND_COORDS = (49.1895, -123.1724)
+# install12: FORGE_LAT / FORGE_LON move the weather lookup while travelling.
+_forge_lat = os.environ.get("FORGE_LAT", "").strip()
+_forge_lon = os.environ.get("FORGE_LON", "").strip()
+if _forge_lat and _forge_lon:
+    try:
+        RICHMOND_COORDS = (float(_forge_lat), float(_forge_lon))
+    except ValueError:
+        print(f"FORGE_LAT/FORGE_LON not numeric ({_forge_lat!r}, {_forge_lon!r}) - keeping Richmond coords")
+print(f"FORGE location: tz={FORGE_TZ_NAME} coords={RICHMOND_COORDS}")
 ICLOUD_EMAIL = os.environ.get("ICLOUD_EMAIL", "yoseanreid@icloud.com")
 ICLOUD_PASSWORD = os.environ.get("ICLOUD_PASSWORD", "")
 JSONBIN_MASTER_KEY = "$2a$10$rs9Sak4dqIbcRvK1M.wAnOkEz1PsUKu.DqrastjCx2npbrJYr3r/2"
@@ -178,7 +200,7 @@ def load_user_data():
 def get_weather():
     """Fetch weather for Richmond, BC."""
     try:
-        url = f"https://api.open-meteo.com/v1/forecast?latitude={RICHMOND_COORDS[0]}&longitude={RICHMOND_COORDS[1]}&current=temperature_2m,weather_code&temperature_unit=celsius&timezone=America/Vancouver"
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={RICHMOND_COORDS[0]}&longitude={RICHMOND_COORDS[1]}&current=temperature_2m,weather_code&temperature_unit=celsius&timezone={FORGE_TZ_NAME}"
         with urllib.request.urlopen(url, timeout=10) as response:
             data = json.loads(response.read().decode())
             temp = data.get("current", {}).get("temperature_2m", "N/A")
@@ -433,7 +455,7 @@ def get_calendar_events():
         tz = timezone.utc
 
         # Use Pacific timezone for today boundaries so evening PT events aren't cut off
-        pt = zoneinfo.ZoneInfo("America/Vancouver")
+        pt = zoneinfo.ZoneInfo(FORGE_TZ_NAME)  # install12
         today_start = datetime.combine(today, datetime.min.time()).replace(tzinfo=pt)
         today_end = datetime.combine(today + timedelta(days=1), datetime.min.time()).replace(tzinfo=pt)
         week_end = datetime.combine(today + timedelta(days=7), datetime.min.time()).replace(tzinfo=tz)
@@ -1851,7 +1873,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
 {concert_cards_html}
 
 
-  <div class="footer">🌴 FORGE OS · {date_str.upper()} · {time_str} · theseanman.github.io/forge-daily-brief</div>
+  <div class="footer">🌴 FORGE OS · {date_str.upper()} · {time_str}{FORGE_TZ_SUFFIX} · theseanman.github.io/forge-daily-brief</div>
 
 </div>
 
