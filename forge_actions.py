@@ -1620,7 +1620,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
   </div>
 
   <div class="input-banner">
-    📊 Update today's HRV + Sleep data → <a href="https://theseanman.github.io/forge-daily-brief/input.html">Open Input Form →</a>
+    📊 Update today's HRV + Sleep data → <a href="input.html">Open Input Form →</a>
   </div>
 
   <div class="motd-box">
@@ -1655,7 +1655,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
   <div class="card">
     <div class="card-header"><span class="card-icon">&#x1F3AF;&#x1F334;</span><span>Today&rsquo;s Five</span></div>
     <div id="today-five-host"></div>
-    <div class="mini-card"><div class="mini-detail"><a href="https://theseanman.github.io/forge-daily-brief/planner.html">Open the day planner &#8594;</a><br><span style="font-size:12px;">Hour-by-hour grid with the calendar auto-filled. Set or edit the five here.</span></div></div>
+    <div class="mini-card"><div class="mini-detail"><a href="planner.html">Open the day planner &#8594;</a><br><span style="font-size:12px;">Hour-by-hour grid with the calendar auto-filled. Set or edit the five here.</span></div></div>
   </div>
 
   <div class="card">
@@ -1856,7 +1856,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
       <div class="depth-origin">{model.get('origin','')}</div>
       <div class="depth-what">{model['what']}</div>
       {model_examples_html}
-      <div style="margin-top:8px; font-size:12px;"><a href="https://theseanman.github.io/forge-daily-brief/models.html">Browse the full library &#8594;</a></div>
+      <div style="margin-top:8px; font-size:12px;"><a href="models.html">Browse the full library &#8594;</a></div>
     </div>
   </div>
 
@@ -1870,7 +1870,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     <div class="depth-body">
       <div class="depth-what">{strat['what']}</div>
       {strat_examples_html}
-      <div style="margin-top:8px; font-size:12px;"><a href="https://theseanman.github.io/forge-daily-brief/models.html">Browse the full library &#8594;</a></div>
+      <div style="margin-top:8px; font-size:12px;"><a href="models.html">Browse the full library &#8594;</a></div>
     </div>
   </div>
 
