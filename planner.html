@@ -226,6 +226,7 @@
     <div class="val" id="nextval">&mdash;</div>
   </div>
 
+  <div id="practice-host"></div>
   <div id="session-host"></div>
   <div class="sound-link" onclick="openSoundPicker()">⚙ alarm sound</div>
   <div id="sound-host"></div>
@@ -284,10 +285,11 @@ var K_TOP5 = 'forge-top5';
 var K_BACKLOG = 'forge-backlog';
 var K_FUN = 'forge-fun';
 var K_BACKUP = 'forge-backup';
+var K_MUSHIN = 'forge-mushin', K_PROJ = 'forge-project'; /* install14 */
 
 /* ---------- cloud sync ---------- */
 var SYNC_URL = 'https://forge-sync.yoseanreid.workers.dev';
-var SYNC_KEYS = [K_TOP5, K_PLAN, K_BACKLOG, K_FUN, 'forge-week-rocks'];
+var SYNC_KEYS = [K_TOP5, K_PLAN, K_BACKLOG, K_FUN, 'forge-week-rocks', K_MUSHIN, K_PROJ]; /* install14 */
 
 function syncBadge(state) {
   var el = document.getElementById('sync-badge');
@@ -329,7 +331,21 @@ function syncPull(cb) {
             if (typeof local !== 'object' || Array.isArray(local)) local = {};
             var changed = false;
             for (var dk in cloud) {
-              if (cloud.hasOwnProperty(dk) && JSON.stringify(local[dk]) !== JSON.stringify(cloud[dk])) {
+              if (!cloud.hasOwnProperty(dk)) continue;
+              if (key === K_MUSHIN || key === K_PROJ) { /* install14: seconds only ever go up */
+                var lc = local[dk], cc = cloud[dk];
+                var ls = (lc && typeof lc.sec === 'number') ? lc.sec : -1;
+                var cs = (cc && typeof cc.sec === 'number') ? cc.sec : -1;
+                if (cs > ls) {
+                  var keepRun = (lc && typeof lc.run === 'number') ? lc.run : 0;
+                  local[dk] = { sec: cc.sec, done: cc.done === true, run: keepRun };
+                  changed = true;
+                } else if (cc && cc.done === true && lc && lc.done !== true) {
+                  lc.done = true; changed = true;
+                }
+                continue;
+              }
+              if (JSON.stringify(local[dk]) !== JSON.stringify(cloud[dk])) {
                 local[dk] = cloud[dk]; changed = true;
               }
             }
@@ -1342,6 +1358,7 @@ function renderLists(){
 }
 function renderAll(){
   paintDate(); trainingBanner(); paintMeta();
+  renderPractice(); /* install14 */
   renderSession();
   renderTop5(); paintNext();
   renderLists();
@@ -1349,8 +1366,213 @@ function renderAll(){
   renderOffDay(); renderStats();
 }
 
+/* ---------- install14: practice timers (mushin + weekly project) ---------- */
+var MUSHIN_TARGET = 600;      /* 10 min/day  */
+var PROJ_TARGET   = 10800;    /* 180 min/week */
+var RECOVER_CAP   = 3600;     /* never credit more than 60 min from one unattended stretch */
+var _ptick = null, _psave = 0;
+
+function weekKey(d){
+  var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  var dow = x.getDay();                     /* 0 Sun .. 6 Sat */
+  x.setDate(x.getDate() - (dow === 0 ? 6 : dow - 1));   /* back to Monday */
+  return ymd(x);
+}
+function pDayKey(){ return ymd(new Date()); }
+function pWeekKey(){ return weekKey(new Date()); }
+function pKeyFor(key){ return key === K_MUSHIN ? pDayKey() : pWeekKey(); }
+function pTargetFor(key){ return key === K_MUSHIN ? MUSHIN_TARGET : PROJ_TARGET; }
+function pKeepFor(key){ return key === K_MUSHIN ? 60 : 52; }
+
+function pAll(key){
+  var o = readJSON(key, {});
+  return (o && typeof o === 'object' && !Array.isArray(o)) ? o : {};
+}
+function pEntry(key, k){
+  var e = pAll(key)[k];
+  if (!e || typeof e !== 'object') return { sec: 0, done: false, run: 0 };
+  return {
+    sec:  (typeof e.sec === 'number' && e.sec > 0) ? e.sec : 0,
+    done: e.done === true,
+    run:  (typeof e.run === 'number' && e.run > 0) ? e.run : 0
+  };
+}
+function pWrite(key, k, e, push){
+  var all = pAll(key), prev = all[k];
+  if (!prev || typeof prev !== 'object') prev = {};
+  prev.sec = e.sec; prev.done = e.done; prev.run = e.run;
+  all[k] = prev;
+  var ks = Object.keys(all).sort(), keep = pKeepFor(key);
+  if (ks.length > keep){
+    var trimmed = {};
+    ks.slice(-keep).forEach(function(x){ trimmed[x] = all[x]; });
+    all = trimmed;
+  }
+  writeJSON(key, all);
+  if (push) syncPush(key);
+}
+
+/* Rolling commit: fold the elapsed wall-clock time into sec and re-stamp run.
+   Wall clock is used deliberately so the phone can be locked during mushin. */
+function pCommit(key, push){
+  var k = pKeyFor(key), e = pEntry(key, k);
+  if (!e.run) return e;
+  var elapsed = Math.floor((Date.now() - e.run) / 1000);
+  var capped = false;
+  if (elapsed < 0) elapsed = 0;
+  if (elapsed > RECOVER_CAP){ elapsed = RECOVER_CAP; capped = true; }
+  e.sec += elapsed;
+  e.run = capped ? 0 : Date.now();          /* an unattended stretch pauses itself */
+  if (key === K_MUSHIN && e.sec >= MUSHIN_TARGET && !e.done){ e.done = true; push = true; }
+  pWrite(key, k, e, push);
+  return e;
+}
+/* A timer left running into a new day or week is closed out against the period
+   it actually belonged to, never credited to the current one. */
+function pRollover(key){
+  var all = pAll(key), cur = pKeyFor(key), touched = false;
+  for (var k in all){
+    if (!all.hasOwnProperty(k) || k === cur) continue;
+    var e = all[k];
+    if (e && typeof e === 'object' && typeof e.run === 'number' && e.run > 0){
+      var el = Math.floor((Date.now() - e.run) / 1000);
+      if (el < 0) el = 0;
+      if (el > RECOVER_CAP) el = RECOVER_CAP;
+      e.sec = (typeof e.sec === 'number' ? e.sec : 0) + el;
+      e.run = 0;
+      if (key === K_MUSHIN && e.sec >= MUSHIN_TARGET) e.done = true;
+      touched = true;
+    }
+  }
+  if (touched){ writeJSON(key, all); syncPush(key); }
+}
+function pRunning(key){ return pEntry(key, pKeyFor(key)).run > 0; }
+
+function pToggle(key){
+  var other = (key === K_MUSHIN) ? K_PROJ : K_MUSHIN;
+  if (pRunning(other)) pStop(other);        /* one practice at a time */
+  if (pRunning(key)) pStop(key); else pStart(key);
+}
+function pStart(key){
+  var k = pKeyFor(key), e = pEntry(key, k);
+  e.run = Date.now();
+  pWrite(key, k, e, false);
+  renderPractice();
+}
+function pStop(key){
+  pCommit(key, true);
+  var k = pKeyFor(key), e = pEntry(key, k);
+  e.run = 0;
+  pWrite(key, k, e, true);
+  afterSave(true);
+  renderPractice();
+}
+
+function projStreak(){
+  var all = pAll(K_PROJ), n = 0, guard = 0;
+  var probe = new Date();
+  var cur = pEntry(K_PROJ, weekKey(probe));
+  if (cur.sec >= PROJ_TARGET) n++;          /* this week counts only once it clears */
+  probe.setDate(probe.getDate() - 7);
+  while (guard++ < 200){
+    var e = all[weekKey(probe)];
+    var s = (e && typeof e.sec === 'number') ? e.sec : 0;
+    if (s < PROJ_TARGET) break;
+    n++;
+    probe.setDate(probe.getDate() - 7);
+  }
+  return n;
+}
+
+function pClock(sec, wide){
+  if (sec < 0) sec = 0;
+  var m = Math.floor(sec / 60), s = sec % 60;
+  if (!wide) return m + ':' + (s < 10 ? '0' : '') + s;
+  var h = Math.floor(m / 60); m = m % 60;
+  return h + 'h ' + (m < 10 ? '0' : '') + m + 'm';
+}
+
+function paintPracticeTimes(){
+  var me = pEntry(K_MUSHIN, pDayKey()), pe = pEntry(K_PROJ, pWeekKey());
+  var a = document.getElementById('p-mushin-t');
+  var b = document.getElementById('p-proj-t');
+  if (a) a.textContent = pClock(me.sec, false);
+  if (b) b.textContent = pClock(pe.sec, true);
+}
+
+function renderPractice(){
+  var host = document.getElementById('practice-host');
+  if (!host) return;
+  var me = pEntry(K_MUSHIN, pDayKey()), pe = pEntry(K_PROJ, pWeekKey());
+  var mRun = me.run > 0, pRun = pe.run > 0;
+  var streak = projStreak();
+
+  function row(id, icon, label, timeTxt, targetTxt, running, done, sub, fn){
+    return '' +
+      '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;' +
+        (id === 'p-proj' ? '' : 'border-bottom:1px solid rgba(255,201,7,0.25);') + '">' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-size:10px;letter-spacing:0.16em;opacity:0.75;">' + icon + ' ' + label + '</div>' +
+          '<div style="font-size:19px;font-weight:800;line-height:1.25;">' +
+            '<span id="' + id + '-t">' + timeTxt + '</span>' +
+            '<span style="font-size:12px;font-weight:600;opacity:0.6;"> / ' + targetTxt + '</span>' +
+            (done ? '<span style="font-size:13px;"> \u2713</span>' : '') +
+          '</div>' +
+          (sub ? '<div style="font-size:10px;opacity:0.7;margin-top:2px;">' + sub + '</div>' : '') +
+        '</div>' +
+        '<button onclick="' + fn + '" style="border:none;border-radius:8px;padding:9px 14px;' +
+          'font-weight:800;font-size:12px;letter-spacing:0.08em;cursor:pointer;' +
+          'touch-action:manipulation;background:' + (running ? '#ff6b6b' : '#ffc107') + ';color:#0d0d0d;">' +
+          (running ? 'PAUSE' : 'START') +
+        '</button>' +
+      '</div>';
+  }
+
+  host.innerHTML =
+    '<div style="background:rgba(0,0,0,0.88);color:#ffc107;border-radius:10px;padding:10px 14px;margin-bottom:14px;">' +
+      '<div style="font-size:10px;letter-spacing:0.18em;opacity:0.75;margin-bottom:2px;">PRACTICE</div>' +
+      row('p-mushin', '\u25CB', 'MUSHIN', pClock(me.sec, false), '10:00', mRun, me.done,
+          mRun ? 'running' : '', 'pToggle(K_MUSHIN)') +
+      row('p-proj', '\u25A0', 'PROJECT TIME', pClock(pe.sec, true), '3h 00m', pRun, pe.sec >= PROJ_TARGET,
+          (streak > 0 ? streak + ' week' + (streak === 1 ? '' : 's') + ' clearing the floor' : 'floor, not a target'),
+          'pToggle(K_PROJ)') +
+    '</div>';
+}
+
+function practiceTick(){
+  var live = false;
+  if (pRunning(K_MUSHIN)){ pCommit(K_MUSHIN, false); live = true; }
+  if (pRunning(K_PROJ)){ pCommit(K_PROJ, false); live = true; }
+  if (!live) return;
+  paintPracticeTimes();
+  if (Date.now() - _psave > 30000){ _psave = Date.now(); pPushLive(); }
+  if (pEntry(K_MUSHIN, pDayKey()).done && !pRunning(K_MUSHIN)) renderPractice();
+}
+function pPushLive(){
+  if (pRunning(K_MUSHIN) || pEntry(K_MUSHIN, pDayKey()).sec > 0) syncPush(K_MUSHIN);
+  if (pRunning(K_PROJ)   || pEntry(K_PROJ, pWeekKey()).sec > 0)  syncPush(K_PROJ);
+}
+function practiceInit(){
+  pRollover(K_MUSHIN); pRollover(K_PROJ);
+  pCommit(K_MUSHIN, false); pCommit(K_PROJ, false);
+  renderPractice();
+  if (_ptick) clearInterval(_ptick);
+  _ptick = setInterval(practiceTick, 1000);
+  document.addEventListener('visibilitychange', function(){
+    if (document.hidden){
+      if (pRunning(K_MUSHIN)) pCommit(K_MUSHIN, true);
+      if (pRunning(K_PROJ)) pCommit(K_PROJ, true);
+    } else {
+      pRollover(K_MUSHIN); pRollover(K_PROJ);
+      pCommit(K_MUSHIN, false); pCommit(K_PROJ, false);
+      renderPractice();
+    }
+  });
+}
+
 window.onload = function(){
   renderAll();
+  practiceInit(); /* install14 */
   syncPull(function(){ renderAll(); });
   askNotify();
   fetchCalendar();
