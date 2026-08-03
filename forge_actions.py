@@ -1878,7 +1878,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
 {concert_cards_html}
 
 
-  <div class="footer">🌴 FORGE OS · {date_str.upper()} · {time_str}{FORGE_TZ_SUFFIX} · theseanman.github.io/forge-daily-brief</div>
+  <div class="footer">🌴 FORGE OS · {date_str.upper()} · {time_str}{FORGE_TZ_SUFFIX} · theseanman.github.io/forge-daily-brief<span id="sync-state"></span></div>
 
 </div>
 
@@ -2021,24 +2021,77 @@ function readJSONKey(k, fb) {{
   catch (e) {{ return fb; }}
 }}
 var SYNC_URL = 'https://forge-sync.yoseanreid.workers.dev';
+/* install19: guarded pull. An entry that is EMPTY in the cloud never overwrites a
+   populated local one - stale-but-present beats silently wiped. */
+function briefState(s) {{
+  var el = document.getElementById('sync-state');
+  if (!el) return;
+  if (s === 'pulling')      {{ el.textContent = ' \u00b7 syncing\u2026'; el.style.color = 'inherit'; }}
+  else if (s === 'synced')  {{ el.textContent = ' \u00b7 synced'; el.style.color = 'inherit'; }}
+  else if (s === 'partial') {{ el.textContent = ' \u00b7 partial sync'; el.style.color = '#ffc107'; }}
+  else if (s === 'offline') {{ el.textContent = ' \u00b7 offline, showing saved copy'; el.style.color = '#ff6b6b'; }}
+  else {{ el.textContent = ''; }}
+}}
+
+function briefBlank(v) {{
+  if (v === null || v === undefined) return true;
+  if (typeof v === 'number') return !(v > 0);
+  if (typeof v === 'string') return v.trim() === '';
+  if (Array.isArray(v)) {{
+    for (var i = 0; i < v.length; i++) if (!briefBlank(v[i])) return false;
+    return true;
+  }}
+  if (typeof v === 'object') {{
+    for (var k in v) {{
+      if (!v.hasOwnProperty(k)) continue;
+      if (k === 'done' || k === 'run') continue;      /* flags alone are not content */
+      if (!briefBlank(v[k])) return false;
+    }}
+    return true;
+  }}
+  return false;
+}}
+
+function repaintBrief() {{
+  try {{ paintTodayFive(); }} catch (e) {{}}
+  try {{ paintYesterday(); }} catch (e) {{}}
+  try {{ paintRocks(); }} catch (e) {{}}
+  try {{ paintPractice(); }} catch (e) {{}}
+}}
+
 function syncPullBrief() {{
-  fetch(SYNC_URL + '/forge-top5')
-    .then(function(r) {{ if (!r.ok) throw new Error(r.status); return r.json(); }})
-    .then(function(cloud) {{
-      if (!cloud || typeof cloud !== 'object' || Array.isArray(cloud)) return;
-      var all = readJSONKey('forge-top5', {{}});
-      var changed = false;
-      for (var dk in cloud) {{
-        if (cloud.hasOwnProperty(dk) && JSON.stringify(all[dk]) !== JSON.stringify(cloud[dk])) {{
-          all[dk] = cloud[dk]; changed = true;
+  var keys = ['forge-top5', 'forge-week-rocks'];
+  var done = 0, errs = 0, total = keys.length, touched = false;
+  briefState('pulling');
+  keys.forEach(function(key) {{
+    fetch(SYNC_URL + '/' + encodeURIComponent(key))
+      .then(function(r) {{ if (!r.ok) throw new Error(r.status); return r.json(); }})
+      .then(function(cloud) {{
+        if (cloud && typeof cloud === 'object' && !Array.isArray(cloud) && !cloud.error) {{
+          var all = readJSONKey(key, {{}});
+          if (!all || typeof all !== 'object' || Array.isArray(all)) all = {{}};
+          var changed = false;
+          for (var dk in cloud) {{
+            if (!cloud.hasOwnProperty(dk)) continue;
+            var lv = all[dk], cv = cloud[dk];
+            if (briefBlank(cv) && !briefBlank(lv)) continue;          /* the guard */
+            if (JSON.stringify(lv) === JSON.stringify(cv)) continue;
+            all[dk] = cv; changed = true;
+          }}
+          if (changed) {{
+            try {{ localStorage.setItem(key, JSON.stringify(all)); }} catch(e) {{}}
+            touched = true;
+          }}
         }}
-      }}
-      if (changed) {{
-        try {{ localStorage.setItem('forge-top5', JSON.stringify(all)); }} catch(e) {{}}
-        try {{ paintTodayFive(); }} catch(e) {{}}
-      }}
-    }})
-    .catch(function() {{}});
+        done++; settle();
+      }})
+      .catch(function() {{ errs++; settle(); }});
+  }});
+  function settle() {{
+    if (done + errs < total) return;
+    briefState(errs === total ? 'offline' : (errs ? 'partial' : 'synced'));
+    if (touched) repaintBrief();
+  }}
 }}
 function t5Esc(s) {{
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

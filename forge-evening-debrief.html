@@ -410,6 +410,7 @@ function init() {
   loadReminders();
   loadTodayTop5();
   backfillHealth();
+  try { syncPullDebrief(); } catch (e) {} /* install18 */
 }
 
 function buildPips() {
@@ -558,6 +559,8 @@ function syncBadge(state) {
   if (state === 'synced')       { el.textContent = '\u2601\uFE0F synced';  el.style.color = '#4ae8a0'; }
   else if (state === 'pushing') { el.textContent = '\u2601\uFE0F saving\u2026'; el.style.color = '#aab'; }
   else if (state === 'offline') { el.textContent = '\u26A0\uFE0F offline'; el.style.color = '#ff6b6b'; }
+  else if (state === 'pulling') { el.textContent = '\u2601\uFE0F syncing\u2026'; el.style.color = '#aab'; } /* install18 */
+  else if (state === 'partial') { el.textContent = '\u26A0\uFE0F partial sync'; el.style.color = '#ffc107'; } /* install18 */
   else { el.textContent = ''; }
 }
 function syncPush(key) {
@@ -568,6 +571,84 @@ function syncPush(key) {
     method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: val
   }).then(function(r) { syncBadge(r.ok ? 'synced' : 'offline'); })
     .catch(function() { syncBadge('offline'); });
+}
+
+/* ---------- install18: guarded pull ----------
+   An entry that is EMPTY in the cloud never overwrites a populated local one.
+   That is deliberate: stale-but-present beats silently wiped. The cost is that
+   deliberately clearing something on one surface will not propagate here. */
+var PULL_KEYS = [K_TOP5, K_ROCKS, K_FRAME, K_MUSHIN, K_BACKLOG, K_FUN];
+
+function fdBlank(v) {
+  if (v === null || v === undefined) return true;
+  if (typeof v === 'number') return !(v > 0);
+  if (typeof v === 'string') return v.trim() === '';
+  if (Array.isArray(v)) {
+    for (var i = 0; i < v.length; i++) if (!fdBlank(v[i])) return false;
+    return true;
+  }
+  if (typeof v === 'object') {
+    for (var k in v) {
+      if (!v.hasOwnProperty(k)) continue;
+      if (k === 'done' || k === 'run') continue;   /* flags alone are not content */
+      if (!fdBlank(v[k])) return false;
+    }
+    return true;
+  }
+  return false;
+}
+
+function fdMergeEntry(key, local, dk, cloudVal) {
+  var localVal = local[dk];
+
+  if (key === K_MUSHIN) {                      /* seconds only ever go up */
+    var ls = (localVal && typeof localVal.sec === 'number') ? localVal.sec : -1;
+    var cs = (cloudVal && typeof cloudVal.sec === 'number') ? cloudVal.sec : -1;
+    if (cs > ls) {
+      local[dk] = { sec: cloudVal.sec, done: cloudVal.done === true };
+      return true;
+    }
+    if (cloudVal && cloudVal.done === true && localVal && localVal.done !== true) {
+      localVal.done = true;
+      return true;
+    }
+    return false;
+  }
+
+  if (fdBlank(cloudVal) && !fdBlank(localVal)) return false;   /* the guard */
+  if (JSON.stringify(localVal) === JSON.stringify(cloudVal)) return false;
+  local[dk] = cloudVal;
+  return true;
+}
+
+function syncPullDebrief(cb) {
+  var done = 0, errs = 0, total = PULL_KEYS.length, touched = false;
+  syncBadge('pulling');
+  PULL_KEYS.forEach(function(key) {
+    fetch(SYNC_URL + '/' + encodeURIComponent(key))
+      .then(function(r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function(cloud) {
+        if (cloud && typeof cloud === 'object' && !Array.isArray(cloud) && !cloud.error) {
+          var local = fdRead(key, {});
+          if (!local || typeof local !== 'object' || Array.isArray(local)) local = {};
+          var changed = false;
+          for (var dk in cloud) {
+            if (!cloud.hasOwnProperty(dk)) continue;
+            if (fdMergeEntry(key, local, dk, cloud[dk])) changed = true;
+          }
+          if (changed) { fdWrite(key, local); touched = true; }
+        }
+        done++;
+        finish();
+      })
+      .catch(function() { errs++; finish(); });
+  });
+  function finish() {
+    if (done + errs < total) return;
+    syncBadge(errs === total ? 'offline' : (errs ? 'partial' : 'synced'));
+    if (touched) { try { loadTodayTop5(); } catch (e) {} }
+    if (cb) cb();
+  }
 }
 
 function fdRead(k, fb){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):fb; }catch(e){ return fb; } }
