@@ -1659,6 +1659,11 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
   </div>
 
   <div class="card">
+    <div class="card-header"><span class="card-icon">&#x25CB;&#x1F334;</span><span>Practice</span></div>
+    <div id="practice-brief-host"></div>
+  </div>
+
+  <div class="card">
     <div class="card-header"><span class="card-icon">❤️🌴</span><span>Welltory HRV</span></div>
     <div class="stat-row">
       <div class="stat-block"><div class="stat-val">{welltory['stress']}%</div><div class="stat-label">Stress</div><div class="stat-sub">{stress_status}</div></div>
@@ -1720,14 +1725,14 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
       Every setback or new environment: "What opportunity does this situation present me with?"<br><span style="font-weight:400; font-size:13px;">⚡ Cue: setback or threshold &mdash; ask it at the first one of the day.</span>
     </div>
     <div class="paramount-goal">
-      <div class="paramount-num"><span>5️⃣ NO NARRATIVES</span>
+      <div class="paramount-num"><span>5️⃣ NOT RELEVANT</span>
         <div class="goal-controls">
           <button class="goal-btn" onclick="decrementGoal(4)">−</button>
           <span class="goal-counter" id="goal-4-counter">0</span>
           <button class="goal-btn" onclick="incrementGoal(4)">+</button>
         </div>
       </div>
-      Shut down internal narratives the moment they begin. Facts only.
+      When the optimizing narrative starts &mdash; how to improve this, what it should become &mdash; name it and take away its authority: <em>not relevant to being present with my family.</em> It can stay. It doesn&rsquo;t get a vote.<br><span style="font-weight:400; font-size:13px;">⚡ Scope: optimization thoughts only. Not a general silencer &mdash; some internal signal is load-bearing. Two seconds, then back to one sense channel.</span>
     </div>
     <div class="mini-detail" style="margin-top:12px; font-size:12px; color:var(--muted);">💡 Tap +/− to track. Counters reset at midnight.</div>
   </div>
@@ -2114,9 +2119,123 @@ function markNew() {{
   }} catch (e) {{}}
 }}
 
+/* ---------- install15: practice status on the brief ---------- */
+var MUSHIN_TARGET_BRIEF = 600;      /* 10 min/day  */
+var PROJ_TARGET_BRIEF   = 10800;    /* 180 min/week */
+
+function pfWeekKeyFrom(d) {{
+  var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  var dow = x.getDay();                                    /* 0 Sun .. 6 Sat */
+  x.setDate(x.getDate() - (dow === 0 ? 6 : dow - 1));      /* back to Monday */
+  return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') +
+         '-' + String(x.getDate()).padStart(2, '0');
+}}
+function pfWeekKey() {{ return pfWeekKeyFrom(new Date()); }}
+
+function pfAll(key) {{
+  var o = readJSONKey(key, {{}});
+  return (o && typeof o === 'object' && !Array.isArray(o)) ? o : {{}};
+}}
+function pfEntry(key, k) {{
+  var e = pfAll(key)[k];
+  if (!e || typeof e !== 'object') return {{ sec: 0, done: false }};
+  return {{
+    sec: (typeof e.sec === 'number' && e.sec > 0) ? e.sec : 0,
+    done: e.done === true
+  }};
+}}
+function pfClock(sec, wide) {{
+  if (!(sec > 0)) sec = 0;
+  var m = Math.floor(sec / 60), s = sec % 60;
+  if (!wide) return m + ':' + (s < 10 ? '0' : '') + s;
+  var h = Math.floor(m / 60); m = m % 60;
+  return h + 'h ' + (m < 10 ? '0' : '') + m + 'm';
+}}
+function pfStreak() {{
+  var all = pfAll('forge-project'), n = 0, guard = 0;
+  var probe = new Date();
+  if (pfEntry('forge-project', pfWeekKeyFrom(probe)).sec >= PROJ_TARGET_BRIEF) n++;
+  probe.setDate(probe.getDate() - 7);
+  while (guard++ < 200) {{
+    var e = all[pfWeekKeyFrom(probe)];
+    var s = (e && typeof e.sec === 'number') ? e.sec : 0;
+    if (s < PROJ_TARGET_BRIEF) break;
+    n++;
+    probe.setDate(probe.getDate() - 7);
+  }}
+  return n;
+}}
+
+function paintPractice() {{
+  var host = document.getElementById('practice-brief-host');
+  if (!host) return;
+  var m = pfEntry('forge-mushin', ymdOffset(0));
+  var p = pfEntry('forge-project', pfWeekKey());
+  var mDone = m.done || m.sec >= MUSHIN_TARGET_BRIEF;
+  var pDone = p.sec >= PROJ_TARGET_BRIEF;
+  var streak = pfStreak();
+
+  var sub;
+  if (pDone) {{
+    sub = streak + ' week' + (streak === 1 ? '' : 's') + ' clearing the floor';
+  }} else {{
+    var left = Math.ceil((PROJ_TARGET_BRIEF - p.sec) / 60);
+    sub = left + ' min to the floor';
+  }}
+
+  host.innerHTML =
+    '<div class="t5-row' + (mDone ? ' t5-done' : '') + '">' +
+      '<span class="t5-tick">' + (mDone ? '&#10003;' : '&#9633;') + '</span>' +
+      '<div style="flex:1; min-width:0;">' +
+        '<div class="t5-task">Mushin</div>' +
+        '<div class="t5-meta">' + pfClock(m.sec, false) + ' of 10:00 today</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="t5-row' + (pDone ? ' t5-done' : '') + '">' +
+      '<span class="t5-tick">' + (pDone ? '&#10003;' : '&#9633;') + '</span>' +
+      '<div style="flex:1; min-width:0;">' +
+        '<div class="t5-task">Project time</div>' +
+        '<div class="t5-meta">' + pfClock(p.sec, true) + ' of 3h 00m this week &middot; ' + sub + '</div>' +
+      '</div>' +
+    '</div>';
+}}
+
+/* Same max-wins rule the planner uses: seconds never go backwards on a pull. */
+function pullPractice() {{
+  ['forge-mushin', 'forge-project'].forEach(function (key) {{
+    fetch(SYNC_URL + '/' + encodeURIComponent(key))
+      .then(function (r) {{ if (!r.ok) throw new Error(r.status); return r.json(); }})
+      .then(function (cloud) {{
+        if (!cloud || typeof cloud !== 'object' || Array.isArray(cloud)) return;
+        var all = pfAll(key);
+        var changed = false;
+        for (var dk in cloud) {{
+          if (!cloud.hasOwnProperty(dk)) continue;
+          var lc = all[dk], cc = cloud[dk];
+          if (!cc || typeof cc !== 'object') continue;
+          var ls = (lc && typeof lc.sec === 'number') ? lc.sec : -1;
+          var cs = (typeof cc.sec === 'number') ? cc.sec : -1;
+          if (cs > ls) {{
+            all[dk] = {{ sec: cc.sec, done: cc.done === true }};
+            changed = true;
+          }} else if (cc.done === true && lc && lc.done !== true) {{
+            lc.done = true; changed = true;
+          }}
+        }}
+        if (changed) {{
+          try {{ localStorage.setItem(key, JSON.stringify(all)); }} catch (e) {{}}
+          try {{ paintPractice(); }} catch (e) {{}}
+        }}
+      }})
+      .catch(function () {{}});
+  }});
+}}
+
 window.addEventListener('load', function () {{
   try {{ paintTodayFive(); }} catch (e) {{}}
+  try {{ paintPractice(); }} catch (e) {{}}
   try {{ syncPullBrief(); }} catch (e) {{}}
+  try {{ pullPractice(); }} catch (e) {{}}
   try {{ paintYesterday(); }} catch (e) {{}}
   try {{ paintRocks(); }} catch (e) {{}}
   try {{ markNew(); }} catch (e) {{}}
