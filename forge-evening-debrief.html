@@ -25,6 +25,12 @@
   .pip.active { background: var(--blue); }
   .step { display: none; }
   .step.active { display: block; }
+  .tagbtn { font-size:9px; letter-spacing:.09em; font-weight:700; border:1px solid #33334a;
+    background:#1a1a26; color:#8a8aa0; border-radius:4px; padding:3px 7px; cursor:pointer; flex-shrink:0; }
+  .tagbtn.opt { border-color:#4a9de8; color:#4a9de8; }
+  .tagbtn.imm { border-color:#e8a04a; color:#e8a04a; }
+  .mushin-row { display:flex; align-items:center; gap:10px; padding:8px 2px; border-top:1px solid #23233a; margin-top:8px; }
+  .enough-verdict { font-size:13px; font-weight:600; margin-top:6px; }
   .step-header { font-size: 10px; letter-spacing: 0.2em; color: var(--muted); margin-bottom: 0.5rem; text-transform: uppercase; }
   .step-title { font-size: 20px; font-weight: 600; color: var(--text); margin-bottom: 0.25rem; }
   .step-sub { font-size: 13px; color: var(--muted); margin-bottom: 1.25rem; line-height: 1.5; }
@@ -324,6 +330,23 @@
 
       <div class="note-line" id="plan-warn"></div>
 
+      <!-- install13 -->
+      <div class="rocks-card show" id="frame-card" style="margin-top:18px;">
+        <div style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#4a9de8; margin-bottom:6px;">Tomorrow&rsquo;s frame</div>
+
+        <div class="field-label" style="margin:0 0 4px;">What would make tomorrow enough?</div>
+        <div class="note-line" style="margin:0 0 8px;">How many OPTIMIZE items must close. Not all of them &mdash; enough. Ten minutes of mushin counts too, and both are needed.</div>
+        <div class="pick-wrap" id="enough-picks" style="margin-bottom:16px;"></div>
+
+        <div class="field-label" style="margin:0 0 4px;">One way to be</div>
+        <div class="note-line" style="margin:0 0 6px;">Not a task. Nothing to tick. True or not by bedtime.</div>
+        <div class="field"><input class="plan-txt" id="frame-way" placeholder="e.g. patient with the kids" style="width:100%; margin-bottom:16px;"></div>
+
+        <div class="field-label" style="margin:0 0 4px;">Where I&rsquo;m not optimising</div>
+        <div class="note-line" style="margin:0 0 6px;">The test: <strong>does improving this require me to step outside it?</strong> If yes &mdash; playing, eating, talking with the kids &mdash; improving it is the thing that breaks it. Name the window now so you are not deciding inside it. When the thought arrives: <strong>not relevant</strong>.</div>
+        <div class="field"><input class="plan-txt" id="frame-present" placeholder="e.g. anything with the kids after 5pm" style="width:100%;"></div>
+      </div>
+
       <div class="btn-row">
         <button class="btn" onclick="prev()"><i class="ti ti-arrow-left"></i></button>
         <button class="btn primary" onclick="finishDebrief()">Close the chapter <i class="ti ti-moon"></i></button>
@@ -347,6 +370,15 @@
     <div class="tomorrow-card" id="esp-summary-card" style="display:none;">
       <div class="tomorrow-header"><i class="ti ti-brain"></i> ESP Reflection</div>
       <div id="esp-summary-list"></div>
+    </div>
+    <div class="tomorrow-card" id="frame-summary-card" style="display:none;">
+      <div class="tomorrow-header"><i class="ti ti-target-arrow"></i> Tomorrow&rsquo;s frame</div>
+      <div style="font-size:13px; line-height:1.7;" id="frame-summary"></div>
+    </div>
+    <div class="tomorrow-card" id="recurring-card" style="display:none;">
+      <div class="tomorrow-header"><i class="ti ti-rotate"></i> These keep coming back</div>
+      <div class="note-line" style="margin:0 0 8px;">Written down repeatedly, never once closed. Usually a value showing itself rather than a task you are failing. Decide which.</div>
+      <div style="font-size:13px; line-height:1.7;" id="recurring-list"></div>
     </div>
     <div class="tomorrow-card" id="carry-card" style="display:none;">
       <div class="tomorrow-header"><i class="ti ti-arrow-right"></i> Carry into tomorrow</div>
@@ -512,6 +544,9 @@ function setTomorrowWorkout() {
 /* Shares localStorage with planner.html — MUST be served from the same origin. */
 var K_TOP5='forge-top5', K_BACKLOG='forge-backlog', K_FUN='forge-fun',
     K_HIST='forge-debrief-history', K_ROCKS='forge-week-rocks', K_BACKUP='forge-backup';
+var K_FRAME='forge-frame', K_MUSHIN='forge-mushin'; /* install13 */
+var MUSHIN_TARGET_SEC = 600;
+var frameState = { enough:3, way:'', present:'' };
 var planRows = [{t:'',h:'',done:false},{t:'',h:'',done:false},{t:'',h:'',done:false},{t:'',h:'',done:false},{t:'',h:'',done:false}];
 var todayT5 = [];
 
@@ -567,10 +602,17 @@ function renderT5Review(){
     b.onclick=function(){ toggleT5(i); };
     var l=document.createElement('div'); l.className='t5label'+(it.done?' done':''); l.textContent=it.t;
     row.appendChild(b); row.appendChild(l);
+    if (it.mode==='immerse'){ /* install13 */
+      var im2=document.createElement('span'); im2.className='t5carry';
+      im2.style.color='#e8a04a'; im2.style.borderColor='#e8a04a';
+      im2.textContent='were you there?';
+      row.appendChild(im2);
+    }
     if (it.k){ var st=document.createElement('span'); st.className='t5star'; st.textContent='\u2605'; row.appendChild(st); }
     if (it.c && it.c>=2){ var c=document.createElement('span'); c.className='t5carry'; c.textContent='carried '+it.c+'\u00D7'; row.appendChild(c); }
     host.appendChild(row);
   });
+  renderMushinRow(host); /* install13 */
   var done = real.filter(function(i){ return i.done; }).length;
   if (note){
     var key = real.filter(function(i){ return i.k; })[0];
@@ -673,7 +715,7 @@ function initPlanRows(){
       });
     } else if (wrap) { wrap.style.display='none'; }
   }
-  renderPlanRows(); renderPicks(); maybeShowRocks();
+  renderPlanRows(); renderPicks(); maybeShowRocks(); initFrame(); /* install13 */
 }
 function hourOpts(sel){
   var s='<option value="">--</option>';
@@ -704,7 +746,26 @@ function renderPlanRows(){
     var dw=document.createElement('input'); dw.type='text'; dw.className='plan-dw';
     dw.value=it.dw||''; dw.placeholder='done when \u2026 (what would someone else see?)';
     dw.oninput=function(){ planRows[i].dw=this.value; checkPlan(); };
-    row2.appendChild(mn); row2.appendChild(dw);
+    /* install13: OPTIMIZE / IMMERSE */
+    var tg=document.createElement('button');
+    var mode0=(it.mode==='immerse')?'immerse':'optimize';
+    planRows[i].mode=mode0;
+    tg.className='tagbtn '+(mode0==='immerse'?'imm':'opt');
+    tg.textContent=(mode0==='immerse'?'IMMERSE':'OPTIMIZE');
+    tg.onclick=function(){
+      planRows[i].mode=(planRows[i].mode==='immerse')?'optimize':'immerse';
+      renderPlanRows(); checkPlan(); renderEnoughPicks();
+    };
+    row2.appendChild(tg);
+    row2.appendChild(mn);
+    if (mode0==='immerse'){
+      var im=document.createElement('div');
+      im.style.cssText='font-size:11px;color:#e8a04a;font-style:italic;align-self:center;';
+      im.textContent='no done-when \u00b7 nothing to tick';
+      row2.appendChild(im);
+    } else {
+      row2.appendChild(dw);
+    }
     host.appendChild(row2);
   });
 }
@@ -748,7 +809,7 @@ function checkPlan(){
   var key=filled.filter(function(r){return r.k;});
   var bits=[];
   if(!filled.length){ w.textContent='Nothing set yet — even one is better than none.'; return; }
-  var nodw=filled.filter(function(r){return !r.dw;});
+  var nodw=filled.filter(function(r){return !r.dw && r.mode!=='immerse';}); /* install13 */
   if(!key.length) bits.push('No keystone marked yet.');
   if(nodw.length) bits.push(nodw.length+' with no done-when \u2014 you can add it in the morning.');
   if(!timed.length) bits.push('None have a time — an unscheduled task is a wish.');
@@ -768,10 +829,141 @@ function maybeShowRocks(){
     });
   }
 }
+/* ---------- install13: the frame, mushin, recurrence ---------- */
+function fEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function optimizeCount(){ return planRows.filter(function(r){ return r.t && r.mode!=='immerse'; }).length; }
+function mushinFor(dk){
+  var all=fdRead(K_MUSHIN,{}), e=all[dk];
+  if(!e) return { sec:0, done:false };
+  var sec = (typeof e.sec==='number') ? e.sec : 0;
+  return { sec:sec, done: (e.done===true) || sec>=MUSHIN_TARGET_SEC };
+}
+function setMushinDone(dk, v){
+  var all=fdRead(K_MUSHIN,{}), e=all[dk]||{sec:0};
+  e.done=v; all[dk]=e;
+  var keys=Object.keys(all).sort();
+  if(keys.length>60){ var o={}; keys.slice(-60).forEach(function(k){o[k]=all[k];}); all=o; }
+  fdWrite(K_MUSHIN,all); syncPush(K_MUSHIN);
+}
+function fmtMin(sec){
+  var m=Math.floor(sec/60), s=sec%60;
+  return m+':'+(s<10?'0':'')+s;
+}
+function renderMushinRow(host){
+  if(!host) return;
+  var dk=fdToday(), m=mushinFor(dk);
+  var row=document.createElement('div'); row.className='mushin-row';
+  var b=document.createElement('button'); b.className='t5box'+(m.done?' on':'');
+  b.innerHTML=m.done?'&#10003;':'&nbsp;';
+  b.onclick=function(){ setMushinDone(dk, !m.done); renderT5Review(); };
+  var l=document.createElement('div'); l.className='t5label'+(m.done?' done':'');
+  l.textContent='Mushin \u2014 10 minutes';
+  var t=document.createElement('span'); t.className='t5carry';
+  t.style.color='#4a9de8'; t.style.borderColor='#4a9de8';
+  t.textContent=m.sec ? fmtMin(m.sec)+' / 10:00' : 'not started';
+  row.appendChild(b); row.appendChild(l); row.appendChild(t);
+  host.appendChild(row);
+}
+/* Was today enough? Compound: the OPTIMIZE items named last night, AND the mushin. */
+function enoughVerdict(){
+  var dk=fdToday();
+  var fr=fdRead(K_FRAME,{})[dk];
+  var target=(fr && typeof fr.enough==='number') ? fr.enough : null;
+  var opt=todayT5.filter(function(i){ return i && i.t && i.mode!=='immerse'; });
+  var closed=opt.filter(function(i){ return i.done; }).length;
+  var m=mushinFor(dk);
+  if(target===null) return { set:false, met:false, closed:closed, target:null, mushin:m.done };
+  return { set:true, met:(closed>=target && m.done), closed:closed, target:target, mushin:m.done };
+}
+function initFrame(){
+  var all=fdRead(K_FRAME,{}), e=all[fdTomorrow()];
+  if(e){ frameState={ enough:(typeof e.enough==='number'?e.enough:3), way:e.way||'', present:e.present||'' }; }
+  var w=document.getElementById('frame-way');     if(w) w.value=frameState.way;
+  var p=document.getElementById('frame-present'); if(p) p.value=frameState.present;
+  renderEnoughPicks();
+}
+function renderEnoughPicks(){
+  var host=document.getElementById('enough-picks'); if(!host) return;
+  var max=Math.max(1, optimizeCount());
+  if(frameState.enough>max) frameState.enough=max;
+  host.innerHTML='';
+  for(var n=1;n<=5;n++){
+    (function(n){
+      var b=document.createElement('button');
+      b.className='pick'+(frameState.enough===n?' on':'');
+      b.textContent=n;
+      if(n>max) b.style.opacity='0.3';
+      b.onclick=function(){ frameState.enough=n; renderEnoughPicks(); };
+      host.appendChild(b);
+    })(n);
+  }
+}
+function readFrameInputs(){
+  var w=document.getElementById('frame-way');     if(w) frameState.way=w.value.trim();
+  var p=document.getElementById('frame-present'); if(p) frameState.present=p.value.trim();
+}
+function saveFrame(){
+  readFrameInputs();
+  var all=fdRead(K_FRAME,{});
+  all[fdTomorrow()]={ enough:frameState.enough, way:frameState.way, present:frameState.present };
+  var keys=Object.keys(all).sort();
+  if(keys.length>21){ var o={}; keys.slice(-21).forEach(function(k){o[k]=all[k];}); all=o; }
+  fdWrite(K_FRAME,all); syncPush(K_FRAME);
+}
+/* Items written on 3+ separate days and never once closed. */
+function recurringUnfinished(){
+  var all=fdRead(K_TOP5,{}), seen={};
+  Object.keys(all).forEach(function(dk){
+    var rows=all[dk]; if(!rows||!rows.length) return;
+    var perDay={};
+    rows.forEach(function(r){
+      if(!r||!r.t) return;
+      var norm=String(r.t).toLowerCase().replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();
+      if(norm.length<4 || perDay[norm]) return;
+      perDay[norm]=true;
+      if(!seen[norm]) seen[norm]={ label:r.t, days:0, closed:0 };
+      seen[norm].days++;
+      if(r.done) seen[norm].closed++;
+    });
+  });
+  var out=[];
+  Object.keys(seen).forEach(function(k){ if(seen[k].days>=3 && seen[k].closed===0) out.push(seen[k]); });
+  out.sort(function(a,b){ return b.days-a.days; });
+  return out.slice(0,5);
+}
+function renderFrameSummary(){
+  var card=document.getElementById('frame-summary-card'), host=document.getElementById('frame-summary');
+  if(card&&host){
+    var v=enoughVerdict();
+    var bits=[];
+    if(v.set){
+      bits.push('<div class="enough-verdict" style="color:'+(v.met?'#4ae8a0':'#e8a04a')+';">Today: '+(v.met?'enough':'not yet')+
+                ' \u2014 '+v.closed+' of '+v.target+' closed, mushin '+(v.mushin?'done':'not done')+'.</div>');
+    }
+    var imm=planRows.filter(function(r){ return r.t && r.mode==='immerse'; });
+    bits.push('<div style="margin-top:8px;"><strong>Enough tomorrow:</strong> '+frameState.enough+' of '+optimizeCount()+' OPTIMIZE closed, plus 10 minutes of mushin.</div>');
+    if(imm.length) bits.push('<div style="margin-top:6px;"><strong>Immerse:</strong> '+imm.map(function(r){return fEsc(r.t);}).join(', ')+' <span style="color:var(--muted);">(not scored)</span></div>');
+    if(frameState.way)     bits.push('<div style="margin-top:6px;"><strong>One way to be:</strong> '+fEsc(frameState.way)+'</div>');
+    if(frameState.present) bits.push('<div style="margin-top:6px;"><strong>Not optimising:</strong> '+fEsc(frameState.present)+' <span style="color:var(--muted);">\u2014 not relevant</span></div>');
+    host.innerHTML=bits.join('');
+    card.style.display='block';
+  }
+  var rc=document.getElementById('recurring-card'), rl=document.getElementById('recurring-list');
+  if(rc&&rl){
+    var items=recurringUnfinished();
+    if(items.length){
+      rl.innerHTML=items.map(function(i){
+        return '<div style="margin-bottom:4px;">'+fEsc(i.label)+' <span style="color:var(--muted);">\u00b7 '+i.days+' days, never closed</span></div>';
+      }).join('');
+      rc.style.display='block';
+    } else { rc.style.display='none'; }
+  }
+}
 function saveTomorrow(){
   var all=fdRead(K_TOP5,{});
   all[fdTomorrow()] = planRows.map(function(r){
     var o={t:r.t||'',h:r.h||'',done:false};
+    if(r.mode==='immerse') o.mode='immerse'; /* install13 */
     if(r.k) o.k=true;
     if(r.c) o.c=r.c;
     if(r.m) o.m=r.m;
@@ -792,6 +984,7 @@ function saveTomorrow(){
      and every page load clobbered the cloud with pre-debrief state. */
   syncPush(K_TOP5);
   syncPush(K_BACKLOG);
+  saveFrame(); /* install13 */
 }
 function renderScorecard(){
   var host=document.getElementById('scorecard-host'); if(!host) return;
@@ -1032,6 +1225,7 @@ function showCSV(){
 function finishDebrief() {
   saveTomorrow();
   saveDailyLog();
+  renderFrameSummary(); /* install13 */
   document.getElementById('debrief-flow').style.display = 'none';
   document.getElementById('clear-screen').classList.add('show');
   const doneCount = Object.values(todoChecked).filter(Boolean).length;
