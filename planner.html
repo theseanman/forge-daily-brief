@@ -227,6 +227,7 @@
   </div>
 
   <div id="practice-host"></div>
+  <div id="park-host"></div>
   <div id="session-host"></div>
   <div class="sound-link" onclick="openSoundPicker()">⚙ alarm sound</div>
   <div id="sound-host"></div>
@@ -286,10 +287,11 @@ var K_BACKLOG = 'forge-backlog';
 var K_FUN = 'forge-fun';
 var K_BACKUP = 'forge-backup';
 var K_MUSHIN = 'forge-mushin', K_PROJ = 'forge-project'; /* install14 */
+var K_PARKED = 'forge-parked'; /* install21 */
 
 /* ---------- cloud sync ---------- */
 var SYNC_URL = 'https://forge-sync.yoseanreid.workers.dev';
-var SYNC_KEYS = [K_TOP5, K_PLAN, K_BACKLOG, K_FUN, 'forge-week-rocks', K_MUSHIN, K_PROJ]; /* install14 */
+var SYNC_KEYS = [K_TOP5, K_PLAN, K_BACKLOG, K_FUN, 'forge-week-rocks', K_MUSHIN, K_PROJ, K_PARKED]; /* install21 */
 
 function syncBadge(state) {
   var el = document.getElementById('sync-badge');
@@ -1359,11 +1361,66 @@ function renderLists(){
 function renderAll(){
   paintDate(); trainingBanner(); paintMeta();
   renderPractice(); /* install14 */
+  renderPark(); /* install21 */
   renderSession();
   renderTop5(); paintNext();
   renderLists();
   renderGrid(); checkEmptyWarning();
   renderOffDay(); renderStats();
+}
+
+/* ---------- install21: park it ----------
+   The three-second rule sends loop-opening ideas here instead of into the day.
+   Nothing is decided now - the Sunday review triages the list. */
+function parkEsc(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function parkAll(){
+  var v = readJSON(K_PARKED, []);
+  if (!Array.isArray(v)) return [];
+  return v.filter(function(x){ return x && typeof x.t === 'string' && x.t.trim(); });
+}
+function parkIt(){
+  var el = document.getElementById('park-input');
+  if (!el) return;
+  var t = String(el.value == null ? '' : el.value).trim();
+  var msg = document.getElementById('park-msg');
+  if (!t){ if (msg) msg.textContent = ''; return; }
+  var list = parkAll();
+  for (var i = 0; i < list.length; i++){
+    if (list[i].t.toLowerCase() === t.toLowerCase()){
+      if (msg) msg.textContent = 'Already parked.';
+      el.value = '';
+      return;
+    }
+  }
+  list.push({ t: t, d: ymd(new Date()) });
+  if (list.length > 100) list = list.slice(-100);
+  writeJSON(K_PARKED, list);
+  syncPush(K_PARKED);
+  el.value = '';
+  renderPark();
+  if (msg) msg.textContent = 'Parked. It waits for Sunday.';
+}
+function renderPark(){
+  var host = document.getElementById('park-host');
+  if (!host) return;
+  var n = parkAll().length;
+  host.innerHTML =
+    '<div style="background:rgba(0,0,0,0.88); color:#ffc107; border-radius:10px; padding:10px 14px; margin-bottom:14px;">' +
+      '<div style="font-size:10px; letter-spacing:0.18em; opacity:0.75; margin-bottom:6px;">PARK IT' +
+        (n ? ' <span style="opacity:.7;">\u00b7 ' + n + ' waiting</span>' : '') + '</div>' +
+      '<div style="display:flex; gap:8px;">' +
+        '<input id="park-input" placeholder="new idea, build, thread\u2026" ' +
+          'style="flex:1; min-width:0; background:rgba(255,255,255,0.07); border:1px solid rgba(255,201,7,0.3); ' +
+          'color:#ffc107; border-radius:8px; padding:8px 10px; font-size:13px; font-family:inherit;">' +
+        '<button onclick="parkIt()" style="border:none; border-radius:8px; padding:8px 14px; font-weight:800; ' +
+          'font-size:12px; letter-spacing:0.08em; cursor:pointer; touch-action:manipulation; ' +
+          'background:#ffc107; color:#0d0d0d;">PARK</button>' +
+      '</div>' +
+      '<div id="park-msg" style="font-size:10px; opacity:0.75; margin-top:6px; min-height:13px;"></div>' +
+    '</div>';
 }
 
 /* ---------- install14: practice timers (mushin + weekly project) ---------- */

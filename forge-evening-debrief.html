@@ -305,6 +305,7 @@
       <div class="step-title">Set tomorrow before you sleep</div>
       <div class="step-sub">These land straight in your Day Plan. Reflection is done &mdash; this is the handoff.</div>
 
+      <div id="weekly-review-host"></div>
       <div class="rocks-card" id="rocks-card">
         <div style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#4a9de8; margin-bottom:6px;">Sunday &middot; Week ahead</div>
         <div style="font-size:12px; color:#f0f0f8; line-height:1.5; margin-bottom:8px;">Name the three big rocks for this week. Your daily fives should pull from these.</div>
@@ -546,6 +547,8 @@ function setTomorrowWorkout() {
 var K_TOP5='forge-top5', K_BACKLOG='forge-backlog', K_FUN='forge-fun',
     K_HIST='forge-debrief-history', K_ROCKS='forge-week-rocks', K_BACKUP='forge-backup';
 var K_FRAME='forge-frame', K_MUSHIN='forge-mushin'; /* install13 */
+var K_PARKED='forge-parked', K_PROJ='forge-project'; /* install20 */
+var PROJ_TARGET_WK = 10800;
 var MUSHIN_TARGET_SEC = 600;
 var frameState = { enough:3, way:'', present:'' };
 var planRows = [{t:'',h:'',done:false},{t:'',h:'',done:false},{t:'',h:'',done:false},{t:'',h:'',done:false},{t:'',h:'',done:false}];
@@ -577,7 +580,7 @@ function syncPush(key) {
    An entry that is EMPTY in the cloud never overwrites a populated local one.
    That is deliberate: stale-but-present beats silently wiped. The cost is that
    deliberately clearing something on one surface will not propagate here. */
-var PULL_KEYS = [K_TOP5, K_ROCKS, K_FRAME, K_MUSHIN, K_BACKLOG, K_FUN];
+var PULL_KEYS = [K_TOP5, K_ROCKS, K_FRAME, K_MUSHIN, K_BACKLOG, K_FUN, K_PARKED, K_PROJ]; /* install20 */
 
 function fdBlank(v) {
   if (v === null || v === undefined) return true;
@@ -646,7 +649,7 @@ function syncPullDebrief(cb) {
   function finish() {
     if (done + errs < total) return;
     syncBadge(errs === total ? 'offline' : (errs ? 'partial' : 'synced'));
-    if (touched) { try { loadTodayTop5(); } catch (e) {} }
+    if (touched) { try { loadTodayTop5(); } catch (e) {} try { renderWeeklyReview(); } catch (e) {} }
     if (cb) cb();
   }
 }
@@ -797,6 +800,7 @@ function initPlanRows(){
     } else if (wrap) { wrap.style.display='none'; }
   }
   renderPlanRows(); renderPicks(); maybeShowRocks(); initFrame(); /* install13 */
+  try { renderWeeklyReview(); } catch (e) {} /* install20 */
 }
 function hourOpts(sel){
   var s='<option value="">--</option>';
@@ -910,6 +914,153 @@ function maybeShowRocks(){
     });
   }
 }
+/* ---------- install20: Sunday weekly review + parked list ---------- */
+function isReviewDay(){
+  var t = new Date(), tm = new Date();
+  tm.setDate(tm.getDate() + 1);
+  return (tm.getDay() === 1 || t.getDay() === 0);   /* same rule the rocks card uses */
+}
+function wkStart(d){
+  var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  x.setDate(x.getDate() - (x.getDay() === 0 ? 6 : x.getDay() - 1));   /* back to Monday */
+  return x;
+}
+function wkStartKey(){ return fdYmd(wkStart(new Date())); }
+
+function parkedList(){
+  var v = fdRead(K_PARKED, []);
+  if (!Array.isArray(v)) return [];
+  return v.filter(function(x){ return x && typeof x.t === 'string' && x.t.trim(); });
+}
+function parkAdd(text){
+  var t = String(text == null ? '' : text).trim();
+  if (!t) return false;
+  var list = parkedList();
+  for (var i = 0; i < list.length; i++){
+    if (list[i].t.toLowerCase() === t.toLowerCase()) return false;   /* no duplicates */
+  }
+  list.push({ t: t, d: fdToday() });
+  if (list.length > 100) list = list.slice(-100);
+  fdWrite(K_PARKED, list); syncPush(K_PARKED);
+  return true;
+}
+function parkRemove(i){
+  var l = parkedList();
+  if (!(i >= 0 && i < l.length)) return null;
+  var it = l.splice(i, 1)[0];
+  fdWrite(K_PARKED, l); syncPush(K_PARKED);
+  return it;
+}
+function parkToRock(i){
+  var l = parkedList();
+  if (!(i >= 0 && i < l.length)) return;
+  var r = fdRead(K_ROCKS, {});
+  var items = (r && Array.isArray(r.items)) ? r.items.filter(function(x){ return x && String(x).trim(); }) : [];
+  if (items.length >= 3){
+    var w = document.getElementById('wr-note');
+    if (w) w.textContent = 'Three rocks already set. Drop one first, or send this to the backlog.';
+    return;
+  }
+  var it = parkRemove(i);
+  if (!it) return;
+  if (items.indexOf(it.t) === -1) items.push(it.t);
+  fdWrite(K_ROCKS, { set: fdToday(), items: items }); syncPush(K_ROCKS);
+  try { maybeShowRocks(); } catch (e) {}
+  renderWeeklyReview();
+}
+function parkToBacklog(i){
+  var it = parkRemove(i);
+  if (!it) return;
+  var b = fdRead(K_BACKLOG, []);
+  if (!Array.isArray(b)) b = [];
+  if (b.indexOf(it.t) === -1) b.push(it.t);
+  fdWrite(K_BACKLOG, b); syncPush(K_BACKLOG);
+  renderWeeklyReview();
+}
+function parkDrop(i){ parkRemove(i); renderWeeklyReview(); }
+
+function weekMushinDays(){
+  var all = fdRead(K_MUSHIN, {}), start = wkStart(new Date()), n = 0;
+  if (!all || typeof all !== 'object') return 0;
+  for (var i = 0; i < 7; i++){
+    var d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+    if (d > new Date()) break;
+    var e = all[fdYmd(d)];
+    if (!e || typeof e !== 'object') continue;
+    var sec = (typeof e.sec === 'number') ? e.sec : 0;
+    if (e.done === true || sec >= MUSHIN_TARGET_SEC) n++;
+  }
+  return n;
+}
+function weekProjectSec(){
+  var all = fdRead(K_PROJ, {});
+  if (!all || typeof all !== 'object') return 0;
+  var e = all[wkStartKey()];
+  return (e && typeof e.sec === 'number' && e.sec > 0) ? e.sec : 0;
+}
+function daysElapsedThisWeek(){
+  var t = new Date();
+  return (t.getDay() === 0 ? 7 : t.getDay());
+}
+function wrClock(sec){
+  if (!(sec > 0)) sec = 0;
+  var m = Math.floor(sec / 60), h = Math.floor(m / 60);
+  m = m % 60;
+  return h + 'h ' + (m < 10 ? '0' : '') + m + 'm';
+}
+
+function renderWeeklyReview(){
+  var host = document.getElementById('weekly-review-host');
+  if (!host) return;
+  if (!isReviewDay()){ host.innerHTML = ''; return; }
+
+  var md = weekMushinDays(), dayN = daysElapsedThisWeek();
+  var ps = weekProjectSec(), cleared = ps >= PROJ_TARGET_WK;
+  var parked = parkedList();
+
+  var rec = [];
+  try { rec = recurringUnfinished() || []; } catch (e) { rec = []; }
+
+  var h = '<div class="rocks-card show" style="border-color:#4a9de8;">';
+  h += '<div style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#4a9de8; margin-bottom:8px;">The week behind</div>';
+
+  h += '<div style="display:flex; gap:14px; margin-bottom:10px;">';
+  h += '<div style="flex:1;"><div style="font-size:19px; font-weight:800; color:#f0f0f8;">' + md + '<span style="font-size:12px; font-weight:600; opacity:.6;">/' + dayN + '</span></div>'
+     + '<div style="font-size:10px; letter-spacing:.1em; color:#8a93a8;">MUSHIN DAYS</div></div>';
+  h += '<div style="flex:1;"><div style="font-size:19px; font-weight:800; color:' + (cleared ? '#4ae8a0' : '#f0f0f8') + ';">' + wrClock(ps) + '</div>'
+     + '<div style="font-size:10px; letter-spacing:.1em; color:#8a93a8;">PROJECT ' + (cleared ? '\u00b7 FLOOR CLEARED' : 'of 3h 00m') + '</div></div>';
+  h += '</div>';
+
+  if (rec.length){
+    h += '<div style="font-size:10px; letter-spacing:.1em; color:#8a93a8; margin:12px 0 4px;">KEEPS COMING BACK, NEVER CLOSED</div>';
+    h += '<div style="font-size:12px; color:#f0f0f8; line-height:1.6;">';
+    rec.slice(0, 5).forEach(function(r){
+      var label = (typeof r === 'string') ? r : (r && r.t ? r.t : '');
+      if (label) h += '\u00b7 ' + fEsc(label) + '<br>';
+    });
+    h += '</div>';
+  }
+
+  h += '<div style="font-size:10px; letter-spacing:.1em; color:#8a93a8; margin:14px 0 6px;">PARKED THIS WEEK &middot; ' + parked.length + '</div>';
+  if (!parked.length){
+    h += '<div style="font-size:12px; color:#8a93a8; line-height:1.5;">Nothing parked. Either it was a quiet week or the three-second rule is not reaching the park button.</div>';
+  } else {
+    parked.forEach(function(p, i){
+      h += '<div style="border-top:1px solid rgba(74,157,232,.25); padding:8px 0;">'
+         + '<div style="font-size:12px; color:#f0f0f8; line-height:1.45; margin-bottom:6px;">' + fEsc(p.t)
+         + '<span style="color:#8a93a8; font-size:10px;"> &middot; ' + fEsc(p.d || '') + '</span></div>'
+         + '<div style="display:flex; gap:6px;">'
+         + '<button class="btn" style="flex:1; padding:6px; font-size:11px;" onclick="parkToRock(' + i + ')">Rock</button>'
+         + '<button class="btn" style="flex:1; padding:6px; font-size:11px;" onclick="parkToBacklog(' + i + ')">Backlog</button>'
+         + '<button class="btn skip" style="flex:1; padding:6px; font-size:11px;" onclick="parkDrop(' + i + ')">Drop</button>'
+         + '</div></div>';
+    });
+  }
+  h += '<div id="wr-note" style="font-size:11px; color:#ffc107; margin-top:8px;"></div>';
+  h += '</div>';
+  host.innerHTML = h;
+}
+
 /* ---------- install13: the frame, mushin, recurrence ---------- */
 function fEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function optimizeCount(){ return planRows.filter(function(r){ return r.t && r.mode!=='immerse'; }).length; }
