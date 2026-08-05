@@ -288,10 +288,11 @@ var K_FUN = 'forge-fun';
 var K_BACKUP = 'forge-backup';
 var K_MUSHIN = 'forge-mushin', K_PROJ = 'forge-project'; /* install14 */
 var K_PARKED = 'forge-parked'; /* install21 */
+var K_REPS = 'forge-reps'; /* install22 */
 
 /* ---------- cloud sync ---------- */
 var SYNC_URL = 'https://forge-sync.yoseanreid.workers.dev';
-var SYNC_KEYS = [K_TOP5, K_PLAN, K_BACKLOG, K_FUN, 'forge-week-rocks', K_MUSHIN, K_PROJ, K_PARKED]; /* install21 */
+var SYNC_KEYS = [K_TOP5, K_PLAN, K_BACKLOG, K_FUN, 'forge-week-rocks', K_MUSHIN, K_PROJ, K_PARKED, K_REPS]; /* install22 */
 
 function syncBadge(state) {
   var el = document.getElementById('sync-badge');
@@ -344,6 +345,20 @@ function syncPull(cb) {
                   changed = true;
                 } else if (cc && cc.done === true && lc && lc.done !== true) {
                   lc.done = true; changed = true;
+                }
+                continue;
+              }
+              if (key === K_REPS) { /* install22: counts only ever go up; att is the debrief's */
+                var lr = local[dk], cr = cloud[dk];
+                var ln = (lr && typeof lr.n === 'number') ? lr.n : -1;
+                var cn = (cr && typeof cr.n === 'number') ? cr.n : -1;
+                var lAtt = (lr && typeof lr.att === 'string') ? lr.att : '';
+                var cAtt = (cr && typeof cr.att === 'string') ? cr.att : '';
+                var wantN = cn > ln ? cn : (ln > 0 ? ln : 0);
+                var wantAtt = cAtt || lAtt;
+                if (wantN !== (ln > 0 ? ln : 0) || wantAtt !== lAtt) {
+                  local[dk] = { n: wantN, att: wantAtt };
+                  changed = true;
                 }
                 continue;
               }
@@ -1593,7 +1608,60 @@ function renderPractice(){
       row('p-proj', '\u25A0', 'PROJECT TIME', pClock(pe.sec, true), '3h 00m', pRun, pe.sec >= PROJ_TARGET,
           (streak > 0 ? streak + ' week' + (streak === 1 ? '' : 's') + ' clearing the floor' : 'floor, not a target'),
           'pToggle(K_PROJ)') +
+      /* install22: reps. No target, no tick - it cannot be failed. */
+      '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;' +
+        'border-top:1px solid rgba(255,201,7,0.25);">' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-size:10px;letter-spacing:0.16em;opacity:0.75;">\u25B3 REPS</div>' +
+          '<div style="font-size:19px;font-weight:800;line-height:1.25;">' +
+            '<span id="p-reps-n">' + repsEntry(pDayKey()).n + '</span>' +
+          '</div>' +
+          '<div style="font-size:10px;opacity:0.7;margin-top:2px;">' +
+            'conversations you started with someone you didn\u2019t have to' +
+          '</div>' +
+        '</div>' +
+        '<button onclick="repsBump(-1)" style="border:none;border-radius:8px;padding:9px 12px;' +
+          'font-weight:800;font-size:12px;cursor:pointer;touch-action:manipulation;' +
+          'background:rgba(255,201,7,0.25);color:#ffc107;">\u2212</button>' +
+        '<button onclick="repsBump(1)" style="border:none;border-radius:8px;padding:9px 14px;' +
+          'font-weight:800;font-size:12px;cursor:pointer;touch-action:manipulation;' +
+          'background:#ffc107;color:#0d0d0d;">+1</button>' +
+      '</div>' +
     '</div>';
+}
+
+/* ---------- install22: social reps ---------- */
+var REPS_KEEP = 60;
+function repsAll(){
+  var o = readJSON(K_REPS, {});
+  return (o && typeof o === 'object' && !Array.isArray(o)) ? o : {};
+}
+function repsEntry(dk){
+  var e = repsAll()[dk];
+  if (!e || typeof e !== 'object' || Array.isArray(e)) return { n: 0, att: '' };
+  return {
+    n: (typeof e.n === 'number' && e.n > 0) ? Math.floor(e.n) : 0,
+    att: (typeof e.att === 'string') ? e.att : ''
+  };
+}
+function repsBump(delta){
+  var dk = pDayKey(), all = repsAll(), cur = repsEntry(dk);
+  var n = cur.n + delta;
+  if (n < 0) n = 0;
+  all[dk] = { n: n, att: cur.att };   /* att preserved, never authored here */
+  var ks = Object.keys(all).sort();
+  if (ks.length > REPS_KEEP){
+    var trimmed = {};
+    ks.slice(-REPS_KEEP).forEach(function(x){ trimmed[x] = all[x]; });
+    all = trimmed;
+  }
+  writeJSON(K_REPS, all);
+  syncPush(K_REPS);
+  paintReps();
+}
+function paintReps(){
+  var el = document.getElementById('p-reps-n');
+  if (el) el.textContent = repsEntry(pDayKey()).n;
 }
 
 function practiceTick(){

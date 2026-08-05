@@ -2204,6 +2204,26 @@ function pfClock(sec, wide) {{
   var h = Math.floor(m / 60); m = m % 60;
   return h + 'h ' + (m < 10 ? '0' : '') + m + 'm';
 }}
+var CUES = [
+  'The first half-second after they start talking &mdash; your reaction either shows or gets swallowed. Swallowed reads as withholding.',
+  'Nod when they land a point, not on a steady beat. Steady nodding reads as waiting for your turn.',
+  'Does your face react while they are talking, or only while you are?',
+  'Stop for half a beat before your most important word. The silence does more than volume.',
+  'In relation to magnetism, warmth lands before competence. Do not lead with what you know.',
+  'One follow-up question deeper than the answer required.',
+  'Pay attention to the person, not to how you are performing.'
+];
+function pfCue() {{
+  var d = new Date();
+  var doy = Math.floor((d - new Date(d.getFullYear(), 0, 1)) / 86400000);
+  return CUES[((doy % CUES.length) + CUES.length) % CUES.length];
+}}
+function pfReps() {{
+  var all = pfAll('forge-reps');
+  var e = all[ymdOffset(0)];
+  if (!e || typeof e !== 'object' || Array.isArray(e)) return 0;
+  return (typeof e.n === 'number' && e.n > 0) ? Math.floor(e.n) : 0;
+}}
 function pfStreak() {{
   var all = pfAll('forge-project'), n = 0, guard = 0;
   var probe = new Date();
@@ -2250,6 +2270,25 @@ function paintPractice() {{
         '<div class="t5-task">Project time</div>' +
         '<div class="t5-meta">' + pfClock(p.sec, true) + ' of 3h 00m this week &middot; ' + sub + '</div>' +
       '</div>' +
+    '</div>' +
+    '<div class="t5-row">' +
+      '<span class="t5-tick">&#9653;</span>' +
+      '<div style="flex:1; min-width:0;">' +
+        '<div class="t5-task">Reps</div>' +
+        '<div class="t5-meta">' + pfReps() + ' today &middot; conversations you started</div>' +
+      '</div>' +
+    '</div>' +
+    /* install27: today's cue + the decision tiers. No tick, nothing to complete. */
+    '<div style="border-top:2px solid #1a5fa8; margin-top:10px; padding-top:10px;">' +
+      '<div style="font-size:10px; letter-spacing:0.16em; color:#1a5fa8; font-weight:700; margin-bottom:3px;">TODAY&rsquo;S CUE</div>' +
+      '<div style="font-size:13px; font-weight:600; line-height:1.45; margin-bottom:12px;">' + pfCue() + '</div>' +
+      '<div style="font-size:10px; letter-spacing:0.16em; color:#1a5fa8; font-weight:700; margin-bottom:4px;">DECIDING</div>' +
+      '<div style="font-size:12px; line-height:1.55;">' +
+        '<strong style="color:#1a5fa8;">3 seconds</strong> &mdash; minor, everyday, nothing survives the night. Which room, what to say, put the phone down. Auditing it <em>is</em> the problem.<br>' +
+        '<strong style="color:#1a5fa8;">7 breaths</strong> &mdash; consequential, already in front of you, cannot be deferred. A deadline, an offer, a trip. Stewing adds nothing: decide and move.<br>' +
+        '<strong style="color:#1a5fa8;">Sunday</strong> &mdash; anything that opens a new loop or commits future time, however urgent it feels. Especially the ones you generated yourself.' +
+      '</div>' +
+      '<div style="font-size:10px; opacity:0.65; margin-top:7px; line-height:1.5;">Seven breaths is from the Hagakure, c.1710 &mdash; a maxim from one retainer&rsquo;s reflections, not documented samurai practice. Roughly 30&ndash;45 seconds.</div>' +
     '</div>';
 }}
 
@@ -2284,11 +2323,44 @@ function pullPractice() {{
   }});
 }}
 
+/* Counts never go backwards on a pull. `att` is the debrief's field - the
+   brief must carry it through untouched rather than dropping it. */
+function pullReps() {{
+  fetch(SYNC_URL + '/' + encodeURIComponent('forge-reps'))
+    .then(function (r) {{ if (!r.ok) throw new Error(r.status); return r.json(); }})
+    .then(function (cloud) {{
+      if (!cloud || typeof cloud !== 'object' || Array.isArray(cloud)) return;
+      var all = pfAll('forge-reps');
+      var changed = false;
+      for (var dk in cloud) {{
+        if (!cloud.hasOwnProperty(dk)) continue;
+        var lc = all[dk], cc = cloud[dk];
+        if (!cc || typeof cc !== 'object' || Array.isArray(cc)) continue;
+        var ln = (lc && typeof lc.n === 'number') ? lc.n : -1;
+        var cn = (typeof cc.n === 'number') ? cc.n : -1;
+        var lAtt = (lc && typeof lc.att === 'string') ? lc.att : '';
+        var cAtt = (typeof cc.att === 'string') ? cc.att : '';
+        var wantN = cn > ln ? cn : (ln > 0 ? ln : 0);
+        var wantAtt = lAtt || cAtt;
+        if (wantN !== (ln > 0 ? ln : 0) || wantAtt !== lAtt) {{
+          all[dk] = {{ n: wantN, att: wantAtt }};
+          changed = true;
+        }}
+      }}
+      if (changed) {{
+        try {{ localStorage.setItem('forge-reps', JSON.stringify(all)); }} catch (e) {{}}
+        try {{ paintPractice(); }} catch (e) {{}}
+      }}
+    }})
+    .catch(function () {{}});
+}}
+
 window.addEventListener('load', function () {{
   try {{ paintTodayFive(); }} catch (e) {{}}
   try {{ paintPractice(); }} catch (e) {{}}
   try {{ syncPullBrief(); }} catch (e) {{}}
   try {{ pullPractice(); }} catch (e) {{}}
+  try {{ pullReps(); }} catch (e) {{}}
   try {{ paintYesterday(); }} catch (e) {{}}
   try {{ paintRocks(); }} catch (e) {{}}
   try {{ markNew(); }} catch (e) {{}}

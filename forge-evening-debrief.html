@@ -294,6 +294,31 @@
       <div class="field"><div class="field-label">Win of the day</div><textarea id="win" placeholder="e.g. shipped the reminders sync..." style="min-height:60px;"></textarea></div>
       <div class="field"><div class="field-label">What got avoided or left behind?</div><textarea id="miss" placeholder="e.g. didn't cancel Copilot..." style="min-height:60px;"></textarea></div>
       <div class="field"><div class="field-label">One thing to carry into tomorrow</div><textarea id="carry" placeholder="e.g. do the hard thing first..." style="min-height:60px;"></textarea></div>
+
+      <!-- install23 -->
+      <div class="rocks-card show" id="reps-card" style="margin-top:6px;">
+        <div style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#4a9de8; margin-bottom:6px;">Reps</div>
+
+        <div class="field-label" style="margin:0 0 4px;">Conversations you started today</div>
+        <div class="note-line" style="margin:0 0 8px;">With someone you didn&rsquo;t have to talk to. Counted on the planner &mdash; fix it here if it drifted. Nothing passes or fails.</div>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+          <button class="pick" onclick="repsNudge(-1)" style="padding:8px 14px; font-size:15px; font-weight:700;">&minus;</button>
+          <span id="reps-n" style="font-size:22px; font-weight:800; min-width:32px; text-align:center;">0</span>
+          <button class="pick" onclick="repsNudge(1)" style="padding:8px 14px; font-size:15px; font-weight:700;">+</button>
+        </div>
+
+        <div class="field-label" style="margin:0 0 4px;">Where did your attention sit?</div>
+        <div class="note-line" style="margin:0 0 6px;">On them, or on how you were coming across. No right answer &mdash; the noticing is the whole exercise.</div>
+        <div class="pick-wrap" id="reps-att-picks"></div>
+
+        <!-- install25 -->
+        <div style="border-top:1px solid rgba(74,157,232,.25); margin-top:14px; padding-top:12px;">
+          <div class="field-label" style="margin:0 0 6px;">Video audit</div>
+          <div class="pick-wrap" id="video-pick"></div>
+          <div class="note-line" style="margin:6px 0 0;">Sixty seconds of yourself talking about something you care about, watched back. Twice a week for the first three weeks, then weekly.</div>
+        </div>
+      </div>
+
       <div class="btn-row">
         <button class="btn" onclick="prev()"><i class="ti ti-arrow-left"></i></button>
         <button class="btn primary" onclick="next()">Next <i class="ti ti-arrow-right"></i></button>
@@ -547,6 +572,8 @@ function setTomorrowWorkout() {
 var K_TOP5='forge-top5', K_BACKLOG='forge-backlog', K_FUN='forge-fun',
     K_HIST='forge-debrief-history', K_ROCKS='forge-week-rocks', K_BACKUP='forge-backup';
 var K_FRAME='forge-frame', K_MUSHIN='forge-mushin'; /* install13 */
+var K_REPS='forge-reps'; /* install23 */
+var K_VIDEO='forge-video'; /* install25 */
 var K_PARKED='forge-parked', K_PROJ='forge-project'; /* install20 */
 var PROJ_TARGET_WK = 10800;
 var MUSHIN_TARGET_SEC = 600;
@@ -580,7 +607,7 @@ function syncPush(key) {
    An entry that is EMPTY in the cloud never overwrites a populated local one.
    That is deliberate: stale-but-present beats silently wiped. The cost is that
    deliberately clearing something on one surface will not propagate here. */
-var PULL_KEYS = [K_TOP5, K_ROCKS, K_FRAME, K_MUSHIN, K_BACKLOG, K_FUN, K_PARKED, K_PROJ]; /* install20 */
+var PULL_KEYS = [K_TOP5, K_ROCKS, K_FRAME, K_MUSHIN, K_BACKLOG, K_FUN, K_PARKED, K_PROJ, K_REPS, K_VIDEO]; /* install25 */
 
 function fdBlank(v) {
   if (v === null || v === undefined) return true;
@@ -616,6 +643,26 @@ function fdMergeEntry(key, local, dk, cloudVal) {
       return true;
     }
     return false;
+  }
+
+  if (key === K_VIDEO) {                       /* install25: done is sticky, never un-ticked */
+    var lDone = !!(localVal && localVal.done === true);
+    var cDone = !!(cloudVal && cloudVal.done === true);
+    if (lDone || !cDone) return false;
+    local[dk] = { done: true };
+    return true;
+  }
+
+  if (key === K_REPS) {                        /* install23: n only goes up, att is preserved */
+    var ln = (localVal && typeof localVal.n === 'number') ? localVal.n : -1;
+    var cn = (cloudVal && typeof cloudVal.n === 'number') ? cloudVal.n : -1;
+    var lAtt = (localVal && typeof localVal.att === 'string') ? localVal.att : '';
+    var cAtt = (cloudVal && typeof cloudVal.att === 'string') ? cloudVal.att : '';
+    var wantN = cn > ln ? cn : (ln > 0 ? ln : 0);
+    var wantAtt = lAtt || cAtt;               /* a local answer typed tonight wins */
+    if (wantN === (ln > 0 ? ln : 0) && wantAtt === lAtt) return false;
+    local[dk] = { n: wantN, att: wantAtt };
+    return true;
   }
 
   if (fdBlank(cloudVal) && !fdBlank(localVal)) return false;   /* the guard */
@@ -800,6 +847,8 @@ function initPlanRows(){
     } else if (wrap) { wrap.style.display='none'; }
   }
   renderPlanRows(); renderPicks(); maybeShowRocks(); initFrame(); /* install13 */
+  try { initReps(); } catch(e) {} /* install23 */
+  try { paintVideo(); } catch(e) {} /* install25 */
   try { renderWeeklyReview(); } catch (e) {} /* install20 */
 }
 function hourOpts(sel){
@@ -1056,6 +1105,16 @@ function renderWeeklyReview(){
          + '</div></div>';
     });
   }
+  /* install25: the video audit checklist. REVIEW-ONLY - see the header comment. */
+  var vw = videoThisWeek();
+  h += '<div style="font-size:10px; letter-spacing:.1em; color:#8a93a8; margin:14px 0 6px;">VIDEO AUDIT &middot; ' + vw + ' THIS WEEK</div>';
+  h += '<div style="font-size:12px; color:#f0f0f8; line-height:1.6;">';
+  h += '1 &middot; Does your face move while you are <strong>listening</strong>? Most people only ever watch their talking face.<br>';
+  h += '2 &middot; The first half-second after they start talking. That is where the reaction escapes or gets caught.<br>';
+  h += '3 &middot; Vocal pitch range. A flat voice reads as flat affect whatever the face is doing.';
+  h += '</div>';
+  h += '<div style="font-size:11px; color:#ffc107; margin-top:8px; line-height:1.5;">Watch the tape against these. Never run them during a conversation &mdash; a list you carry into the room is the auditor, not the fix.</div>';
+
   h += '<div id="wr-note" style="font-size:11px; color:#ffc107; margin-top:8px;"></div>';
   h += '</div>';
   host.innerHTML = h;
@@ -1107,6 +1166,96 @@ function enoughVerdict(){
   if(target===null) return { set:false, met:false, closed:closed, target:null, mushin:m.done };
   return { set:true, met:(closed>=target && m.done), closed:closed, target:target, mushin:m.done };
 }
+/* ---------- install25: video audit ---------- */
+function videoAll(){
+  var v = fdRead(K_VIDEO, {});
+  return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {};
+}
+function videoDone(dk){
+  var e = videoAll()[dk];
+  return !!(e && typeof e === 'object' && e.done === true);
+}
+function videoToggle(){
+  var dk = fdToday(), all = videoAll();
+  if (videoDone(dk)) { delete all[dk]; }
+  else { all[dk] = { done: true }; }
+  var keys = Object.keys(all).sort();
+  if (keys.length > 60){ var o = {}; keys.slice(-60).forEach(function(k){ o[k] = all[k]; }); all = o; }
+  fdWrite(K_VIDEO, all);
+  syncPush(K_VIDEO);
+  paintVideo();
+  try { renderWeeklyReview(); } catch (e) {}
+}
+function videoThisWeek(){
+  var all = videoAll(), start = wkStart(new Date()), n = 0;
+  for (var i = 0; i < 7; i++){
+    var d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+    if (videoDone(fdYmd(d))) n++;
+  }
+  return n;
+}
+function paintVideo(){
+  var host = document.getElementById('video-pick');
+  if (!host) return;
+  var on = videoDone(fdToday());
+  host.innerHTML = '';
+  var b = document.createElement('button');
+  b.className = 'pick' + (on ? ' fam' : '');
+  b.textContent = on ? '\u2713 recorded and watched back' : 'did one today';
+  b.onclick = videoToggle;
+  host.appendChild(b);
+}
+
+/* ---------- install23: social reps ---------- */
+var repsState = { n: 0, att: '' };
+var REPS_ATT = [['them','on them'],['split','split'],['me','on me']];
+
+function repsToday(){
+  var all = fdRead(K_REPS, {});
+  if (!all || typeof all !== 'object' || Array.isArray(all)) return { n: 0, att: '' };
+  var e = all[fdToday()];
+  if (!e || typeof e !== 'object' || Array.isArray(e)) return { n: 0, att: '' };
+  return {
+    n: (typeof e.n === 'number' && e.n > 0) ? Math.floor(e.n) : 0,
+    att: (typeof e.att === 'string') ? e.att : ''
+  };
+}
+function initReps(){
+  repsState = repsToday();
+  paintReps();
+}
+function paintReps(){
+  var el = document.getElementById('reps-n');
+  if (el) el.textContent = repsState.n;
+  var host = document.getElementById('reps-att-picks');
+  if (!host) return;
+  host.innerHTML = '';
+  REPS_ATT.forEach(function(pair){
+    var b = document.createElement('button');
+    b.className = 'pick' + (repsState.att === pair[0] ? ' fam' : '');
+    b.textContent = pair[1];
+    b.onclick = function(){
+      repsState.att = (repsState.att === pair[0]) ? '' : pair[0];
+      paintReps();
+    };
+    host.appendChild(b);
+  });
+}
+function repsNudge(d){
+  repsState.n += d;
+  if (repsState.n < 0) repsState.n = 0;
+  paintReps();
+}
+function saveReps(){
+  var all = fdRead(K_REPS, {});
+  if (!all || typeof all !== 'object' || Array.isArray(all)) all = {};
+  all[fdToday()] = { n: repsState.n, att: repsState.att };
+  var keys = Object.keys(all).sort();
+  if (keys.length > 60){ var o = {}; keys.slice(-60).forEach(function(k){ o[k] = all[k]; }); all = o; }
+  fdWrite(K_REPS, all);
+  syncPush(K_REPS);
+}
+
 function initFrame(){
   var all=fdRead(K_FRAME,{}), e=all[fdTomorrow()];
   if(e){ frameState={ enough:(typeof e.enough==='number'?e.enough:3), way:e.way||'', present:e.present||'' }; }
@@ -1217,6 +1366,7 @@ function saveTomorrow(){
   syncPush(K_TOP5);
   syncPush(K_BACKLOG);
   saveFrame(); /* install13 */
+  try { saveReps(); } catch(e) {} /* install23 */
 }
 function renderScorecard(){
   var host=document.getElementById('scorecard-host'); if(!host) return;
