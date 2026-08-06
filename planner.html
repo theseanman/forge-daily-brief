@@ -315,6 +315,28 @@ function syncPush(key) {
     .catch(function() { syncBadge('offline'); });
 }
 
+/* install28: emptiness guard, matching install18 (debrief) and install19 (brief).
+   A blank cloud entry never overwrites a populated local one. `done` and `run`
+   are flags, not content, so {done:true} alone counts as blank. */
+function plBlank(v) {
+  if (v === null || v === undefined) return true;
+  if (typeof v === 'number') return !(v > 0);
+  if (typeof v === 'string') return v.trim() === '';
+  if (Object.prototype.toString.call(v) === '[object Array]') {
+    for (var i = 0; i < v.length; i++) if (!plBlank(v[i])) return false;
+    return true;
+  }
+  if (typeof v === 'object') {
+    for (var k in v) {
+      if (!v.hasOwnProperty(k)) continue;
+      if (k === 'done' || k === 'run') continue;
+      if (!plBlank(v[k])) return false;
+    }
+    return true;
+  }
+  return false;
+}
+
 function syncPull(cb) {
   var pulled = 0, errors = 0, total = SYNC_KEYS.length;
   syncBadge('pulling');
@@ -362,6 +384,7 @@ function syncPull(cb) {
                 }
                 continue;
               }
+              if (plBlank(cloud[dk]) && !plBlank(local[dk])) continue; /* install28 */
               if (JSON.stringify(local[dk]) !== JSON.stringify(cloud[dk])) {
                 local[dk] = cloud[dk]; changed = true;
               }
@@ -403,8 +426,8 @@ function savePlan(plan){
   all[dayKey()] = plan;
   var ok = writeJSON(K_PLAN, prune(all));
   afterSave(ok);
+  syncPush(K_PLAN); /* install28: was a stray top-level call below this brace */
 }
-  syncPush(K_PLAN);
 function loadTop5(){
   var all = readJSON(K_TOP5, {});
   var arr = all[dayKey()];
@@ -419,8 +442,8 @@ function saveTop5(arr){
   all[dayKey()] = arr;
   var ok = writeJSON(K_TOP5, prune(all));
   afterSave(ok);
+  syncPush(K_TOP5); /* install28: was a stray top-level call below this brace */
 }
-  syncPush(K_TOP5);
 function loadList(key){ var a = readJSON(key, []); return Object.prototype.toString.call(a) === '[object Array]' ? a : []; }
 function saveList(key, arr){ afterSave(writeJSON(key, arr)); syncPush(key); }
 
