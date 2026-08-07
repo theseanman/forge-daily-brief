@@ -236,6 +236,8 @@
   <div class="banner" id="banner"></div>
   <div class="allday" id="allday"></div>
 
+  <div id="round-host"></div>
+
   <div class="sect">
     <div class="sect-h"><span>&#127919; Top 5 &mdash; <span id="t5day">Today</span></span><span class="hint">set an hour to place it below</span></div>
     <div class="panel" id="top5"></div>
@@ -292,7 +294,8 @@ var K_REPS = 'forge-reps'; /* install22 */
 
 /* ---------- cloud sync ---------- */
 var SYNC_URL = 'https://forge-sync.yoseanreid.workers.dev';
-var SYNC_KEYS = [K_TOP5, K_PLAN, K_BACKLOG, K_FUN, 'forge-week-rocks', K_MUSHIN, K_PROJ, K_PARKED, K_REPS]; /* install22 */
+var K_FRAME = 'forge-frame'; /* install30: read for the off-day flag and the fight */
+var SYNC_KEYS = [K_TOP5, K_PLAN, K_BACKLOG, K_FUN, 'forge-week-rocks', K_MUSHIN, K_PROJ, K_PARKED, K_REPS, K_FRAME]; /* install22, install30 */
 
 function syncBadge(state) {
   var el = document.getElementById('sync-badge');
@@ -382,6 +385,16 @@ function syncPull(cb) {
                   local[dk] = { n: wantN, att: wantAtt };
                   changed = true;
                 }
+                continue;
+              }
+              if (key === K_FRAME) { /* install30: merge fields, never drop an off day */
+                var cf = cloud[dk], lf = local[dk];
+                if (!cf || typeof cf !== 'object') continue;
+                var mf = {}, fk;
+                if (lf && typeof lf === 'object') for (fk in lf) if (lf.hasOwnProperty(fk)) mf[fk] = lf[fk];
+                for (fk in cf) if (cf.hasOwnProperty(fk)) mf[fk] = cf[fk];
+                if (lf && lf.off === true) mf.off = true;
+                if (JSON.stringify(lf) !== JSON.stringify(mf)) { local[dk] = mf; changed = true; }
                 continue;
               }
               if (plBlank(cloud[dk]) && !plBlank(local[dk])) continue; /* install28 */
@@ -525,6 +538,190 @@ function hourOptions(sel){
   }
   return s;
 }
+
+/* ===================== Build 6: the fight ==========================
+   Round-per-day scorecard. The boxer himself lives in the Sunday
+   review in forge-evening-debrief.html; this end is score only. */
+/* ---------- Build 6: the fight ----------------------------------------
+   COUNT takes the round, KEYSTONES set the margin.
+   IMMERSE items leave the card entirely: slots = 5 minus immerse tags, and
+   every band slides down with it, so at five OPTIMIZE slots this is exactly
+   Sean's 3/4/5 map. BLANK slots are NOT immerse - they stay in the count and
+   score against you, so aiming low still cannot win a round.
+   A keystone set but not closed caps the round at 10-9 however many ticked.
+   Off days and days with no five are NOT fought - the week just gets shorter. */
+function rdScore(arr, isOff){
+  var out = { fought:false, off:(isOff===true), margin:0, you:0, them:0,
+              label:'', slots:0, closed:0, need:0, capped:false, ksSet:0, ksClosed:0 };
+  if (isOff) return out;
+  if (!arr || !arr.length) return out;
+  var imm = 0, opt = [], i, it;
+  for (i = 0; i < arr.length; i++){
+    it = arr[i];
+    if (!it || !it.t || !String(it.t).trim()) continue;
+    if (it.mode === 'immerse') { imm++; continue; }
+    opt.push(it);
+  }
+  if (!opt.length) return out;
+  var slots = 5 - imm;
+  if (slots < 1) return out;
+  var closed = 0, ksSet = 0, ksClosed = 0;
+  for (i = 0; i < opt.length; i++){
+    var d = opt[i].done === true;
+    if (d) closed++;
+    if (opt[i].k) { ksSet++; if (d) ksClosed++; }
+  }
+  var need = slots - 2; if (need < 1) need = 1;
+  out.fought = true; out.slots = slots; out.closed = closed; out.need = need;
+  out.ksSet = ksSet; out.ksClosed = ksClosed;
+  if (closed >= need){
+    var m = 1 + ksClosed;
+    if (ksSet > ksClosed) { m = 1; out.capped = true; }
+    if (m > 3) m = 3;
+    out.margin = m; out.you = 10; out.them = 10 - m;
+  } else {
+    var sh = need - closed; if (sh > 3) sh = 3;
+    out.margin = -sh; out.you = 10 - sh; out.them = 10;
+  }
+  out.label = out.you + '\u2013' + out.them;
+  return out;
+}
+
+/* Guard up while level or behind, rocked above zero, buckling past one,
+   on the canvas at two or better - a week of 10-8s, not one big Tuesday. */
+function rdCondition(avg, anyRounds){
+  if (!anyRounds)  return { k:'none',     t:'No rounds yet', c:'#8a93a8' };
+  if (avg >= 2)    return { k:'canvas',   t:'On the canvas',  c:'#4ae8a0' };
+  if (avg >  1)    return { k:'buckling', t:'Buckling',       c:'#4ae8a0' };
+  if (avg >  0)    return { k:'rocked',   t:'Rocked',         c:'#ffc107' };
+  return             { k:'guard',    t:'Guard up',       c:'#8a93a8' };
+}
+
+/* Monday-start week containing d. Same rule the rocks card uses. */
+function rdWkStart(d){
+  var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  x.setDate(x.getDate() - (x.getDay() === 0 ? 6 : x.getDay() - 1));
+  return x;
+}
+function rdYmd(d){
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+/* Seven rounds, Monday to Sunday. all = forge-top5, frames = forge-frame,
+   offArr = forge-offdays (planner only; pass [] where it is not visible). */
+function rdWeek(all, frames, offArr, ref, todayKey){
+  var start = rdWkStart(ref), out = [], i;
+  all = all || {}; frames = frames || {}; offArr = offArr || [];
+  for (i = 0; i < 7; i++){
+    var d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+    var dk = rdYmd(d);
+    var fr = frames[dk];
+    var isOff = (fr && fr.off === true) || (offArr.indexOf(dk) !== -1);
+    var future = dk > todayKey;
+    var r = future ? { fought:false, off:false, margin:0, you:0, them:0, label:'', slots:0, closed:0, need:0, capped:false, ksSet:0, ksClosed:0 }
+                   : rdScore(all[dk], isOff);
+    r.dk = dk; r.n = i + 1; r.future = future; r.today = (dk === todayKey);
+    if (future) r.off = false;
+    out.push(r);
+  }
+  return out;
+}
+
+/* Running totals across rounds actually fought. */
+function rdTally(week){
+  var you = 0, them = 0, n = 0, sum = 0, last = 0, i;
+  for (i = 0; i < week.length; i++){
+    if (!week[i].fought) continue;
+    you += week[i].you; them += week[i].them; sum += week[i].margin; n++; last = i + 1;
+  }
+  return { you:you, them:them, rounds:n, lastRound:last, avg: n ? (sum / n) : 0 };
+}
+
+/* Off days: the array is the planner's, the frame flag is what the debrief sees. */
+function rdFrames(){
+  var f = readJSON(K_FRAME, {});
+  return (f && typeof f === 'object' && !Array.isArray(f)) ? f : {};
+}
+function rdDow(dk){
+  var p = dk.split('-');
+  var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+  return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+}
+function rdCell(r){
+  var bg = 'transparent', bd = '#3a3a44', fg = '#8a93a8', txt = '';
+  if (r.off)            { bd = '#4a9de8'; fg = '#4a9de8'; txt = '\u00b7'; }
+  else if (r.future)    { txt = ''; }
+  else if (!r.fought)   { txt = '\u2013'; }
+  else if (r.margin > 0){ bg = 'rgba(74,232,160,.16)'; bd = '#4ae8a0'; fg = '#4ae8a0'; txt = '+' + r.margin; }
+  else                  { bg = 'rgba(255,107,107,.14)'; bd = '#ff6b6b'; fg = '#ff6b6b'; txt = '\u2212' + Math.abs(r.margin); }
+  var ring = r.today ? 'box-shadow:0 0 0 2px #ffc107;' : '';
+  return '<div style="flex:1; min-width:0; text-align:center; padding:5px 0; border:1.5px solid ' + bd +
+         '; border-radius:6px; background:' + bg + '; color:' + fg + '; font-size:12px; font-weight:800;' + ring + '">' +
+         (txt || '&nbsp;') + '</div>';
+}
+function renderRound(){
+  var host = document.getElementById('round-host');
+  if (!host) return;
+  var todayK = ymd(new Date()), viewK = dayKey();
+  var week = rdWeek(readJSON(K_TOP5, {}), rdFrames(), offDays(), viewDate(), todayK);
+  var t = rdTally(week);
+  var cur = null, idx = 0, i;
+  for (i = 0; i < week.length; i++) if (week[i].dk === viewK) { cur = week[i]; idx = i + 1; }
+  if (!cur) { host.innerHTML = ''; return; }
+
+  var big, sub, col = '#ffc107';
+  if (cur.off){
+    big = 'Off day'; col = '#4a9de8';
+    sub = 'No round fought. Resting is not a loss \u2014 the week is just shorter.';
+  } else if (cur.future){
+    big = 'Not fought yet';
+    sub = 'Set the five tonight and round ' + idx + ' starts when the day does.';
+  } else if (!cur.fought){
+    big = 'No card yet';
+    sub = 'Nothing set. Put a five up and the round begins.';
+  } else {
+    var side = cur.margin > 0 ? 'you' : 'against';
+    big = cur.label + ' ' + side;
+    col = cur.margin > 0 ? '#4ae8a0' : '#ff6b6b';
+    sub = cur.closed + ' of ' + cur.slots + ' closed, ' + cur.need + ' to take it';
+    if (cur.capped) sub += ' \u00b7 keystone still open, capped at 10\u20139';
+    else if (cur.margin > 1) sub += ' \u00b7 ' + cur.ksClosed + ' keystone' + (cur.ksClosed > 1 ? 's' : '') + ' closed';
+    if (cur.today) sub += ' \u00b7 as it stands';
+  }
+
+  var strip = '<div style="display:flex; gap:4px; margin-top:10px;">';
+  for (i = 0; i < week.length; i++) strip += rdCell(week[i]);
+  strip += '</div>';
+  var days = '<div style="display:flex; gap:4px; margin-top:3px;">';
+  for (i = 0; i < week.length; i++)
+    days += '<div style="flex:1; text-align:center; font-size:8px; letter-spacing:.06em; color:' +
+            (week[i].today ? '#ffc107' : '#6a7284') + ';">' + rdDow(week[i].dk).toUpperCase() + '</div>';
+  days += '</div>';
+
+  var foot;
+  if (!t.rounds){
+    foot = 'No rounds scored this week yet.';
+  } else {
+    var lead = t.you > t.them ? 'you' : (t.you < t.them ? 'against' : 'level');
+    var cond = rdCondition(t.avg, true);
+    foot = 'Rounds 1\u2013' + t.lastRound + ' \u00b7 <strong style="color:#f0f0f8;">' + t.you + '\u2013' + t.them +
+           ' ' + lead + '</strong> \u00b7 <span style="color:' + cond.c + ';">' + cond.t + '</span>';
+  }
+
+  host.innerHTML =
+    '<div style="background:rgba(0,0,0,0.88); border-radius:10px; padding:12px 14px; margin-bottom:14px;">' +
+      '<div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;">' +
+        '<div style="font-size:10px; letter-spacing:.18em; color:#4a9de8; font-weight:700;">ROUND ' + idx +
+          ' \u00b7 ' + rdDow(cur.dk).toUpperCase() + '</div>' +
+        '<div style="font-size:9px; letter-spacing:.12em; color:#6a7284;">THE FIGHT</div>' +
+      '</div>' +
+      '<div style="font-size:22px; font-weight:800; color:' + col + '; margin-top:4px; line-height:1.2;">' + big + '</div>' +
+      '<div style="font-size:11px; color:#8a93a8; margin-top:3px; line-height:1.45;">' + sub + '</div>' +
+      strip + days +
+      '<div style="font-size:11px; color:#8a93a8; margin-top:9px; line-height:1.45;">' + foot + '</div>' +
+    '</div>';
+}
+
 function renderTop5(){
   var arr = loadTop5();
   var nowH = new Date().getHours();
@@ -582,6 +779,7 @@ function renderTop5(){
     })(i);
   }
   document.getElementById('t5day').textContent = isToday() ? 'Today' : 'Tomorrow';
+  renderRound(); /* install30 */
 }
 function paintNext(){
   var arr = loadTop5();
@@ -1102,7 +1300,18 @@ function markOffDay(){
   if (a.indexOf(t) === -1) a.push(t);
   if (a.length > 200) a = a.slice(a.length - 200);
   writeJSON(K_OFF, a);
+  /* install30: forge-offdays is local to this page and unsynced, so the Sunday
+     boxer cannot see it. The flag rides along on forge-frame, which is synced. */
+  var fr = readJSON(K_FRAME, {});
+  if (!fr || typeof fr !== 'object' || Array.isArray(fr)) fr = {};
+  var fe = fr[t]; if (!fe || typeof fe !== 'object') fe = {};
+  fe.off = true; fr[t] = fe;
+  var fks = Object.keys(fr).sort();
+  if (fks.length > 21) { var fo = {}; fks.slice(-21).forEach(function(k){ fo[k] = fr[k]; }); fr = fo; }
+  writeJSON(K_FRAME, fr);
+  syncPush(K_FRAME);
   renderOffDay();
+  renderRound();
 }
 function renderOffDay(){
   var host = document.getElementById('off-host');
