@@ -13,7 +13,91 @@ Hand-maintained. Newest first. Written so a future session can pick up cold.
 
 Sync goes through a Cloudflare Worker at `forge-sync.yoseanreid.workers.dev`.
 A green workflow run is **not** evidence code was pushed — verify by fetching the
-raw file from `gh-pages` and comparing its hash.
+`gh-pages` **branch archive** from `codeload.github.com` and comparing hashes.
+Do **not** verify via `raw.githubusercontent.com`; it serves stale copies for
+minutes after a push and has twice caused a deploy to be wrongly declared failed.
+
+## 2026-08-06 / 07
+
+### install28 — the planner actually pushes the five
+`syncPush(K_TOP5)` sat **below** `saveTop5`'s closing brace, and `syncPush(K_PLAN)`
+below `savePlan`'s. Both were stray top-level statements: they fired once at page
+load and never on save. Saving the five wrote to local storage and stopped there,
+so the Worker received nothing after 2026-08-03. This is install11's bug
+reintroduced on a different page.
+
+Both calls moved inside their functions. Also added the emptiness guard the planner
+never got — the debrief got one in install18, the brief in install19. A cloud entry
+that is blank can no longer overwrite a populated local one.
+
+**Deliberate trade-off:** deliberately *clearing* the five on one surface will not
+propagate to the other; it has to be cleared in both. Principle applied:
+stale-but-present beats silently wiped.
+
+Verified by AST rather than brace counting — the patched file parses and contains
+zero top-level call statements, so no other strays are hiding.
+
+**Note on installer self-checks:** the first draft of this installer asserted a
+hardcoded brace delta and failed closed because the real delta differed by one.
+Assert the *invariant* (open delta equals close delta), never the arithmetic.
+
+### Repo tidy
+Roughly 33 `.bak`/`.backup` files moved to a vault folder **outside** the repo —
+rollbacks still exist, they are simply no longer tracked. About 22 dead one-off
+patchers (`patch_*.py`, `forge_actions_patched.py`, `input_patched.html`) moved
+alongside them. Installers 10, 11, 22, 23, 24, 25 and 27 committed, since they are
+the change history and should not float untracked. A `.gitignore` now covers
+`*.bak`, `*.bak-*`, `*.backup`, `*.backup-*`.
+
+Three files were sitting in the repo literally named `python3 forge_installNN.py` —
+the whole shell command had been typed into the GitHub web editor's filename field.
+Their patches had been applied from elsewhere, so removing them lost nothing. When
+giving web-editor instructions, say explicitly to clear the filename field first.
+
+## 2026-08-03 (later)
+
+### install27 — cue block and three-tier decision rule
+Generator change. Seven cue strings on the brief plus a three-tier decision rule.
+Blue `#1a5fa8`, consistent with the existing blue-gradient card. No sunset: silent
+removal during a bad month is a real failure mode. **Supersedes install26, which
+must never be run** — install27 targets install24's post-image directly and will
+refuse on the pre-image check if install26 was applied.
+
+### install25 — video audit logging and the Sunday checklist
+Debrief change, runs after install23. A tick in the step-5 reps card lets an audit
+be logged on any day, which is what makes the twice-weekly front-load work without
+a scheduler. A three-item checklist was added inside install20's existing Sunday
+review, with a count of audits done that week. New key `forge-video`,
+`{date: {done: true}}`, 60-day prune.
+
+**The checklist is review-only and the copy must keep saying so.** Running it
+*during* a conversation reinstates the self-monitoring loop the build exists to
+remove.
+
+### install22 / 23 / 24 — social reps
+New key `forge-reps`. The planner authors the count `n`; the debrief authors the
+attribution `att`. Sync merge is max-wins on the count.
+
+### install20 / install21 — weekly review and the park button
+Debrief gained a "week behind" card rendering only on review days, sitting directly
+above the rocks card so the week is reviewed before next week's rocks are set. It
+shows mushin days, project time against the 3h floor, unfinished recurring items,
+and the parked list with Rock / Backlog / Drop per item. Rocks cap at three:
+promoting a fourth refuses and writes a reason rather than silently dropping one.
+
+Planner gained a PARK IT box under the timers. New key `forge-parked` — a flat
+array of `{t, d}`, 100-item cap, case-insensitive de-dupe. Note this is *not* the
+`{date: {…}}` shape the other keys use.
+
+### install18 / install19 — the hardening pass
+The debrief gained `syncPullDebrief()`, called from `init()` **after** the local
+paint so the page is never blank while waiting. Before this it only ever pushed.
+`syncPullBrief` was rewritten to pull `forge-week-rocks` as well as `forge-top5`
+(rocks were never pulled), to repaint every panel rather than only the five, and to
+show sync state in the footer.
+
+Both sides ignore a body containing `error`, so a Worker error object is never
+mistaken for data and written as a bogus date key.
 
 ## 2026-08-03
 
@@ -47,19 +131,25 @@ copy can never reduce an accumulated total.
 Evening debrief gained the daily frame, OPTIMIZE/IMMERSE task tags, and a mushin
 row. Mushin auto-marks done at 600 seconds, so the timer fills it in.
 
+## Closed since the last revision of this file
+
+- **The Worker allowlist.** Previously listed here as rejecting `forge-mushin` and
+  `forge-project`. Resolved — the Worker's key list now contains all eleven keys
+  (`forge-top5`, `forge-dayplan`, `forge-backlog`, `forge-fun`, `forge-week-rocks`,
+  `forge-frame`, `forge-mushin`, `forge-project`, `forge-parked`, `forge-reps`,
+  `forge-video`), and every `K_*` constant in the deployed pages matches it exactly.
+- **Debrief loads without pulling.** Fixed by install18.
+- **Repo clutter.** Cleared, see the tidy above.
+
 ## Known open items
 
-- **The Worker does not recognise `forge-mushin` or `forge-project`.** `GET /forge-mushin`
-  returns `{"error":"unknown key"}` while `/forge-top5` returns data, so the Worker is
-  healthy but appears to serve a fixed allowlist. Until that is fixed these two keys live
-  in local storage only and have **no cloud backup**. Fixing it means editing the Worker,
-  not this repo.
-- **Encoding.** The raw Worker view renders curly apostrophes as `â€™`. Believed to be a
-  display fault in that view only, since the brief parses with `r.json()`. Unconfirmed.
-- **Debrief loads without pulling.** The evening debrief never pulls from the Worker on
-  load, and an empty cloud entry can still overwrite a populated local one.
-- **Repo clutter.** Roughly 40 untracked files on `gh-pages` (old `.bak` files, `patch_*.py`).
-  Always stage by explicit filename; never `git add .`.
+- **Encoding.** The raw Worker view renders curly apostrophes as `â€™`. Believed to be
+  a display fault in that view only, since the brief parses with `r.json()`. Unconfirmed
+  and low priority.
+- **Unsynced keys.** `forge-project`, `forge-parked` and `forge-video` currently read
+  as empty in the cloud. This is not a bug — the push wiring for each was audited and
+  is correct; those features simply have not been used yet.
+- **Travel override active.** See below. Must be reversed on return.
 
 ## Travel override
 
@@ -67,3 +157,8 @@ row. Mushin auto-marks done at 600 seconds, so the timer fills it in.
 brief builds exactly as it did for Richmond. To revert after travel, delete the three
 variables under Settings → Secrets and variables → Actions → Variables and re-run the
 workflow. No code change is needed.
+
+Three sites are **deliberately** left on `America/Vancouver` and this is correct, not an
+oversight: `fetch_ics_events` and `fetch_ics_structured` pull Richmond feeds whose
+floating times genuinely are Pacific, and `get_sports_updates` labels schedules with a
+literal " PT" suffix that moving the zone would falsify.
