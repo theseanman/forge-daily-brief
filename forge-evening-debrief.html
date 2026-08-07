@@ -114,6 +114,20 @@
     .t5label.done { text-decoration:line-through; color:#666680; }
     .t5star { font-size:12px; color:#e8c84a; flex-shrink:0; }
     .t5carry { font-size:9px; color:#e8844a; letter-spacing:.06em; flex-shrink:0; }
+    /* install29 - escalating carry states */
+    .cs-aging   { color:#e8c84a; }
+    .cs-stalled { color:#e8844a; font-weight:800; }
+    .cs-gated   { color:#e05a4a; font-weight:800; animation:csPulse 2.4s ease-in-out infinite; }
+    @keyframes csPulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+    .t5label.cs-fade { color:#8a8aa0; }
+    .gate-wrap { border:1px solid #4a2a2a; border-radius:8px; padding:8px; margin:0 0 8px 0; background:#1a1216; }
+    .gate-txt { font-size:12px; color:#f0f0f8; margin-bottom:2px; word-break:break-word; }
+    .gate-lbl { font-size:9px; color:#e05a4a; letter-spacing:.08em; margin-bottom:6px; }
+    .gate-row { display:flex; gap:6px; flex-wrap:wrap; }
+    .gate-btn { font-size:11px; padding:6px 11px; border-radius:6px; background:#1c1c2a; color:#f0f0f8; border:1px solid #444458; }
+    .gate-btn.commit { border-color:#4a9de8; color:#9ecbf5; }
+    .gate-btn.park   { border-color:#e8c84a; color:#e8c84a; }
+    .gate-btn.drop   { border-color:#e05a4a; color:#e05a4a; }
 
     .plan-row { display:flex; align-items:center; gap:7px; padding:7px 2px; border-bottom:1px solid #26263a; }
     .plan-row:last-child { border-bottom:none; }
@@ -740,7 +754,7 @@ function renderT5Review(){
       row.appendChild(im2);
     }
     if (it.k){ var st=document.createElement('span'); st.className='t5star'; st.textContent='\u2605'; row.appendChild(st); }
-    if (it.c && it.c>=2){ var c=document.createElement('span'); c.className='t5carry'; c.textContent='carried '+it.c+'\u00D7'; row.appendChild(c); }
+    if (it.c && it.c>=2){ var c=document.createElement('span'); c.className='t5carry '+csClass(it.c); if(it.c>=GATE_AT) l.className+=' cs-fade'; c.textContent=csWord(it.c)+' \u00B7 carried '+it.c+'\u00D7'; row.appendChild(c); }
     host.appendChild(row);
   });
   renderMushinRow(host); /* install13 */
@@ -839,10 +853,28 @@ function initPlanRows(){
     if (carried.length && wrap){
       wrap.style.display='block';
       carried.forEach(function(it){
-        var b=document.createElement('button'); b.className='pick';
-        b.textContent = it.t + (it.c&&it.c>=2 ? '  · '+(it.c+1)+'×' : '');
-        b.onclick=function(){ addToPlan(it.t, '', (it.c||1)+1); };
-        host.appendChild(b);
+        var cc = Number(it.c) || 1;
+        if (cc >= GATE_AT){ /* install29 - hard gate, decide or it does not move */
+          var w=document.createElement('div'); w.className='gate-wrap';
+          var tx=document.createElement('div'); tx.className='gate-txt'; tx.textContent=it.t; w.appendChild(tx);
+          var lb=document.createElement('div'); lb.className='gate-lbl';
+          lb.textContent='CARRIED '+cc+'× · '+csWord(cc).toUpperCase()+' · DECIDE';
+          w.appendChild(lb);
+          var r=document.createElement('div'); r.className='gate-row';
+          var b1=document.createElement('button'); b1.className='gate-btn commit'; b1.textContent='Commit';
+          b1.onclick=(function(t,c){ return function(){ gateCommit(t,c); }; })(it.t, cc);
+          var b2=document.createElement('button'); b2.className='gate-btn park'; b2.textContent='Park';
+          b2.onclick=(function(t){ return function(){ gatePark(t); }; })(it.t);
+          var b3=document.createElement('button'); b3.className='gate-btn drop'; b3.textContent='Backlog';
+          b3.onclick=(function(t){ return function(){ gateDrop(t); }; })(it.t);
+          r.appendChild(b1); r.appendChild(b2); r.appendChild(b3); w.appendChild(r);
+          host.appendChild(w);
+        } else {
+          var b=document.createElement('button'); b.className='pick';
+          b.textContent = it.t + (cc>=2 ? '  · '+(cc+1)+'×' : '');
+          b.onclick=function(){ addToPlan(it.t, '', cc+1); };
+          host.appendChild(b);
+        }
       });
     } else if (wrap) { wrap.style.display='none'; }
   }
@@ -901,6 +933,42 @@ function renderPlanRows(){
       row2.appendChild(dw);
     }
     host.appendChild(row2);
+  });
+}
+/* install29 - carry state helpers. Threshold: GATE_AT carries forces a decision. */
+var GATE_AT = 3;
+function csClass(c){
+  c = Number(c) || 0;
+  if (c >= GATE_AT + 1) return 'cs-gated';
+  if (c >= GATE_AT) return 'cs-stalled';
+  if (c >= 2) return 'cs-aging';
+  return '';
+}
+function csWord(c){
+  c = Number(c) || 0;
+  if (c >= GATE_AT + 1) return 'gated';
+  if (c >= GATE_AT) return 'stalled';
+  if (c >= 2) return 'aging';
+  return 'alive';
+}
+/* Nothing here deletes. Park and Drop both relocate the item. */
+function gateCommit(text, c){ addToPlan(text, '', (Number(c) || 1) + 1); initPlanRows(); }
+function gatePark(text){ try { parkAdd(text); } catch (e) {} dropFromToday(text); initPlanRows(); }
+function gateDrop(text){
+  var t = String(text == null ? '' : text).trim();
+  if (t){
+    var b = fdRead(K_BACKLOG, []);
+    if (!Array.isArray(b)) b = [];
+    if (b.indexOf(t) === -1){ b.push(t); fdWrite(K_BACKLOG, b); try { syncPush(K_BACKLOG); } catch (e) {} }
+  }
+  dropFromToday(text); initPlanRows();
+}
+/* Removes the item from the carry-forward OFFER only. Today's record is untouched. */
+function dropFromToday(text){
+  var t = String(text == null ? '' : text).trim().toLowerCase();
+  todayT5 = todayT5.map(function(i){
+    if (i && i.t && i.t.trim().toLowerCase() === t) { i = { t: i.t, done: true, c: i.c, k: i.k, mode: i.mode, m: i.m, dw: i.dw, _gated: true }; }
+    return i;
   });
 }
 function addToPlan(text, hour, carryCount){
