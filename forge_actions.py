@@ -1345,6 +1345,24 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     sleep_score_disp = "NOT RECORDED" if _ss_missing else f"{_ss}%"
     sleep_dur_disp = "—" if (_sd is None or str(_sd).strip() in ("", "-")) else str(_sd)
     sleep_hr_disp = "—" if (_sh is None or str(_sh).strip() in ("", "-")) else str(_sh)
+
+    # Sleep stages arrive as integer MINUTES from the Health-pull Shortcut.
+    # Absent on any night the stages were not recorded -> render an em dash,
+    # never an error, so a stageless or partial data.json can never crash the run.
+    def _fmt_sleep_min(v):
+        if v is None or str(v).strip() in ("", "-"):
+            return "—"
+        try:
+            m = int(round(float(v)))
+        except (TypeError, ValueError):
+            return "—"
+        if m <= 0:
+            return "—"
+        h, mm = divmod(m, 60)
+        return f"{h}h {mm}m" if h else f"{mm}m"
+    sleep_rem_disp = _fmt_sleep_min(sleep.get("rem"))
+    sleep_core_disp = _fmt_sleep_min(sleep.get("core"))
+    sleep_deep_disp = _fmt_sleep_min(sleep.get("deep"))
     sleep_missing_note = ""
     if _ss_missing:
         sleep_missing_note = (
@@ -1678,6 +1696,11 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
       <div class="stat-block"><div class="stat-val">{sleep_score_disp}</div><div class="stat-label">Score</div></div>
       <div class="stat-block"><div class="stat-val">{sleep_dur_disp}</div><div class="stat-label">Duration</div></div>
       <div class="stat-block"><div class="stat-val">{sleep_hr_disp}</div><div class="stat-label">HR Range</div></div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-block"><div class="stat-val">{sleep_rem_disp}</div><div class="stat-label">REM</div></div>
+      <div class="stat-block"><div class="stat-val">{sleep_core_disp}</div><div class="stat-label">Core</div></div>
+      <div class="stat-block"><div class="stat-val">{sleep_deep_disp}</div><div class="stat-label">Deep</div></div>
     </div>
     {sleep_missing_note}
   </div>
