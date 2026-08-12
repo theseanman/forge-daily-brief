@@ -148,7 +148,7 @@
     <div class="date-block">
       <div class="date-main">Wednesday</div>
       <div style="font-size:11px; color:var(--muted);">August 12, 2026</div>
-      <div class="date-time" id="live-clock">08:30 PM</div>
+      <div class="date-time" id="live-clock">08:47 PM</div>
     </div>
   </div>
 
@@ -173,6 +173,8 @@
   <div id="yday-host"></div>
   <div id="rocks-host"></div>
   <div class="alert-banner">🚨 RECOVERY DAY PROTOCOL ACTIVE Health at risk. Stress 95% (elevated). Energy 25% (limited). No strain. No decisions. Rest only.</div>
+
+  <div style="padding:10px 14px; margin-bottom:10px; border-radius:8px; background:rgba(200,60,60,0.15); border:1px solid rgba(200,60,60,0.35); font-size:14px; font-weight:600; color:var(--text-bright);">Sleep score 79% last night</div>
 
   <div class="card" style="background: linear-gradient(135deg, rgba(0,0,0,0.25), rgba(30,10,0,0.2)); border: 3px solid var(--text-bright);">
     <div class="card-header"><span class="card-icon">&#x1F4CB;&#x1F334;</span><span>FORGE SITREP</span></div>
@@ -367,7 +369,7 @@
 
   <div class="card">
     <div class="card-header"><span class="card-icon">🌤️🌴</span><span>Richmond Weather</span></div>
-    <div class="mini-card"><div class="mini-detail">Mainly clear, 25.1°C</div></div>
+    <div class="mini-card"><div class="mini-detail">Mainly clear, 25.0°C</div></div>
   </div>
 
   <div class="card" data-newscan>
@@ -527,7 +529,7 @@ Labour Day @ Mon Sep 07, 12:00 AM [Austria Vancouver]</pre></div>
   <div class="card"><div class="card-header"><span class="card-icon">🎸🌴</span><span>Upcoming Metal Shows</span></div><div class="mini-card"><div class="mini-detail">No upcoming shows.</div></div></div>
 
 
-  <div class="footer">🌴 FORGE OS · AUGUST 12, 2026 · 08:30 PM · Asia/Tokyo · theseanman.github.io/forge-daily-brief<span id="sync-state"></span></div>
+  <div class="footer">🌴 FORGE OS · AUGUST 12, 2026 · 08:47 PM · Asia/Tokyo · theseanman.github.io/forge-daily-brief<span id="sync-state"></span></div>
 
 </div>
 
@@ -927,7 +929,7 @@ function paintPractice() {
         '<div class="t5-meta">' + pfReps() + ' today &middot; conversations you started</div>' +
       '</div>' +
     '</div>' +
-    /* install27: today's cue + the decision tiers. No tick, nothing to complete. */
+    /* install27: today's cue + the decision tiers. install31: LIVE OR OVER. */
     '<div style="border-top:2px solid #1a5fa8; margin-top:10px; padding-top:10px;">' +
       '<div style="font-size:10px; letter-spacing:0.16em; color:#1a5fa8; font-weight:700; margin-bottom:3px;">TODAY&rsquo;S CUE</div>' +
       '<div style="font-size:13px; font-weight:600; line-height:1.45; margin-bottom:12px;">' + pfCue() + '</div>' +
@@ -938,6 +940,12 @@ function paintPractice() {
         '<strong style="color:#1a5fa8;">Sunday</strong> &mdash; anything that opens a new loop or commits future time, however urgent it feels. Especially the ones you generated yourself.' +
       '</div>' +
       '<div style="font-size:10px; opacity:0.65; margin-top:7px; line-height:1.5;">Seven breaths is from the Hagakure, c.1710 &mdash; a maxim from one retainer&rsquo;s reflections, not documented samurai practice. Roughly 30&ndash;45 seconds.</div>' +
+      '<div style="font-size:10px; letter-spacing:0.16em; color:#1a5fa8; font-weight:700; margin-top:13px; margin-bottom:4px;">LIVE OR OVER</div>' +
+      '<div style="font-size:12px; line-height:1.55;">' +
+        '<strong style="color:#1a5fa8;">Live</strong> &mdash; someone is in front of me, right now. A person talking. My daughters in the room. Attention goes outward: their face, their words. Not onto how I am doing.<br>' +
+        '<strong style="color:#1a5fa8;">Over</strong> &mdash; it is finished. Driving home. Sunday. Kids asleep. Where could I have improved? The time to evaluate my performance is after the fact, not during, according to the experts.<br>' +
+        '<strong style="color:#1a5fa8;">Never review while it is live.</strong> The more the moment matters, the more true this is &mdash; that is when monitoring does the most damage, not an exception to the rule.' +
+      '</div>' +
     '</div>';
 }
 
