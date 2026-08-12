@@ -1343,6 +1343,13 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     _ss, _sd, _sh = sleep.get("score"), sleep.get("duration"), sleep.get("hr_range")
     _ss_missing = sleep_is_missing(_ss)
     sleep_score_disp = "NOT RECORDED" if _ss_missing else f"{_ss}%"
+    # install32: sleep alert above the SITREP when score < threshold.
+    SLEEP_THRESHOLD = 90
+    if (not _ss_missing) and isinstance(_ss, (int, float)) and _ss < SLEEP_THRESHOLD:
+        _sleep_alert = f'<div style="padding:10px 14px; margin-bottom:10px; border-radius:8px; background:rgba(200,60,60,0.15); border:1px solid rgba(200,60,60,0.35); font-size:14px; font-weight:600; color:var(--text-bright);">Sleep score {_ss}% last night</div>'
+    else:
+        _sleep_alert = ''
+
     sleep_dur_disp = "—" if (_sd is None or str(_sd).strip() in ("", "-")) else str(_sd)
     sleep_hr_disp = "—" if (_sh is None or str(_sh).strip() in ("", "-")) else str(_sh)
 
@@ -1658,6 +1665,8 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
   <div id="yday-host"></div>
   <div id="rocks-host"></div>
   <div class="alert-banner">🚨 {mode} {mode_advice}</div>
+
+  {_sleep_alert}
 
   <div class="card" style="background: linear-gradient(135deg, rgba(0,0,0,0.25), rgba(30,10,0,0.2)); border: 3px solid var(--text-bright);">
     <div class="card-header"><span class="card-icon">&#x1F4CB;&#x1F334;</span><span>FORGE SITREP</span></div>
@@ -2301,7 +2310,7 @@ function paintPractice() {{
         '<div class="t5-meta">' + pfReps() + ' today &middot; conversations you started</div>' +
       '</div>' +
     '</div>' +
-    /* install27: today's cue + the decision tiers. No tick, nothing to complete. */
+    /* install27: today's cue + the decision tiers. install31: LIVE OR OVER. */
     '<div style="border-top:2px solid #1a5fa8; margin-top:10px; padding-top:10px;">' +
       '<div style="font-size:10px; letter-spacing:0.16em; color:#1a5fa8; font-weight:700; margin-bottom:3px;">TODAY&rsquo;S CUE</div>' +
       '<div style="font-size:13px; font-weight:600; line-height:1.45; margin-bottom:12px;">' + pfCue() + '</div>' +
@@ -2312,6 +2321,12 @@ function paintPractice() {{
         '<strong style="color:#1a5fa8;">Sunday</strong> &mdash; anything that opens a new loop or commits future time, however urgent it feels. Especially the ones you generated yourself.' +
       '</div>' +
       '<div style="font-size:10px; opacity:0.65; margin-top:7px; line-height:1.5;">Seven breaths is from the Hagakure, c.1710 &mdash; a maxim from one retainer&rsquo;s reflections, not documented samurai practice. Roughly 30&ndash;45 seconds.</div>' +
+      '<div style="font-size:10px; letter-spacing:0.16em; color:#1a5fa8; font-weight:700; margin-top:13px; margin-bottom:4px;">LIVE OR OVER</div>' +
+      '<div style="font-size:12px; line-height:1.55;">' +
+        '<strong style="color:#1a5fa8;">Live</strong> &mdash; someone is in front of me, right now. A person talking. My daughters in the room. Attention goes outward: their face, their words. Not onto how I am doing.<br>' +
+        '<strong style="color:#1a5fa8;">Over</strong> &mdash; it is finished. Driving home. Sunday. Kids asleep. Where could I have improved? The time to evaluate my performance is after the fact, not during, according to the experts.<br>' +
+        '<strong style="color:#1a5fa8;">Never review while it is live.</strong> The more the moment matters, the more true this is &mdash; that is when monitoring does the most damage, not an exception to the rule.' +
+      '</div>' +
     '</div>';
 }}
 
