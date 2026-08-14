@@ -697,7 +697,7 @@ function syncPush(key) {
    An entry that is EMPTY in the cloud never overwrites a populated local one.
    That is deliberate: stale-but-present beats silently wiped. The cost is that
    deliberately clearing something on one surface will not propagate here. */
-var PULL_KEYS = [K_TOP5, K_ROCKS, K_FRAME, K_MUSHIN, K_BACKLOG, K_FUN, K_PARKED, K_PROJ, K_REPS, K_VIDEO]; /* install25 */
+var PULL_KEYS = [K_TOP5, K_ROCKS, K_FRAME, K_MUSHIN, K_BACKLOG, K_FUN, K_PARKED, K_PROJ, K_REPS, K_VIDEO, K_PROTO]; /* install25 + tally_pull_key_aug14 */
 
 function fdBlank(v) {
   if (v === null || v === undefined) return true;
@@ -786,7 +786,7 @@ function syncPullDebrief(cb) {
   function finish() {
     if (done + errs < total) return;
     syncBadge(errs === total ? 'offline' : (errs ? 'partial' : 'synced'));
-    if (touched) { try { loadTodayTop5(); } catch (e) {} try { renderWeeklyReview(); } catch (e) {} }
+    if (touched) { try { loadTodayTop5(); } catch (e) {} try { renderWeeklyReview(); } catch (e) {} try { protoLoad(); } catch (e) {} }
     if (cb) cb();
   }
 }
