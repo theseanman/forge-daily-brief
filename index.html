@@ -111,12 +111,18 @@
     .mini-card { background: rgba(255,255,255,0.12); border: 2px solid var(--text-bright); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
     .mini-title { font-size: 15px; color: var(--text-bright); font-weight: 700; margin-bottom: 6px; }
     .mini-detail { font-size: 13px; color: var(--text-light); line-height: 1.6; }
-    .paramount-goal { background: rgba(255,255,255,0.2); border: 2px solid var(--text-bright); border-radius: 8px; padding: 14px; margin-bottom: 10px; font-size: 14px; color: var(--text-light); line-height: 1.7; font-weight: 600; }
-    .paramount-num { font-size: 15px; color: var(--text-bright); font-weight: 700; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-    .goal-controls { display: flex; gap: 8px; align-items: center; }
-    .goal-btn { background: rgba(255,255,255,0.4); border: 2px solid var(--text-bright); border-radius: 6px; padding: 8px 16px; font-weight: 700; font-size: 20px; color: var(--text-bright); cursor: pointer; touch-action: manipulation; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
-    .goal-btn:active { background: rgba(255,255,255,0.7); }
-    .goal-counter { background: rgba(255,255,255,0.3); border: 2px solid var(--text-bright); border-radius: 6px; padding: 6px 14px; font-weight: 700; font-size: 16px; min-width: 40px; text-align: center; color: var(--text-bright); }
+    .pr-intro { font-size:13px; color:var(--text-light); opacity:0.85; margin-bottom:12px; line-height:1.6; }
+    .pr-section { border-radius:10px; padding:0 0 12px 0; margin-bottom:14px; overflow:hidden; }
+    .pimg-band { height:104px; background-size:cover; background-position:center 28%; background-color:rgba(0,0,0,0.22); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+    .pimg-band.has-img .pimg-hint { display:none; }
+    .pimg-hint { font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-light); opacity:0.6; }
+    .pr-head { font-size:15px; font-weight:800; letter-spacing:0.14em; padding:12px 14px 0 14px; }
+    .pr-sub { font-size:12px; color:var(--text-light); opacity:0.75; padding:2px 14px 10px 14px; font-style:italic; }
+    .pr-item { background:rgba(255,255,255,0.14); border-radius:6px; padding:11px 13px; margin:0 12px 9px 12px; }
+    .pr-name { font-size:14px; font-weight:700; color:var(--text-bright); margin-bottom:6px; }
+    .pr-body { font-size:13.5px; color:var(--text-light); line-height:1.65; font-weight:600; }
+    .pr-trigger { font-size:11.5px; color:var(--text-light); opacity:0.72; margin-top:6px; }
+    .pr-note { font-size:11px; color:var(--muted); margin-top:8px; line-height:1.5; }
     .advice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .advice-item { background: rgba(255,255,255,0.1); border: 2px solid var(--text-bright); border-radius: 8px; padding: 12px; }
     .advice-label { font-size: 12px; font-weight: 700; color: var(--text-bright); text-transform: uppercase; margin-bottom: 6px; }
@@ -148,7 +154,7 @@
     <div class="date-block">
       <div class="date-main">Friday</div>
       <div style="font-size:11px; color:var(--muted);">August 14, 2026</div>
-      <div class="date-time" id="live-clock">02:36 PM</div>
+      <div class="date-time" id="live-clock">10:54 PM</div>
     </div>
   </div>
 
@@ -222,100 +228,68 @@
     
   </div>
 
-  <div class="card" style="background: linear-gradient(135deg, rgba(255,215,0,0.25), rgba(255,140,0,0.15)); border: 3px double var(--text-bright);">
-    <div class="card-header"><span class="card-icon">🎯🌴</span><span>Five Paramount Goals</span></div>
-    <div class="paramount-goal">
-      <div class="paramount-num"><span>1️⃣ PAUSE BEFORE ANSWERING</span>
-        <div class="goal-controls">
-          <button class="goal-btn" onclick="decrementGoal(0)">−</button>
-          <span class="goal-counter" id="goal-0-counter">0</span>
-          <button class="goal-btn" onclick="incrementGoal(0)">+</button>
-        </div>
-      </div>
-      Brief pause before any response. Conscious deliberation first.<br><span style="font-weight:400; font-size:13px;">🚪 Training rep: one slow nasal breath at every doorway, kettle, or red light. Don&rsquo;t force the pause in conversations yet &mdash; groove the breath on the cue and it shows up when it matters.</span>
+  <div class="card" style="background: linear-gradient(135deg, rgba(255,215,0,0.16), rgba(255,140,0,0.08)); border: 3px double var(--text-bright);">
+    <div class="card-header"><span class="card-icon">🎯</span><span>Paramount Protocol</span></div>
+    <div class="pr-intro">Train where it is easy. Groove the reflex. It shows up when it matters.</div>
+  <div class="pr-section" style="background:linear-gradient(135deg, rgba(26,95,168,0.30), rgba(18,58,108,0.14)); border:2px solid #4a9de8;">
+    <div id="pimg-terrain" class="pimg-band" onclick="pimgPick('terrain')"><span class="pimg-hint">tap to add your TERRAIN image</span></div>
+    <div class="pr-head" style="color:#4a9de8;">TERRAIN</div>
+    <div class="pr-sub">Choose the ground. Refuse what you cannot hold.</div>
+    <div class="pr-item" style="border-left:4px solid #4a9de8;">
+      <div class="pr-name">⚔️ BOUNDARY REP</div>
+      <div class="pr-body">State one preference or decline one small thing. No qualifier, no apology. Let the silence sit.</div>
+      <div class="pr-trigger">Cue: once daily</div>
     </div>
-    <div class="paramount-goal">
-      <div class="paramount-num"><span>2️⃣ CAL AI BEFORE MEALS</span>
-        <div class="goal-controls">
-          <button class="goal-btn" onclick="decrementGoal(1)">−</button>
-          <span class="goal-counter" id="goal-1-counter">0</span>
-          <button class="goal-btn" onclick="incrementGoal(1)">+</button>
-        </div>
-      </div>
-      Log nutrition in Cal AI before eating. Every meal. Non-negotiable.
+    <div class="pr-item" style="border-left:4px solid #4a9de8;">
+      <div class="pr-name">🗡️ WARRIOR PROMISE</div>
+      <div class="pr-body">Name the one hard thing you are avoiding. Do it first, before the easy stuff.</div>
+      <div class="pr-trigger">Cue: morning</div>
     </div>
-    <div class="paramount-goal">
-      <div class="paramount-num"><span>3️⃣ SLOW MOVEMENTS & SPEECH</span>
-        <div class="goal-controls">
-          <button class="goal-btn" onclick="decrementGoal(2)">−</button>
-          <span class="goal-counter" id="goal-2-counter">0</span>
-          <button class="goal-btn" onclick="incrementGoal(2)">+</button>
-        </div>
-      </div>
-      Deliberate, slower pace in all physical and verbal communication.<br><span style="font-weight:400; font-size:13px;">🐢 The rep: move 20% slower than your impulse &mdash; reach, turn, walk slower. Cue: all day.</span>
+    <div class="pr-item" style="border-left:4px solid #4a9de8;">
+      <div class="pr-name">🏔️ OPPORTUNITY SCANNING</div>
+      <div class="pr-body">Every setback or new environment: “What opportunity does this situation present me with?”</div>
+      <div class="pr-trigger">Cue: the first setback of the day</div>
     </div>
-    <div class="paramount-goal">
-      <div class="paramount-num"><span>4️⃣ OPPORTUNITY SCANNING</span>
-        <div class="goal-controls">
-          <button class="goal-btn" onclick="decrementGoal(3)">−</button>
-          <span class="goal-counter" id="goal-3-counter">0</span>
-          <button class="goal-btn" onclick="incrementGoal(3)">+</button>
-        </div>
-      </div>
-      Every setback or new environment: "What opportunity does this situation present me with?"<br><span style="font-weight:400; font-size:13px;">⚡ Cue: setback or threshold &mdash; ask it at the first one of the day.</span>
     </div>
-    <div class="paramount-goal">
-      <div class="paramount-num"><span>5️⃣ NOT RELEVANT</span>
-        <div class="goal-controls">
-          <button class="goal-btn" onclick="decrementGoal(4)">−</button>
-          <span class="goal-counter" id="goal-4-counter">0</span>
-          <button class="goal-btn" onclick="incrementGoal(4)">+</button>
-        </div>
-      </div>
-      When the optimizing narrative starts &mdash; how to improve this, what it should become &mdash; name it and take away its authority: <em>not relevant to being present with my family.</em> It can stay. It doesn&rsquo;t get a vote.<br><span style="font-weight:400; font-size:13px;">⚡ Scope: optimization thoughts only. Not a general silencer &mdash; some internal signal is load-bearing. Two seconds, then back to one sense channel.</span>
+  <div class="pr-section" style="background:linear-gradient(135deg, rgba(200,140,60,0.30), rgba(150,95,35,0.14)); border:2px solid #e0a854;">
+    <div id="pimg-tempo" class="pimg-band" onclick="pimgPick('tempo')"><span class="pimg-hint">tap to add your TEMPO image</span></div>
+    <div class="pr-head" style="color:#e0a854;">TEMPO</div>
+    <div class="pr-sub">Nothing hurried. Nothing anxious.</div>
+    <div class="pr-item" style="border-left:4px solid #e0a854;">
+      <div class="pr-name">⏸️ PAUSE BEFORE MOVING, DECIDING OR ACTING</div>
+      <div class="pr-body">When I catch myself drawing breath to speak — let it out without words, shoulders down, then speak.<br><span style="font-weight:400; font-size:13px;">Four places it applies: <strong>speaking</strong> · <strong>reaching</strong> · <strong>deciding</strong> · <strong>getting up and moving</strong>. Each is counted separately at the debrief, so you can see where it lands and where it does not.</span></div>
+      <div class="pr-trigger">Three today. Not all day. Raise it when three is boring.</div>
     </div>
-    <div class="mini-detail" style="margin-top:12px; font-size:12px; color:var(--muted);">💡 Tap +/− to track. Counters reset at midnight.</div>
+    <div class="pr-item" style="border-left:4px solid #e0a854;">
+      <div class="pr-name">🐢 SLOW MOVEMENTS & SPEECH</div>
+      <div class="pr-body">Deliberate, slower pace in all physical and verbal communication. Move 20% slower than your impulse — reach, turn, walk slower.</div>
+      <div class="pr-trigger">Cue: all day</div>
+    </div>
+    <div class="pr-item" style="border-left:4px solid #e0a854;">
+      <div class="pr-name">🤝 I’M FINE EITHER WAY</div>
+      <div class="pr-body">Before the first tense interaction, say it silently and mean it. You would like it to go well; you do not need it to.</div>
+      <div class="pr-trigger">Cue: before tension</div>
+    </div>
+    </div>
+  <div class="pr-section" style="background:linear-gradient(135deg, rgba(90,105,160,0.30), rgba(52,62,105,0.14)); border:2px solid #8a9ad0;">
+    <div id="pimg-presence" class="pimg-band" onclick="pimgPick('presence')"><span class="pimg-hint">tap to add your PRESENCE image</span></div>
+    <div class="pr-head" style="color:#8a9ad0;">PRESENCE</div>
+    <div class="pr-sub">No performance in this one.</div>
+    <div class="pr-item" style="border-left:4px solid #8a9ad0;">
+      <div class="pr-name">🧘 NOT RELEVANT</div>
+      <div class="pr-body">When the optimizing narrative starts — how to improve this, what it should become — name it and take away its authority: <em>not relevant to being present with my family.</em> It can stay. It does not get a vote.<br><span style="font-weight:400; font-size:13px;">Scope: optimization thoughts only. Not a general silencer — some internal signal is load-bearing. Two seconds, then back to one sense channel.</span></div>
+      <div class="pr-trigger">Cue: the moment it starts</div>
+    </div>
+    </div>
+  <div class="pr-item" style="border-left:4px solid var(--text-bright); margin-top:4px;">
+      <div class="pr-name">📱 CAL AI BEFORE MEALS</div>
+      <div class="pr-body">Log nutrition in Cal AI before eating. Every meal. Non-negotiable.</div>
+      <div class="pr-trigger">Cue: every meal</div>
+    </div>
+  <div id="pimg-note" class="pr-note"></div>
+    <div class="pr-note">Counts are recorded in the evening debrief, not here. Images stay on this device and are never uploaded.</div>
+    <input type="file" id="pimg-file" accept="image/*" style="display:none;" onchange="pimgLoad(event)">
   </div>
-
-  <div class="card">
-    <div class="card-header"><span class="card-icon">&#x1F525;&#x1F334;</span><span>Summer Protocol — Today’s Reps</span></div>
-    <div class="proto-intro">Train where it’s easy. Groove the reflex. It shows up when it matters.<br><span style="font-size:11px; opacity:0.75;">Pause, Slow Down and the Opportunity Question now live in the Five Paramount Goals card above, with counters.</span></div>
-    <div class="proto-drill">
-      <div class="proto-name">🔍 Camera Off</div>
-      <div class="proto-inst">In every conversation, find one genuine thing about the other person you didn’t know. That’s your only job.</div>
-      <div class="proto-trigger">Cue: every conversation</div>
-    </div>
-    <div class="proto-drill">
-      <div class="proto-name">🧍 Posture Reset</div>
-      <div class="proto-inst">Every time you stand up: shoulders down, chest open, head level. Just the reset.</div>
-      <div class="proto-trigger">Cue: every time you stand</div>
-    </div>
-    <div class="proto-drill">
-      <div class="proto-name">🤝 I’m Fine Either Way</div>
-      <div class="proto-inst">Before the first tense interaction, say it silently and mean it. You’d like it to go well; you don’t need it to.</div>
-      <div class="proto-trigger">Cue: before tension · binary: yes/no</div>
-    </div>
-    <div class="proto-drill">
-      <div class="proto-name">💬 The Second Question</div>
-      <div class="proto-inst">When someone answers you, don’t pivot to yourself. Ask one follow-up that goes deeper into what they said.</div>
-      <div class="proto-trigger">Cue: every conversation</div>
-    </div>
-    <div class="proto-drill">
-      <div class="proto-name">🛑 Boundary Rep</div>
-      <div class="proto-inst">State one preference or decline one small thing. No qualifier, no apology. Let the silence sit.</div>
-      <div class="proto-trigger">Cue: once daily · binary: yes/no</div>
-    </div>
-    <div class="proto-drill">
-      <div class="proto-name">⚔️ Warrior Promise</div>
-      <div class="proto-inst">Name the one hard thing you’re avoiding. Do it first, before the easy stuff.</div>
-      <div class="proto-trigger">Cue: morning · binary: yes/no</div>
-    </div>
-    <div class="proto-drill">
-      <div class="proto-name">❤️ Warmth Rep</div>
-      <div class="proto-inst">Give one specific, sincere appreciation to someone. Not ‘you’re great’ — something true and particular.</div>
-      <div class="proto-trigger">Cue: once daily</div>
-    </div>
-    </div>
 
   <div class="card">
     <div class="card-header"><span class="card-icon">&#x2694;&#xFE0F;&#x1F334;</span><span>Three Modes — Daily Triad</span></div>
@@ -333,34 +307,9 @@
     </div>
   </div>
 
-  <div class="card" style="background: linear-gradient(135deg, rgba(100,150,200,0.2), rgba(70,120,170,0.1)); border: 3px solid var(--text-bright);">
-    <div class="card-header"><span class="card-icon">🎭🌴</span><span>Identityless Protocol</span></div>
-    <div class="mini-card expandable" onclick="toggleSection(this)">
-      <div class="mini-title">🌀 Tap to expand</div>
-      <div class="expandable-content">
-        <strong>GROUNDLESSNESS TOLERANCE:</strong><br>
-        • No-Frame Actions: Act without identity narratives. Just do it.<br>
-        • "I Don't Know" as Full Stop: Sit in uncertainty 30–60 seconds.<br>
-        • "No Story. Just This": Cut narrative, focus on sensory data.<br><br>
-        <strong>INTERNAL AUDIENCE REMOVAL:</strong><br>
-        • Catching "Camera On": Detect self-observation, label it, don't judge.<br>
-        • Shift to Raw Perception: Anchor in ONE sensory channel.<br>
-        • Unwitnessed Existence: 2–5 min activities with zero self-reference.
-      </div>
-    </div>
-  </div>
 
-  <div class="card" style="background: linear-gradient(135deg, rgba(150,100,200,0.2), rgba(120,70,170,0.1)); border: 3px solid var(--text-bright);">
-    <div class="card-header"><span class="card-icon">⏰🌴</span><span>Future Self Protocol</span></div>
-    <div class="mini-card expandable" onclick="toggleSection(this)">
-      <div class="mini-title">📋 Tap to expand</div>
-      <div class="expandable-content">
-        <strong>MORNING:</strong> Posture Reset → Fractal Scan → Identity Merge → EV Selection → Atmospheric Bruiser Lock-In<br><br>
-        <strong>MIDDAY:</strong> Re-anchor → SBOS scan → Remove friction → Enforce boundary → Execute micro-win<br><br>
-        <strong>EVENING:</strong> What aligned? What violated? What friction needs removal? What system needs upgrading?
-      </div>
-    </div>
-  </div>
+
+
 
   <div class="card">
     <div class="card-header"><span class="card-icon">⚖️🌴</span><span>Body Composition</span></div>
@@ -369,7 +318,7 @@
 
   <div class="card">
     <div class="card-header"><span class="card-icon">🌤️🌴</span><span>Richmond Weather</span></div>
-    <div class="mini-card"><div class="mini-detail">Mainly clear, 30.1°C</div></div>
+    <div class="mini-card"><div class="mini-detail">Mainly clear, 25.9°C</div></div>
   </div>
 
   <div class="card" data-newscan>
@@ -472,23 +421,7 @@ Noche UFC: Rodriguez vs Silva @ Sat Sep 12, 02:00 PM [UFC Events]</pre></div>
   Mike Malott: W KO R3 vs Burns, UFC FN Winnipeg Apr 18 | Next: No next fight announced <span class="fact-age fact-stale">118d old — CHECK THIS</span></div></div>
   </div>
 
-  <div class="card">
-    <div class="card-header"><span class="card-icon">&#x1F3B0;&#x1F334;</span><span>SBOS Betting Intel</span></div>
-    <div class="mini-card" style="background:rgba(255,200,0,0.2);"><div class="mini-title">&#x26A1; Top EV Signals (Next 48h)</div></div><div class="mini-card"><div class="mini-title">[UFC/MMA] Rolan Pruden @ Richie Lewis</div><div class="mini-detail" style="font-size:13px;">&#x26A1; Pruden ML +350 (EV +22.5%) &nbsp;&#183;&nbsp; 34h away</div></div>
-    <div class="mini-card">
-      <div class="mini-title">&#x1F4E1; CFL Telegram</div>
-      <div class="mini-detail" style="font-size:13px; line-height:1.8;">
-        @SeanTradingAlertsBot &nbsp;&#183;&nbsp; Commands: <strong>STATUS</strong> &nbsp;&#183;&nbsp; <strong>Y</strong> &nbsp;&#183;&nbsp; <strong>HALF</strong> &nbsp;&#183;&nbsp; <strong>WATCH</strong> &nbsp;&#183;&nbsp; <strong>N</strong> &nbsp;&#183;&nbsp; <strong>RESULT</strong>
-      </div>
-    </div>
-    <div class="mini-card">
-      <div class="mini-title">&#x1F4CB; S1/S5 Scoring</div>
-      <div class="mini-detail" style="font-size:13px; line-height:1.8;">
-        <strong>S1:</strong> 1=neutral 2=home edge 3=strong narrative &nbsp;&#183;&nbsp; <strong>S5:</strong> 1=neutral 2=pressure 3=high-stakes<br>
-        <strong>Tier A (17-21):</strong> Full &nbsp;&#183;&nbsp; <strong>Tier B (13-16):</strong> Half &nbsp;&#183;&nbsp; <strong>Tier C:</strong> Pass
-      </div>
-    </div>
-  </div>
+
 
   <div class="card">
     <div class="card-header"><span class="card-icon">🇯🇵🌴</span><span>Japanese Word of the Day</span></div>
@@ -533,39 +466,81 @@ Noche UFC: Rodriguez vs Silva @ Sat Sep 12, 02:00 PM [UFC Events]</pre></div>
   <div class="card"><div class="card-header"><span class="card-icon">🎸🌴</span><span>Upcoming Metal Shows</span></div><div class="mini-card"><div class="mini-detail">No upcoming shows.</div></div></div>
 
 
-  <div class="footer">🌴 FORGE OS · AUGUST 14, 2026 · 02:36 PM · Asia/Tokyo · theseanman.github.io/forge-daily-brief<span id="sync-state"></span></div>
+  <div class="footer">🌴 FORGE OS · AUGUST 14, 2026 · 10:54 PM · Asia/Tokyo · theseanman.github.io/forge-daily-brief<span id="sync-state"></span></div>
 
 </div>
 
 <script>
-var counts = [0,0,0,0,0];
-function loadCounts() {
-  var today = new Date().toDateString();
-  try {
-    if (localStorage.getItem('forge-date') === today) {
-      for (var i = 0; i < 5; i++) {
-        var v = localStorage.getItem('g' + i);
-        if (v) counts[i] = parseInt(v);
-      }
+var PIMG_SLOTS = ['terrain','tempo','presence'];
+function pimgKey(k) { return 'forge-img-' + k; }
+function pimgPaint() {
+  for (var i = 0; i < PIMG_SLOTS.length; i++) {
+    var k = PIMG_SLOTS[i];
+    var el = document.getElementById('pimg-' + k);
+    if (!el) continue;
+    var v = null;
+    try { v = localStorage.getItem(pimgKey(k)); } catch(e) {}
+    if (v) {
+      el.style.backgroundImage = 'url(' + v + ')';
+      el.className = 'pimg-band has-img';
     } else {
-      for (var i = 0; i < 5; i++) localStorage.removeItem('g' + i);
-      localStorage.setItem('forge-date', today);
+      el.style.backgroundImage = '';
+      el.className = 'pimg-band';
     }
-  } catch(e) {}
-  for (var i = 0; i < 5; i++) {
-    var el = document.getElementById('goal-' + i + '-counter');
-    if (el) el.textContent = counts[i];
   }
 }
-function incrementGoal(i) {
-  counts[i]++;
-  try { localStorage.setItem('g' + i, counts[i]); } catch(e) {}
-  document.getElementById('goal-' + i + '-counter').textContent = counts[i];
+function pimgPick(k) {
+  var inp = document.getElementById('pimg-file');
+  if (!inp) return;
+  inp.setAttribute('data-slot', k);
+  inp.value = '';
+  inp.click();
 }
-function decrementGoal(i) {
-  if (counts[i] > 0) counts[i]--;
-  try { localStorage.setItem('g' + i, counts[i]); } catch(e) {}
-  document.getElementById('goal-' + i + '-counter').textContent = counts[i];
+function pimgStore(slot, dataUrl) {
+  try {
+    localStorage.setItem(pimgKey(slot), dataUrl);
+  } catch(e) {
+    var n = document.getElementById('pimg-note');
+    if (n) n.textContent = 'Image too large for storage. Try a smaller photo.';
+    return;
+  }
+  var n2 = document.getElementById('pimg-note');
+  if (n2) n2.textContent = '';
+  pimgPaint();
+}
+function pimgLoad(ev) {
+  var inp = ev.target;
+  var slot = inp.getAttribute('data-slot');
+  var f = inp.files && inp.files[0];
+  if (!f || !slot) return;
+  var fr = new FileReader();
+  fr.onload = function() {
+    var img = new Image();
+    img.onload = function() {
+      try {
+        var MAXW = 640;
+        var w = img.width, h = img.height;
+        if (w > MAXW) { h = Math.round(h * (MAXW / w)); w = MAXW; }
+        var c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        pimgStore(slot, c.toDataURL('image/jpeg', 0.72));
+      } catch(e) {
+        var n = document.getElementById('pimg-note');
+        if (n) n.textContent = 'Could not process that image.';
+      }
+    };
+    img.onerror = function() {
+      var n = document.getElementById('pimg-note');
+      if (n) n.textContent = 'Could not read that image.';
+    };
+    img.src = fr.result;
+  };
+  fr.onerror = function() {
+    var n = document.getElementById('pimg-note');
+    if (n) n.textContent = 'Could not read that file.';
+  };
+  fr.readAsDataURL(f);
 }
 function toggleSection(el) {
   var c = el.querySelector('.expandable-content');
@@ -581,7 +556,7 @@ function tick() {
 window.FORGE_CALENDAR = [{"date": "Mon Jul 27", "time": "All day", "title": "Leave for Japan"}, {"date": "Sun Aug 09", "time": "All day", "title": "Nagoya castle festival with Kiyomi\u2019s family"}, {"date": "Thu Aug 13", "time": "06:00 PM", "title": "Centrair hotel"}, {"date": "Fri Aug 14", "time": "All day", "title": "Leave Japan"}, {"date": "Fri Aug 14", "time": "08:20 AM", "title": "Flight to narita"}, {"date": "Sat Aug 15", "time": "All day", "title": "Happy Birthday Oda"}, {"date": "Mon Aug 17", "time": "All day", "title": "Meal-less Monday "}, {"date": "Fri Aug 14", "time": "04:30 AM", "title": "ONE Friday Fights 166 & The Inner Circle 26"}, {"date": "Fri Aug 14", "time": "06:00 PM", "title": "ONE Fight Night 46"}, {"date": "Sat Aug 15", "time": "06:00 PM", "title": "UFC 330: Makhachev vs Machado Garry"}];
 window.FORGE_GEN_DATE = "2026-08-14";
 window.onload = function() {
-  loadCounts(); setInterval(tick, 1000);
+  pimgPaint(); setInterval(tick, 1000);
   // Staleness check. FORGE_GEN_DATE is stamped in PACIFIC time, but the device may be in
   // any timezone, so a gap of up to a day is normal and is NOT stale. Only a gap of a full
   // day or more means the daily workflow actually failed to run.
