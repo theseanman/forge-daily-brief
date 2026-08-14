@@ -1215,7 +1215,12 @@ def generate_sitrep(welltory, sleep, calendar_events, weather, reminders=None):
     stress = welltory.get("stress", 50)
     energy = welltory.get("energy", 50)
     health = welltory.get("health", 50)
-    sleep_score = sleep.get("score", 80)
+    # sleepfix: prefer HAE computed_score when present; fall back to manual score.
+    _cs_sitrep = sleep.get("computed_score")
+    if isinstance(_cs_sitrep, (int, float)) and not sleep_is_missing(_cs_sitrep):
+        sleep_score = _cs_sitrep
+    else:
+        sleep_score = sleep.get("score", 80)
     sleep_dur = sleep.get("duration", "7h 0m")
     # install10: normalise before ANY comparison. sleep_score becomes None when
     # missing, so every downstream branch must guard on sleep_missing first.
@@ -1340,7 +1345,13 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
 
     # install10: the Sleep card states MISSING in words rather than printing a
     # number that was never measured. Silent fake data is worse than a gap.
-    _ss, _sd, _sh = sleep.get("score"), sleep.get("duration"), sleep.get("hr_range")
+    # sleepfix: prefer HAE computed_score for the card + banner; fall back to manual.
+    _cs_card = sleep.get("computed_score")
+    if isinstance(_cs_card, (int, float)) and not sleep_is_missing(_cs_card):
+        _ss = _cs_card
+    else:
+        _ss = sleep.get("score")
+    _sd, _sh = sleep.get("duration"), sleep.get("hr_range")
     _ss_missing = sleep_is_missing(_ss)
     sleep_score_disp = "NOT RECORDED" if _ss_missing else f"{_ss}%"
     # install32: sleep alert above the SITREP when score < threshold.
