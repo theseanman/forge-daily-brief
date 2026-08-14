@@ -784,6 +784,120 @@ def render_triad(day_of_year):
   </div>'''
 
 
+# --- practice_merge_aug14: parked cards -------------------------------------
+# Remove a name from this set to bring that card back on the next workflow run.
+# The HTML for each still exists, in generate_html(). Nothing was deleted.
+PARKED_CARDS = {"identityless", "future_self", "sbos"}
+
+
+def render_practice_card():
+    """The merged practice card: Five Paramount Goals + Summer Protocol,
+    de-duplicated, in three themed sections plus Cal AI standing alone.
+
+    Camera Off, The Second Question and Warmth Rep are deliberately ABSENT.
+    They are already carried by the daily cue rotation in the decision-rule
+    card, and printing them here would duplicate the same instruction on one
+    screen. Posture Reset is folded into PAUSE as the content of the pause.
+    """
+    sections = [
+        {
+            "slot": "terrain",
+            "label": "TERRAIN",
+            "sub": "Choose the ground. Refuse what you cannot hold.",
+            "accent": "#4a9de8",
+            "grad": "linear-gradient(135deg, rgba(26,95,168,0.30), rgba(18,58,108,0.14))",
+            "items": [
+                ("\u2694\uFE0F BOUNDARY REP",
+                 "State one preference or decline one small thing. No qualifier, no apology. Let the silence sit.",
+                 "Cue: once daily"),
+                ("\U0001F5E1\uFE0F WARRIOR PROMISE",
+                 "Name the one hard thing you are avoiding. Do it first, before the easy stuff.",
+                 "Cue: morning"),
+                ("\U0001F3D4\uFE0F OPPORTUNITY SCANNING",
+                 "Every setback or new environment: \u201cWhat opportunity does this situation present me with?\u201d",
+                 "Cue: the first setback of the day"),
+            ],
+        },
+        {
+            "slot": "tempo",
+            "label": "TEMPO",
+            "sub": "Nothing hurried. Nothing anxious.",
+            "accent": "#e0a854",
+            "grad": "linear-gradient(135deg, rgba(200,140,60,0.30), rgba(150,95,35,0.14))",
+            "items": [
+                ("\u23F8\uFE0F PAUSE BEFORE MOVING, DECIDING OR ACTING",
+                 "When I catch myself drawing breath to speak \u2014 let it out without words, shoulders down, then speak.<br>"
+                 "<span style=\"font-weight:400; font-size:13px;\">Four places it applies: <strong>speaking</strong> \u00b7 <strong>reaching</strong> \u00b7 <strong>deciding</strong> \u00b7 <strong>getting up and moving</strong>. "
+                 "Each is counted separately at the debrief, so you can see where it lands and where it does not.</span>",
+                 "Three today. Not all day. Raise it when three is boring."),
+                ("\U0001F422 SLOW MOVEMENTS & SPEECH",
+                 "Deliberate, slower pace in all physical and verbal communication. Move 20% slower than your impulse \u2014 reach, turn, walk slower.",
+                 "Cue: all day"),
+                ("\U0001F91D I\u2019M FINE EITHER WAY",
+                 "Before the first tense interaction, say it silently and mean it. You would like it to go well; you do not need it to.",
+                 "Cue: before tension"),
+            ],
+        },
+        {
+            "slot": "presence",
+            "label": "PRESENCE",
+            "sub": "No performance in this one.",
+            "accent": "#8a9ad0",
+            "grad": "linear-gradient(135deg, rgba(90,105,160,0.30), rgba(52,62,105,0.14))",
+            "items": [
+                ("\U0001F9D8 NOT RELEVANT",
+                 "When the optimizing narrative starts \u2014 how to improve this, what it should become \u2014 name it and take away its authority: "
+                 "<em>not relevant to being present with my family.</em> It can stay. It does not get a vote.<br>"
+                 "<span style=\"font-weight:400; font-size:13px;\">Scope: optimization thoughts only. Not a general silencer \u2014 some internal signal is load-bearing. Two seconds, then back to one sense channel.</span>",
+                 "Cue: the moment it starts"),
+            ],
+        },
+    ]
+
+    blocks = ""
+    for s in sections:
+        rows = ""
+        for name, body, trigger in s["items"]:
+            rows += (
+                '<div class="pr-item" style="border-left:4px solid %s;">\n'
+                '      <div class="pr-name">%s</div>\n'
+                '      <div class="pr-body">%s</div>\n'
+                '      <div class="pr-trigger">%s</div>\n'
+                '    </div>\n    ' % (s["accent"], name, body, trigger)
+            )
+        blocks += (
+            '<div class="pr-section" style="background:%s; border:2px solid %s;">\n'
+            '    <div id="pimg-%s" class="pimg-band" onclick="pimgPick(\'%s\')">'
+            '<span class="pimg-hint">tap to add your %s image</span></div>\n'
+            '    <div class="pr-head" style="color:%s;">%s</div>\n'
+            '    <div class="pr-sub">%s</div>\n'
+            '    %s</div>\n  '
+            % (s["grad"], s["accent"], s["slot"], s["slot"], s["label"],
+               s["accent"], s["label"], s["sub"], rows)
+        )
+
+    cal_ai = (
+        '<div class="pr-item" style="border-left:4px solid var(--text-bright); margin-top:4px;">\n'
+        '      <div class="pr-name">\U0001F4F1 CAL AI BEFORE MEALS</div>\n'
+        '      <div class="pr-body">Log nutrition in Cal AI before eating. Every meal. Non-negotiable.</div>\n'
+        '      <div class="pr-trigger">Cue: every meal</div>\n'
+        '    </div>\n  '
+    )
+
+    return (
+        '  <div class="card" style="background: linear-gradient(135deg, rgba(255,215,0,0.16), rgba(255,140,0,0.08)); border: 3px double var(--text-bright);">\n'
+        '    <div class="card-header"><span class="card-icon">\U0001F3AF</span><span>Paramount Protocol</span></div>\n'
+        '    <div class="pr-intro">Train where it is easy. Groove the reflex. It shows up when it matters.</div>\n  '
+        + blocks
+        + cal_ai
+        + '<div id="pimg-note" class="pr-note"></div>\n'
+        '    <div class="pr-note">Counts are recorded in the evening debrief, not here. Images stay on this device and are never uploaded.</div>\n'
+        '    <input type="file" id="pimg-file" accept="image/*" style="display:none;" onchange="pimgLoad(event)">\n'
+        '  </div>'
+    )
+
+
+
 def render_summer_protocol():
     """Build the Summer Protocol reference card — 7 drills, always visible.
     Pause/Trigger Breath, Opportunity Question and Slow Down were merged into
@@ -1351,6 +1465,10 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     wisdom = get_wisdom(day_of_year)
     triad_block = render_triad(day_of_year)
     protocol_block = render_summer_protocol()
+    practice_card = render_practice_card()
+    identityless_card = '' if 'identityless' in PARKED_CARDS else '  <div class="card" style="background: linear-gradient(135deg, rgba(100,150,200,0.2), rgba(70,120,170,0.1)); border: 3px solid var(--text-bright);">\n    <div class="card-header"><span class="card-icon">🎭🌴</span><span>Identityless Protocol</span></div>\n    <div class="mini-card expandable" onclick="toggleSection(this)">\n      <div class="mini-title">🌀 Tap to expand</div>\n      <div class="expandable-content">\n        <strong>GROUNDLESSNESS TOLERANCE:</strong><br>\n        • No-Frame Actions: Act without identity narratives. Just do it.<br>\n        • "I Don\'t Know" as Full Stop: Sit in uncertainty 30–60 seconds.<br>\n        • "No Story. Just This": Cut narrative, focus on sensory data.<br><br>\n        <strong>INTERNAL AUDIENCE REMOVAL:</strong><br>\n        • Catching "Camera On": Detect self-observation, label it, don\'t judge.<br>\n        • Shift to Raw Perception: Anchor in ONE sensory channel.<br>\n        • Unwitnessed Existence: 2–5 min activities with zero self-reference.\n      </div>\n    </div>\n  </div>\n'
+    future_self_card = '' if 'future_self' in PARKED_CARDS else '  <div class="card" style="background: linear-gradient(135deg, rgba(150,100,200,0.2), rgba(120,70,170,0.1)); border: 3px solid var(--text-bright);">\n    <div class="card-header"><span class="card-icon">⏰🌴</span><span>Future Self Protocol</span></div>\n    <div class="mini-card expandable" onclick="toggleSection(this)">\n      <div class="mini-title">📋 Tap to expand</div>\n      <div class="expandable-content">\n        <strong>MORNING:</strong> Posture Reset → Fractal Scan → Identity Merge → EV Selection → Atmospheric Bruiser Lock-In<br><br>\n        <strong>MIDDAY:</strong> Re-anchor → SBOS scan → Remove friction → Enforce boundary → Execute micro-win<br><br>\n        <strong>EVENING:</strong> What aligned? What violated? What friction needs removal? What system needs upgrading?\n      </div>\n    </div>\n  </div>\n'
+    sbos_card = '' if 'sbos' in PARKED_CARDS else '  <div class="card">\n    <div class="card-header"><span class="card-icon">&#x1F3B0;&#x1F334;</span><span>SBOS Betting Intel</span></div>\n    @@SBOS@@\n    <div class="mini-card">\n      <div class="mini-title">&#x1F4E1; CFL Telegram</div>\n      <div class="mini-detail" style="font-size:13px; line-height:1.8;">\n        @SeanTradingAlertsBot &nbsp;&#183;&nbsp; Commands: <strong>STATUS</strong> &nbsp;&#183;&nbsp; <strong>Y</strong> &nbsp;&#183;&nbsp; <strong>HALF</strong> &nbsp;&#183;&nbsp; <strong>WATCH</strong> &nbsp;&#183;&nbsp; <strong>N</strong> &nbsp;&#183;&nbsp; <strong>RESULT</strong>\n      </div>\n    </div>\n    <div class="mini-card">\n      <div class="mini-title">&#x1F4CB; S1/S5 Scoring</div>\n      <div class="mini-detail" style="font-size:13px; line-height:1.8;">\n        <strong>S1:</strong> 1=neutral 2=home edge 3=strong narrative &nbsp;&#183;&nbsp; <strong>S5:</strong> 1=neutral 2=pressure 3=high-stakes<br>\n        <strong>Tier A (17-21):</strong> Full &nbsp;&#183;&nbsp; <strong>Tier B (13-16):</strong> Half &nbsp;&#183;&nbsp; <strong>Tier C:</strong> Pass\n      </div>\n    </div>\n  </div>\n'.replace('@@SBOS@@', sbos_signals_html)
     sports_text = get_sports_updates()
     reminders = fetch_reminders()
     sitrep_text = generate_sitrep(welltory, sleep, calendar_events, weather, reminders)
@@ -1626,12 +1744,18 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     .mini-card {{ background: rgba(255,255,255,0.12); border: 2px solid var(--text-bright); border-radius: 8px; padding: 12px; margin-bottom: 10px; }}
     .mini-title {{ font-size: 15px; color: var(--text-bright); font-weight: 700; margin-bottom: 6px; }}
     .mini-detail {{ font-size: 13px; color: var(--text-light); line-height: 1.6; }}
-    .paramount-goal {{ background: rgba(255,255,255,0.2); border: 2px solid var(--text-bright); border-radius: 8px; padding: 14px; margin-bottom: 10px; font-size: 14px; color: var(--text-light); line-height: 1.7; font-weight: 600; }}
-    .paramount-num {{ font-size: 15px; color: var(--text-bright); font-weight: 700; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }}
-    .goal-controls {{ display: flex; gap: 8px; align-items: center; }}
-    .goal-btn {{ background: rgba(255,255,255,0.4); border: 2px solid var(--text-bright); border-radius: 6px; padding: 8px 16px; font-weight: 700; font-size: 20px; color: var(--text-bright); cursor: pointer; touch-action: manipulation; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }}
-    .goal-btn:active {{ background: rgba(255,255,255,0.7); }}
-    .goal-counter {{ background: rgba(255,255,255,0.3); border: 2px solid var(--text-bright); border-radius: 6px; padding: 6px 14px; font-weight: 700; font-size: 16px; min-width: 40px; text-align: center; color: var(--text-bright); }}
+    .pr-intro {{ font-size:13px; color:var(--text-light); opacity:0.85; margin-bottom:12px; line-height:1.6; }}
+    .pr-section {{ border-radius:10px; padding:0 0 12px 0; margin-bottom:14px; overflow:hidden; }}
+    .pimg-band {{ height:104px; background-size:cover; background-position:center 28%; background-color:rgba(0,0,0,0.22); display:flex; align-items:center; justify-content:center; cursor:pointer; }}
+    .pimg-band.has-img .pimg-hint {{ display:none; }}
+    .pimg-hint {{ font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-light); opacity:0.6; }}
+    .pr-head {{ font-size:15px; font-weight:800; letter-spacing:0.14em; padding:12px 14px 0 14px; }}
+    .pr-sub {{ font-size:12px; color:var(--text-light); opacity:0.75; padding:2px 14px 10px 14px; font-style:italic; }}
+    .pr-item {{ background:rgba(255,255,255,0.14); border-radius:6px; padding:11px 13px; margin:0 12px 9px 12px; }}
+    .pr-name {{ font-size:14px; font-weight:700; color:var(--text-bright); margin-bottom:6px; }}
+    .pr-body {{ font-size:13.5px; color:var(--text-light); line-height:1.65; font-weight:600; }}
+    .pr-trigger {{ font-size:11.5px; color:var(--text-light); opacity:0.72; margin-top:6px; }}
+    .pr-note {{ font-size:11px; color:var(--muted); margin-top:8px; line-height:1.5; }}
     .advice-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }}
     .advice-item {{ background: rgba(255,255,255,0.1); border: 2px solid var(--text-bright); border-radius: 8px; padding: 12px; }}
     .advice-label {{ font-size: 12px; font-weight: 700; color: var(--text-bright); text-transform: uppercase; margin-bottom: 6px; }}
@@ -1737,93 +1861,13 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     {sleep_missing_note}
   </div>
 
-  <div class="card" style="background: linear-gradient(135deg, rgba(255,215,0,0.25), rgba(255,140,0,0.15)); border: 3px double var(--text-bright);">
-    <div class="card-header"><span class="card-icon">🎯🌴</span><span>Five Paramount Goals</span></div>
-    <div class="paramount-goal">
-      <div class="paramount-num"><span>1️⃣ PAUSE BEFORE ANSWERING</span>
-        <div class="goal-controls">
-          <button class="goal-btn" onclick="decrementGoal(0)">−</button>
-          <span class="goal-counter" id="goal-0-counter">0</span>
-          <button class="goal-btn" onclick="incrementGoal(0)">+</button>
-        </div>
-      </div>
-      Brief pause before any response. Conscious deliberation first.<br><span style="font-weight:400; font-size:13px;">🚪 Training rep: one slow nasal breath at every doorway, kettle, or red light. Don&rsquo;t force the pause in conversations yet &mdash; groove the breath on the cue and it shows up when it matters.</span>
-    </div>
-    <div class="paramount-goal">
-      <div class="paramount-num"><span>2️⃣ CAL AI BEFORE MEALS</span>
-        <div class="goal-controls">
-          <button class="goal-btn" onclick="decrementGoal(1)">−</button>
-          <span class="goal-counter" id="goal-1-counter">0</span>
-          <button class="goal-btn" onclick="incrementGoal(1)">+</button>
-        </div>
-      </div>
-      Log nutrition in Cal AI before eating. Every meal. Non-negotiable.
-    </div>
-    <div class="paramount-goal">
-      <div class="paramount-num"><span>3️⃣ SLOW MOVEMENTS & SPEECH</span>
-        <div class="goal-controls">
-          <button class="goal-btn" onclick="decrementGoal(2)">−</button>
-          <span class="goal-counter" id="goal-2-counter">0</span>
-          <button class="goal-btn" onclick="incrementGoal(2)">+</button>
-        </div>
-      </div>
-      Deliberate, slower pace in all physical and verbal communication.<br><span style="font-weight:400; font-size:13px;">🐢 The rep: move 20% slower than your impulse &mdash; reach, turn, walk slower. Cue: all day.</span>
-    </div>
-    <div class="paramount-goal">
-      <div class="paramount-num"><span>4️⃣ OPPORTUNITY SCANNING</span>
-        <div class="goal-controls">
-          <button class="goal-btn" onclick="decrementGoal(3)">−</button>
-          <span class="goal-counter" id="goal-3-counter">0</span>
-          <button class="goal-btn" onclick="incrementGoal(3)">+</button>
-        </div>
-      </div>
-      Every setback or new environment: "What opportunity does this situation present me with?"<br><span style="font-weight:400; font-size:13px;">⚡ Cue: setback or threshold &mdash; ask it at the first one of the day.</span>
-    </div>
-    <div class="paramount-goal">
-      <div class="paramount-num"><span>5️⃣ NOT RELEVANT</span>
-        <div class="goal-controls">
-          <button class="goal-btn" onclick="decrementGoal(4)">−</button>
-          <span class="goal-counter" id="goal-4-counter">0</span>
-          <button class="goal-btn" onclick="incrementGoal(4)">+</button>
-        </div>
-      </div>
-      When the optimizing narrative starts &mdash; how to improve this, what it should become &mdash; name it and take away its authority: <em>not relevant to being present with my family.</em> It can stay. It doesn&rsquo;t get a vote.<br><span style="font-weight:400; font-size:13px;">⚡ Scope: optimization thoughts only. Not a general silencer &mdash; some internal signal is load-bearing. Two seconds, then back to one sense channel.</span>
-    </div>
-    <div class="mini-detail" style="margin-top:12px; font-size:12px; color:var(--muted);">💡 Tap +/− to track. Counters reset at midnight.</div>
-  </div>
-
-{protocol_block}
+{practice_card}
 
 {triad_block}
 
-  <div class="card" style="background: linear-gradient(135deg, rgba(100,150,200,0.2), rgba(70,120,170,0.1)); border: 3px solid var(--text-bright);">
-    <div class="card-header"><span class="card-icon">🎭🌴</span><span>Identityless Protocol</span></div>
-    <div class="mini-card expandable" onclick="toggleSection(this)">
-      <div class="mini-title">🌀 Tap to expand</div>
-      <div class="expandable-content">
-        <strong>GROUNDLESSNESS TOLERANCE:</strong><br>
-        • No-Frame Actions: Act without identity narratives. Just do it.<br>
-        • "I Don't Know" as Full Stop: Sit in uncertainty 30–60 seconds.<br>
-        • "No Story. Just This": Cut narrative, focus on sensory data.<br><br>
-        <strong>INTERNAL AUDIENCE REMOVAL:</strong><br>
-        • Catching "Camera On": Detect self-observation, label it, don't judge.<br>
-        • Shift to Raw Perception: Anchor in ONE sensory channel.<br>
-        • Unwitnessed Existence: 2–5 min activities with zero self-reference.
-      </div>
-    </div>
-  </div>
+{identityless_card}
 
-  <div class="card" style="background: linear-gradient(135deg, rgba(150,100,200,0.2), rgba(120,70,170,0.1)); border: 3px solid var(--text-bright);">
-    <div class="card-header"><span class="card-icon">⏰🌴</span><span>Future Self Protocol</span></div>
-    <div class="mini-card expandable" onclick="toggleSection(this)">
-      <div class="mini-title">📋 Tap to expand</div>
-      <div class="expandable-content">
-        <strong>MORNING:</strong> Posture Reset → Fractal Scan → Identity Merge → EV Selection → Atmospheric Bruiser Lock-In<br><br>
-        <strong>MIDDAY:</strong> Re-anchor → SBOS scan → Remove friction → Enforce boundary → Execute micro-win<br><br>
-        <strong>EVENING:</strong> What aligned? What violated? What friction needs removal? What system needs upgrading?
-      </div>
-    </div>
-  </div>
+{future_self_card}
 
   <div class="card">
     <div class="card-header"><span class="card-icon">⚖️🌴</span><span>Body Composition</span></div>
@@ -1872,23 +1916,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     <div class="mini-card"><div class="mini-detail" style="white-space:pre-wrap; font-size:14px; line-height:1.8;">{sports_section}</div></div>
   </div>
 
-  <div class="card">
-    <div class="card-header"><span class="card-icon">&#x1F3B0;&#x1F334;</span><span>SBOS Betting Intel</span></div>
-    {sbos_signals_html}
-    <div class="mini-card">
-      <div class="mini-title">&#x1F4E1; CFL Telegram</div>
-      <div class="mini-detail" style="font-size:13px; line-height:1.8;">
-        @SeanTradingAlertsBot &nbsp;&#183;&nbsp; Commands: <strong>STATUS</strong> &nbsp;&#183;&nbsp; <strong>Y</strong> &nbsp;&#183;&nbsp; <strong>HALF</strong> &nbsp;&#183;&nbsp; <strong>WATCH</strong> &nbsp;&#183;&nbsp; <strong>N</strong> &nbsp;&#183;&nbsp; <strong>RESULT</strong>
-      </div>
-    </div>
-    <div class="mini-card">
-      <div class="mini-title">&#x1F4CB; S1/S5 Scoring</div>
-      <div class="mini-detail" style="font-size:13px; line-height:1.8;">
-        <strong>S1:</strong> 1=neutral 2=home edge 3=strong narrative &nbsp;&#183;&nbsp; <strong>S5:</strong> 1=neutral 2=pressure 3=high-stakes<br>
-        <strong>Tier A (17-21):</strong> Full &nbsp;&#183;&nbsp; <strong>Tier B (13-16):</strong> Half &nbsp;&#183;&nbsp; <strong>Tier C:</strong> Pass
-      </div>
-    </div>
-  </div>
+{sbos_card}
 
   <div class="card">
     <div class="card-header"><span class="card-icon">🇯🇵🌴</span><span>Japanese Word of the Day</span></div>
@@ -1938,34 +1966,76 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
 </div>
 
 <script>
-var counts = [0,0,0,0,0];
-function loadCounts() {{
-  var today = new Date().toDateString();
-  try {{
-    if (localStorage.getItem('forge-date') === today) {{
-      for (var i = 0; i < 5; i++) {{
-        var v = localStorage.getItem('g' + i);
-        if (v) counts[i] = parseInt(v);
-      }}
+var PIMG_SLOTS = ['terrain','tempo','presence'];
+function pimgKey(k) {{ return 'forge-img-' + k; }}
+function pimgPaint() {{
+  for (var i = 0; i < PIMG_SLOTS.length; i++) {{
+    var k = PIMG_SLOTS[i];
+    var el = document.getElementById('pimg-' + k);
+    if (!el) continue;
+    var v = null;
+    try {{ v = localStorage.getItem(pimgKey(k)); }} catch(e) {{}}
+    if (v) {{
+      el.style.backgroundImage = 'url(' + v + ')';
+      el.className = 'pimg-band has-img';
     }} else {{
-      for (var i = 0; i < 5; i++) localStorage.removeItem('g' + i);
-      localStorage.setItem('forge-date', today);
+      el.style.backgroundImage = '';
+      el.className = 'pimg-band';
     }}
-  }} catch(e) {{}}
-  for (var i = 0; i < 5; i++) {{
-    var el = document.getElementById('goal-' + i + '-counter');
-    if (el) el.textContent = counts[i];
   }}
 }}
-function incrementGoal(i) {{
-  counts[i]++;
-  try {{ localStorage.setItem('g' + i, counts[i]); }} catch(e) {{}}
-  document.getElementById('goal-' + i + '-counter').textContent = counts[i];
+function pimgPick(k) {{
+  var inp = document.getElementById('pimg-file');
+  if (!inp) return;
+  inp.setAttribute('data-slot', k);
+  inp.value = '';
+  inp.click();
 }}
-function decrementGoal(i) {{
-  if (counts[i] > 0) counts[i]--;
-  try {{ localStorage.setItem('g' + i, counts[i]); }} catch(e) {{}}
-  document.getElementById('goal-' + i + '-counter').textContent = counts[i];
+function pimgStore(slot, dataUrl) {{
+  try {{
+    localStorage.setItem(pimgKey(slot), dataUrl);
+  }} catch(e) {{
+    var n = document.getElementById('pimg-note');
+    if (n) n.textContent = 'Image too large for storage. Try a smaller photo.';
+    return;
+  }}
+  var n2 = document.getElementById('pimg-note');
+  if (n2) n2.textContent = '';
+  pimgPaint();
+}}
+function pimgLoad(ev) {{
+  var inp = ev.target;
+  var slot = inp.getAttribute('data-slot');
+  var f = inp.files && inp.files[0];
+  if (!f || !slot) return;
+  var fr = new FileReader();
+  fr.onload = function() {{
+    var img = new Image();
+    img.onload = function() {{
+      try {{
+        var MAXW = 640;
+        var w = img.width, h = img.height;
+        if (w > MAXW) {{ h = Math.round(h * (MAXW / w)); w = MAXW; }}
+        var c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        pimgStore(slot, c.toDataURL('image/jpeg', 0.72));
+      }} catch(e) {{
+        var n = document.getElementById('pimg-note');
+        if (n) n.textContent = 'Could not process that image.';
+      }}
+    }};
+    img.onerror = function() {{
+      var n = document.getElementById('pimg-note');
+      if (n) n.textContent = 'Could not read that image.';
+    }};
+    img.src = fr.result;
+  }};
+  fr.onerror = function() {{
+    var n = document.getElementById('pimg-note');
+    if (n) n.textContent = 'Could not read that file.';
+  }};
+  fr.readAsDataURL(f);
 }}
 function toggleSection(el) {{
   var c = el.querySelector('.expandable-content');
@@ -1981,7 +2051,7 @@ function tick() {{
 window.FORGE_CALENDAR = {cal_json};
 window.FORGE_GEN_DATE = "{now.strftime('%Y-%m-%d')}";
 window.onload = function() {{
-  loadCounts(); setInterval(tick, 1000);
+  pimgPaint(); setInterval(tick, 1000);
   // Staleness check. FORGE_GEN_DATE is stamped in PACIFIC time, but the device may be in
   // any timezone, so a gap of up to a day is normal and is NOT stale. Only a gap of a full
   // day or more means the daily workflow actually failed to run.
