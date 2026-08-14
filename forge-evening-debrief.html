@@ -164,6 +164,29 @@
                   padding:10px 12px; margin-top:12px; font-size:12px; color:#4ae8a0; line-height:1.5; }
     .badge-pop { background:#1e1e2e; border:1px solid #e8c84a; border-radius:10px; padding:10px 12px;
                  margin-top:12px; font-size:12px; color:#e8c84a; display:none; }
+
+    /* --- protocol review step --- */
+    .proto-sec { border-radius:10px; padding:0 0 10px 0; margin-bottom:14px; overflow:hidden; }
+    .proto-head { font-size:14px; font-weight:800; letter-spacing:.12em; padding:10px 12px 0; }
+    .proto-sub { font-size:11px; opacity:.7; padding:2px 12px 8px; font-style:italic; }
+    .proto-row { display:flex; align-items:center; justify-content:space-between;
+                 padding:8px 12px; margin:0 8px 6px; background:rgba(255,255,255,.08);
+                 border-radius:6px; gap:8px; }
+    .proto-label { font-size:13px; font-weight:600; flex:1; line-height:1.35; }
+    .proto-label small { font-weight:400; opacity:.65; font-size:11px; display:block; margin-top:1px; }
+    .proto-ctr { display:flex; align-items:center; gap:6px; }
+    .proto-btn { width:36px; height:36px; border-radius:6px; border:1px solid var(--border);
+                 background:var(--surface); color:var(--text); font-size:18px; font-weight:700;
+                 cursor:pointer; touch-action:manipulation; display:flex; align-items:center;
+                 justify-content:center; }
+    .proto-btn:active { background:rgba(255,255,255,.15); }
+    .proto-val { min-width:28px; text-align:center; font-size:15px; font-weight:700; }
+    .proto-min-row { display:flex; align-items:center; gap:8px; padding:4px 12px 6px;
+                     margin:0 8px; }
+    .proto-min-label { font-size:11px; color:var(--muted); }
+    .proto-min-input { width:60px; text-align:center; padding:6px 4px; font-size:14px; }
+    .proto-presence-note { font-size:11px; color:#8a9ad0; opacity:.8; padding:4px 12px 6px;
+                           margin:0 8px; line-height:1.5; }
     .badge-pop.show { display:block; }
 </style>
 </head>
@@ -339,8 +362,59 @@
       </div>
     </div>
 
+
     <div class="step" id="step-6">
-      <div class="step-header">07 &middot; Tomorrow&rsquo;s five</div>
+      <div class="step-header">07 &middot; Protocol review</div>
+      <div class="step-title">How did the practice land?</div>
+      <div class="step-sub">Tap to count. Each section tracks instances and minutes separately.</div>
+
+      <!-- TERRAIN -->
+      <div class="proto-sec" style="background:linear-gradient(135deg,rgba(26,95,168,.22),rgba(18,58,108,.10)); border:1px solid #4a9de8;">
+        <div class="proto-head" style="color:#4a9de8;">TERRAIN</div>
+        <div class="proto-sub" style="color:#4a9de8;">Choose the ground. Refuse what you cannot hold.</div>
+        <div class="proto-row"><div class="proto-label">&#x2694;&#xFE0F; Boundary Rep<small>Stated a preference or declined something</small></div><div class="proto-ctr"><button class="proto-btn" onclick="protoInc('boundary',-1)">&minus;</button><div class="proto-val" id="pv-boundary">0</div><button class="proto-btn" onclick="protoInc('boundary',1)">+</button></div></div>
+        <div class="proto-row"><div class="proto-label">&#x1F5E1;&#xFE0F; Warrior Promise<small>Named the hard thing and did it first</small></div><div class="proto-ctr"><button class="proto-btn" onclick="protoInc('warrior',-1)">&minus;</button><div class="proto-val" id="pv-warrior">0</div><button class="proto-btn" onclick="protoInc('warrior',1)">+</button></div></div>
+        <div class="proto-row"><div class="proto-label">&#x1F3D4;&#xFE0F; Opportunity Scanning<small>&ldquo;What opportunity does this present?&rdquo;</small></div><div class="proto-ctr"><button class="proto-btn" onclick="protoInc('opportunity',-1)">&minus;</button><div class="proto-val" id="pv-opportunity">0</div><button class="proto-btn" onclick="protoInc('opportunity',1)">+</button></div></div>
+        <div class="proto-min-row"><span class="proto-min-label">Minutes practised</span><input type="number" inputmode="numeric" class="proto-min-input" id="pm-terrain" value="0" min="0"></div>
+      </div>
+
+      <!-- TEMPO -->
+      <div class="proto-sec" style="background:linear-gradient(135deg,rgba(200,140,60,.22),rgba(150,95,35,.10)); border:1px solid #e0a854;">
+        <div class="proto-head" style="color:#e0a854;">TEMPO</div>
+        <div class="proto-sub" style="color:#e0a854;">Nothing hurried. Nothing anxious.</div>
+        <div class="proto-row"><div class="proto-label">&#x23F8;&#xFE0F; Pause &mdash; speaking<small>Breathed out before the word</small></div><div class="proto-ctr"><button class="proto-btn" onclick="protoInc('pause_speak',-1)">&minus;</button><div class="proto-val" id="pv-pause_speak">0</div><button class="proto-btn" onclick="protoInc('pause_speak',1)">+</button></div></div>
+        <div class="proto-row"><div class="proto-label">&#x23F8;&#xFE0F; Pause &mdash; reaching<small>Caught the hand before it moved</small></div><div class="proto-ctr"><button class="proto-btn" onclick="protoInc('pause_reach',-1)">&minus;</button><div class="proto-val" id="pv-pause_reach">0</div><button class="proto-btn" onclick="protoInc('pause_reach',1)">+</button></div></div>
+        <div class="proto-row"><div class="proto-label">&#x23F8;&#xFE0F; Pause &mdash; deciding<small>Noticed deciding and held the gate</small></div><div class="proto-ctr"><button class="proto-btn" onclick="protoInc('pause_decide',-1)">&minus;</button><div class="proto-val" id="pv-pause_decide">0</div><button class="proto-btn" onclick="protoInc('pause_decide',1)">+</button></div></div>
+        <div class="proto-row"><div class="proto-label">&#x23F8;&#xFE0F; Pause &mdash; getting up<small>Paused before standing or moving</small></div><div class="proto-ctr"><button class="proto-btn" onclick="protoInc('pause_move',-1)">&minus;</button><div class="proto-val" id="pv-pause_move">0</div><button class="proto-btn" onclick="protoInc('pause_move',1)">+</button></div></div>
+        <div class="proto-row"><div class="proto-label">&#x1F422; Slow Movements &amp; Speech<small>Moved or spoke 20% slower than impulse</small></div><div class="proto-ctr"><button class="proto-btn" onclick="protoInc('slow',-1)">&minus;</button><div class="proto-val" id="pv-slow">0</div><button class="proto-btn" onclick="protoInc('slow',1)">+</button></div></div>
+        <div class="proto-row"><div class="proto-label">&#x1F91D; I&rsquo;m Fine Either Way<small>Said it before the tense moment</small></div><div class="proto-ctr"><button class="proto-btn" onclick="protoInc('fine',-1)">&minus;</button><div class="proto-val" id="pv-fine">0</div><button class="proto-btn" onclick="protoInc('fine',1)">+</button></div></div>
+        <div class="proto-min-row"><span class="proto-min-label">Minutes practised</span><input type="number" inputmode="numeric" class="proto-min-input" id="pm-tempo" value="0" min="0"></div>
+      </div>
+
+      <!-- PRESENCE -->
+      <div class="proto-sec" style="background:linear-gradient(135deg,rgba(90,105,160,.22),rgba(52,62,105,.10)); border:1px solid #8a9ad0;">
+        <div class="proto-head" style="color:#8a9ad0;">PRESENCE</div>
+        <div class="proto-sub" style="color:#8a9ad0;">No performance in this one.</div>
+        <div class="proto-presence-note">Were you there? No count, no score, no tick. The practice is noticing the narrative and letting it pass. If you find yourself wanting a number here, that impulse is the thing this section exists to catch.</div>
+        <div style="padding:6px 12px;">
+          <textarea id="proto-presence-note" placeholder="Anything worth noting about presence today. Optional — blank is fine." style="min-height:50px; font-size:13px;"></textarea>
+        </div>
+      </div>
+
+      <!-- CAL AI -->
+      <div class="proto-row" style="border:1px solid var(--border); border-radius:8px; margin:0 0 14px;">
+        <div class="proto-label">&#x1F4F1; Cal AI meals logged</div>
+        <div class="proto-ctr"><button class="proto-btn" onclick="protoInc('cal_ai',-1)">&minus;</button><div class="proto-val" id="pv-cal_ai">0</div><button class="proto-btn" onclick="protoInc('cal_ai',1)">+</button></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn" onclick="prev()"><i class="ti ti-arrow-left"></i></button>
+        <button class="btn primary" onclick="next()">Tomorrow&rsquo;s five <i class="ti ti-arrow-right"></i></button>
+      </div>
+    </div>
+
+    <div class="step" id="step-7">
+      <div class="step-header">08 &middot; Tomorrow&rsquo;s five</div>
       <div class="step-title">Set tomorrow before you sleep</div>
       <div class="step-sub">These land straight in your Day Plan. Reflection is done &mdash; this is the handoff.</div>
 
@@ -433,7 +507,7 @@
 
 <script>
 const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/6a1f705cda38895dfe7e4f97/latest';
-const STEPS = 7;
+const STEPS = 8;
 let currentStep = 0;
 const espRatings = {};
 let espCount = 1;
@@ -561,7 +635,8 @@ function selectWorkout(btn, val) {
 }
 
 function showStep(n) {
-  if (n === 6) initPlanRows();
+  if (n === 6) protoLoad();
+  if (n === 7) initPlanRows();
   document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
   document.getElementById('step-'+n).classList.add('active');
   currentStep = n;
@@ -588,6 +663,7 @@ var K_TOP5='forge-top5', K_BACKLOG='forge-backlog', K_FUN='forge-fun',
 var K_FRAME='forge-frame', K_MUSHIN='forge-mushin'; /* install13 */
 var K_REPS='forge-reps'; /* install23 */
 var K_VIDEO='forge-video'; /* install25 */
+var K_PROTO='forge-protocol-counts'; /* debrief_protocol_review_aug14 */
 var K_PARKED='forge-parked', K_PROJ='forge-project'; /* install20 */
 var PROJ_TARGET_WK = 10800;
 var MUSHIN_TARGET_SEC = 600;
@@ -1940,6 +2016,7 @@ function collectDaily(){
       })
     },
     sessions: { n: mine.length, est: estSum, act: actSum, met: metN },
+    protocol: protoCollect(),
     health: null,
     saved: new Date().toISOString()
   };
@@ -1993,6 +2070,7 @@ function backfillHealth(){
 
 /* ---------- CSV export ---------- */
 var CSV_COLS = ['date','mood','sleep_score','sleep_dur','energy','health','stress',
+  'boundary','warrior','opportunity','pause_speak','pause_reach','pause_decide','pause_move','slow','fine','cal_ai','terrain_min','tempo_min',
                 'weight','body_fat','t5_total','t5_done','keystone_set','keystone_done',
                 'sessions','est_mins','act_mins','done_when_met','reminders_done','reminders_total',
                 'workout_type','workout_mins','workout_feel',
@@ -2052,6 +2130,7 @@ function showCSV(){
 }
 
 function finishDebrief() {
+  protoSave();
   saveTomorrow();
   saveDailyLog();
   renderFrameSummary(); /* install13 */
@@ -2071,6 +2150,7 @@ function finishDebrief() {
     {label:'Calories', val:cal?cal.toLocaleString()+' kcal':'—'},
     {label:'Protein', val:pro?pro+'g':'—'},
     {label:'ESP events', val:espCount+''},
+    {label:'Pause reps', val:(protoCollect().pause_speak||0)+(protoCollect().pause_reach||0)+(protoCollect().pause_decide||0)+(protoCollect().pause_move||0)+''},
   ].map(i=>'<div class="sum-card"><div class="sum-label">'+i.label+'</div><div class="sum-val">'+i.val+'</div></div>').join('');
   const espItems = [];
   for (let n=1; n<=espCount; n++) {
@@ -2089,6 +2169,65 @@ function finishDebrief() {
                                _n + ' days on record.';
   } catch(e){}
   setTomorrowWorkout();
+}
+
+/* --- protocol review counters (debrief_protocol_review_aug14) --- */
+var K_PROTO = 'forge-protocol-counts';
+var PROTO_ITEMS = ['boundary','warrior','opportunity','pause_speak','pause_reach',
+                   'pause_decide','pause_move','slow','fine','cal_ai'];
+var protoCounts = {};
+
+function protoToday() {
+  var all = fdRead(K_PROTO, {});
+  var t = fdToday();
+  if (!all[t]) all[t] = {};
+  return all;
+}
+function protoLoad() {
+  var all = protoToday();
+  var t = fdToday();
+  var day = all[t] || {};
+  protoCounts = {};
+  PROTO_ITEMS.forEach(function(k) {
+    protoCounts[k] = day[k] || 0;
+    var el = document.getElementById('pv-' + k);
+    if (el) el.textContent = protoCounts[k];
+  });
+  var tm = document.getElementById('pm-terrain');
+  if (tm) tm.value = day.terrain_min || 0;
+  var tp = document.getElementById('pm-tempo');
+  if (tp) tp.value = day.tempo_min || 0;
+  var pn = document.getElementById('proto-presence-note');
+  if (pn) pn.value = day.presence_note || '';
+}
+function protoSave() {
+  var all = protoToday();
+  var t = fdToday();
+  var day = all[t] || {};
+  PROTO_ITEMS.forEach(function(k) { day[k] = protoCounts[k] || 0; });
+  day.terrain_min = parseInt(document.getElementById('pm-terrain')?.value) || 0;
+  day.tempo_min = parseInt(document.getElementById('pm-tempo')?.value) || 0;
+  day.presence_note = (document.getElementById('proto-presence-note')?.value || '').trim();
+  all[t] = day;
+  /* prune to 120 days */
+  var keys = Object.keys(all).sort();
+  if (keys.length > 120) {
+    var o = {}; keys.slice(-120).forEach(function(k) { o[k] = all[k]; }); all = o;
+  }
+  fdWrite(K_PROTO, all);
+  syncPush(K_PROTO);
+}
+function protoInc(k, d) {
+  if (!protoCounts[k]) protoCounts[k] = 0;
+  protoCounts[k] += d;
+  if (protoCounts[k] < 0) protoCounts[k] = 0;
+  var el = document.getElementById('pv-' + k);
+  if (el) el.textContent = protoCounts[k];
+  protoSave();
+}
+function protoCollect() {
+  var all = fdRead(K_PROTO, {});
+  return all[fdToday()] || {};
 }
 
 init();
