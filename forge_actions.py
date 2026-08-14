@@ -1746,7 +1746,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     .mini-detail {{ font-size: 13px; color: var(--text-light); line-height: 1.6; }}
     .pr-intro {{ font-size:13px; color:var(--text-light); opacity:0.85; margin-bottom:12px; line-height:1.6; }}
     .pr-section {{ border-radius:10px; padding:0 0 12px 0; margin-bottom:14px; overflow:hidden; }}
-    .pimg-band {{ height:104px; background-size:cover; background-position:center 28%; background-color:rgba(0,0,0,0.22); display:flex; align-items:center; justify-content:center; cursor:pointer; }}
+    .pimg-band {{ height:200px; background-size:cover; background-position:center 28%; background-color:rgba(0,0,0,0.22); display:flex; align-items:center; justify-content:center; cursor:pointer; }}
     .pimg-band.has-img .pimg-hint {{ display:none; }}
     .pimg-hint {{ font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-light); opacity:0.6; }}
     .pr-head {{ font-size:15px; font-weight:800; letter-spacing:0.14em; padding:12px 14px 0 14px; }}
