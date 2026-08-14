@@ -216,6 +216,8 @@ def fetch_events_for_range(calendars, start, end):
     """Fetch and format events for a given date range."""
     all_events = []
     for calendar in calendars:
+        _calname = getattr(calendar, "name", None) or "unknown"
+        _bad_events = 0
         try:
             events = calendar.date_search(start=start, end=end, expand=True)
             for event in events:
@@ -227,10 +229,14 @@ def fetch_events_for_range(calendars, start, end):
                         all_events.append((str(dtstart), f"{summary} @ {dtstart.strftime('%a %b %d, %I:%M %p')}"))
                     else:
                         all_events.append((str(dtstart), f"{summary} — {dtstart.strftime('%a %b %d')} (All Day)"))
-                except:
+                except Exception:
+                    _bad_events += 1
                     continue
-        except:
+        except Exception as e:
+            CALENDAR_ERRORS.append(f"iCloud calendar '{_calname}': {type(e).__name__} {e}")
             continue
+        if _bad_events:
+            CALENDAR_ERRORS.append(f"iCloud calendar '{_calname}': {_bad_events} event(s) unparseable")
     all_events.sort(key=lambda x: x[0])
     return [e[1] for e in all_events]
 
@@ -238,6 +244,8 @@ def fetch_events_structured(calendars, start, end):
     """Fetch events as structured list for JSONBin storage."""
     all_events = []
     for calendar in calendars:
+        _calname = getattr(calendar, "name", None) or "unknown"
+        _bad_events = 0
         try:
             events = calendar.date_search(start=start, end=end, expand=True)
             for event in events:
@@ -259,10 +267,14 @@ def fetch_events_structured(calendars, start, end):
                             "time": "All day",
                             "title": summary
                         })
-                except:
+                except Exception:
+                    _bad_events += 1
                     continue
-        except:
+        except Exception as e:
+            CALENDAR_ERRORS.append(f"iCloud calendar '{_calname}': {type(e).__name__} {e}")
             continue
+        if _bad_events:
+            CALENDAR_ERRORS.append(f"iCloud calendar '{_calname}': {_bad_events} event(s) unparseable")
     all_events.sort(key=lambda x: x["sort_key"])
     # Remove sort_key from final output
     return [{"date": e["date"], "time": e["time"], "title": e["title"]} for e in all_events]
@@ -1423,7 +1435,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     else:
         pool_error_html = ""
     if CALENDAR_ERRORS:
-        _crows = "".join(f"<div>&#9888; {e}</div>" for e in CALENDAR_ERRORS)
+        _crows = "".join(f"<div>&#9888; {e}</div>" for e in dict.fromkeys(CALENDAR_ERRORS))
         pool_error_html += f'<div class="pool-error">CALENDAR FEED PROBLEM &mdash; some events may be missing{_crows}</div>' 
 
     cal_json = json.dumps(week_structured or [])
