@@ -1,1 +1,21 @@
-{"welltory": {"stress": 24, "energy": 94, "health": 100}, "body_comp": {"weight": null, "body_fat": null, "muscle_mass": null, "bmi": null, "visceral_fat": null}, "sleep": {"score": null, "duration": null, "hr_range": null}, "notes": "", "updated": "2026-08-15T18:40:36.966Z", "calendar": [{"date": "Sat Aug 15", "time": "All day", "title": "Happy Birthday Oda"}, {"date": "Mon Aug 17", "time": "09:30 AM", "title": "Cairo practice session at Blundell"}, {"date": "Mon Aug 17", "time": "01:20 PM", "title": "BC ferry departs get there an hour earlier"}, {"date": "Sat Aug 15", "time": "06:00 PM", "title": "UFC 330: Makhachev vs Machado Garry"}, {"date": "Mon Aug 17", "time": "09:30 AM", "title": "Chiropractic \u2013 Private Subsequent Visit (30 Minutes) with Harriet Lee for Sean Reid"}, {"date": "Fri Aug 21", "time": "04:30 AM", "title": "ONE Friday Fights 167 & The Inner Circle 27"}]}
+{
+  "welltory": {
+    "stress": 24,
+    "energy": 94,
+    "health": 100
+  },
+  "body_comp": {
+    "weight": 197.6,
+    "body_fat": 25.7,
+    "muscle_mass": 132,
+    "bmi": 28.3,
+    "visceral_fat": 14
+  },
+  "sleep": {
+    "score": 65,
+    "duration": "11h49",
+    "hr_range": "75-100"
+  },
+  "notes": "",
+  "updated": "2026-08-15T18:44:29.692Z"
+}
