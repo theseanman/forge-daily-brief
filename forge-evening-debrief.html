@@ -697,7 +697,7 @@ function syncPush(key) {
    An entry that is EMPTY in the cloud never overwrites a populated local one.
    That is deliberate: stale-but-present beats silently wiped. The cost is that
    deliberately clearing something on one surface will not propagate here. */
-var PULL_KEYS = [K_TOP5, K_ROCKS, K_FRAME, K_MUSHIN, K_BACKLOG, K_FUN, K_PARKED, K_PROJ, K_REPS, K_VIDEO, K_PROTO]; /* install25 + tally_pull_key_aug14 */
+var PULL_KEYS = [K_TOP5, K_ROCKS, K_FRAME, K_MUSHIN, K_BACKLOG, K_FUN, K_PARKED, K_PROJ, K_REPS, K_VIDEO, K_PROTO, K_DAILY]; /* install25 + tally_pull_key_aug14 + dailylog_backup */
 
 function fdBlank(v) {
   if (v === null || v === undefined) return true;
@@ -753,6 +753,15 @@ function fdMergeEntry(key, local, dk, cloudVal) {
     if (wantN === (ln > 0 ? ln : 0) && wantAtt === lAtt) return false;
     local[dk] = { n: wantN, att: wantAtt };
     return true;
+  }
+
+  if (key === K_DAILY) {                       /* dailylog_backup: newest `saved` wins, never drop a date */
+    var lt = (localVal && typeof localVal.saved === 'string') ? localVal.saved : '';
+    var ct = (cloudVal && typeof cloudVal.saved === 'string') ? cloudVal.saved : '';
+    if (!cloudVal || typeof cloudVal !== 'object') return false;
+    if (localVal === undefined) { local[dk] = cloudVal; return true; }  /* a day we don't have yet */
+    if (ct > lt) { local[dk] = cloudVal; return true; }                 /* cloud is newer */
+    return false;                                                       /* local same-or-newer wins */
   }
 
   if (fdBlank(cloudVal) && !fdBlank(localVal)) return false;   /* the guard */
@@ -2029,6 +2038,7 @@ function saveDailyLog(){
   var keys = Object.keys(log).sort();
   if (keys.length > 400){ var o = {}; keys.slice(-400).forEach(function(k){ o[k] = log[k]; }); log = o; }
   fdWrite(K_DAILY, log);
+  try { syncPush(K_DAILY); } catch (e) {}   /* dailylog_backup */
 
   /* attach this morning's health numbers once data.json answers */
   fetch('data.json?t=' + Date.now())
@@ -2043,7 +2053,7 @@ function saveDailyLog(){
         if (!deadReading(p[1])) h[p[0]] = p[1];
       });
       var lg = fdRead(K_DAILY, {});
-      if (lg[rec.d]){ lg[rec.d].health = h; fdWrite(K_DAILY, lg); }
+      if (lg[rec.d]){ lg[rec.d].health = h; fdWrite(K_DAILY, lg); try { syncPush(K_DAILY); } catch (e) {} }  /* dailylog_backup */
     })
     .catch(function(){ /* offline: the journal is saved regardless */ });
 }
