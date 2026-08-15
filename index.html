@@ -154,7 +154,7 @@
     <div class="date-block">
       <div class="date-main">Saturday</div>
       <div style="font-size:11px; color:var(--muted);">August 15, 2026</div>
-      <div class="date-time" id="live-clock">01:19 PM</div>
+      <div class="date-time" id="live-clock">01:53 PM</div>
     </div>
   </div>
 
@@ -318,7 +318,7 @@
 
   <div class="card">
     <div class="card-header"><span class="card-icon">🌤️🌴</span><span>Richmond Weather</span></div>
-    <div class="mini-card"><div class="mini-detail">Clear sky, 21.7°C</div></div>
+    <div class="mini-card"><div class="mini-detail">Mainly clear, 21.3°C</div></div>
   </div>
 
   <div class="card" data-newscan>
@@ -459,7 +459,7 @@ Noche UFC: Rodriguez vs Silva @ Sat Sep 12, 02:00 PM [UFC Events]</pre></div>
   <div class="card"><div class="card-header"><span class="card-icon">🎸🌴</span><span>Upcoming Metal Shows</span></div><div class="mini-card"><div class="mini-detail">No upcoming shows.</div></div></div>
 
 
-  <div class="footer">🌴 FORGE OS · AUGUST 15, 2026 · 01:19 PM · theseanman.github.io/forge-daily-brief<span id="sync-state"></span></div>
+  <div class="footer">🌴 FORGE OS · AUGUST 15, 2026 · 01:53 PM · theseanman.github.io/forge-daily-brief<span id="sync-state"></span></div>
 
 </div>
 
@@ -500,6 +500,41 @@ function pimgStore(slot, dataUrl) {
   var n2 = document.getElementById('pimg-note');
   if (n2) n2.textContent = '';
   pimgPaint();
+  pimgPush(slot, dataUrl);
+}
+function pimgPush(slot, dataUrl) {
+  try {
+    fetch(SYNC_URL + '/' + encodeURIComponent(pimgKey(slot)), {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dataUrl)
+    }).then(function(r) {
+      var n = document.getElementById('pimg-note');
+      if (!r.ok && n) n.textContent = 'Saved on this device - cloud backup failed (' + r.status + ').';
+    }).catch(function() {
+      var n = document.getElementById('pimg-note');
+      if (n) n.textContent = 'Saved on this device - cloud backup offline.';
+    });
+  } catch(e) {}
+}
+function pimgPull() {
+  for (var i = 0; i < PIMG_SLOTS.length; i++) {
+    (function(k) {
+      var haveLocal = false;
+      try { haveLocal = !!localStorage.getItem(pimgKey(k)); } catch(e) {}
+      if (haveLocal) return;
+      fetch(SYNC_URL + '/' + encodeURIComponent(pimgKey(k)))
+        .then(function(r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function(v) {
+          if (typeof v === 'string' && v.indexOf('data:image') === 0) {
+            var still = false;
+            try { still = !!localStorage.getItem(pimgKey(k)); } catch(e) {}
+            if (still) return;
+            try { localStorage.setItem(pimgKey(k), v); pimgPaint(); } catch(e) {}
+          }
+        })
+        .catch(function() {});
+    })(PIMG_SLOTS[i]);
+  }
 }
 function pimgLoad(ev) {
   var inp = ev.target;
@@ -549,7 +584,7 @@ function tick() {
 window.FORGE_CALENDAR = [{"date": "Sat Aug 15", "time": "All day", "title": "Happy Birthday Oda"}, {"date": "Mon Aug 17", "time": "09:30 AM", "title": "Cairo practice session at Blundell"}, {"date": "Mon Aug 17", "time": "01:20 PM", "title": "BC ferry departs get there an hour earlier"}, {"date": "Sat Aug 15", "time": "06:00 PM", "title": "UFC 330: Makhachev vs Machado Garry"}, {"date": "Mon Aug 17", "time": "09:30 AM", "title": "Chiropractic \u2013 Private Subsequent Visit (30 Minutes) with Harriet Lee for Sean Reid"}, {"date": "Fri Aug 21", "time": "04:30 AM", "title": "ONE Friday Fights 167 & The Inner Circle 27"}];
 window.FORGE_GEN_DATE = "2026-08-15";
 window.onload = function() {
-  pimgPaint(); setInterval(tick, 1000);
+  pimgPaint(); pimgPull(); setInterval(tick, 1000);
   // Staleness check. FORGE_GEN_DATE is stamped in PACIFIC time, but the device may be in
   // any timezone, so a gap of up to a day is normal and is NOT stale. Only a gap of a full
   // day or more means the daily workflow actually failed to run.
