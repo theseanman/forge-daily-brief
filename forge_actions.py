@@ -2002,6 +2002,41 @@ function pimgStore(slot, dataUrl) {{
   var n2 = document.getElementById('pimg-note');
   if (n2) n2.textContent = '';
   pimgPaint();
+  pimgPush(slot, dataUrl);
+}}
+function pimgPush(slot, dataUrl) {{
+  try {{
+    fetch(SYNC_URL + '/' + encodeURIComponent(pimgKey(slot)), {{
+      method: 'PUT', headers: {{ 'Content-Type': 'application/json' }},
+      body: JSON.stringify(dataUrl)
+    }}).then(function(r) {{
+      var n = document.getElementById('pimg-note');
+      if (!r.ok && n) n.textContent = 'Saved on this device - cloud backup failed (' + r.status + ').';
+    }}).catch(function() {{
+      var n = document.getElementById('pimg-note');
+      if (n) n.textContent = 'Saved on this device - cloud backup offline.';
+    }});
+  }} catch(e) {{}}
+}}
+function pimgPull() {{
+  for (var i = 0; i < PIMG_SLOTS.length; i++) {{
+    (function(k) {{
+      var haveLocal = false;
+      try {{ haveLocal = !!localStorage.getItem(pimgKey(k)); }} catch(e) {{}}
+      if (haveLocal) return;
+      fetch(SYNC_URL + '/' + encodeURIComponent(pimgKey(k)))
+        .then(function(r) {{ if (!r.ok) throw new Error(r.status); return r.json(); }})
+        .then(function(v) {{
+          if (typeof v === 'string' && v.indexOf('data:image') === 0) {{
+            var still = false;
+            try {{ still = !!localStorage.getItem(pimgKey(k)); }} catch(e) {{}}
+            if (still) return;
+            try {{ localStorage.setItem(pimgKey(k), v); pimgPaint(); }} catch(e) {{}}
+          }}
+        }})
+        .catch(function() {{}});
+    }})(PIMG_SLOTS[i]);
+  }}
 }}
 function pimgLoad(ev) {{
   var inp = ev.target;
@@ -2051,7 +2086,7 @@ function tick() {{
 window.FORGE_CALENDAR = {cal_json};
 window.FORGE_GEN_DATE = "{now.strftime('%Y-%m-%d')}";
 window.onload = function() {{
-  pimgPaint(); setInterval(tick, 1000);
+  pimgPaint(); pimgPull(); setInterval(tick, 1000);
   // Staleness check. FORGE_GEN_DATE is stamped in PACIFIC time, but the device may be in
   // any timezone, so a gap of up to a day is normal and is NOT stale. Only a gap of a full
   // day or more means the daily workflow actually failed to run.
