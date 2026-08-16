@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Forge — Analysis</title>
+<style>
+  :root{
+    --bg:#0e1420; --card:#151d2b; --border:#26324a; --ink:#e8edf6; --muted:#8a97ad;
+    --blue:#4a9de8; --green:#5bd6a0; --gold:#e0a854; --indigo:#8a9ad0; --red:#e06a6a;
+    --radius:12px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased; padding:0 0 40px;}
+  .wrap{max-width:760px; margin:0 auto; padding:18px 16px;}
+  h1{font-size:22px; letter-spacing:.02em; margin:6px 0 2px;}
+  .sub{color:var(--muted); font-size:13px; margin:0 0 16px;}
+  .card{background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+    padding:16px; margin-bottom:16px;}
+  .card h2{font-size:14px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted);
+    margin:0 0 12px; font-weight:700;}
+  #status{font-size:13px; color:var(--muted); margin-bottom:12px; min-height:18px;}
+  .filters{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;}
+  .chip{border:1px solid var(--border); border-radius:20px; padding:6px 13px; font-size:13px;
+    background:transparent; color:var(--muted); cursor:pointer; font-family:inherit; transition:all .15s;}
+  .chip.on{background:rgba(74,157,232,.16); border-color:var(--blue); color:var(--blue); font-weight:600;}
+  .legend{display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin-top:10px;}
+  .legend span{display:inline-flex; align-items:center; gap:6px;}
+  .swatch{width:12px; height:3px; border-radius:2px; display:inline-block;}
+  .dot{width:8px; height:8px; border-radius:50%; display:inline-block;}
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th,td{text-align:left; padding:7px 8px; border-bottom:1px solid var(--border);}
+  th{color:var(--muted); font-weight:600; font-size:11px; letter-spacing:.05em; text-transform:uppercase;}
+  td.num{text-align:right; font-variant-numeric:tabular-nums;}
+  .grp-title{font-size:12px; color:var(--blue); font-weight:700; margin:14px 0 4px; letter-spacing:.04em;}
+  .grp-title:first-child{margin-top:0;}
+  .n-badge{color:var(--muted); font-size:11px; font-weight:400;}
+  .thin{color:var(--gold);}
+  .note{color:var(--muted); font-size:12px; line-height:1.5; margin-top:4px;}
+  .back{display:inline-block; margin-top:8px; color:var(--blue); text-decoration:none; font-size:14px;}
+  .empty{color:var(--muted); font-style:italic; font-size:13px; padding:8px 0;}
+  svg{display:block; width:100%; height:auto;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Analysis</h1>
+  <p class="sub">Trends from your daily log. Early data is thin — read these as directions, not proof. Every figure shows how many days (n) it rests on.</p>
+  <div id="status">Loading…</div>
+
+  <div class="filters" id="tag-filters"></div>
+
+  <div class="card">
+    <h2>Sleep &amp; completion over time</h2>
+    <div id="ts-chart"></div>
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--blue)"></span> Sleep score</span>
+      <span><span class="swatch" style="background:var(--green)"></span> Tasks closed %</span>
+      <span><span class="dot" style="background:var(--gold)"></span> Drinking night</span>
+      <span><span class="swatch" style="background:var(--indigo);height:12px;width:2px"></span> Holiday-eve</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Grouped averages</h2>
+    <div id="groups"></div>
+    <p class="note">Sleep split is a median split of the shown nights — your better half vs worse half — not a fixed cutoff, so both groups stay populated when data is thin. Alcohol uses the Aug&nbsp;3 tracking start: earlier days count as untracked, not sober. n under ~5 is marked in amber; treat those as anecdotes.</p>
+  </div>
+
+  <a class="back" href="./">← Back to brief</a>
+</div>
+
+<script>
+var SYNC_URL = 'https://forge-sync.yoseanreid.workers.dev';
+var WORKER   = 'https://forge-input.yoseanreid.workers.dev';
+var K_DAILY  = 'forge-daily-log';
+var TRACK_ALC = '2026-08-03';              /* alcohol logged reliably from here; earlier = untracked */
+/* BC statutory holidays 2026 — UPDATE for 2027 when the year turns (hardcoded, will go stale) */
+var BC_HOLIDAYS = ['2026-01-01','2026-02-16','2026-04-03','2026-05-18','2026-07-01',
+                   '2026-08-03','2026-09-07','2026-09-30','2026-10-12','2026-11-11','2026-12-25'];
+var TAGS = ['normal','travel','vacation','sick','night out'];
+
+/* ---------- storage ---------- */
+function fdRead(k, fb){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):fb; }catch(e){ return fb; } }
+function fdWrite(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } }
+
+/* ---------- pure helpers (unit-tested) ---------- */
+function prevDay(ymd){
+  var p = ymd.split('-'); var d = new Date(Date.UTC(+p[0], +p[1]-1, +p[2]));
+  d.setUTCDate(d.getUTCDate()-1);
+  return d.toISOString().slice(0,10);
+}
+function holidayEveSet(holidays){
+  var s = {}; holidays.forEach(function(h){ s[prevDay(h)] = true; }); return s;
+}
+function effSleep(rec){
+  var h = rec.health || {};
+  var cs = h.computed_score, ss = h.sleep_score;
+  if (typeof cs === 'number' && cs > 0) return cs;
+  if (typeof ss === 'number' && ss > 0) return ss;
+  return null;
+}
+function completion(rec){
+  var t = rec.t5 || {};
+  if (!t.total || t.total <= 0) return null;
+  return Math.round((t.done / t.total) * 100);
+}
+function keystone(rec){                     /* 1 hit, 0 miss, null if none set */
+  var t = rec.t5 || {};
+  if (!t.keySet) return null;
+  return t.keyDone ? 1 : 0;
+}
+/* alcohol for a date given the /health history, applying the tracking-start rule.
+   returns a number (>=0) if tracked, or null if untracked/missing. */
+function alcoholFor(date, hist){
+  if (date < TRACK_ALC) return null;        /* before reliable tracking → untracked */
+  var rec = hist[date];
+  if (!rec) return null;                     /* he did not log that day at all → untracked */
+  var v = rec.alcohol_units;
+  if (v === undefined || v === null || v === '') return 0;  /* logged, blank = sober */
+  v = +v; return isNaN(v) ? null : v;
+}
+function median(arr){
+  var a = arr.filter(function(x){ return typeof x === 'number'; }).sort(function(x,y){ return x-y; });
+  if (!a.length) return null;
+  var m = Math.floor(a.length/2);
+  return a.length % 2 ? a[m] : (a[m-1]+a[m])/2;
+}
+function mean(arr){
+  var a = arr.filter(function(x){ return typeof x === 'number'; });
+  if (!a.length) return null;
+  return a.reduce(function(s,x){ return s+x; }, 0) / a.length;
+}
+/* build the per-day derived series from the log + /health, honouring active tag filters */
+function deriveDays(log, hist, eveSet){
+  return Object.keys(log).sort().map(function(d){
+    var rec = log[d] || {};
+    return {
+      date: d,
+      sleep: effSleep(rec),
+      completion: completion(rec),
+      keystone: keystone(rec),
+      alcohol: alcoholFor(d, hist),
+      tag: rec.tag || 'normal',
+      eve: !!eveSet[d]
+    };
+  });
+}
+/* one grouped block: rows of {label, n, comp, keyRate} for a partition function */
+function groupBy(days, buckets){
+  return buckets.map(function(b){
+    var inb = days.filter(b.test);
+    var comps = inb.map(function(x){ return x.completion; }).filter(function(x){ return x!==null; });
+    var keys  = inb.map(function(x){ return x.keystone; }).filter(function(x){ return x!==null; });
+    return {
+      label: b.label,
+      n: comps.length,
+      comp: mean(comps),
+      keyN: keys.length,
+      keyRate: keys.length ? (mean(keys)*100) : null
+    };
+  });
+}
+
+/* ---------- state ---------- */
+var ALL = [];                 /* full derived series */
+var ACTIVE = {};              /* tag -> included? */
+
+/* ---------- load ---------- */
+function setStatus(msg){ var s=document.getElementById('status'); if(s) s.textContent = msg; }
+
+function mergeCloud(local, cloud){
+  if (!cloud || typeof cloud !== 'object' || cloud.error) return local;
+  Object.keys(cloud).forEach(function(d){
+    var c = cloud[d], l = local[d];
+    if (!l){ local[d] = c; return; }
+    var lt = (l && typeof l.saved === 'string') ? l.saved : '';
+    var ct = (c && typeof c.saved === 'string') ? c.saved : '';
+    if (ct > lt) local[d] = c;
+  });
+  return local;
+}
+
+function boot(){
+  var log = fdRead(K_DAILY, {});
+  var pulls = [];
+  pulls.push(
+    fetch(SYNC_URL + '/' + encodeURIComponent(K_DAILY))
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(cloud){ log = mergeCloud(log, cloud); fdWrite(K_DAILY, log); })
+      .catch(function(){})
+  );
+  var hist = {};
+  pulls.push(
+    fetch(WORKER + '/health', {method:'GET'})
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){ if (d && d.ok && d.history) hist = d.history; })
+      .catch(function(){})
+  );
+  Promise.all(pulls).then(function(){
+    var eves = holidayEveSet(BC_HOLIDAYS);
+    ALL = deriveDays(log, hist, eves);
+    TAGS.forEach(function(t){ ACTIVE[t] = true; });
+    var days = Object.keys(log).length;
+    setStatus(days ? (days + ' days on record. Confounds joined from /health.') :
+                     'No daily-log records yet. This fills in as you debrief.');
+    renderFilters();
+    renderAll();
+  });
+}
+
+function shown(){ return ALL.filter(function(x){ return ACTIVE[x.tag]; }); }
+
+function renderFilters(){
+  var host = document.getElementById('tag-filters'); host.innerHTML = '';
+  TAGS.forEach(function(t){
+    var count = ALL.filter(function(x){ return x.tag === t; }).length;
+    var b = document.createElement('button');
+    b.className = 'chip' + (ACTIVE[t] ? ' on' : '');
+    b.textContent = t + ' (' + count + ')';
+    b.onclick = function(){ ACTIVE[t] = !ACTIVE[t]; renderFilters(); renderAll(); };
+    host.appendChild(b);
+  });
+}
+
+function renderAll(){ renderTimeSeries(shown()); renderGroups(shown()); }
+
+/* ---------- time series (hand-rolled SVG) ---------- */
+function renderTimeSeries(days){
+  var host = document.getElementById('ts-chart'); host.innerHTML = '';
+  if (days.length < 2){
+    host.innerHTML = '<div class="empty">Need at least two matching days to plot.</div>'; return;
+  }
+  var W = 700, H = 240, padL = 34, padR = 12, padT = 12, padB = 34;
+  var n = days.length;
+  var x = function(i){ return padL + (n===1?0:(i*(W-padL-padR)/(n-1))); };
+  var y = function(v){ return padT + (100-v)*(H-padT-padB)/100; };
+  var svg = ['<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">'];
+  /* y gridlines 0/50/100 */
+  [0,50,100].forEach(function(v){
+    svg.push('<line x1="'+padL+'" y1="'+y(v)+'" x2="'+(W-padR)+'" y2="'+y(v)+'" stroke="#26324a" stroke-width="1"/>');
+    svg.push('<text x="'+(padL-6)+'" y="'+(y(v)+3)+'" fill="#8a97ad" font-size="9" text-anchor="end">'+v+'</text>');
+  });
+  /* holiday-eve verticals */
+  days.forEach(function(d,i){
+    if (d.eve) svg.push('<line x1="'+x(i)+'" y1="'+padT+'" x2="'+x(i)+'" y2="'+(H-padB)+'" stroke="#8a9ad0" stroke-width="1" stroke-dasharray="2 3" opacity="0.6"/>');
+  });
+  /* line builder skipping nulls */
+  function polyline(key, color){
+    var seg = [], out = [];
+    days.forEach(function(d,i){
+      var v = d[key];
+      if (v === null){ if (seg.length){ out.push(seg); seg=[]; } }
+      else seg.push(x(i)+','+y(v));
+    });
+    if (seg.length) out.push(seg);
+    out.forEach(function(pts){
+      svg.push('<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linejoin="round"/>');
+    });
+    days.forEach(function(d,i){
+      if (d[key] !== null) svg.push('<circle cx="'+x(i)+'" cy="'+y(d[key])+'" r="2.5" fill="'+color+'"/>');
+    });
+  }
+  polyline('sleep', '#4a9de8');
+  polyline('completion', '#5bd6a0');
+  /* drinking-night markers along the bottom */
+  days.forEach(function(d,i){
+    if (typeof d.alcohol === 'number' && d.alcohol > 0)
+      svg.push('<circle cx="'+x(i)+'" cy="'+(H-padB+10)+'" r="3" fill="#e0a854"/>');
+  });
+  /* x labels: first, middle, last */
+  [0, Math.floor((n-1)/2), n-1].forEach(function(i){
+    var lbl = days[i].date.slice(5);
+    svg.push('<text x="'+x(i)+'" y="'+(H-4)+'" fill="#8a97ad" font-size="9" text-anchor="middle">'+lbl+'</text>');
+  });
+  svg.push('</svg>');
+  host.innerHTML = svg.join('');
+}
+
+/* ---------- grouped averages ---------- */
+function pct(v){ return v===null ? '—' : Math.round(v)+'%'; }
+function nBadge(n){ return '<span class="n-badge'+(n>0&&n<5?' thin':'')+'"> n='+n+'</span>'; }
+
+function renderGroups(days){
+  var host = document.getElementById('groups'); host.innerHTML = '';
+  if (!days.length){ host.innerHTML = '<div class="empty">No days match the current filters.</div>'; return; }
+
+  /* sleep median split (over days that have a sleep number) */
+  var med = median(days.map(function(x){ return x.sleep; }));
+  var sleepBuckets = med===null ? [] : [
+    { label:'Better-slept half', test:function(x){ return typeof x.sleep==='number' && x.sleep >= med; } },
+    { label:'Worse-slept half',  test:function(x){ return typeof x.sleep==='number' && x.sleep <  med; } }
+  ];
+  var alcoholBuckets = [
+    { label:'Dry nights',      test:function(x){ return x.alcohol === 0; } },
+    { label:'Drinking nights', test:function(x){ return typeof x.alcohol==='number' && x.alcohol > 0; } }
+  ];
+  var tagBuckets = TAGS.map(function(t){
+    return { label:t, test:function(x){ return x.tag === t; } };
+  });
+
+  var html = '';
+  function block(title, rows, extra){
+    var real = rows.filter(function(r){ return r.n > 0; });
+    if (!real.length) return;
+    html += '<div class="grp-title">'+title+(extra||'')+'</div>';
+    html += '<table><tr><th>Group</th><th class="num">Tasks closed</th><th class="num">Keystone hit</th></tr>';
+    real.forEach(function(r){
+      html += '<tr><td>'+r.label+nBadge(r.n)+'</td>'
+           +  '<td class="num">'+pct(r.comp)+'</td>'
+           +  '<td class="num">'+(r.keyN? pct(r.keyRate)+' <span class="n-badge">n='+r.keyN+'</span>' : '—')+'</td></tr>';
+    });
+    html += '</table>';
+  }
+  block('By sleep', groupBy(days, sleepBuckets), med===null?'':' (median '+Math.round(med)+')');
+  block('By drinking', groupBy(days, alcoholBuckets));
+  block('By day type', groupBy(days, tagBuckets));
+  host.innerHTML = html || '<div class="empty">Not enough tagged data yet.</div>';
+}
+
+/* expose pure fns for tests when loaded under node */
+if (typeof module !== 'undefined' && module.exports){
+  module.exports = { prevDay, holidayEveSet, effSleep, completion, keystone, alcoholFor,
+                     median, mean, deriveDays, groupBy, mergeCloud, TRACK_ALC };
+}
+
+if (typeof document !== 'undefined' && document.getElementById('status')) boot();
+</script>
+</body>
+</html>
