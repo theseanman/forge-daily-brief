@@ -2102,7 +2102,7 @@ var CSV_COLS = ['date','mood','sleep_score','sleep_dur','energy','health','stres
                 'workout_type','workout_mins','workout_feel',
                 'calories','protein','carbs','fat',
                 'esp1_event','esp1_effort','esp1_success','esp1_progress',
-                'win','miss','carry','note'];
+                'win','miss','carry','note','tag'];
 
 function csvCell(v){
   if (v === undefined || v === null) return '';
@@ -2121,15 +2121,16 @@ function buildCSV(){
     var r = log[k] || {};
     var h = r.health || {}, t = r.t5 || {}, se = r.sessions || {},
         w = r.workout || {}, nu = r.nutrition || {}, rm = r.reminders || {};
-    var e1 = (r.esp && r.esp[0]) || {};
+    var e1 = (r.esp && r.esp[0]) || {}, p = r.protocol || {};
     rows.push([
       k, r.mood, h.sleep_score, h.sleep_dur, h.energy, h.health, h.stress,
+      p.boundary, p.warrior, p.opportunity, p.pause_speak, p.pause_reach, p.pause_decide, p.pause_move, p.slow, p.fine, p.cal_ai, p.terrain_min, p.tempo_min,
       h.weight, h.body_fat, t.total, t.done, t.keySet, t.keyDone,
       se.n, se.est, se.act, se.met, rm.done, rm.total,
       w.type, w.mins, w.feel,
       nu.cal, nu.protein, nu.carbs, nu.fat,
       e1.event, e1.e, e1.s, e1.p,
-      r.win, r.miss, r.carry, r.note
+      r.win, r.miss, r.carry, r.note, r.tag
     ].map(csvCell).join(','));
   });
   return rows.join('\n');
