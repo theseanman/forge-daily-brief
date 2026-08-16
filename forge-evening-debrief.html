@@ -52,6 +52,8 @@
   .mood-row { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; }
   .mood-btn { border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 14px; background: transparent; color: var(--muted); font-size: 13px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
   .mood-btn.selected { background: rgba(74,157,232,0.15); border-color: var(--blue); color: var(--blue); font-weight: 600; }
+  .tag-btn { border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 14px; background: transparent; color: var(--muted); font-size: 13px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+  .tag-btn.selected { background: rgba(224,168,84,0.15); border-color: #e0a854; color: #e0a854; font-weight: 600; }
   .todo-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid var(--dim); border-radius: var(--radius); margin-bottom: 8px; cursor: pointer; background: var(--surface); transition: all 0.15s; }
   .todo-item.checked { background: rgba(74,232,160,0.1); border-color: var(--green); }
   .todo-check { width: 18px; height: 18px; border: 1px solid var(--border); border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
@@ -209,6 +211,14 @@
         <button class="mood-btn" onclick="selectMood(this,'Meh')">Meh</button>
         <button class="mood-btn" onclick="selectMood(this,'Rough')">Rough</button>
         <button class="mood-btn" onclick="selectMood(this,'Drained')">Drained</button>
+      </div>
+      <div class="field-label" style="margin-top:4px;">Day context</div>
+      <div class="mood-row" id="tag-row">
+        <button class="tag-btn selected" onclick="selectTag(this,'normal')">Normal</button>
+        <button class="tag-btn" onclick="selectTag(this,'travel')">Travel</button>
+        <button class="tag-btn" onclick="selectTag(this,'vacation')">Vacation</button>
+        <button class="tag-btn" onclick="selectTag(this,'sick')">Sick</button>
+        <button class="tag-btn" onclick="selectTag(this,'night out')">Night out</button>
       </div>
       <div class="field">
         <div class="field-label">One-liner (optional)</div>
@@ -512,6 +522,7 @@ let currentStep = 0;
 const espRatings = {};
 let espCount = 1;
 let selectedMood = '';
+let selectedTag = 'normal';
 let selectedWorkout = '';
 let reminders = [];
 const todoChecked = {};
@@ -626,6 +637,10 @@ function toggleESP() {
 function selectMood(btn, val) {
   selectedMood = val;
   document.querySelectorAll('#step-0 .mood-btn').forEach(b => b.classList.toggle('selected', b === btn));
+}
+function selectTag(btn, val) {
+  selectedTag = val;
+  document.querySelectorAll('#tag-row .tag-btn').forEach(b => b.classList.toggle('selected', b === btn));
 }
 
 function selectWorkout(btn, val) {
@@ -2006,6 +2021,7 @@ function collectDaily(){
   return {
     d: today,
     mood: selectedMood || '',
+    tag: selectedTag || 'normal',
     note: val('day-note'),
     esp: esp,
     workout: { type: selectedWorkout || '', mins: num('workout-duration'),
