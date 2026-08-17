@@ -1,1 +1,59 @@
-{"welltory": {"stress": 50, "energy": 45, "health": 100}, "body_comp": {"weight": 197.5, "body_fat": 25.7, "muscle_mass": null, "bmi": 28.3, "visceral_fat": null}, "sleep": {"score": null, "duration": null, "hr_range": null, "rem": 137, "core": 441, "deep": 131, "awake": 11, "duration_min": 708, "time_in_bed_min": 740, "computed_score": 97, "computed_score_parts": {"duration": 40, "deep": 20, "rem": 17.6, "efficiency": 19.1}, "capture_method": "health_auto_export_v1", "capture_method_since": "2026-08-13", "stage_source_date": "2026-08-15"}, "notes": "", "updated": "2026-08-16T17:54:17.171Z", "calendar": [{"date": "Mon Aug 17", "time": "09:30 AM", "title": "Cairo practice session at Blundell"}, {"date": "Mon Aug 17", "time": "01:20 PM", "title": "BC ferry departs get there an hour earlier"}, {"date": "Mon Aug 17", "time": "09:30 AM", "title": "Chiropractic \u2013 Private Subsequent Visit (30 Minutes) with Harriet Lee for Sean Reid"}, {"date": "Fri Aug 21", "time": "04:30 AM", "title": "ONE Friday Fights 167 & The Inner Circle 27"}]}
+{
+  "welltory": {
+    "stress": 50,
+    "energy": 45,
+    "health": 100
+  },
+  "body_comp": {
+    "weight": 197.5,
+    "body_fat": 25.7,
+    "muscle_mass": null,
+    "bmi": 28.3,
+    "visceral_fat": null
+  },
+  "sleep": {
+    "score": null,
+    "duration": null,
+    "hr_range": null,
+    "rem": 137,
+    "core": 441,
+    "deep": 131,
+    "awake": 11,
+    "duration_min": 708,
+    "time_in_bed_min": 740,
+    "computed_score": 97,
+    "computed_score_parts": {
+      "duration": 40,
+      "deep": 20,
+      "rem": 17.6,
+      "efficiency": 19.1
+    },
+    "capture_method": "health_auto_export_v1",
+    "capture_method_since": "2026-08-13",
+    "stage_source_date": "2026-08-15"
+  },
+  "notes": "",
+  "updated": "2026-08-16T17:54:17.171Z",
+  "calendar": [
+    {
+      "date": "Mon Aug 17",
+      "time": "09:30 AM",
+      "title": "Cairo practice session at Blundell"
+    },
+    {
+      "date": "Mon Aug 17",
+      "time": "01:20 PM",
+      "title": "BC ferry departs get there an hour earlier"
+    },
+    {
+      "date": "Mon Aug 17",
+      "time": "09:30 AM",
+      "title": "Chiropractic – Private Subsequent Visit (30 Minutes) with Harriet Lee for Sean Reid"
+    },
+    {
+      "date": "Fri Aug 21",
+      "time": "04:30 AM",
+      "title": "ONE Friday Fights 167 & The Inner Circle 27"
+    }
+  ]
+}
