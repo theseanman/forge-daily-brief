@@ -8,7 +8,7 @@
   :root {
     --bg: #0a0a0f; --surface: #111118; --border: #1e1e2e; --dim: #33334a;
     --accent: #e8c84a; --green: #4ae8a0; --text: #f0f0f8; --muted: #666680;
-    --terrain: #4a9de8; --tempo: #e0a854; --calai: #4ae8a0;
+    --terrain: #4a9de8; --tempo: #e0a854; --calai: #4ae8a0; --body: #8a9ad0;
     --radius: 10px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -83,6 +83,12 @@
     <div id="calai-tiles"></div>
   </div>
 
+  <div class="sec sec-body">
+    <div class="sec-head" style="color:var(--body);">BODY</div>
+    <div class="sec-sub" style="color:var(--body);">Notice the body. It knows before you do.</div>
+    <div id="body-tiles"></div>
+  </div>
+
   <div class="note">
     Presence is not here on purpose. It has no count, no score and no tick &mdash;
     the wanting of a number is the thing that section exists to catch.
@@ -111,7 +117,8 @@ var SYNC_URL = 'https://forge-sync.yoseanreid.workers.dev';
 
 /* Order and ids must match the debrief's PROTO_ITEMS exactly. */
 var PROTO_ITEMS = ['boundary','warrior','opportunity','pause_speak','pause_reach',
-                   'pause_decide','pause_move','slow','fine','cal_ai'];
+                   'pause_decide','pause_move','slow','fine','cal_ai',
+                   'shoulders_back','pause_mouthfuls','breath_speak','feet_ground'];
 var PAUSE_ITEMS = ['pause_speak','pause_reach','pause_decide','pause_move'];
 
 var TILES = {
@@ -130,6 +137,12 @@ var TILES = {
   ],
   calai: [
     { k:'cal_ai', icon:'\uD83D\uDCF1', label:'Meal logged', sub:'One tap per meal photographed' }
+  ],
+  body: [
+    { k:'shoulders_back',   icon:'\uD83E\uDDD8', label:'Shoulders Back',           sub:'Noticed and corrected posture' },
+    { k:'pause_mouthfuls',  icon:'\uD83C\uDF7D\uFE0F',  label:'Pause Between Mouthfuls', sub:'Put down the fork, then chew' },
+    { k:'breath_speak',     icon:'\uD83D\uDCA8', label:'Breath Before Speaking',   sub:'One breath before the words' },
+    { k:'feet_ground',      icon:'\uD83E\uDDB6', label:'Feet on the Ground',       sub:'Noticed feet, reset from there' }
   ]
 };
 
@@ -206,6 +219,7 @@ function buildTiles(){
   document.getElementById('terrain-tiles').innerHTML = TILES.terrain.map(tileHtml).join('');
   document.getElementById('tempo-tiles').innerHTML   = TILES.tempo.map(tileHtml).join('');
   document.getElementById('calai-tiles').innerHTML   = TILES.calai.map(tileHtml).join('');
+  document.getElementById('body-tiles').innerHTML    = TILES.body.map(tileHtml).join('');
 
   document.querySelectorAll('.tile').forEach(function(el){
     el.addEventListener('click', function(){ bump(el.getAttribute('data-k'), 1); });
