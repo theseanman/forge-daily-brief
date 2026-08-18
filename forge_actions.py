@@ -1491,7 +1491,14 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     else:
         _sleep_alert = ''
 
-    sleep_dur_disp = "—" if (_sd is None or str(_sd).strip() in ("", "-")) else str(_sd)
+    _dm = sleep.get("duration_min")
+    if _sd is not None and str(_sd).strip() not in ("", "-"):
+        sleep_dur_disp = str(_sd)
+    elif isinstance(_dm, (int, float)) and _dm > 0:
+        _dh, _dmm = divmod(int(round(float(_dm))), 60)
+        sleep_dur_disp = f"{_dh}h {_dmm}m" if _dh else f"{_dmm}m"
+    else:
+        sleep_dur_disp = "—"
     sleep_hr_disp = "—" if (_sh is None or str(_sh).strip() in ("", "-")) else str(_sh)
 
     # Sleep stages arrive as integer MINUTES from the Health-pull Shortcut.
