@@ -517,7 +517,7 @@ function submitData(){
     updated:new Date().toISOString()
   };
 
-  fetch('https://forge-input.yoseanreid.workers.dev', {
+  fetch('https://forge-input.yoseanreid.workers.dev/brief-patch', {
     method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(brief)
   })
   .then(function(r){ return r.json(); })
