@@ -1636,6 +1636,25 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     else:
         cad_jpy_html = f'¥{_cadjpy_rate:.2f} <span style="opacity:0.55;">(trigger ≥¥{CADJPY_TRIGGER:.0f})</span>'
 
+    # ── Today's Anchors card (auto-hides after 2026-09-04) ──────────────
+    ANCHORS_END = date(2026, 9, 4)
+    if now_pt().date() <= ANCHORS_END:
+        anchors_card = (
+            '<div class="card" style="background:linear-gradient(135deg, rgba(74,157,232,0.22), rgba(74,157,232,0.08)); '
+            'border:2px solid #4a9de8; padding:14px 16px;">'
+            '<div style="font-size:11px; letter-spacing:0.18em; text-transform:uppercase; '
+            'font-weight:800; color:#4a9de8; margin-bottom:10px;">Today\u2019s Anchors</div>'
+            '<div style="font-size:15px; line-height:1.6; color:var(--text-bright); margin-bottom:6px;">'
+            '<b>Breath before standing</b> \u2014 hands on knees, one breath, then rise.'
+            '</div>'
+            '<div style="font-size:15px; line-height:1.6; color:var(--text-bright);">'
+            '<b>Breath before phone pickup</b> \u2014 pause, breathe, then touch.'
+            '</div>'
+            '</div>'
+        )
+    else:
+        anchors_card = ''
+
     stoic = STOIC_QUOTES[get_daily_index(len(STOIC_QUOTES))]
     stoic_quote = stoic["text"]; stoic_source = stoic["source"]
     jlpt = JLPT_WORDS[get_daily_index(len(JLPT_WORDS))]
@@ -1859,6 +1878,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
 
   {_sleep_alert}
 
+  {anchors_card}
 
   <div class="card">
     <div class="card-header"><span class="card-icon">&#x1F3AF;&#x1F334;</span><span>Today&rsquo;s Five</span></div>
