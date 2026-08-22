@@ -226,9 +226,9 @@ def fetch_events_for_range(calendars, start, end):
                     summary = str(vevent.summary.value) if hasattr(vevent, 'summary') else "Event"
                     dtstart = vevent.dtstart.value
                     if hasattr(dtstart, 'hour'):
-                        all_events.append((str(dtstart), f"{summary} @ {dtstart.strftime('%a %b %d, %I:%M %p')}"))
+                        all_events.append((str(dtstart), f"{dtstart.strftime('%a %b %-d')} · {dtstart.strftime('%-I:%M %p')} — {summary}"))
                     else:
-                        all_events.append((str(dtstart), f"{summary} — {dtstart.strftime('%a %b %d')} (All Day)"))
+                        all_events.append((str(dtstart), f"{dtstart.strftime('%a %b %-d')} — {summary} (all day)"))
                 except Exception:
                     _bad_events += 1
                     continue
@@ -329,13 +329,13 @@ def fetch_ics_events(start_dt, end_dt):
                     if _re.match(r"^\d{8}$", dtstart_raw):
                         dt = datetime.strptime(dtstart_raw, "%Y%m%d").date()
                         dt_sort = datetime.combine(dt, datetime.min.time()).replace(tzinfo=PT)
-                        label = f"{summary} -- {dt.strftime('%a %b %d')} (All Day) [{feed_name}]"
+                        label = f"{dt.strftime('%a %b %-d')} — {summary} (all day) [{feed_name}]"
                     elif dtstart_raw.endswith("Z"):
                         dt_sort = datetime.strptime(dtstart_raw, "%Y%m%dT%H%M%SZ").replace(tzinfo=_tz.utc).astimezone(PT)
-                        label = f"{summary} @ {dt_sort.strftime('%a %b %d, %I:%M %p')} [{feed_name}]"
+                        label = f"{dt_sort.strftime('%a %b %-d')} · {dt_sort.strftime('%-I:%M %p')} — {summary} [{feed_name}]"
                     elif "T" in dtstart_raw and len(dtstart_raw) >= 15:
                         dt_sort = datetime.strptime(dtstart_raw[:15], "%Y%m%dT%H%M%S").replace(tzinfo=PT)
-                        label = f"{summary} @ {dt_sort.strftime('%a %b %d, %I:%M %p')} [{feed_name}]"
+                        label = f"{dt_sort.strftime('%a %b %-d')} · {dt_sort.strftime('%-I:%M %p')} — {summary} [{feed_name}]"
                     else:
                         continue
 
@@ -501,9 +501,9 @@ def get_calendar_events():
         print(f"✓ Today: {len(today_events)} | Week: {len(week_events)} | Month: {len(month_events)} events (ICS: {len(ics_today)} today)")
 
         return {
-            "today": "\n".join(today_events) if today_events else "No events today.",
-            "week": "\n".join(week_events) if week_events else "No events this week.",
-            "month": "\n".join(month_events) if month_events else "No events this month.",
+            "today": "\n\n".join(today_events) if today_events else "No events today.",
+            "week": "\n\n".join(week_events) if week_events else "No events this week.",
+            "month": "\n\n".join(month_events) if month_events else "No events this month.",
             "week_structured": week_structured
         }
 
@@ -1336,6 +1336,29 @@ def sleep_is_missing(v):
     return True
 
 
+def fetch_cad_jpy():
+    """Return (rate_float, source_label) or (None, "unavailable").
+    Rate is JPY per 1 CAD. Two independent sources, quiet fallback.
+    """
+    _urls = [
+        ("https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/cad.json",
+         lambda d: d.get("cad", {}).get("jpy")),
+        ("https://open.er-api.com/v6/latest/CAD",
+         lambda d: d.get("rates", {}).get("JPY")),
+    ]
+    for url, extract in _urls:
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "forge-brief/1.0"})
+            with urllib.request.urlopen(req, timeout=8) as r:
+                data = json.loads(r.read().decode("utf-8"))
+            rate = extract(data)
+            if isinstance(rate, (int, float)) and rate > 0:
+                return (float(rate), url.split("/")[2])
+        except Exception as e:
+            print(f"  CAD/JPY fetch failed for {url.split('/')[2]}: {type(e).__name__} {e}")
+            continue
+    return (None, "unavailable")
+
 def generate_sitrep(welltory, sleep, calendar_events, weather, reminders=None):
     """Rule-based FORGE SITREP. Reads data, outputs a terse commander briefing."""
     stress = welltory.get("stress", 50)
@@ -1599,6 +1622,20 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     else:
         sbos_signals_html = '<div class="mini-card"><div class="mini-detail">No EV signals in next 48h. Check Telegram for CFL alerts.</div></div>'
 
+    # ── CAD/JPY daily rate ──────────────────────────────────────────────
+    _cadjpy_rate, _cadjpy_src = fetch_cad_jpy()
+    CADJPY_TRIGGER = 112.0
+    if _cadjpy_rate is None:
+        cad_jpy_html = '<span style="opacity:0.6;">unavailable</span>'
+    elif _cadjpy_rate >= CADJPY_TRIGGER:
+        cad_jpy_html = (
+            f'<strong style="color:#4a9de8; font-size:16px;">'
+            f'¥{_cadjpy_rate:.2f} · 🎯 TRIGGER (≥¥{CADJPY_TRIGGER:.0f})'
+            f'</strong>'
+        )
+    else:
+        cad_jpy_html = f'¥{_cadjpy_rate:.2f} <span style="opacity:0.55;">(trigger ≥¥{CADJPY_TRIGGER:.0f})</span>'
+
     stoic = STOIC_QUOTES[get_daily_index(len(STOIC_QUOTES))]
     stoic_quote = stoic["text"]; stoic_source = stoic["source"]
     jlpt = JLPT_WORDS[get_daily_index(len(JLPT_WORDS))]
@@ -1822,16 +1859,6 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
 
   {_sleep_alert}
 
-  <div class="card" style="background: linear-gradient(135deg, rgba(0,0,0,0.25), rgba(30,10,0,0.2)); border: 3px solid var(--text-bright);">
-    <div class="card-header"><span class="card-icon">&#x1F4CB;&#x1F334;</span><span>FORGE SITREP</span></div>
-    <div style="display:flex; flex-direction:row; gap:16px; align-items:flex-start;">
-      <img src="https://theseanman.github.io/forge-daily-brief/hannibal.jpg"
-           alt="Hannibal Smith"
-           style="width:90px; min-width:90px; border-radius:8px; border:3px solid var(--text-bright); object-fit:cover;"
-           onerror="this.style.display='none'; this.nextElementSibling.style.marginLeft='0'">
-      <div style="font-size:15px; color:var(--text-bright); line-height:1.9; font-weight:600; flex:1; min-width:0;">{sitrep_text}</div>
-    </div>
-  </div>
 
   <div class="card">
     <div class="card-header"><span class="card-icon">&#x1F3AF;&#x1F334;</span><span>Today&rsquo;s Five</span></div>
@@ -1866,6 +1893,10 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
       <div class="stat-block"><div class="stat-val">{sleep_deep_disp}</div><div class="stat-label">Deep</div></div>
     </div>
     {sleep_missing_note}
+  </div>
+
+  <div class="card" style="padding:12px 16px;">
+    <div style="font-size:14px; color:var(--text-light);">CAD/JPY: {cad_jpy_html}</div>
   </div>
 
 {practice_card}
