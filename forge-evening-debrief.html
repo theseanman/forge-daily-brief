@@ -372,6 +372,25 @@
         <div class="note-line" style="margin:0 0 8px;">This morning&rsquo;s pick is starred. Tap the one(s) you actually did. Nothing passes or fails.</div>
         <div class="pick-wrap" id="stress-picks" style="flex-direction:column; align-items:stretch; gap:6px;"></div>
       </div>
+      <!-- domain responses: evening capture -->
+      <div class="rocks-card show" id="domain-card" style="margin-top:6px;">
+        <div style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#4a9de8; margin-bottom:6px;">Pre-Decided Responses &middot; today</div>
+        <div class="note-line" style="margin:0 0 8px;">Which came up today? Tap them. Nothing passes or fails.</div>
+        <div class="pick-wrap" id="domain-picks"></div>
+        <div class="field" style="margin-top:12px;">
+          <div class="field-label">A new pre-decided response worth cultivating?</div>
+          <textarea id="domain-newresp" placeholder="e.g. a situation the day surfaced…" style="min-height:52px;"></textarea>
+        </div>
+      </div>
+
+      <!-- weekly collision rehearsal (review day only) -->
+      <div class="rocks-card" id="collision-card" style="margin-top:6px;">
+        <div style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#4a9de8; margin-bottom:6px;">Collision rehearsal &middot; this week</div>
+        <div class="note-line" style="margin:0 0 8px;">One moment you hesitated or acted from something other than the pre-decided response.</div>
+        <div class="field"><div class="field-label">The situation</div><textarea id="col-situation" style="min-height:48px;"></textarea></div>
+        <div class="field"><div class="field-label">The value or hard line in play</div><textarea id="col-value" style="min-height:44px;"></textarea></div>
+        <div class="field"><div class="field-label">What the pre-decided response was</div><textarea id="col-response" style="min-height:48px;"></textarea></div>
+      </div>
 
       <div class="btn-row">
         <button class="btn" onclick="prev()"><i class="ti ti-arrow-left"></i></button>
@@ -1002,6 +1021,8 @@ function initPlanRows(){
   renderPlanRows(); renderPicks(); maybeShowRocks(); initFrame(); /* install13 */
   try { initReps(); } catch(e) {} /* install23 */
   try { initStress(); } catch(e) {}
+  try { initDomains(); } catch(e) {}
+  try { initCollision(); } catch(e) {}
   try { paintVideo(); } catch(e) {} /* install25 */
   try { renderWeeklyReview(); } catch (e) {} /* install20 */
 }
@@ -1862,6 +1883,76 @@ function saveStress(){
   fdWrite(K_STRESS,all); syncPush(K_STRESS);
 }
 
+/* ---------- domain responses (daily) + collision rehearsal (weekly) : local-only ---------- */
+var K_DOMAIN='forge-domain-log', K_COLLISION='forge-collision-log';
+var DOMAINS=[['family','Family'],['income','Income'],['teaching','Teaching'],['health','Health'],['financial','Financial'],['physical','Physical']];
+var domainState={came:[],newresp:''};
+function domainToday(){
+  var all=fdRead(K_DOMAIN,{});
+  if(!all||typeof all!=='object'||Array.isArray(all)) return {came:[],newresp:''};
+  var e=all[fdToday()];
+  if(!e||typeof e!=='object'||Array.isArray(e)) return {came:[],newresp:''};
+  return {came:Array.isArray(e.came)?e.came.slice():[], newresp:(typeof e.newresp==='string')?e.newresp:''};
+}
+function initDomains(){
+  domainState=domainToday();
+  var t=document.getElementById('domain-newresp'); if(t) t.value=domainState.newresp;
+  paintDomains();
+}
+function paintDomains(){
+  var host=document.getElementById('domain-picks'); if(!host) return;
+  host.innerHTML='';
+  DOMAINS.forEach(function(d){
+    var on=domainState.came.indexOf(d[0])>=0;
+    var b=document.createElement('button');
+    b.className='pick'+(on?' fam':'');
+    b.textContent=d[1];
+    b.onclick=function(){
+      var i=domainState.came.indexOf(d[0]);
+      if(i>=0) domainState.came.splice(i,1); else domainState.came.push(d[0]);
+      paintDomains();
+    };
+    host.appendChild(b);
+  });
+}
+function saveDomains(){
+  var t=document.getElementById('domain-newresp');
+  if(t) domainState.newresp=t.value.trim();
+  var all=fdRead(K_DOMAIN,{}); if(!all||typeof all!=='object'||Array.isArray(all)) all={};
+  all[fdToday()]={came:domainState.came.slice(), newresp:domainState.newresp};
+  var keys=Object.keys(all).sort();
+  if(keys.length>120){ var o={}; keys.slice(-120).forEach(function(k){o[k]=all[k];}); all=o; }
+  fdWrite(K_DOMAIN,all);
+}
+function collisionThisWeek(){
+  var all=fdRead(K_COLLISION,{});
+  if(!all||typeof all!=='object'||Array.isArray(all)) return {situation:'',value:'',response:''};
+  var e=all[wkStartKey()];
+  if(!e||typeof e!=='object'||Array.isArray(e)) return {situation:'',value:'',response:''};
+  return {situation:e.situation||'',value:e.value||'',response:e.response||''};
+}
+function initCollision(){
+  var card=document.getElementById('collision-card'); if(!card) return;
+  if(!isReviewDay()){ card.classList.remove('show'); return; }
+  card.classList.add('show');
+  var c=collisionThisWeek();
+  var s=document.getElementById('col-situation'); if(s) s.value=c.situation;
+  var v=document.getElementById('col-value'); if(v) v.value=c.value;
+  var r=document.getElementById('col-response'); if(r) r.value=c.response;
+}
+function saveCollision(){
+  if(!isReviewDay()) return;
+  var s=document.getElementById('col-situation'), v=document.getElementById('col-value'), r=document.getElementById('col-response');
+  var ent={situation:s?s.value.trim():'', value:v?v.value.trim():'', response:r?r.value.trim():''};
+  if(!ent.situation && !ent.value && !ent.response) return;
+  var all=fdRead(K_COLLISION,{}); if(!all||typeof all!=='object'||Array.isArray(all)) all={};
+  all[wkStartKey()]=ent;
+  var keys=Object.keys(all).sort();
+  if(keys.length>60){ var o={}; keys.slice(-60).forEach(function(k){o[k]=all[k];}); all=o; }
+  fdWrite(K_COLLISION,all);
+}
+
+
 
 function initFrame(){
   var all=fdRead(K_FRAME,{}), e=all[fdTomorrow()];
@@ -1978,6 +2069,8 @@ function saveTomorrow(){
   saveFrame(); /* install13 */
   try { saveReps(); } catch(e) {} /* install23 */
   try { saveStress(); } catch(e) {}
+  try { saveDomains(); } catch(e) {}
+  try { saveCollision(); } catch(e) {}
 }
 function renderScorecard(){
   var host=document.getElementById('scorecard-host'); if(!host) return;

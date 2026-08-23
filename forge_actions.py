@@ -1730,6 +1730,17 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
         '<div id="stress-brief-host"></div>'
         '</div>'
     )
+    domains_card = (
+        '<div class="card" style="background:linear-gradient(135deg, rgba(74,157,232,0.14), rgba(74,157,232,0.05)); border:2px solid #4a9de8;">'
+        '<div class="card-header"><span class="card-icon">\U0001F9ED\U0001F334</span><span>Pre-Decided Responses</span></div>'
+        '<div style="margin-bottom:11px;"><div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:#4a9de8; margin-bottom:2px;">Family</div><div style="font-size:14px; line-height:1.55; color:var(--text-bright);">Does this serve my #1 priority of ensuring that my family is thriving? If in doubt, the family-serving choice wins.</div></div>'
+        '<div style="margin-bottom:11px;"><div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:#4a9de8; margin-bottom:2px;">Income</div><div style="font-size:14px; line-height:1.55; color:var(--text-bright);">Does this build toward the exit? New ideas wait 24 hours, then go to Sunday \u2014 not daytime doubt. Trying and failing isn\u2019t quitting \u2014 quitting is not starting. A public mistake is information, not a verdict.</div></div>'
+        '<div style="margin-bottom:11px;"><div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:#4a9de8; margin-bottom:2px;">Teaching</div><div style="font-size:14px; line-height:1.55; color:var(--text-bright);">Do the work well and go home to my family and my build. Colleagues\u2019 and admin\u2019s opinions are data, not authority; pushback doesn\u2019t trigger a value review.</div></div>'
+        '<div style="margin-bottom:11px;"><div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:#4a9de8; margin-bottom:2px;">Health</div><div style="font-size:14px; line-height:1.55; color:var(--text-bright);">Zone 2, lifting, Krav, sleep are non-negotiable maintenance. A real family need wins the day; chronic displacement of training is a Sunday fix, not a daily surrender.</div></div>'
+        '<div style="margin-bottom:11px;"><div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:#4a9de8; margin-bottom:2px;">Financial</div><div style="font-size:14px; line-height:1.55; color:var(--text-bright);">Does this move toward the exit? Lifestyle inflation is the enemy. 24-hour rule on any appealing purchase.</div></div>'
+        '<div style="margin-bottom:11px;"><div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:#4a9de8; margin-bottom:2px;">Physical threat</div><div style="font-size:14px; line-height:1.55; color:var(--text-bright);">Family out first; engage only if extraction requires it. Force to protect \u2014 never to punish or prove.</div></div>'
+        '</div>'
+    )
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1930,6 +1941,8 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
   </div>
 
   {stress_card}
+
+  {domains_card}
 
   <div class="card">
     <div class="card-header"><span class="card-icon">❤️🌴</span><span>Welltory HRV</span></div>
