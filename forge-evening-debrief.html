@@ -366,6 +366,13 @@
         </div>
       </div>
 
+      <!-- stressinoc: evening review -->
+      <div class="rocks-card show" id="stress-card" style="margin-top:6px;">
+        <div style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#4a9de8; margin-bottom:6px;">Stress Inoculation</div>
+        <div class="note-line" style="margin:0 0 8px;">This morning&rsquo;s pick is starred. Tap the one(s) you actually did. Nothing passes or fails.</div>
+        <div class="pick-wrap" id="stress-picks" style="flex-direction:column; align-items:stretch; gap:6px;"></div>
+      </div>
+
       <div class="btn-row">
         <button class="btn" onclick="prev()"><i class="ti ti-arrow-left"></i></button>
         <button class="btn primary" onclick="next()">Next <i class="ti ti-arrow-right"></i></button>
@@ -677,6 +684,7 @@ var K_TOP5='forge-top5', K_BACKLOG='forge-backlog', K_FUN='forge-fun',
     K_HIST='forge-debrief-history', K_ROCKS='forge-week-rocks', K_BACKUP='forge-backup';
 var K_FRAME='forge-frame', K_MUSHIN='forge-mushin'; /* install13 */
 var K_REPS='forge-reps'; /* install23 */
+var K_STRESS='forge-stressinoc'; /* stressinoc */
 var K_VIDEO='forge-video'; /* install25 */
 var K_PROTO='forge-protocol-counts'; /* debrief_protocol_review_aug14 */
 var K_PARKED='forge-parked', K_PROJ='forge-project'; /* install20 */
@@ -712,7 +720,7 @@ function syncPush(key) {
    An entry that is EMPTY in the cloud never overwrites a populated local one.
    That is deliberate: stale-but-present beats silently wiped. The cost is that
    deliberately clearing something on one surface will not propagate here. */
-var PULL_KEYS = [K_TOP5, K_ROCKS, K_FRAME, K_MUSHIN, K_BACKLOG, K_FUN, K_PARKED, K_PROJ, K_REPS, K_VIDEO, K_PROTO, K_DAILY]; /* install25 + tally_pull_key_aug14 + dailylog_backup */
+var PULL_KEYS = [K_TOP5, K_ROCKS, K_FRAME, K_MUSHIN, K_BACKLOG, K_FUN, K_PARKED, K_PROJ, K_REPS, K_VIDEO, K_PROTO, K_DAILY, K_STRESS]; /* install25 + tally_pull_key_aug14 + dailylog_backup + stressinoc */
 
 function fdBlank(v) {
   if (v === null || v === undefined) return true;
@@ -777,6 +785,19 @@ function fdMergeEntry(key, local, dk, cloudVal) {
     if (localVal === undefined) { local[dk] = cloudVal; return true; }  /* a day we don't have yet */
     if (ct > lt) { local[dk] = cloudVal; return true; }                 /* cloud is newer */
     return false;                                                       /* local same-or-newer wins */
+  }
+
+  if (key === K_STRESS) {                     /* pick (brief) preserved, done (debrief) unioned */
+    var lPick = (localVal && typeof localVal.pick === 'string') ? localVal.pick : '';
+    var cPick = (cloudVal && typeof cloudVal.pick === 'string') ? cloudVal.pick : '';
+    var lDone = (localVal && Array.isArray(localVal.done)) ? localVal.done : [];
+    var cDone = (cloudVal && Array.isArray(cloudVal.done)) ? cloudVal.done : [];
+    var wantPick = lPick || cPick;
+    var seen = {}, wantDone = [];
+    lDone.concat(cDone).forEach(function(x){ if (typeof x === 'string' && !seen[x]) { seen[x]=1; wantDone.push(x); } });
+    if (wantPick === lPick && wantDone.length === lDone.length) return false;
+    local[dk] = { pick: wantPick, done: wantDone };
+    return true;
   }
 
   if (fdBlank(cloudVal) && !fdBlank(localVal)) return false;   /* the guard */
@@ -980,6 +1001,7 @@ function initPlanRows(){
   }
   renderPlanRows(); renderPicks(); maybeShowRocks(); initFrame(); /* install13 */
   try { initReps(); } catch(e) {} /* install23 */
+  try { initStress(); } catch(e) {}
   try { paintVideo(); } catch(e) {} /* install25 */
   try { renderWeeklyReview(); } catch (e) {} /* install20 */
 }
@@ -1800,6 +1822,47 @@ function saveReps(){
   syncPush(K_REPS);
 }
 
+/* ---------- stressinoc: evening review ---------- */
+var K_STRESS='forge-stressinoc';
+var STRESS_REPS=[['r1','Publish something small that could flop'],['r2','State a position in a meeting with no hedge'],['r3','Send the direct version of a message you\'d soften'],['r4','Ask for something with no justification tail'],['r5','Give one piece of feedback you\'d usually swallow'],['r6','Let a thing be visibly imperfect — ship at the done-when'],['r7','Say no to an optional ask, cleanly, no reason'],['r8','Hold a silence you\'d normally rush to fill'],['r9','Speak first in a new setting where you\'d observe'],['r10','Have the direct conversation you keep postponing']];
+var stressState={pick:'',done:[]};
+function stressToday(){
+  var all=fdRead(K_STRESS,{});
+  if(!all||typeof all!=='object'||Array.isArray(all)) return {pick:'',done:[]};
+  var e=all[fdToday()];
+  if(!e||typeof e!=='object'||Array.isArray(e)) return {pick:'',done:[]};
+  return {pick:(typeof e.pick==='string')?e.pick:'', done:Array.isArray(e.done)?e.done.slice():[]};
+}
+function initStress(){ stressState=stressToday(); paintStress(); }
+function paintStress(){
+  var host=document.getElementById('stress-picks'); if(!host) return;
+  host.innerHTML='';
+  STRESS_REPS.forEach(function(r){
+    var isDone=stressState.done.indexOf(r[0])>=0;
+    var isPick=stressState.pick===r[0];
+    var b=document.createElement('button');
+    b.className='pick'+(isDone?' fam':'');
+    b.style.textAlign='left'; b.style.width='100%'; b.style.lineHeight='1.35';
+    b.textContent=(isPick?'\u2605 ':'')+r[1];
+    b.onclick=function(){
+      var i=stressState.done.indexOf(r[0]);
+      if(i>=0) stressState.done.splice(i,1); else stressState.done.push(r[0]);
+      paintStress();
+    };
+    host.appendChild(b);
+  });
+}
+function saveStress(){
+  var all=fdRead(K_STRESS,{}); if(!all||typeof all!=='object'||Array.isArray(all)) all={};
+  var e=all[fdToday()];
+  var pick=(e&&typeof e.pick==='string')?e.pick:stressState.pick;
+  all[fdToday()]={pick:pick, done:stressState.done.slice()};
+  var keys=Object.keys(all).sort();
+  if(keys.length>60){ var o={}; keys.slice(-60).forEach(function(k){o[k]=all[k];}); all=o; }
+  fdWrite(K_STRESS,all); syncPush(K_STRESS);
+}
+
+
 function initFrame(){
   var all=fdRead(K_FRAME,{}), e=all[fdTomorrow()];
   if(e){ frameState={ enough:(typeof e.enough==='number'?e.enough:3), way:e.way||'', present:e.present||'' }; }
@@ -1914,6 +1977,7 @@ function saveTomorrow(){
   syncPush(K_BACKLOG);
   saveFrame(); /* install13 */
   try { saveReps(); } catch(e) {} /* install23 */
+  try { saveStress(); } catch(e) {}
 }
 function renderScorecard(){
   var host=document.getElementById('scorecard-host'); if(!host) return;

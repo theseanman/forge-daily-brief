@@ -1723,6 +1723,13 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     else:
         concert_cards_html = '  <div class="card"><div class="card-header"><span class="card-icon">🎸🌴</span><span>Upcoming Metal Shows</span></div><div class="mini-card"><div class="mini-detail">No upcoming shows.</div></div></div>'
 
+    stress_card = (
+        '<div class="card" style="background:linear-gradient(135deg, rgba(74,157,232,0.14), rgba(74,157,232,0.05)); border:2px solid #4a9de8;">'
+        '<div class="card-header"><span class="card-icon">\U0001F3AF\U0001F334</span><span>Stress Inoculation \u2014 Today\u2019s Pick</span></div>'
+        '<div style="font-size:13px; color:var(--text-light); line-height:1.5; margin:0 0 10px;">Pick one to aim at today. You\u2019ll see the list again tonight. Nothing passes or fails.</div>'
+        '<div id="stress-brief-host"></div>'
+        '</div>'
+    )
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1921,6 +1928,8 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     <div class="card-header"><span class="card-icon">&#x25CB;&#x1F334;</span><span>Practice</span></div>
     <div id="practice-brief-host"></div>
   </div>
+
+  {stress_card}
 
   <div class="card">
     <div class="card-header"><span class="card-icon">❤️🌴</span><span>Welltory HRV</span></div>
@@ -2611,12 +2620,66 @@ function pullReps() {{
     .catch(function () {{}});
 }}
 
+
+function stressTodayB(){{
+  var e = pfAll('forge-stressinoc')[ymdOffset(0)];
+  return (e && typeof e === 'object' && !Array.isArray(e)) ? e : {{pick:'',done:[]}};
+}}
+var STRESS_REPS_B = [['r1','Publish something small that could flop'],['r2','State a position in a meeting with no hedge'],['r3','Send the direct version of a message you\\'d soften'],['r4','Ask for something with no justification tail'],['r5','Give one piece of feedback you\\'d usually swallow'],['r6','Let a thing be visibly imperfect — ship at the done-when'],['r7','Say no to an optional ask, cleanly, no reason'],['r8','Hold a silence you\\'d normally rush to fill'],['r9','Speak first in a new setting where you\\'d observe'],['r10','Have the direct conversation you keep postponing']];
+function paintStress(){{
+  var host = document.getElementById('stress-brief-host'); if (!host) return;
+  var st = stressTodayB(); var pick = (typeof st.pick === 'string') ? st.pick : '';
+  var html = '';
+  for (var i=0;i<STRESS_REPS_B.length;i++){{
+    var id = STRESS_REPS_B[i][0], txt = STRESS_REPS_B[i][1]; var on = (pick === id);
+    html += '<button onclick="stressPick(\\'' + id + '\\')" style="display:block; width:100%; text-align:left; margin-bottom:6px; padding:9px 11px; border-radius:8px; line-height:1.35; cursor:pointer; '
+      + (on ? 'background:#1a5fa8; color:#fff; border:2px solid #1a5fa8; font-weight:700;' : 'background:rgba(74,157,232,0.10); color:var(--text-bright); border:2px solid rgba(74,157,232,0.35);')
+      + '">' + (on ? '\\u2605 ' : '') + txt + '</button>';
+  }}
+  host.innerHTML = html;
+}}
+function stressPick(id){{
+  var all = pfAll('forge-stressinoc'); if (!all || typeof all !== 'object' || Array.isArray(all)) all = {{}};
+  var t = ymdOffset(0); var e = all[t];
+  var done = (e && Array.isArray(e.done)) ? e.done : [];
+  all[t] = {{ pick: id, done: done }};
+  try {{ localStorage.setItem('forge-stressinoc', JSON.stringify(all)); }} catch (e2) {{}}
+  paintStress(); stressPush(all);
+}}
+function stressPush(all){{
+  try {{ fetch(SYNC_URL + '/' + encodeURIComponent('forge-stressinoc'), {{ method:'PUT', headers:{{'Content-Type':'application/json'}}, body: JSON.stringify(all) }}).catch(function(){{}}); }} catch (e) {{}}
+}}
+function pullStress(){{
+  fetch(SYNC_URL + '/' + encodeURIComponent('forge-stressinoc'))
+    .then(function(r){{ if(!r.ok) throw new Error(r.status); return r.json(); }})
+    .then(function(cloud){{
+      if(!cloud || typeof cloud !== 'object' || Array.isArray(cloud) || cloud.error) return;
+      var all = pfAll('forge-stressinoc'); var changed=false;
+      for (var dk in cloud){{
+        if(!cloud.hasOwnProperty(dk)) continue;
+        var lc=all[dk], cc=cloud[dk];
+        if(!cc || typeof cc !== 'object' || Array.isArray(cc)) continue;
+        var lPick=(lc&&typeof lc.pick==='string')?lc.pick:'';
+        var cPick=(typeof cc.pick==='string')?cc.pick:'';
+        var lDone=(lc&&Array.isArray(lc.done))?lc.done:[];
+        var cDone=Array.isArray(cc.done)?cc.done:[];
+        var wantPick=lPick||cPick; var seen={{}}, wantDone=[];
+        lDone.concat(cDone).forEach(function(x){{ if(typeof x==='string'&&!seen[x]){{seen[x]=1;wantDone.push(x);}} }});
+        if(wantPick===lPick && wantDone.length===lDone.length) continue;
+        all[dk]={{pick:wantPick,done:wantDone}}; changed=true;
+      }}
+      if(changed){{ try{{ localStorage.setItem('forge-stressinoc', JSON.stringify(all)); }}catch(e){{}} try{{ paintStress(); }}catch(e){{}} }}
+    }}).catch(function(){{}});
+}}
+
 window.addEventListener('load', function () {{
   try {{ paintTodayFive(); }} catch (e) {{}}
   try {{ paintPractice(); }} catch (e) {{}}
   try {{ syncPullBrief(); }} catch (e) {{}}
   try {{ pullPractice(); }} catch (e) {{}}
   try {{ pullReps(); }} catch (e) {{}}
+  try {{ paintStress(); }} catch (e) {{}}
+  try {{ pullStress(); }} catch (e) {{}}
   try {{ paintYesterday(); }} catch (e) {{}}
   try {{ paintRocks(); }} catch (e) {{}}
   try {{ markNew(); }} catch (e) {{}}
