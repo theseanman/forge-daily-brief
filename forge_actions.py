@@ -1655,6 +1655,28 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     else:
         anchors_card = ''
 
+    orientation_card = (
+        '<div class="card" style="background:linear-gradient(135deg, rgba(74,157,232,0.22), rgba(74,157,232,0.08)); border:2px solid #4a9de8;">'
+        '<div class="card-header"><span class="card-icon">\U0001F9ED\U0001F334</span><span>Orientation \u2014 The Fixed Core</span></div>'
+        '<div id="pimg-orientation" class="pimg-band" onclick="pimgPick(\'orientation\')"><span class="pimg-hint">tap to add your orientation image</span></div>'
+        '<div style="background:rgba(74,157,232,0.16); border-left:4px solid #4a9de8; padding:12px 14px; margin:12px 0; font-size:16px; line-height:1.5; font-weight:700; color:var(--text-bright);">When looking bad collides with a hard line, the hard line wins. Every time. No deliberation.</div>'
+        '<div style="font-size:11px; letter-spacing:0.18em; text-transform:uppercase; font-weight:800; color:#4a9de8; margin:16px 0 6px;">Values</div>'
+        '<div style="font-size:15px; line-height:1.6; color:var(--text-bright); margin-bottom:5px;"><b>1.</b> My family thrives, and I do whatever is in my power to make that happen.</div>'
+        '<div style="font-size:15px; line-height:1.6; color:var(--text-bright); margin-bottom:5px;"><b>2.</b> I do not lose or fail due to circumstances within my control.</div>'
+        '<div style="font-size:15px; line-height:1.6; color:var(--text-bright); margin-bottom:5px;"><b>3.</b> The world is often harsh, and I will meet harshness with mental and physical toughness.</div>'
+        '<div style="font-size:15px; line-height:1.6; color:var(--text-bright); margin-bottom:5px;"><b>4.</b> When others outperform me, I close the gap through cunning, preparation, and strategy. I never give up and I never accept defeat.</div>'
+        '<div style="font-size:11px; letter-spacing:0.18em; text-transform:uppercase; font-weight:800; color:#4a9de8; margin:16px 0 6px;">Mission</div>'
+        '<div style="font-size:15px; line-height:1.6; color:var(--text-bright);">Primary \u2014 family thriving. Secondary \u2014 life lived on my own terms. When they collide, primary wins.</div>'
+        '<div style="font-size:11px; letter-spacing:0.18em; text-transform:uppercase; font-weight:800; color:#4a9de8; margin:16px 0 6px;">Hard Lines</div>'
+        '<div style="font-size:15px; line-height:1.6; color:var(--text-bright); margin-bottom:5px;"><b>1.</b> I do not quit in competition with another person.</div>'
+        '<div style="font-size:15px; line-height:1.6; color:var(--text-bright); margin-bottom:5px;"><b>2.</b> I do not abandon my family in any way.</div>'
+        "<div style=\"font-size:15px; line-height:1.6; color:var(--text-bright); margin-bottom:5px;\"><b>3.</b> I do not put my own needs above my family's.</div>"
+        '<div style="font-size:15px; line-height:1.6; color:var(--text-bright); margin-bottom:5px;"><b>4.</b> I do not submit or perform half-assed work.</div>'
+        '<div style="font-size:11px; letter-spacing:0.18em; text-transform:uppercase; font-weight:800; color:#4a9de8; margin:16px 0 6px;">Force</div>'
+        "<div style=\"font-size:15px; line-height:1.6; color:var(--text-bright);\">Use force only to protect family \u2014 never to punish or prove. Peers' opinions are data, not authority.</div>"
+        '</div>'
+    )
+
     stoic = STOIC_QUOTES[get_daily_index(len(STOIC_QUOTES))]
     stoic_quote = stoic["text"]; stoic_source = stoic["source"]
     jlpt = JLPT_WORDS[get_daily_index(len(JLPT_WORDS))]
@@ -1880,6 +1902,8 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
 
   {anchors_card}
 
+  {orientation_card}
+
   <div class="card">
     <div class="card-header"><span class="card-icon">&#x1F3AF;&#x1F334;</span><span>Today&rsquo;s Five</span></div>
     <div id="today-five-host"></div>
@@ -2024,7 +2048,8 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
 </div>
 
 <script>
-var PIMG_SLOTS = ['terrain','tempo','presence'];
+var PIMG_SLOTS = ['terrain','tempo','presence','orientation'];
+var PIMG_PUSH = ['terrain','tempo','presence'];
 function pimgKey(k) {{ return 'forge-img-' + k; }}
 function pimgPaint() {{
   for (var i = 0; i < PIMG_SLOTS.length; i++) {{
@@ -2060,7 +2085,7 @@ function pimgStore(slot, dataUrl) {{
   var n2 = document.getElementById('pimg-note');
   if (n2) n2.textContent = '';
   pimgPaint();
-  pimgPush(slot, dataUrl);
+  if (PIMG_PUSH.indexOf(slot) >= 0) pimgPush(slot, dataUrl);
 }}
 function pimgPush(slot, dataUrl) {{
   try {{
@@ -2077,7 +2102,7 @@ function pimgPush(slot, dataUrl) {{
   }} catch(e) {{}}
 }}
 function pimgPull() {{
-  for (var i = 0; i < PIMG_SLOTS.length; i++) {{
+  for (var i = 0; i < PIMG_PUSH.length; i++) {{
     (function(k) {{
       var haveLocal = false;
       try {{ haveLocal = !!localStorage.getItem(pimgKey(k)); }} catch(e) {{}}
@@ -2093,7 +2118,7 @@ function pimgPull() {{
           }}
         }})
         .catch(function() {{}});
-    }})(PIMG_SLOTS[i]);
+    }})(PIMG_PUSH[i]);
   }}
 }}
 function pimgLoad(ev) {{
