@@ -1741,6 +1741,19 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
         '<div style="margin-bottom:11px;"><div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:#4a9de8; margin-bottom:2px;">Physical threat</div><div style="font-size:14px; line-height:1.55; color:var(--text-bright);">Family out first; engage only if extraction requires it. Force to protect \u2014 never to punish or prove.</div></div>'
         '</div>'
     )
+    breathe_card = (
+        '<div class="card" style="background:linear-gradient(135deg, rgba(62,195,212,0.20), rgba(21,101,216,0.10)); border:2px solid #3ec3d4;">'
+        '<div class="card-header"><span class="card-icon">\U0001F30A\U0001F334</span><span>Breathing \u2014 How &amp; When</span></div>'
+        '<div style="font-size:14px; line-height:1.65; color:var(--text-bright);">'
+        '<b>Daily</b> \u2014 Coherent, 10 min. Raises the HRV baseline. Zone 2 cool-down or evening.<br>'
+        '<b>The spike</b> \u2014 Reset 4\u20112\u20116. Exhale first, empty the lungs.<br>'
+        '<b>Sudden spike</b> \u2014 Physiological sigh, \u00d71\u20133.<br>'
+        '<b>Evening</b> \u2014 End of Day extended exhale.<br>'
+        '<b>Training</b> \u2014 Box for steadiness \u00b7 CO\u2082 ladder, gently.'
+        '</div>'
+        '<a href="./breathe.html" style="display:block; text-align:center; margin-top:12px; padding:11px; border-radius:10px; background:linear-gradient(135deg,#bfe7ff,#7fd4e6); color:#0b2547; font-weight:800; letter-spacing:0.06em; text-decoration:none;">Open the breathing room \u2192</a>'
+        '</div>'
+    )
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1943,6 +1956,8 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
   {stress_card}
 
   {domains_card}
+
+  {breathe_card}
 
   <div class="card">
     <div class="card-header"><span class="card-icon">❤️🌴</span><span>Welltory HRV</span></div>

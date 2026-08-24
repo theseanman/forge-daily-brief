@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Breathing Room</title>
+<style>
+  :root{
+    --sky-hi:#1565d8; --sky-lo:#9fd4ff;
+    --sea-deep:#0a4d8c; --sea-mid:#1878c8; --sea-shal:#3ec3d4;
+    --foam:#eafcff; --sand-dry:#e8cf9f; --sand-wet:#c8a06d;
+    --ink:#0b2547; --panel:rgba(6,28,64,0.82); --chip:#e9f4ff;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; overflow:hidden; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:var(--sky-hi); }
+  #scene{ position:fixed; inset:0; width:100%; height:100%; }
+  /* HUD during a session */
+  #hud{ position:fixed; inset:0; display:none; pointer-events:none; }
+  #hud.on{ display:block; }
+  .phase-wrap{ position:absolute; top:9%; left:0; right:0; text-align:center; color:#fff; text-shadow:0 2px 14px rgba(6,30,70,.55); }
+  #phase{ font-size:13px; letter-spacing:.32em; text-transform:uppercase; font-weight:700; opacity:.95; }
+  #count{ font-size:clamp(72px,18vw,132px); font-weight:200; line-height:1.05; letter-spacing:-.02em; }
+  #meta{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; opacity:.85; font-weight:600; margin-top:4px; }
+  .bar{ position:absolute; bottom:calc(14px + env(safe-area-inset-bottom)); left:0; right:0; display:flex; justify-content:center; gap:12px; pointer-events:auto; }
+  .bbtn{ border:0; border-radius:999px; padding:12px 22px; font-size:14px; font-weight:700; letter-spacing:.06em; cursor:pointer; background:rgba(255,255,255,.92); color:var(--ink); box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .bbtn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  /* Menu */
+  #menu{ position:fixed; inset:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:26px 16px calc(30px + env(safe-area-inset-bottom)); }
+  .m-head{ text-align:center; color:#fff; text-shadow:0 2px 12px rgba(6,30,70,.5); margin-bottom:16px; }
+  .m-head h1{ font-size:15px; letter-spacing:.34em; text-transform:uppercase; font-weight:800; }
+  .m-head p{ font-size:12px; letter-spacing:.1em; opacity:.9; margin-top:5px; }
+  .pcard{ max-width:520px; margin:0 auto 12px; background:var(--panel); backdrop-filter:blur(6px); border:1px solid rgba(180,220,255,.35); border-radius:16px; padding:14px 16px; color:#eaf4ff; }
+  .pcard h2{ font-size:15px; font-weight:800; letter-spacing:.02em; color:#fff; }
+  .pcard .use{ font-size:12.5px; line-height:1.5; opacity:.88; margin-top:3px; }
+  .pcard .safety{ font-size:11px; line-height:1.55; opacity:.75; margin-top:7px; }
+  .chips{ display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; }
+  .chip{ border:1px solid rgba(190,225,255,.5); background:transparent; color:#eaf4ff; border-radius:999px; padding:7px 13px; font-size:13px; font-weight:700; cursor:pointer; }
+  .chip.on{ background:var(--chip); color:var(--ink); border-color:var(--chip); }
+  .go{ margin-top:11px; width:100%; border:0; border-radius:12px; padding:12px; font-size:15px; font-weight:800; letter-spacing:.08em; cursor:pointer; color:var(--ink); background:linear-gradient(135deg,#bfe7ff,#7fd4e6); }
+  .m-foot{ max-width:520px; margin:8px auto 0; display:flex; justify-content:center; }
+  #done{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; flex-direction:column; color:#fff; text-shadow:0 2px 14px rgba(6,30,70,.55); }
+  #done.on{ display:flex; }
+  #done .big{ font-size:30px; font-weight:200; letter-spacing:.06em; }
+  #done .sub{ font-size:12px; letter-spacing:.22em; text-transform:uppercase; margin-top:10px; opacity:.9; font-weight:700; }
+  @media (prefers-reduced-motion: reduce){ .rm-hide{ display:none; } }
+</style>
+</head>
+<body>
+
+<svg id="scene" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <defs>
+    <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1565d8"/><stop offset="0.72" stop-color="#5aa9ee"/><stop offset="1" stop-color="#9fd4ff"/>
+    </linearGradient>
+    <linearGradient id="gSea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0a4d8c"/><stop offset="0.45" stop-color="#1878c8"/><stop offset="0.85" stop-color="#3ec3d4"/><stop offset="1" stop-color="#7fe0e2"/>
+    </linearGradient>
+    <radialGradient id="gSun" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fff8e0" stop-opacity="0.95"/><stop offset="0.55" stop-color="#ffeeb0" stop-opacity="0.35"/><stop offset="1" stop-color="#ffeeb0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="0" y="0" width="1000" height="700" fill="url(#gSky)"/>
+  <circle cx="810" cy="120" r="120" fill="url(#gSun)"/>
+  <circle cx="810" cy="120" r="34" fill="#fff6d8"/>
+  <!-- sand base (dry) -->
+  <rect x="0" y="430" width="1000" height="270" fill="#e8cf9f"/>
+  <!-- wet band: between highest and lowest waterline -->
+  <rect x="0" y="430" width="1000" height="205" fill="#c8a06d" opacity="0.85"/>
+  <!-- sea: horizon fixed, near edge animated -->
+  <path id="sea" fill="url(#gSea)" d=""/>
+  <path id="foam" fill="none" stroke="#eafcff" stroke-width="5" stroke-linecap="round" opacity="0.95" d=""/>
+  <path id="foam2" class="rm-hide" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.4" d=""/>
+  <!-- palms (foreground) -->
+  <g id="palmL" stroke-linecap="round">
+    <path d="M60,700 C70,600 62,540 90,470" stroke="#6b4a32" stroke-width="22" fill="none"/>
+    <g fill="none" stroke-width="14">
+      <path d="M90,470 C40,430 8,436 -20,470" stroke="#0f5d3a"/>
+      <path d="M90,470 C60,410 30,392 -6,392" stroke="#157347"/>
+      <path d="M90,470 C86,404 66,368 34,346" stroke="#1d8a52"/>
+      <path d="M90,470 C120,406 150,388 190,388" stroke="#157347"/>
+      <path d="M90,470 C142,430 176,432 210,462" stroke="#0f5d3a"/>
+      <path d="M90,470 C104,412 130,378 168,360" stroke="#1d8a52"/>
+    </g>
+    <circle cx="86" cy="482" r="10" fill="#5b3d28"/><circle cx="104" cy="486" r="9" fill="#6b4a32"/>
+  </g>
+  <g id="palmR" stroke-linecap="round">
+    <path d="M950,700 C938,590 948,530 916,462" stroke="#6b4a32" stroke-width="24" fill="none"/>
+    <g fill="none" stroke-width="15">
+      <path d="M916,462 C966,420 1000,426 1030,462" stroke="#0f5d3a"/>
+      <path d="M916,462 C948,398 980,382 1016,384" stroke="#157347"/>
+      <path d="M916,462 C920,394 942,356 976,336" stroke="#1d8a52"/>
+      <path d="M916,462 C886,396 854,378 812,380" stroke="#157347"/>
+      <path d="M916,462 C862,420 826,424 792,456" stroke="#0f5d3a"/>
+      <path d="M916,462 C900,402 872,368 832,352" stroke="#1d8a52"/>
+    </g>
+    <circle cx="920" cy="476" r="11" fill="#5b3d28"/><circle cx="900" cy="480" r="9" fill="#6b4a32"/>
+  </g>
+</svg>
+
+<div id="hud">
+  <div class="phase-wrap">
+    <div id="phase">READY</div>
+    <div id="count">&nbsp;</div>
+    <div id="meta"></div>
+  </div>
+  <div class="bar">
+    <button class="bbtn ghost" id="sndBtn" type="button">Sound on</button>
+    <button class="bbtn" id="stopBtn" type="button">Stop</button>
+  </div>
+</div>
+
+<div id="done">
+  <div class="big">Done.</div>
+  <div class="sub">Tap anywhere to return</div>
+</div>
+
+<div id="menu"></div>
+
+<script>
+/* ================= pattern engine (pure) ================= */
+var CO2_LEVELS = {
+  L1:{inh:4, out:8,  hold:0},
+  L2:{inh:4, out:10, hold:0},
+  L3:{inh:4, out:8,  hold:4},
+  L4:{inh:4, out:10, hold:6},
+  L5:{inh:4, out:12, hold:8}
+};
+/* phase: {k:'in'|'in2'|'out'|'ht'|'hb', d:seconds, label, target:0..1} */
+function buildSession(pid, opt){
+  opt = opt || {};
+  var pre = [], cycle = [], cycles = null, maxSec = null;
+  if (pid === 'coherent'){
+    var p = opt.pace || 5.5;
+    cycle = [ {k:'in', d:p, label:'Inhale', target:1},
+              {k:'out', d:p, label:'Exhale', target:0.08} ];
+    if (opt.dur) maxSec = opt.dur;
+  } else if (pid === 'reset'){
+    pre =   [ {k:'out', d:6, label:'Empty the lungs', target:0.08} ];
+    cycle = [ {k:'in', d:4, label:'Inhale', target:1},
+              {k:'ht', d:2, label:'Hold', target:1},
+              {k:'out', d:6, label:'Exhale', target:0.08} ];
+  } else if (pid === 'sigh'){
+    cycle = [ {k:'in', d:1.6, label:'Inhale', target:0.82},
+              {k:'in2', d:1.0, label:'Top up', target:1},
+              {k:'out', d:6, label:'Long exhale', target:0.08} ];
+    if (opt.mode === 'five') maxSec = 300; else cycles = 3;
+  } else if (pid === 'box'){
+    cycle = [ {k:'in', d:4, label:'Inhale', target:1},
+              {k:'ht', d:4, label:'Hold', target:1},
+              {k:'out', d:4, label:'Exhale', target:0.08},
+              {k:'hb', d:4, label:'Hold', target:0.08} ];
+  } else if (pid === 'endday'){
+    cycle = [ {k:'in', d:4, label:'Inhale', target:1},
+              {k:'out', d:6, label:'Exhale', target:0.08} ];
+  } else if (pid === 'co2'){
+    var lv = CO2_LEVELS[opt.level || 'L1'];
+    cycle = [ {k:'in', d:lv.inh, label:'Inhale', target:1},
+              {k:'out', d:lv.out, label:'Exhale', target:0.08} ];
+    if (lv.hold > 0) cycle.push({k:'hb', d:lv.hold, label:'Hold empty', target:0.08});
+  }
+  return { pre:pre, cycle:cycle, cycles:cycles, maxSec:maxSec };
+}
+function phaseAt(sess, idx){
+  if (idx < sess.pre.length) return sess.pre[idx];
+  var ci = (idx - sess.pre.length) % sess.cycle.length;
+  return sess.cycle[ci];
+}
+function cyclesDone(sess, idx){
+  if (idx < sess.pre.length) return 0;
+  return Math.floor((idx - sess.pre.length) / sess.cycle.length);
+}
+function sessionOver(sess, idx, elapsedSec){
+  if (sess.cycles !== null && cyclesDone(sess, idx) >= sess.cycles) return true;
+  if (sess.maxSec !== null && elapsedSec >= sess.maxSec &&
+      (idx >= sess.pre.length) && ((idx - sess.pre.length) % sess.cycle.length === 0)) return true;
+  return false;
+}
+function easeIO(p){ return 0.5 - 0.5 * Math.cos(Math.PI * Math.max(0, Math.min(1, p))); }
+
+/* ================= scene ================= */
+var HORIZON = 300, EDGE_OUT = 462, EDGE_IN = 622;
+var seaEl, foamEl, foam2El;
+var level = 0.35, ripT = 0;
+var REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function edgeY(){ return EDGE_OUT + (EDGE_IN - EDGE_OUT) * level; }
+function seaPath(t){
+  var e = edgeY(), amp = REDUCED ? 1.5 : 7, amp2 = REDUCED ? 0 : 3;
+  var d = 'M0,' + HORIZON + ' L1000,' + HORIZON + ' L1000,' + (e + 20).toFixed(1);
+  var x;
+  for (x = 1000; x >= 0; x -= 40){
+    var y = e + Math.sin(x * 0.011 + t * 1.3) * amp + Math.sin(x * 0.027 - t * 0.8) * amp2;
+    d += ' L' + x + ',' + y.toFixed(1);
+  }
+  d += ' L0,' + (e + 20).toFixed(1) + ' Z';
+  return d;
+}
+function foamPath(t, off){
+  var e = edgeY() - (off || 0), amp = REDUCED ? 1.5 : 7, amp2 = REDUCED ? 0 : 3;
+  var d = '', x;
+  for (x = 0; x <= 1000; x += 40){
+    var y = e + Math.sin(x * 0.011 + t * 1.3) * amp + Math.sin(x * 0.027 - t * 0.8) * amp2;
+    d += (x === 0 ? 'M' : ' L') + x + ',' + y.toFixed(1);
+  }
+  return d;
+}
+function paintScene(){
+  seaEl.setAttribute('d', seaPath(ripT));
+  foamEl.setAttribute('d', foamPath(ripT, 0));
+  if (foam2El) foam2El.setAttribute('d', foamPath(ripT * 0.8, 14));
+}
+
+/* ================= audio (synthesized ocean) ================= */
+var AC = null, master = null, bedGain = null, swell = null, swellF = null, swellG = null, cue = null, cueG = null;
+var soundOn = true;
+function noiseBuffer(ac){
+  var len = ac.sampleRate * 2, buf = ac.createBuffer(1, len, ac.sampleRate);
+  var d = buf.getChannelData(0), i;
+  for (i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  return buf;
+}
+function audioInit(){
+  if (AC) return;
+  try{
+    AC = new (window.AudioContext || window.webkitAudioContext)();
+    master = AC.createGain(); master.gain.value = soundOn ? 1 : 0; master.connect(AC.destination);
+    var buf = noiseBuffer(AC);
+    var bed = AC.createBufferSource(); bed.buffer = buf; bed.loop = true;
+    var bedF = AC.createBiquadFilter(); bedF.type = 'lowpass'; bedF.frequency.value = 480;
+    bedGain = AC.createGain(); bedGain.gain.value = 0.05;
+    bed.connect(bedF); bedF.connect(bedGain); bedGain.connect(master); bed.start();
+    swell = AC.createBufferSource(); swell.buffer = buf; swell.loop = true;
+    swellF = AC.createBiquadFilter(); swellF.type = 'lowpass'; swellF.frequency.value = 300;
+    swellG = AC.createGain(); swellG.gain.value = 0.0;
+    swell.connect(swellF); swellF.connect(swellG); swellG.connect(master); swell.start();
+    cue = AC.createOscillator(); cue.type = 'sine'; cue.frequency.value = 200;
+    cueG = AC.createGain(); cueG.gain.value = 0.0;
+    cue.connect(cueG); cueG.connect(master); cue.start();
+  }catch(e){ AC = null; }
+}
+function audioPhase(ph){
+  if (!AC) return;
+  try{ if (AC.state === 'suspended') AC.resume(); }catch(e){}
+  var t0 = AC.currentTime, t1 = t0 + ph.d;
+  swellG.gain.cancelScheduledValues(t0); swellF.frequency.cancelScheduledValues(t0);
+  cueG.gain.cancelScheduledValues(t0); cue.frequency.cancelScheduledValues(t0);
+  if (ph.k === 'in' || ph.k === 'in2'){
+    swellG.gain.setValueAtTime(Math.max(0.03, swellG.gain.value), t0);
+    swellG.gain.linearRampToValueAtTime(0.22, t1);
+    swellF.frequency.setValueAtTime(Math.max(300, swellF.frequency.value), t0);
+    swellF.frequency.linearRampToValueAtTime(ph.k === 'in2' ? 2600 : 2100, t1);
+    cueG.gain.setValueAtTime(0.0, t0); cueG.gain.linearRampToValueAtTime(0.028, t0 + 0.25);
+    cueG.gain.linearRampToValueAtTime(0.02, t1);
+    cue.frequency.setValueAtTime(210, t0); cue.frequency.linearRampToValueAtTime(340, t1);
+  } else if (ph.k === 'out'){
+    swellG.gain.setValueAtTime(Math.max(0.05, swellG.gain.value), t0);
+    swellG.gain.linearRampToValueAtTime(0.02, t1);
+    swellF.frequency.setValueAtTime(Math.max(600, swellF.frequency.value), t0);
+    swellF.frequency.linearRampToValueAtTime(240, t1);
+    cueG.gain.setValueAtTime(0.028, t0); cueG.gain.linearRampToValueAtTime(0.0, t1);
+    cue.frequency.setValueAtTime(320, t0); cue.frequency.linearRampToValueAtTime(150, t1);
+  } else { /* holds: quiet bed */
+    swellG.gain.setValueAtTime(swellG.gain.value, t0);
+    swellG.gain.linearRampToValueAtTime(0.03, t0 + 0.5);
+    cueG.gain.setValueAtTime(cueG.gain.value, t0);
+    cueG.gain.linearRampToValueAtTime(0.0, t0 + 0.3);
+  }
+}
+function audioStopAll(){
+  if (!AC) return;
+  var t0 = AC.currentTime;
+  try{
+    swellG.gain.cancelScheduledValues(t0); swellG.gain.linearRampToValueAtTime(0.0, t0 + 0.6);
+    cueG.gain.cancelScheduledValues(t0); cueG.gain.linearRampToValueAtTime(0.0, t0 + 0.3);
+  }catch(e){}
+}
+function setSound(on){
+  soundOn = on;
+  if (master) master.gain.value = on ? 1 : 0;
+  var b = document.getElementById('sndBtn');
+  if (b) b.textContent = on ? 'Sound on' : 'Sound off';
+  uiSave();
+}
+
+/* ================= session runtime ================= */
+var running = false, sess = null, idx = 0, phStart = 0, phFrom = 0.35, startAt = 0, raf = 0;
+function fmtCount(x){ var n = Math.ceil(x); return n < 0 ? 0 : n; }
+function setText(id, s){ var el = document.getElementById(id); if (el) el.textContent = s; }
+function startSession(pid, opt){
+  sess = buildSession(pid, opt);
+  idx = 0; startAt = performance.now(); phStart = startAt; phFrom = level;
+  running = true;
+  document.getElementById('menu').style.display = 'none';
+  document.getElementById('done').className = '';
+  document.getElementById('hud').className = 'on';
+  audioInit();
+  if (AC && AC.state === 'suspended'){ try{ AC.resume(); }catch(e){} }
+  audioPhase(phaseAt(sess, idx));
+  uiSave(pid);
+  loop();
+}
+function endSession(toDone){
+  running = false;
+  if (raf) cancelAnimationFrame(raf);
+  audioStopAll();
+  document.getElementById('hud').className = '';
+  if (toDone){ document.getElementById('done').className = 'on'; }
+  else { document.getElementById('menu').style.display = 'block'; }
+}
+function loop(){
+  if (!running) return;
+  var now = performance.now();
+  var ph = phaseAt(sess, idx);
+  var t = (now - phStart) / 1000;
+  if (t >= ph.d){
+    phFrom = ph.target;
+    idx++;
+    var elapsed = (now - startAt) / 1000;
+    if (sessionOver(sess, idx, elapsed)){ level = ph.target; paintScene(); endSession(true); return; }
+    ph = phaseAt(sess, idx);
+    phStart = now; t = 0;
+    audioPhase(ph);
+  }
+  level = phFrom + (ph.target - phFrom) * easeIO(t / ph.d);
+  ripT += REDUCED ? 0.004 : 0.016;
+  paintScene();
+  setText('phase', ph.label.toUpperCase());
+  setText('count', String(fmtCount(ph.d - t)));
+  var el = Math.floor((now - startAt) / 1000);
+  setText('meta', 'CYCLE ' + (cyclesDone(sess, idx) + 1) + ' \u00b7 ' + Math.floor(el / 60) + ':' + ('0' + (el % 60)).slice(-2));
+  raf = requestAnimationFrame(loop);
+}
+
+/* ================= menu ================= */
+var UIK = 'forge-breathe-ui';
+var uiState = { snd:true, pace:5.5, dur:600, sigh:'quick', co2:'L1', last:'' };
+function uiLoad(){
+  try{
+    var v = JSON.parse(localStorage.getItem(UIK) || '{}');
+    if (v && typeof v === 'object'){
+      if (typeof v.snd === 'boolean') uiState.snd = v.snd;
+      if (v.pace) uiState.pace = v.pace;
+      if (v.dur !== undefined) uiState.dur = v.dur;
+      if (v.sigh) uiState.sigh = v.sigh;
+      if (v.co2) uiState.co2 = v.co2;
+    }
+  }catch(e){}
+  soundOn = uiState.snd;
+}
+function uiSave(last){
+  if (last) uiState.last = last;
+  uiState.snd = soundOn;
+  try{ localStorage.setItem(UIK, JSON.stringify(uiState)); }catch(e){}
+}
+function chipRow(opts, cur, cb){
+  var w = document.createElement('div'); w.className = 'chips';
+  opts.forEach(function(o){
+    var b = document.createElement('button'); b.type = 'button';
+    b.className = 'chip' + (o.v === cur ? ' on' : '');
+    b.textContent = o.t;
+    b.onclick = function(){
+      cb(o.v);
+      Array.prototype.forEach.call(w.children, function(c){ c.className = 'chip'; });
+      b.className = 'chip on';
+    };
+    w.appendChild(b);
+  });
+  return w;
+}
+function card(title, use, build){
+  var c = document.createElement('div'); c.className = 'pcard';
+  var h = document.createElement('h2'); h.textContent = title; c.appendChild(h);
+  var u = document.createElement('div'); u.className = 'use'; u.textContent = use; c.appendChild(u);
+  build(c);
+  return c;
+}
+function goBtn(c, label, fn){
+  var g = document.createElement('button'); g.type = 'button'; g.className = 'go';
+  g.textContent = label; g.onclick = fn; c.appendChild(g);
+}
+function buildMenu(){
+  var m = document.getElementById('menu');
+  m.innerHTML = '';
+  var head = document.createElement('div'); head.className = 'm-head';
+  head.innerHTML = '<h1>The Breathing Room</h1><p>Pick the breath for the moment. Nothing passes or fails.</p>';
+  m.appendChild(head);
+
+  m.appendChild(card('Coherent', 'Daily baseline \u2014 10 min raises HRV. Best at Zone 2 cool-down or in the evening.', function(c){
+    c.appendChild(chipRow([{t:'5.5s', v:5.5},{t:'6s', v:6},{t:'6.5s', v:6.5}], uiState.pace, function(v){ uiState.pace = v; uiSave(); }));
+    c.appendChild(chipRow([{t:'5 min', v:300},{t:'10 min', v:600},{t:'Open', v:null}], uiState.dur, function(v){ uiState.dur = v; uiSave(); }));
+    goBtn(c, 'Start coherent', function(){ startSession('coherent', {pace:uiState.pace, dur:uiState.dur}); });
+  }));
+
+  m.appendChild(card('Reset 4\u20112\u20116', 'The spike hits \u2014 a confrontation, a hard moment. Exhale first, then in 4 \u00b7 hold 2 \u00b7 out 6.', function(c){
+    goBtn(c, 'Start reset', function(){ startSession('reset', {}); });
+  }));
+
+  m.appendChild(card('Physiological sigh', 'Sudden acute spike \u2014 double inhale through the nose, long exhale. Quick, or 5 minutes daily.', function(c){
+    c.appendChild(chipRow([{t:'\u00d73 quick', v:'quick'},{t:'5 min daily', v:'five'}], uiState.sigh, function(v){ uiState.sigh = v; uiSave(); }));
+    goBtn(c, 'Start sighs', function(){ startSession('sigh', {mode:uiState.sigh}); });
+  }));
+
+  m.appendChild(card('Box 4\u20114\u20114\u20114', 'Steady before performance \u2014 equal sides with holds. Doubles as gentle CO\u2082 work.', function(c){
+    goBtn(c, 'Start box', function(){ startSession('box', {}); });
+  }));
+
+  m.appendChild(card('End of Day \u2014 Extended Exhale', 'Evening downshift. In 4, out 6. Let the day recede with the water.', function(c){
+    goBtn(c, 'Start wind-down', function(){ startSession('endday', {}); });
+  }));
+
+  m.appendChild(card('CO\u2082 Ladder', 'Air-hunger tolerance, gently. Advance a level only when the current one stays relaxed; drop back if you strain.', function(c){
+    c.appendChild(chipRow([{t:'L1 4\u00b78', v:'L1'},{t:'L2 4\u00b710', v:'L2'},{t:'L3 4\u00b78\u00b7h4', v:'L3'},{t:'L4 4\u00b710\u00b7h6', v:'L4'},{t:'L5 4\u00b712\u00b7h8', v:'L5'}], uiState.co2, function(v){ uiState.co2 = v; uiSave(); }));
+    var s = document.createElement('div'); s.className = 'safety';
+    s.textContent = 'Nasal \u00b7 seated \u00b7 mild air hunger only \u00b7 never in water or while driving \u00b7 stop if dizzy.';
+    c.appendChild(s);
+    goBtn(c, 'Start ladder', function(){ startSession('co2', {level:uiState.co2}); });
+  }));
+
+  var foot = document.createElement('div'); foot.className = 'm-foot';
+  var sb = document.createElement('button'); sb.type = 'button'; sb.className = 'chip' + (soundOn ? ' on' : '');
+  sb.textContent = soundOn ? 'Ocean sound: on' : 'Ocean sound: off';
+  sb.onclick = function(){ setSound(!soundOn); sb.textContent = soundOn ? 'Ocean sound: on' : 'Ocean sound: off'; sb.className = 'chip' + (soundOn ? ' on' : ''); };
+  foot.appendChild(sb);
+  m.appendChild(foot);
+}
+
+/* ================= boot ================= */
+function boot(){
+  seaEl = document.getElementById('sea');
+  foamEl = document.getElementById('foam');
+  foam2El = document.getElementById('foam2');
+  uiLoad();
+  buildMenu();
+  paintScene();
+  document.getElementById('stopBtn').onclick = function(){ endSession(false); };
+  document.getElementById('sndBtn').onclick = function(){ setSound(!soundOn); };
+  setSound(soundOn);
+  document.getElementById('done').onclick = function(){
+    document.getElementById('done').className = '';
+    document.getElementById('menu').style.display = 'block';
+  };
+  /* idle ripple so the scene is alive on the menu */
+  (function idle(){
+    if (!running){ ripT += REDUCED ? 0.002 : 0.01; paintScene(); }
+    requestAnimationFrame(idle);
+  })();
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+</script>
+</body>
+</html>
