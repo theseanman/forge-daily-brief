@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d1b3a">
+<title>Forge · Midday</title>
+<style>
+  :root{
+    --bg0:#0b1430; --bg1:#0d2b4e; --bg2:#0e3a52;
+    --ink:#eaf2ff; --mut:#9fb3d1; --faint:#6f86ac;
+    --azure:#4db8ff; --cyan:#7fe0ff; --violet:#9b8cff; --gold:#f4b740;
+    --card:rgba(255,255,255,.055); --line:rgba(140,180,255,.18);
+    --good:#57e08a;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    color:var(--ink); min-height:100vh;
+    background:
+      radial-gradient(120% 80% at 20% -10%, rgba(155,140,255,.22), transparent 55%),
+      radial-gradient(120% 90% at 100% 0%, rgba(77,184,255,.18), transparent 55%),
+      linear-gradient(160deg, var(--bg0), var(--bg1) 55%, var(--bg2));
+    background-attachment:fixed;
+    padding:22px 16px calc(34px + env(safe-area-inset-bottom));
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:640px; margin:0 auto;}
+  header{display:flex; align-items:baseline; justify-content:space-between; margin:2px 2px 18px;}
+  .kick{font-size:12px; letter-spacing:.28em; text-transform:uppercase; color:var(--cyan); font-weight:700;}
+  .clock{font-size:12px; color:var(--faint); font-variant-numeric:tabular-nums;}
+  h1{font-size:26px; margin:0 0 2px; letter-spacing:-.01em;}
+  .lede{color:var(--mut); font-size:14px; margin:0 2px 22px;}
+
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:20px;
+    padding:20px 18px; margin:0 0 16px; backdrop-filter:blur(8px);
+  }
+  .card-k{font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--faint); font-weight:700; margin:0 0 12px; display:flex; align-items:center; gap:8px;}
+  .card-k b{color:var(--azure);}
+
+  /* ---- breathe ---- */
+  #breathe{text-align:center;}
+  .orb-stage{height:216px; display:flex; align-items:center; justify-content:center; position:relative;}
+  .orb{
+    width:120px; height:120px; border-radius:50%;
+    background:radial-gradient(circle at 34% 30%, var(--cyan), var(--azure) 55%, #2a6fd6 100%);
+    box-shadow:0 0 44px rgba(77,184,255,.55), inset 0 0 30px rgba(255,255,255,.28);
+    display:flex; align-items:center; justify-content:center;
+    transform:scale(.62); transition:none; position:relative;
+  }
+  .orb.exhale{background:radial-gradient(circle at 34% 30%, #b9a8ff, var(--violet) 55%, #5b46c9 100%); box-shadow:0 0 40px rgba(155,140,255,.5), inset 0 0 30px rgba(255,255,255,.22);}
+  .orb .glyph{font-size:15px; font-weight:600; letter-spacing:.02em; color:#06132b; text-shadow:0 1px 0 rgba(255,255,255,.25);}
+  .phase{font-size:20px; font-weight:600; margin:6px 0 2px; min-height:26px;}
+  .rounds{font-size:12px; color:var(--faint); letter-spacing:.12em; text-transform:uppercase; min-height:16px;}
+  .b-btn{
+    margin-top:14px; appearance:none; border:1px solid var(--line);
+    background:linear-gradient(135deg, rgba(77,184,255,.22), rgba(155,140,255,.16));
+    color:var(--ink); font-size:15px; font-weight:600; letter-spacing:.02em;
+    padding:12px 26px; border-radius:14px; cursor:pointer;
+  }
+  .b-btn:active{transform:translateY(1px);}
+  .b-sub{margin-top:10px; font-size:12px; color:var(--faint);}
+  .b-sub a{color:var(--cyan); text-decoration:none; border-bottom:1px solid rgba(127,224,255,.35);}
+
+  /* ---- today's five ---- */
+  .t5-count{font-size:13px; color:var(--mut); margin:0 0 12px; font-weight:600;}
+  .t5-count b{color:var(--good);}
+  .t5-row{display:flex; gap:11px; padding:9px 0; border-top:1px solid rgba(140,180,255,.10);}
+  .t5-row:first-of-type{border-top:none;}
+  .t5-tick{font-size:16px; line-height:1.4; color:var(--faint); flex:0 0 auto;}
+  .t5-row.done .t5-tick{color:var(--good);}
+  .t5-row.done .t5-task{color:var(--faint); text-decoration:line-through;}
+  .t5-task{font-size:15px; line-height:1.35;}
+  .t5-star{color:var(--gold);}
+  .t5-meta{font-size:12px; color:var(--faint); margin-top:2px;}
+  .t5-dw{font-size:12px; color:var(--mut); margin-top:2px; font-style:italic;}
+  .t5-empty{font-size:14px; color:var(--mut); line-height:1.5;}
+  #t5-sync{font-size:11px; color:var(--faint); letter-spacing:.06em;}
+
+  /* ---- primer ---- */
+  #primer{border-color:rgba(244,183,64,.30);}
+  .anchor{
+    font-size:19px; line-height:1.4; font-weight:600; letter-spacing:-.01em;
+    padding-left:14px; border-left:3px solid var(--gold); color:#fff;
+  }
+  .anchor-k{font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--gold); font-weight:700; margin:0 0 8px;}
+  .cue-k{font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--faint); font-weight:700; margin:20px 0 8px;}
+  .cue{font-size:16px; line-height:1.45; color:var(--ink);}
+
+  footer{text-align:center; color:var(--faint); font-size:12px; margin-top:8px;}
+  @media (min-width:560px){ .orb-stage{height:236px;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <span class="kick">Forge · Midday</span>
+    <span class="clock" id="clock"></span>
+  </header>
+  <h1 id="greet">Reset.</h1>
+  <p class="lede">Ninety seconds. Settle the water, see where the day stands, re-anchor.</p>
+
+  <!-- 1 · BREATHE -->
+  <section class="card" id="breathe">
+    <div class="card-k"><b>1</b> Physiological sigh · 3 rounds</div>
+    <div class="orb-stage">
+      <div class="orb" id="orb"><span class="glyph" id="glyph">Breathe</span></div>
+    </div>
+    <div class="phase" id="phase">Ready</div>
+    <div class="rounds" id="rounds"></div>
+    <button class="b-btn" id="bbtn">Begin</button>
+    <div class="b-sub">Longer session? <a href="breathe.html">The Breathing Room →</a></div>
+  </section>
+
+  <!-- 2 · TODAY'S FIVE -->
+  <section class="card" id="five">
+    <div class="card-k"><b>2</b> Today's Five <span id="t5-sync"></span></div>
+    <div id="today-five-host"><div class="t5-empty">Loading…</div></div>
+  </section>
+
+  <!-- 3 · PRIMER -->
+  <section class="card" id="primer">
+    <div class="anchor-k">Anchor</div>
+    <div class="anchor" id="anchor"></div>
+    <div class="cue-k">Today's cue</div>
+    <div class="cue" id="cue"></div>
+  </section>
+
+  <footer>不動心 · the immovable mind</footer>
+
+</div>
+
+<script>
+/* ============================ clock + greeting ============================ */
+(function(){
+  function tick(){
+    var d = new Date();
+    var h = d.getHours(), m = ('0'+d.getMinutes()).slice(-2);
+    var ap = h < 12 ? 'AM' : 'PM'; var h12 = (h % 12) || 12;
+    document.getElementById('clock').textContent = h12 + ':' + m + ' ' + ap;
+  }
+  tick(); setInterval(tick, 15000);
+})();
+
+/* ============================ 1 · sigh pacer ============================ */
+/* Foreground, in-page only — runs while the page is on screen (the case that works). */
+var SIGH = [
+  { k:'in',  d:1.6, label:'Inhale',      from:.62, to:.94, ex:false },
+  { k:'in2', d:1.0, label:'Top up',      from:.94, to:1.0, ex:false },
+  { k:'out', d:6.0, label:'Long exhale', from:1.0, to:.62, ex:true  }
+];
+var SIGH_ROUNDS = 3;
+var orb   = document.getElementById('orb');
+var glyph = document.getElementById('glyph');
+var phaseEl = document.getElementById('phase');
+var roundsEl = document.getElementById('rounds');
+var bbtn = document.getElementById('bbtn');
+var raf = null, running = false;
+
+function easeInOut(t){ return t < .5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2; }
+function setScale(s, ex){
+  orb.style.transform = 'scale(' + s.toFixed(3) + ')';
+  orb.classList.toggle('exhale', !!ex);
+}
+function stopSigh(reset){
+  if (raf) cancelAnimationFrame(raf); raf = null; running = false;
+  bbtn.textContent = reset ? 'Begin' : 'Again';
+  if (reset){ phaseEl.textContent = 'Ready'; roundsEl.textContent = ''; glyph.textContent = 'Breathe'; setScale(.62, false); }
+}
+function runSigh(){
+  running = true; bbtn.textContent = 'Stop';
+  glyph.textContent = '';
+  var round = 0, pi = 0, phaseStart = performance.now();
+  function frame(now){
+    if (!running) return;
+    var ph = SIGH[pi];
+    var t = Math.min(1, (now - phaseStart) / (ph.d * 1000));
+    var e = easeInOut(t);
+    setScale(ph.from + (ph.to - ph.from) * e, ph.ex);
+    phaseEl.textContent = ph.label;
+    roundsEl.textContent = 'Round ' + (round + 1) + ' of ' + SIGH_ROUNDS;
+    if (t >= 1){
+      pi++;
+      if (pi >= SIGH.length){ pi = 0; round++; }
+      if (round >= SIGH_ROUNDS){
+        running = false; raf = null;
+        phaseEl.textContent = 'Settled.'; roundsEl.textContent = '';
+        glyph.textContent = '✓'; setScale(.72, false);
+        bbtn.textContent = 'Again';
+        return;
+      }
+      phaseStart = now;
+    }
+    raf = requestAnimationFrame(frame);
+  }
+  raf = requestAnimationFrame(frame);
+}
+bbtn.addEventListener('click', function(){
+  if (running){ stopSigh(false); return; }
+  runSigh();
+});
+
+/* ============================ 2 · Today's Five ============================ */
+/* Reads forge-top5 exactly like the brief: object keyed by local date, items {t,done,k,h,m,c,dw}. */
+var SYNC_URL = 'https://forge-sync.yoseanreid.workers.dev';
+
+function ymdOffset(days){
+  var d = new Date(); d.setDate(d.getDate() + days);
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function readJSONKey(k, fb){
+  try{ var v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; }catch(e){ return fb; }
+}
+function t5Esc(s){
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function realFive(arr){ return (arr || []).filter(function(i){ return i && i.t; }); }
+
+function paintTodayFive(){
+  var host = document.getElementById('today-five-host');
+  var all = readJSONKey('forge-top5', {});
+  var real = realFive(all[ymdOffset(0)]);
+  if (!real.length){
+    host.innerHTML = '<div class="t5-empty">No five set for today yet. Set them in the evening debrief or the planner &mdash; they show up here as soon as they exist.</div>';
+    return;
+  }
+  var done = real.filter(function(i){ return i.done; }).length;
+  var rows = real.map(function(i){
+    var meta = [];
+    if (i.h) meta.push(t5Esc(i.h));
+    if (i.m) meta.push(t5Esc(i.m) + ' min');
+    if (i.c) meta.push('carried &times;' + t5Esc(i.c));
+    return '<div class="t5-row' + (i.done ? ' done' : '') + '">' +
+             '<span class="t5-tick">' + (i.done ? '&#10003;' : '&#9633;') + '</span>' +
+             '<div style="flex:1; min-width:0;">' +
+               '<div class="t5-task">' + (i.k ? '<span class="t5-star">&#9733;</span> ' : '') + t5Esc(i.t) + '</div>' +
+               (meta.length ? '<div class="t5-meta">' + meta.join(' &middot; ') + '</div>' : '') +
+               (i.dw ? '<div class="t5-dw">Done when: ' + t5Esc(i.dw) + '</div>' : '') +
+             '</div>' +
+           '</div>';
+  }).join('');
+  host.innerHTML = '<div class="t5-count"><b>' + done + '</b> of ' + real.length + ' closed</div>' + rows;
+}
+
+/* Guarded cloud freshen — a blank cloud entry never wipes a populated local one (brief's rule). */
+function pullFive(){
+  var sync = document.getElementById('t5-sync');
+  sync.textContent = '· syncing…';
+  fetch(SYNC_URL + '/' + encodeURIComponent('forge-top5'))
+    .then(function(r){ if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function(cloud){
+      if (cloud && typeof cloud === 'object' && !Array.isArray(cloud) && !cloud.error){
+        var all = readJSONKey('forge-top5', {});
+        if (!all || typeof all !== 'object' || Array.isArray(all)) all = {};
+        var changed = false;
+        for (var dk in cloud){
+          if (!cloud.hasOwnProperty(dk)) continue;
+          var cloudReal = realFive(cloud[dk]).length;
+          var localReal = realFive(all[dk]).length;
+          if (!cloudReal && localReal) continue;                       /* the guard */
+          if (JSON.stringify(all[dk]) === JSON.stringify(cloud[dk])) continue;
+          all[dk] = cloud[dk]; changed = true;
+        }
+        if (changed){ try{ localStorage.setItem('forge-top5', JSON.stringify(all)); }catch(e){} }
+      }
+      sync.textContent = '· synced'; paintTodayFive();
+    })
+    .catch(function(){ sync.textContent = '· offline, saved copy'; });
+}
+paintTodayFive();   /* instant from local */
+pullFive();         /* then freshen */
+
+/* ============================ 3 · Fudoshin primer ============================ */
+var ANCHOR = 'Respond now \u2014 we can evaluate the response once I\u2019m no longer alive.';
+var CUES = [
+  'Threat \u2192 challenge: this is a test I\u2019m equipped for.',
+  'Arousal \u2192 readiness: my body\u2019s mobilizing, not panicking.',
+  'Pressure is proof \u2014 the moment matters and I\u2019ve earned my place in it.',
+  'Feel the uncomfortable emotions fully \u2014 deny that they\u2019re in the driver\u2019s seat.',
+  'Still water reflects things exactly as they are \u2014 let it settle, then act.',
+  'Lock onto the action that can be taken in the moment, not the overall outcome.',
+  'Jaw loose, shoulders down, gaze to one point.'
+];
+(function(){
+  document.getElementById('anchor').textContent = ANCHOR;
+  var K = 'forge-midday-cue';
+  var last = -1;
+  try{ var v = localStorage.getItem(K); if (v !== null) last = parseInt(v, 10); }catch(e){}
+  var idx;
+  if (CUES.length <= 1){ idx = 0; }
+  else { do { idx = Math.floor(Math.random() * CUES.length); } while (idx === last); }   /* per open, no repeat */
+  try{ localStorage.setItem(K, String(idx)); }catch(e){}
+  document.getElementById('cue').textContent = CUES[idx];
+})();
+</script>
+</body>
+</html>
