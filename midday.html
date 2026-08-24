@@ -67,7 +67,10 @@
   /* ---- today's five ---- */
   .t5-count{font-size:13px; color:var(--mut); margin:0 0 12px; font-weight:600;}
   .t5-count b{color:var(--good);}
-  .t5-row{display:flex; gap:11px; padding:9px 0; border-top:1px solid rgba(140,180,255,.10);}
+  .t5-row{display:flex; gap:11px; padding:9px 8px; border-top:1px solid rgba(140,180,255,.10); cursor:pointer; border-radius:10px; -webkit-tap-highlight-color:transparent;}
+  .t5-row:active{background:rgba(140,180,255,.09);}
+  .t5-row:focus-visible{outline:2px solid var(--azure); outline-offset:2px;}
+  .t5-hint{color:var(--faint); font-weight:400; letter-spacing:.01em;}
   .t5-row:first-of-type{border-top:none;}
   .t5-tick{font-size:16px; line-height:1.4; color:var(--faint); flex:0 0 auto;}
   .t5-row.done .t5-tick{color:var(--good);}
@@ -222,27 +225,30 @@ function realFive(arr){ return (arr || []).filter(function(i){ return i && i.t; 
 function paintTodayFive(){
   var host = document.getElementById('today-five-host');
   var all = readJSONKey('forge-top5', {});
-  var real = realFive(all[ymdOffset(0)]);
+  var arr = all[ymdOffset(0)] || [];
+  var real = arr.filter(function(i){ return i && i.t; });
   if (!real.length){
     host.innerHTML = '<div class="t5-empty">No five set for today yet. Set them in the evening debrief or the planner &mdash; they show up here as soon as they exist.</div>';
     return;
   }
   var done = real.filter(function(i){ return i.done; }).length;
-  var rows = real.map(function(i){
+  var rows = '';
+  arr.forEach(function(i, ri){                       /* raw index so toggle hits the right item */
+    if (!i || !i.t) return;
     var meta = [];
     if (i.h) meta.push(t5Esc(i.h));
     if (i.m) meta.push(t5Esc(i.m) + ' min');
     if (i.c) meta.push('carried &times;' + t5Esc(i.c));
-    return '<div class="t5-row' + (i.done ? ' done' : '') + '">' +
-             '<span class="t5-tick">' + (i.done ? '&#10003;' : '&#9633;') + '</span>' +
-             '<div style="flex:1; min-width:0;">' +
-               '<div class="t5-task">' + (i.k ? '<span class="t5-star">&#9733;</span> ' : '') + t5Esc(i.t) + '</div>' +
-               (meta.length ? '<div class="t5-meta">' + meta.join(' &middot; ') + '</div>' : '') +
-               (i.dw ? '<div class="t5-dw">Done when: ' + t5Esc(i.dw) + '</div>' : '') +
-             '</div>' +
-           '</div>';
-  }).join('');
-  host.innerHTML = '<div class="t5-count"><b>' + done + '</b> of ' + real.length + ' closed</div>' + rows;
+    rows += '<div class="t5-row' + (i.done ? ' done' : '') + '" data-ri="' + ri + '" role="button" tabindex="0" aria-pressed="' + (i.done ? 'true' : 'false') + '">' +
+              '<span class="t5-tick">' + (i.done ? '&#10003;' : '&#9633;') + '</span>' +
+              '<div style="flex:1; min-width:0;">' +
+                '<div class="t5-task">' + (i.k ? '<span class="t5-star">&#9733;</span> ' : '') + t5Esc(i.t) + '</div>' +
+                (meta.length ? '<div class="t5-meta">' + meta.join(' &middot; ') + '</div>' : '') +
+                (i.dw ? '<div class="t5-dw">Done when: ' + t5Esc(i.dw) + '</div>' : '') +
+              '</div>' +
+            '</div>';
+  });
+  host.innerHTML = '<div class="t5-count"><b>' + done + '</b> of ' + real.length + ' closed <span class="t5-hint">\u00b7 tap to check off</span></div>' + rows;
 }
 
 /* Guarded cloud freshen — a blank cloud entry never wipes a populated local one (brief's rule). */
@@ -270,6 +276,42 @@ function pullFive(){
     })
     .catch(function(){ sync.textContent = '· offline, saved copy'; });
 }
+/* Toggle a pick's done-state, save local, and PUT the whole key to the same worker
+   the debrief/planner use — so a checkoff here round-trips to every surface and device. */
+function pushFive(){
+  var sync = document.getElementById('t5-sync');
+  var val = localStorage.getItem('forge-top5');
+  if (!val) return;
+  if (sync) sync.textContent = '\u00b7 saving\u2026';
+  fetch(SYNC_URL + '/' + encodeURIComponent('forge-top5'), {
+    method:'PUT', headers:{'Content-Type':'application/json'}, body: val
+  }).then(function(r){ if (sync) sync.textContent = r.ok ? '\u00b7 synced' : '\u00b7 offline, saved locally'; })
+    .catch(function(){ if (sync) sync.textContent = '\u00b7 offline, saved locally'; });
+}
+function toggleFive(ri){
+  var all = readJSONKey('forge-top5', {});
+  var dk = ymdOffset(0);
+  var arr = all[dk];
+  if (!arr || !arr[ri]) return;
+  arr[ri].done = !arr[ri].done;
+  all[dk] = arr;
+  try{ localStorage.setItem('forge-top5', JSON.stringify(all)); }catch(e){}
+  paintTodayFive();   /* optimistic — instant feedback */
+  pushFive();         /* then sync */
+}
+(function(){
+  var host = document.getElementById('today-five-host');
+  host.addEventListener('click', function(e){
+    var row = e.target.closest('[data-ri]');
+    if (row) toggleFive(parseInt(row.getAttribute('data-ri'), 10));
+  });
+  host.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar'){
+      var row = e.target.closest('[data-ri]');
+      if (row){ e.preventDefault(); toggleFive(parseInt(row.getAttribute('data-ri'), 10)); }
+    }
+  });
+})();
 paintTodayFive();   /* instant from local */
 pullFive();         /* then freshen */
 
