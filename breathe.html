@@ -58,6 +58,14 @@
   @media (prefers-reduced-motion: reduce){
     #palmL,#palmR,#palmBL,#palmBR,#frondsL,#frondsR,#frondsBL,#frondsBR{ animation:none; }
   }
+
+  #done .rate{ display:none; margin-top:16px; }
+  #done.co2 .rate{ display:flex; }
+  #done .rate{ gap:8px; justify-content:center; flex-wrap:wrap; }
+  #done .rate .lbl{ width:100%; text-align:center; font-size:11px; letter-spacing:.22em; text-transform:uppercase; opacity:.7; font-weight:700; margin-bottom:4px; }
+  #done .rate button{ border:1px solid rgba(255,255,255,.5); background:rgba(9,36,80,.35); color:#fff; border-radius:999px; padding:9px 16px; font-size:13px; font-weight:700; letter-spacing:.06em; cursor:pointer; }
+  #done .rate button.on{ background:#4a9de8; border-color:#4a9de8; color:#0b2547; }
+  #done .rate .skip{ display:block; width:100%; text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; opacity:.6; margin-top:6px; }
   @media (prefers-reduced-motion: reduce){ .rm-hide{ display:none; } }
 </style>
 </head>
@@ -108,6 +116,13 @@
 <div id="done">
   <div class="big">Done.</div>
   <div class="sub" id="done-total" style="letter-spacing:.18em;"></div>
+  <div class="rate" id="co2-rate">
+    <div class="lbl">How did that level feel?</div>
+    <button type="button" data-r="easy">Easy</button>
+    <button type="button" data-r="felt">Felt it</button>
+    <button type="button" data-r="strained">Strained</button>
+    <div class="skip">Skip &mdash; tap anywhere to return</div>
+  </div>
   <div class="sub" style="opacity:.75;">Tap anywhere to return</div>
 </div>
 
@@ -344,6 +359,40 @@ function blogRecord(pid, optLabel, sec){
   return blogTodaySec(all, dk);
 }
 
+/* ---------- CO2 rating on Done: patches the LAST logged session ---------- */
+function co2RateInit(pid){
+  var done = document.getElementById('done');
+  if (!done) return;
+  done.classList.remove('co2');
+  if (pid !== 'co2') return;
+  done.classList.add('co2');
+  var host = document.getElementById('co2-rate'); if (!host) return;
+  var btns = host.querySelectorAll('button'); var i;
+  for (i = 0; i < btns.length; i++) btns[i].classList.remove('on');
+  for (i = 0; i < btns.length; i++){
+    (function(b){
+      b.onclick = function(ev){
+        ev.stopPropagation();
+        for (var j = 0; j < btns.length; j++) btns[j].classList.remove('on');
+        b.classList.add('on');
+        co2RateWrite(b.getAttribute('data-r'));
+      };
+    })(btns[i]);
+  }
+}
+function co2RateWrite(feel){
+  try{
+    var all = blogRead(); var dk = blogYmd(); var day = (all[dk] && Array.isArray(all[dk].s)) ? all[dk].s : [];
+    if (!day.length) return;
+    var last = day[day.length - 1];
+    if (last.p !== 'co2') return;
+    last.feel = feel;
+    all[dk] = { s: day };
+    blogWrite(all); blogPush(all);
+  }catch(e){}
+}
+
+
 /* ================= session runtime ================= */
 var running = false, sess = null, idx = 0, phStart = 0, phFrom = 0.35, startAt = 0, raf = 0;
 var curPid = '', curOpt = '';
@@ -379,7 +428,8 @@ function endSession(toDone){
   document.getElementById('hud').className = '';
   var tt = document.getElementById('done-total');
   if (tt) tt.textContent = (todaySec > 0) ? ('TODAY: ' + Math.round(todaySec/60) + ' MIN') : '';
-  if (toDone){ document.getElementById('done').className = 'on'; }
+  try{ co2RateInit(curPid); }catch(e){}
+  if (toDone){ document.getElementById('done').classList.add('on'); }
   else { document.getElementById('menu').style.display = 'block'; }
 }
 function loop(){

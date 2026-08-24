@@ -392,6 +392,13 @@
         <div class="field"><div class="field-label">What the pre-decided response was</div><textarea id="col-response" style="min-height:48px;"></textarea></div>
       </div>
 
+      <!-- collision captures this week (read-only reference; jot.html authors) -->
+      <div class="rocks-card" id="jots-card" style="margin-top:6px;">
+        <div style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#4a9de8; margin-bottom:6px;">This week's captures</div>
+        <div class="note-line" style="margin:0 0 8px;">Tap one to fill the rehearsal fields above. Nothing removed.</div>
+        <div id="jots-list"></div>
+      </div>
+
       <!-- breathing today (read-only, logged by breathe.html) -->
       <div class="rocks-card" id="breathe-card" style="margin-top:6px;">
         <div style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#3ec3d4; margin-bottom:6px;">Breathing today</div>
@@ -711,6 +718,7 @@ var K_FRAME='forge-frame', K_MUSHIN='forge-mushin'; /* install13 */
 var K_REPS='forge-reps'; /* install23 */
 var K_STRESS='forge-stressinoc'; /* stressinoc */
 var K_BLOG='forge-breathe-log'; /* breathe log, read-only here */
+var K_JOTS='forge-collision-jots'; /* collision jots, read-only here */
 var K_VIDEO='forge-video'; /* install25 */
 var K_PROTO='forge-protocol-counts'; /* debrief_protocol_review_aug14 */
 var K_PARKED='forge-parked', K_PROJ='forge-project'; /* install20 */
@@ -746,7 +754,7 @@ function syncPush(key) {
    An entry that is EMPTY in the cloud never overwrites a populated local one.
    That is deliberate: stale-but-present beats silently wiped. The cost is that
    deliberately clearing something on one surface will not propagate here. */
-var PULL_KEYS = [K_TOP5, K_ROCKS, K_FRAME, K_MUSHIN, K_BACKLOG, K_FUN, K_PARKED, K_PROJ, K_REPS, K_VIDEO, K_PROTO, K_DAILY, K_STRESS, K_BLOG]; /* install25 + tally_pull_key_aug14 + dailylog_backup + stressinoc + breathelog */
+var PULL_KEYS = [K_TOP5, K_ROCKS, K_FRAME, K_MUSHIN, K_BACKLOG, K_FUN, K_PARKED, K_PROJ, K_REPS, K_VIDEO, K_PROTO, K_DAILY, K_STRESS, K_BLOG, K_JOTS]; /* install25 + tally_pull_key_aug14 + dailylog_backup + stressinoc + breathelog + jots */
 
 function fdBlank(v) {
   if (v === null || v === undefined) return true;
@@ -838,6 +846,21 @@ function fdMergeEntry(key, local, dk, cloudVal) {
     if (outB.length === lS.length) return false;
     outB.sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
     local[dk] = { s: outB };
+    return true;
+  }
+
+  if (key === K_JOTS) {                       /* collision captures: union by id (ts fallback) */
+    var lJ = (localVal && Array.isArray(localVal.j)) ? localVal.j : [];
+    var cJ = (cloudVal && Array.isArray(cloudVal.j)) ? cloudVal.j : [];
+    var seenJ = {}, outJ = [];
+    lJ.concat(cJ).forEach(function(x){
+      if (!x || typeof x !== 'object') return;
+      var idj = String(x.id || x.ts || ''); if (!idj || seenJ[idj]) return;
+      seenJ[idj] = 1; outJ.push(x);
+    });
+    if (outJ.length === lJ.length) return false;
+    outJ.sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
+    local[dk] = { j: outJ };
     return true;
   }
 
@@ -1045,6 +1068,7 @@ function initPlanRows(){
   try { initStress(); } catch(e) {}
   try { initDomains(); } catch(e) {}
   try { initCollision(); } catch(e) {}
+  try { initJots(); } catch(e) {}
   try { initBreathe(); } catch(e) {}
   try { paintVideo(); } catch(e) {} /* install25 */
   try { renderWeeklyReview(); } catch (e) {} /* install20 */
@@ -1985,11 +2009,13 @@ function initBreathe(){
   if(!all||typeof all!=='object'||Array.isArray(all)){ card.classList.remove('show'); return; }
   var today=fdToday(), per={}, todaySec=0, order=[];
   var day=all[today]; var s=(day&&Array.isArray(day.s))?day.s:[];
+  var co2Feels={easy:0,felt:0,strained:0}, co2Any=false;
   s.forEach(function(x){
     var sec=(typeof x.sec==='number'&&x.sec>0)?x.sec:0; if(sec<=0) return;
     todaySec+=sec; var k=x.p||'other';
     if(per[k]===undefined){ per[k]=0; order.push(k); }
     per[k]+=sec;
+    if(k==='co2'){ co2Any=true; if(x.feel && co2Feels.hasOwnProperty(x.feel)) co2Feels[x.feel]++; }
   });
   var wkSec=0, wkDays=0, i;
   for(i=0;i<7;i++){
@@ -2002,10 +2028,55 @@ function initBreathe(){
   var parts=[];
   order.forEach(function(k){ parts.push((BLOG_NAMES[k]||k)+' '+fmtMS(per[k])); });
   var txt = parts.length ? parts.join(' \u00b7 ') : 'No sessions yet today';
+  if(co2Any){ var fp=[]; if(co2Feels.easy) fp.push(co2Feels.easy+' easy'); if(co2Feels.felt) fp.push(co2Feels.felt+' felt'); if(co2Feels.strained) fp.push(co2Feels.strained+' strained'); if(fp.length) txt += ' (CO\u2082: '+fp.join(', ')+')'; }
   txt += ' \u2014 last 7 days: '+Math.round(wkSec/60)+' min \u00b7 '+wkDays+(wkDays===1?' day':' days');
   line.textContent=txt;
   card.classList.add('show');
 }
+
+/* ---------- collision jots (read-only; jot.html authors) — Sunday-only ---------- */
+var K_JOTS='forge-collision-jots';
+function jotsThisWeek(){
+  var all=fdRead(K_JOTS,{});
+  if(!all||typeof all!=='object'||Array.isArray(all)) return [];
+  var out=[], i, dk;
+  for(i=0;i<7;i++){
+    var d=new Date(Date.now() - i*86400000);
+    dk=fdYmd(d);
+    var day=all[dk]; if(!day || !Array.isArray(day.j)) continue;
+    day.j.forEach(function(e){ if(e && typeof e === 'object') out.push({dk:dk, e:e}); });
+  }
+  out.sort(function(a,b){ return (a.e.ts||0)-(b.e.ts||0); });
+  return out;
+}
+function initJots(){
+  var card=document.getElementById('jots-card'); if(!card) return;
+  if(!isReviewDay()){ card.classList.remove('show'); return; }
+  var list=jotsThisWeek();
+  var host=document.getElementById('jots-list');
+  if(!host) return;
+  if(!list.length){ card.classList.remove('show'); return; }
+  host.innerHTML='';
+  list.forEach(function(item){
+    var e=item.e;
+    var d=document.createElement('div');
+    d.style.cssText='background:rgba(9,36,80,.28); border-left:3px solid rgba(74,157,232,.55); border-radius:8px; padding:9px 11px; margin-bottom:7px; cursor:pointer;';
+    var hm=e.hm||'';
+    var summary=(e.s||e.v||e.r||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    d.innerHTML='<div style="font-size:11px; letter-spacing:.08em; color:rgba(234,244,255,.55); margin-bottom:3px;">'+item.dk+' \u00b7 '+hm+'</div>'
+              +'<div style="font-size:14px; line-height:1.45;">'+summary+'</div>';
+    d.onclick=function(){
+      var s=document.getElementById('col-situation'), v=document.getElementById('col-value'), r=document.getElementById('col-response');
+      if(s && e.s) s.value=e.s;
+      if(v && e.v) v.value=e.v;
+      if(r && e.r) r.value=e.r;
+      if(s){ s.focus(); try{ s.scrollIntoView({behavior:'smooth', block:'center'}); }catch(er){} }
+    };
+    host.appendChild(d);
+  });
+  card.classList.add('show');
+}
+
 
 
 
