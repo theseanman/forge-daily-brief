@@ -1742,6 +1742,17 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
         '<div style="margin-bottom:11px;"><div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:#4a9de8; margin-bottom:2px;">Physical threat</div><div style="font-size:14px; line-height:1.55; color:var(--text-bright);">Family out first; engage only if extraction requires it. Force to protect \u2014 never to punish or prove.</div></div>'
         '</div>'
     )
+    intheroom_card = (
+        '<div class="card" style="background:linear-gradient(135deg, rgba(74,157,232,0.14), rgba(74,157,232,0.05)); border:2px solid #4a9de8;">'
+        '<div class="card-header"><span class="card-icon">\u26A1</span><span>In the Moment</span></div>'
+        '<div style="font-size:13px; line-height:1.55; color:var(--text-light); margin:0 0 12px;">One tap when it hits. No decisions inside.</div>'
+        '<div style="display:flex; gap:10px; flex-wrap:wrap;">'
+        '<a href="./sigh.html" style="flex:1; min-width:140px; text-align:center; padding:13px 10px; border-radius:10px; background:linear-gradient(135deg,#bfe7ff,#7fd4e6); color:#0b2547; font-weight:800; letter-spacing:0.06em; text-decoration:none; font-size:13.5px;">\U0001F30A Reset breath</a>'
+        '<a href="./tiers.html" style="flex:1; min-width:140px; text-align:center; padding:13px 10px; border-radius:10px; background:rgba(74,157,232,0.28); border:1px solid rgba(74,157,232,0.55); color:#eaf4ff; font-weight:800; letter-spacing:0.06em; text-decoration:none; font-size:13.5px;">\u23F1 Decide tier</a>'
+        '</div>'
+        '<div style="font-size:11.5px; color:var(--text-light); margin-top:10px; line-height:1.5; opacity:0.85;"><b>Sigh</b> \u2014 acute spike (~26s). <b>Tier</b> \u2014 3s / 7 breaths / Sunday.</div>'
+        '</div>'
+    )
     breathe_card = (
         '<div class="card" style="background:linear-gradient(135deg, rgba(62,195,212,0.20), rgba(21,101,216,0.10)); border:2px solid #3ec3d4;">'
         '<div class="card-header"><span class="card-icon">\U0001F30A\U0001F334</span><span>Breathing \u2014 How &amp; When</span></div>'
@@ -1959,6 +1970,8 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
   {stress_card}
 
   {domains_card}
+
+  {intheroom_card}
 
   {breathe_card}
 

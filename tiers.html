@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Three-Tier Timer</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.72); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --warn:#f0a54a;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; }
+  html,body{ height:100%; overflow:hidden; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -10%, #1e5aa8 0%, var(--bg-mid) 45%, var(--bg-deep) 100%);
+    color:var(--ink); overscroll-behavior:none; }
+  .wrap{ position:fixed; inset:0; display:flex; flex-direction:column; padding:24px 20px calc(28px + env(safe-area-inset-bottom)); }
+  .top{ text-align:center; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .kicker{ font-size:11px; letter-spacing:.32em; text-transform:uppercase; color:var(--accent); font-weight:800; margin-top:10px; }
+  .rule{ font-size:12.5px; color:var(--ink-dim); margin-top:14px; line-height:1.55; max-width:520px; margin-left:auto; margin-right:auto; }
+  .rule b{ color:var(--ink); font-weight:700; }
+  .picker{ display:flex; gap:10px; justify-content:center; margin-top:22px; flex-wrap:wrap; }
+  .card{ flex:1; min-width:150px; max-width:220px; background:rgba(9,36,80,.55); border:2px solid rgba(74,157,232,.35); border-radius:16px; padding:14px 12px; text-align:center; cursor:pointer; transition:border-color .2s, background .2s; }
+  .card:hover{ border-color:var(--accent); }
+  .card .name{ font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  .card .amt{ font-size:26px; font-weight:300; letter-spacing:-.02em; margin:6px 0 4px; }
+  .card .use{ font-size:11.5px; color:var(--ink-dim); line-height:1.45; }
+  .mid{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:0 6px; }
+  .mid .phase{ font-size:12px; letter-spacing:.32em; text-transform:uppercase; color:var(--accent); font-weight:800; margin-bottom:12px; }
+  .mid .count{ font-size:clamp(88px,22vw,168px); font-weight:200; line-height:1; letter-spacing:-.02em; }
+  .mid .sub{ font-size:12.5px; color:var(--ink-dim); margin-top:14px; letter-spacing:.14em; text-transform:uppercase; font-weight:700; }
+  .ring-wrap{ position:relative; width:260px; height:260px; }
+  .ring{ transform:rotate(-90deg); }
+  .ring circle.bg{ stroke:rgba(74,157,232,.18); stroke-width:8; fill:none; }
+  .ring circle.fg{ stroke:var(--accent-hi); stroke-width:8; fill:none; stroke-linecap:round; transition:stroke-dashoffset .1s linear; }
+  .ring-label{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:22px; }
+  .btn{ border:0; border-radius:999px; padding:12px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; box-shadow:0 4px 18px rgba(6,30,70,.35); min-width:120px; }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .sunday{ max-width:520px; margin:0 auto; text-align:left; background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:16px 18px; }
+  .sunday .h{ font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--gold); font-weight:800; margin-bottom:8px; }
+  .sunday .body{ font-size:15px; line-height:1.55; color:var(--ink); }
+  .done-view{ display:none; text-align:center; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:34px; font-weight:200; letter-spacing:.06em; }
+  .done-view .sub{ font-size:12px; letter-spacing:.22em; text-transform:uppercase; margin-top:10px; opacity:.85; font-weight:700; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="top">
+    <a href="./" class="back">&larr; Brief</a>
+    <div class="kicker" style="margin-top:10px;">Three-Tier Decision</div>
+    <div class="rule">
+      The axis is <b>does this open a loop that survives the night?</b><br>
+      <b>3 seconds</b> \u2014 no loop (which room, what to say, put the phone down).<br>
+      <b>7 breaths</b> \u2014 consequential, already in front of you, cannot be deferred.<br>
+      <b>Sunday</b> \u2014 opens a new loop or commits future time, however urgent.
+    </div>
+  </div>
+
+  <div class="mid" id="stage">
+    <div class="picker" id="picker">
+      <div class="card" onclick="start('three')">
+        <div class="name">3 seconds</div>
+        <div class="amt">3s</div>
+        <div class="use">Act. Auditing it IS the problem.</div>
+      </div>
+      <div class="card" onclick="start('seven')">
+        <div class="name">7 breaths</div>
+        <div class="amt">~35s</div>
+        <div class="use">Consider once. Then move.</div>
+      </div>
+      <div class="card" onclick="showSunday()">
+        <div class="name">Sunday</div>
+        <div class="amt">Wait</div>
+        <div class="use">Queue it. It waits for the review.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="done-view" id="done">
+    <div class="big" id="doneBig">Move.</div>
+    <div class="sub" id="doneSub">Tap to return</div>
+  </div>
+</div>
+
+<script>
+/* ---------- config ---------- */
+var TIERS = {
+  three: { total: 3,  phase: 'Act inside 3 seconds', done: 'Move.',   sub: 'Auditing it IS the problem.' },
+  seven: { total: 35, phase: '7 breaths',            done: 'Decide.', sub: 'Then move on it.' }
+  /* 35s \u2248 5s per breath cycle \u00d7 7. Sunday is not a timer \u2014 it's a queue. */
+};
+
+/* ---------- audio: soft chime, WebAudio (no files) ---------- */
+var AC=null, MASTER=null;
+function chimeInit(){
+  if(AC) return;
+  try{
+    AC = new (window.AudioContext || window.webkitAudioContext)();
+    MASTER = AC.createGain(); MASTER.gain.value = 0.6; MASTER.connect(AC.destination);
+  }catch(e){ AC=null; }
+}
+function chime(){
+  if(!AC) return;
+  try{ if(AC.state==='suspended') AC.resume(); }catch(e){}
+  var t0=AC.currentTime;
+  /* two soft sine tones, ~fifth apart, gentle envelope */
+  [523.25, 783.99].forEach(function(freq, i){
+    var o=AC.createOscillator(); o.type='sine'; o.frequency.value=freq;
+    var g=AC.createGain(); g.gain.value=0;
+    o.connect(g); g.connect(MASTER);
+    var start=t0 + i*0.12, end=start + 1.1;
+    g.gain.setValueAtTime(0, start);
+    g.gain.linearRampToValueAtTime(0.28, start + 0.05);
+    g.gain.exponentialRampToValueAtTime(0.001, end);
+    o.start(start); o.stop(end + 0.05);
+  });
+}
+
+/* ---------- runtime ---------- */
+var running=false, tier=null, startAt=0, raf=0;
+function fmt(x){ var n = x>=1 ? Math.ceil(x) : Math.max(0, Math.ceil(x*10)/10); return String(n); }
+function paint(remain, pct){
+  var offs = 754 * (1 - Math.max(0, Math.min(1, pct)));
+  var fg = document.getElementById('fg');
+  if(fg) fg.setAttribute('stroke-dashoffset', offs.toFixed(1));
+  var c = document.getElementById('bigcount');
+  if(c) c.textContent = fmt(remain);
+}
+function loop(){
+  if(!running) return;
+  var now = performance.now();
+  var elapsed = (now - startAt) / 1000;
+  var t = TIERS[tier];
+  var remain = t.total - elapsed;
+  if(remain <= 0){
+    running=false; paint(0, 1); chime();
+    /* small delay so the chime is heard before the view flips */
+    setTimeout(function(){ finish(); }, 350);
+    return;
+  }
+  paint(remain, elapsed / t.total);
+  raf = requestAnimationFrame(loop);
+}
+function start(name){
+  tier = name;
+  chimeInit();
+  if(AC && AC.state==='suspended'){ try{ AC.resume(); }catch(e){} }
+  var t = TIERS[tier];
+  document.getElementById('stage').innerHTML =
+    '<div class="phase">'+t.phase+'</div>' +
+    '<div class="ring-wrap">' +
+      '<svg class="ring" width="260" height="260" viewBox="0 0 260 260">' +
+        '<circle class="bg" cx="130" cy="130" r="120"/>' +
+        '<circle class="fg" id="fg" cx="130" cy="130" r="120" stroke-dasharray="754" stroke-dashoffset="0"/>' +
+      '</svg>' +
+      '<div class="ring-label"><div class="count" id="bigcount">'+t.total+'</div></div>' +
+    '</div>' +
+    '<div class="bar"><button class="btn ghost" onclick="cancel()">Stop</button></div>';
+  running=true; startAt=performance.now();
+  raf=requestAnimationFrame(loop);
+}
+function cancel(){
+  running=false; if(raf) cancelAnimationFrame(raf);
+  document.getElementById('stage').innerHTML = pickerHTML();
+}
+function finish(){
+  var t = TIERS[tier];
+  document.getElementById('stage').style.display='none';
+  document.getElementById('doneBig').textContent = t.done;
+  document.getElementById('doneSub').textContent = t.sub + ' \u00b7 Tap to return';
+  document.getElementById('done').className='done-view on';
+}
+function showSunday(){
+  document.getElementById('stage').innerHTML =
+    '<div class="sunday">' +
+      '<div class="h">Queue for Sunday</div>' +
+      '<div class="body">This opens a new loop or commits future time. It waits for the review \u2014 no matter how urgent it feels right now. That urgency is often the signal, not the answer.</div>' +
+    '</div>' +
+    '<div class="bar">' +
+      '<button class="btn ghost" onclick="cancel()">Back</button>' +
+      '<a href="./" class="btn" style="text-decoration:none; line-height:1;">Brief</a>' +
+    '</div>';
+}
+function pickerHTML(){
+  return '<div class="picker" id="picker">' +
+    '<div class="card" onclick="start(\'three\')"><div class="name">3 seconds</div><div class="amt">3s</div><div class="use">Act. Auditing it IS the problem.</div></div>' +
+    '<div class="card" onclick="start(\'seven\')"><div class="name">7 breaths</div><div class="amt">~35s</div><div class="use">Consider once. Then move.</div></div>' +
+    '<div class="card" onclick="showSunday()"><div class="name">Sunday</div><div class="amt">Wait</div><div class="use">Queue it. It waits for the review.</div></div>' +
+  '</div>';
+}
+function boot(){
+  document.getElementById('done').addEventListener('click', function(){ window.location.href='./'; });
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+</script>
+
+</body>
+</html>

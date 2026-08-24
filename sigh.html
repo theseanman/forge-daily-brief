@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sigh</title>
+<style>
+  :root{ --sky-hi:#1565d8; --sky-lo:#9fd4ff; --sea-deep:#0a4d8c; --sea-mid:#1878c8; --sea-shal:#3ec3d4; --ink:#0b2547; }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; }
+  html,body{ height:100%; overflow:hidden; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:var(--sky-hi); overscroll-behavior:none; }
+  #scene{ position:fixed; inset:0; width:100%; height:100%; }
+  #hud{ position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; color:#fff; text-shadow:0 2px 14px rgba(6,30,70,.55); padding:20px; pointer-events:none; }
+  #phase{ font-size:13px; letter-spacing:.34em; text-transform:uppercase; font-weight:800; opacity:.95; margin-bottom:4px; }
+  #count{ font-size:clamp(88px,22vw,168px); font-weight:200; line-height:1; letter-spacing:-.02em; }
+  #cyc{ font-size:12px; letter-spacing:.24em; text-transform:uppercase; margin-top:8px; opacity:.85; font-weight:700; }
+  .bar{ position:fixed; bottom:calc(18px + env(safe-area-inset-bottom)); left:0; right:0; display:flex; justify-content:center; gap:12px; }
+  .btn{ border:0; border-radius:999px; padding:12px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; background:rgba(255,255,255,.94); color:var(--ink); box-shadow:0 4px 18px rgba(6,30,70,.35); text-decoration:none; display:inline-block; line-height:1; }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  #done{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; flex-direction:column; color:#fff; text-shadow:0 2px 14px rgba(6,30,70,.55); }
+  #done.on{ display:flex; }
+  #done .big{ font-size:34px; font-weight:200; letter-spacing:.06em; }
+  #done .sub{ font-size:12px; letter-spacing:.22em; text-transform:uppercase; margin-top:10px; opacity:.9; font-weight:700; }
+</style>
+</head>
+<body>
+
+<svg id="scene" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <defs>
+    <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1565d8"/><stop offset="0.72" stop-color="#5aa9ee"/><stop offset="1" stop-color="#9fd4ff"/>
+    </linearGradient>
+    <linearGradient id="gSea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0a4d8c"/><stop offset="0.45" stop-color="#1878c8"/><stop offset="0.85" stop-color="#3ec3d4"/><stop offset="1" stop-color="#7fe0e2"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1000" height="700" fill="url(#gSky)"/>
+  <rect x="0" y="430" width="1000" height="270" fill="#e8cf9f"/>
+  <rect x="0" y="430" width="1000" height="205" fill="#c8a06d" opacity="0.85"/>
+  <path id="sea" fill="url(#gSea)" d=""/>
+  <path id="foam" fill="none" stroke="#eafcff" stroke-width="5" stroke-linecap="round" opacity="0.95" d=""/>
+</svg>
+
+<div id="hud">
+  <div id="phase">READY</div>
+  <div id="count">&nbsp;</div>
+  <div id="cyc"></div>
+</div>
+
+<div id="done">
+  <div class="big">Done.</div>
+  <div class="sub">Tap anywhere to return</div>
+</div>
+
+<div class="bar">
+  <a href="./" class="btn ghost">Back</a>
+</div>
+
+<script>
+/* One purpose: three cycles of double inhale + long exhale, no decisions.
+   Cycle: inhale 1.6s, top-up 1.0s, exhale 6.0s. Total ~26s. */
+var CYCLES=3;
+var PHASES=[
+  {k:'in',  d:1.6, label:'Inhale',      target:0.82},
+  {k:'in2', d:1.0, label:'Top up',      target:1.00},
+  {k:'out', d:6.0, label:'Long exhale', target:0.08}
+];
+var HORIZON=300, EDGE_OUT=462, EDGE_IN=622;
+var REDUCED=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var level=0.35, ripT=0;
+function edgeY(){ return EDGE_OUT + (EDGE_IN-EDGE_OUT)*level; }
+function seaPath(t){
+  var e=edgeY(), a=REDUCED?1.5:7, b=REDUCED?0:3;
+  var d='M0,'+HORIZON+' L1000,'+HORIZON+' L1000,'+(e+20).toFixed(1);
+  for(var x=1000;x>=0;x-=40){ var y=e+Math.sin(x*0.011+t*1.3)*a+Math.sin(x*0.027-t*0.8)*b; d+=' L'+x+','+y.toFixed(1); }
+  d+=' L0,'+(e+20).toFixed(1)+' Z'; return d;
+}
+function foamPath(t){
+  var e=edgeY(), a=REDUCED?1.5:7, b=REDUCED?0:3, d='';
+  for(var x=0;x<=1000;x+=40){ var y=e+Math.sin(x*0.011+t*1.3)*a+Math.sin(x*0.027-t*0.8)*b; d+=(x===0?'M':' L')+x+','+y.toFixed(1); }
+  return d;
+}
+function easeIO(p){ return 0.5-0.5*Math.cos(Math.PI*Math.max(0,Math.min(1,p))); }
+function paint(){
+  document.getElementById('sea').setAttribute('d', seaPath(ripT));
+  document.getElementById('foam').setAttribute('d', foamPath(ripT));
+}
+var idx=0, phStart=0, phFrom=0.35, running=false, raf=0;
+function fmtCount(x){ var n=Math.ceil(x); return n<0?0:n; }
+function loop(){
+  if(!running) return;
+  var now=performance.now();
+  var ph=PHASES[idx % PHASES.length];
+  var t=(now-phStart)/1000;
+  if(t>=ph.d){
+    phFrom=ph.target; idx++;
+    var cyc=Math.floor(idx/PHASES.length);
+    if(cyc>=CYCLES){ level=ph.target; paint(); finish(); return; }
+    ph=PHASES[idx % PHASES.length]; phStart=now; t=0;
+  }
+  level=phFrom + (ph.target-phFrom)*easeIO(t/ph.d);
+  ripT += REDUCED?0.004:0.016; paint();
+  document.getElementById('phase').textContent=ph.label.toUpperCase();
+  document.getElementById('count').textContent=String(fmtCount(ph.d-t));
+  document.getElementById('cyc').textContent='CYCLE '+(Math.floor(idx/PHASES.length)+1)+' / '+CYCLES;
+  raf=requestAnimationFrame(loop);
+}
+function finish(){
+  running=false; if(raf) cancelAnimationFrame(raf);
+  document.getElementById('hud').style.display='none';
+  document.getElementById('done').className='on';
+}
+function start(){
+  running=true; idx=0; phFrom=level; phStart=performance.now();
+  raf=requestAnimationFrame(loop);
+}
+function boot(){
+  paint();
+  document.getElementById('done').addEventListener('click', function(){ window.location.href='./'; });
+  /* idle ripple until start */
+  (function idle(){ if(!running){ ripT+=REDUCED?0.002:0.01; paint(); } requestAnimationFrame(idle); })();
+  /* auto-start after the shortest possible pause so the user's tap-to-open counts as the go */
+  setTimeout(start, 350);
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+</script>
+
+</body>
+</html>
