@@ -215,6 +215,7 @@ var AC = null, master = null, bedGain = null, swell = null, swellF = null, swell
 var soundOn = true;
 var fileMode = false, chimeEl = null;
 var AUDIO_SRC = { 55:'coherent-55.m4a', 60:'coherent-60.m4a', 65:'coherent-65.m4a', sigh:'sigh.m4a' };
+var CHIME_ART = 'chime_art.png';
 function noiseBuffer(ac){
   var len = ac.sampleRate * 2, buf = ac.createBuffer(1, len, ac.sampleRate);
   var d = buf.getChannelData(0), i;
@@ -295,7 +296,7 @@ function stopChime(){
 function setupMediaSession(title){
   if (!('mediaSession' in navigator)) return;
   try{
-    navigator.mediaSession.metadata = new MediaMetadata({ title:title, artist:'The Breathing Room', album:'Forge' });
+    navigator.mediaSession.metadata = new MediaMetadata({ title:title, artist:'The Breathing Room', album:'Forge', artwork:[{ src:CHIME_ART, sizes:'512x512', type:'image/png' }] });
     navigator.mediaSession.playbackState = 'playing';
     navigator.mediaSession.setActionHandler('play',  function(){ try{ chimeEl.play(); }catch(e){} try{ navigator.mediaSession.playbackState='playing'; }catch(e){} });
     navigator.mediaSession.setActionHandler('pause', function(){ try{ chimeEl.pause(); }catch(e){} try{ navigator.mediaSession.playbackState='paused'; }catch(e){} });
@@ -305,11 +306,19 @@ function setupMediaSession(title){
 function startChimeSession(pid, opt, key, title){
   chimeEl = document.getElementById('chime');
   fileMode = true;
+  try{ if (AC && AC.state === 'running' && AC.suspend) AC.suspend(); }catch(e){}   /* hand the audio session to the file */
   if (chimeEl){
     try{
       chimeEl.src = AUDIO_SRC[key];
       chimeEl.loop = true;
       chimeEl.muted = !soundOn;
+      chimeEl.onloadedmetadata = function(){
+        try{
+          if (navigator.mediaSession && navigator.mediaSession.setPositionState && isFinite(chimeEl.duration)){
+            navigator.mediaSession.setPositionState({ duration: chimeEl.duration, playbackRate: 1, position: 0 });
+          }
+        }catch(e){}
+      };
       var p = chimeEl.play();
       if (p && p.catch) p.catch(function(){});
     }catch(e){}
