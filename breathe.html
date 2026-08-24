@@ -143,7 +143,9 @@ function buildSession(pid, opt){
     cycle = [ {k:'in', d:1.6, label:'Inhale', target:0.82},
               {k:'in2', d:1.0, label:'Top up', target:1},
               {k:'out', d:6, label:'Long exhale', target:0.08} ];
-    if (opt.mode === 'five') maxSec = 300; else cycles = 3;
+    if (opt.mode === 'five') maxSec = 300;
+    else if (opt.mode === 'x5') cycles = 5;
+    /* 'open' runs until Stop */
   } else if (pid === 'box'){
     cycle = [ {k:'in', d:4, label:'Inhale', target:1},
               {k:'ht', d:4, label:'Hold', target:1},
@@ -332,7 +334,7 @@ function loop(){
 
 /* ================= menu ================= */
 var UIK = 'forge-breathe-ui';
-var uiState = { snd:true, pace:5.5, dur:600, sigh:'quick', co2:'L1', last:'' };
+var uiState = { snd:true, pace:5.5, dur:600, sigh:'open', co2:'L1', last:'' };
 function uiLoad(){
   try{
     var v = JSON.parse(localStorage.getItem(UIK) || '{}');
@@ -340,7 +342,7 @@ function uiLoad(){
       if (typeof v.snd === 'boolean') uiState.snd = v.snd;
       if (v.pace) uiState.pace = v.pace;
       if (v.dur !== undefined) uiState.dur = v.dur;
-      if (v.sigh) uiState.sigh = v.sigh;
+      if (v.sigh === 'x5' || v.sigh === 'five' || v.sigh === 'open') uiState.sigh = v.sigh;
       if (v.co2) uiState.co2 = v.co2;
     }
   }catch(e){}
@@ -385,7 +387,7 @@ function buildMenu(){
   m.appendChild(head);
 
   m.appendChild(card('Coherent', 'Daily baseline \u2014 10 min raises HRV. Best at Zone 2 cool-down or in the evening.', function(c){
-    c.appendChild(chipRow([{t:'5.5s', v:5.5},{t:'6s', v:6},{t:'6.5s', v:6.5}], uiState.pace, function(v){ uiState.pace = v; uiSave(); }));
+    c.appendChild(chipRow([{t:'5s', v:5},{t:'5.5s', v:5.5},{t:'6s', v:6},{t:'6.5s', v:6.5}], uiState.pace, function(v){ uiState.pace = v; uiSave(); }));
     c.appendChild(chipRow([{t:'5 min', v:300},{t:'10 min', v:600},{t:'Open', v:null}], uiState.dur, function(v){ uiState.dur = v; uiSave(); }));
     goBtn(c, 'Start coherent', function(){ startSession('coherent', {pace:uiState.pace, dur:uiState.dur}); });
   }));
@@ -394,8 +396,8 @@ function buildMenu(){
     goBtn(c, 'Start reset', function(){ startSession('reset', {}); });
   }));
 
-  m.appendChild(card('Physiological sigh', 'Sudden acute spike \u2014 double inhale through the nose, long exhale. Quick, or 5 minutes daily.', function(c){
-    c.appendChild(chipRow([{t:'\u00d73 quick', v:'quick'},{t:'5 min daily', v:'five'}], uiState.sigh, function(v){ uiState.sigh = v; uiSave(); }));
+  m.appendChild(card('Physiological sigh', 'Double inhale through the nose, long exhale. 5 min each morning \u00b7 \u00d75 for a quick reset \u00b7 open as long as you need.', function(c){
+    c.appendChild(chipRow([{t:'\u00d75 quick', v:'x5'},{t:'5 min morning', v:'five'},{t:'Open', v:'open'}], uiState.sigh, function(v){ uiState.sigh = v; uiSave(); }));
     goBtn(c, 'Start sighs', function(){ startSession('sigh', {mode:uiState.sigh}); });
   }));
 
