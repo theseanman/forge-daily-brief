@@ -1749,6 +1749,13 @@ function renderWeeklyReview(){
   h += '</div>';
   h += '<div style="font-size:11px; color:#ffc107; margin-top:8px; line-height:1.5;">Watch the tape against these. Never run them during a conversation &mdash; a list you carry into the room is the auditor, not the fix.</div>';
 
+  /* annual core review flag — visible only in January, purely a prompt, no storage */
+  if ((new Date()).getMonth() === 0){
+    h += '<div style="margin-top:16px; padding:12px 14px; border-radius:10px; background:rgba(245,215,110,0.10); border-left:4px solid #f5d76e;">';
+    h += '<div style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#f5d76e; margin-bottom:6px; font-weight:800;">Annual core review</div>';
+    h += '<div style="font-size:12.5px; color:#f0f0f8; line-height:1.55;">Re-examine the four values and four hard lines this month. They usually survive; the point is that the examination actually happens \u2014 the guard against dogma drift.</div>';
+    h += '</div>';
+  }
   h += '<div id="wr-note" style="font-size:11px; color:#ffc107; margin-top:8px;"></div>';
   h += '</div>';
   host.innerHTML = h;
