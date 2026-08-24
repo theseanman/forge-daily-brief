@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Orientation Recall</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.72); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; }
+  html,body{ height:100%; overflow:hidden; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -10%, #1e5aa8 0%, var(--bg-mid) 45%, var(--bg-deep) 100%);
+    color:var(--ink); overscroll-behavior:none; }
+  .wrap{ position:fixed; inset:0; display:flex; flex-direction:column; padding:24px 20px calc(28px + env(safe-area-inset-bottom)); }
+  .top{ text-align:center; padding-top:6px; }
+  .kicker{ font-size:11px; letter-spacing:.32em; text-transform:uppercase; color:var(--accent); font-weight:800; }
+  .progress{ display:flex; gap:5px; justify-content:center; margin-top:12px; }
+  .dot{ height:3px; flex:1; max-width:44px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); }
+  .dot.done{ background:var(--accent-hi); }
+  .mid{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px 6px; }
+  .prompt{ font-size:clamp(22px,6vw,32px); font-weight:300; line-height:1.35; letter-spacing:-.01em; max-width:640px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:20px; font-weight:700; }
+  .reveal-wrap{ margin-top:22px; width:100%; max-width:640px; opacity:0; transform:translateY(6px); transition:opacity .35s ease, transform .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; }
+  .reveal{ background:rgba(74,157,232,0.14); border-left:4px solid var(--accent); border-radius:12px; padding:16px 18px; text-align:left; }
+  .reveal .line{ font-size:16px; line-height:1.55; color:var(--ink); margin-bottom:7px; }
+  .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); font-weight:700; margin-right:4px; }
+  .mantra{ font-size:17px; line-height:1.5; color:var(--ink); font-weight:600; padding:14px 16px; background:rgba(245,215,110,.12); border-left:4px solid var(--gold); border-radius:12px; text-align:left; }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:20px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; box-shadow:0 4px 18px rgba(6,30,70,.35); min-width:130px; }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-quiet); margin-top:14px; font-weight:700; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .done-view{ display:none; text-align:center; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:34px; font-weight:200; letter-spacing:.06em; }
+  .done-view .sub{ font-size:12px; letter-spacing:.22em; text-transform:uppercase; margin-top:12px; opacity:.85; font-weight:700; }
+  .done-view .streak{ margin-top:22px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="top">
+    <a href="./" class="back">&larr; Brief</a>
+    <div class="kicker" style="margin-top:10px;">Orientation Recall</div>
+    <div class="progress" id="progress"></div>
+  </div>
+
+  <div class="mid" id="stage">
+    <!-- filled by JS: prompt / reveal / bar / hint -->
+  </div>
+
+  <div class="done-view" id="done">
+    <div class="big">Done.</div>
+    <div class="sub">The core is loaded.</div>
+    <div class="streak" id="streak"></div>
+    <div class="bar" style="margin-top:22px;">
+      <button class="btn" onclick="restart()">Again</button>
+      <a href="./" class="btn ghost" style="text-decoration:none; display:inline-block; line-height:1;">Brief</a>
+    </div>
+  </div>
+
+  <div class="foot">Say each aloud before revealing.</div>
+</div>
+
+<script>
+/* ---------- content: EXACT wording from the Core card ---------- */
+var STEPS = [
+  { kicker: 'Values', prompt: 'State your <b>four values</b>.',
+    lines: [
+      '<b>1.</b> My family thrives, and I do whatever is in my power to make that happen.',
+      '<b>2.</b> I do not lose or fail due to circumstances within my control.',
+      '<b>3.</b> The world is often harsh, and I will meet harshness with mental and physical toughness.',
+      '<b>4.</b> When others outperform me, I close the gap through cunning, preparation, and strategy. I never give up and I never accept defeat.'
+    ] },
+  { kicker: 'Mission', prompt: 'State your <b>mission</b>.',
+    lines: [
+      'Primary \u2014 family thriving. Secondary \u2014 life lived on my own terms. When they collide, primary wins.'
+    ] },
+  { kicker: 'Hard lines', prompt: 'State your <b>four hard lines</b>.',
+    lines: [
+      '<b>1.</b> I do not quit in competition with another person.',
+      '<b>2.</b> I do not abandon my family in any way.',
+      "<b>3.</b> I do not put my own needs above my family's.",
+      '<b>4.</b> I do not submit or perform half-assed work.'
+    ] },
+  { kicker: 'Force', prompt: 'State how you <b>use force</b>.',
+    lines: [
+      "Use force only to protect family \u2014 never to punish or prove. Peers' opinions are data, not authority."
+    ] },
+  { kicker: 'The mantra', prompt: 'State the <b>mantra</b> aloud.',
+    mantra: 'When looking bad collides with a hard line, the hard line wins. Every time. No deliberation.' }
+];
+
+/* ---------- lightweight local streak (no fail state, count-up only) ---------- */
+var RKEY = 'forge-recall-local';
+function todayYmd(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function yesterdayYmd(){ var d=new Date(Date.now()-86400000); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function readState(){ try{ var v=JSON.parse(localStorage.getItem(RKEY)||'{}'); if(!v||typeof v!=='object'||Array.isArray(v)) return {}; return v; }catch(e){ return {}; } }
+function writeState(s){ try{ localStorage.setItem(RKEY, JSON.stringify(s)); }catch(e){} }
+function markDone(){
+  var s=readState(); var t=todayYmd();
+  if(s.last===t) return s;                                  /* already counted today */
+  var streak = (s.last===yesterdayYmd()) ? (s.streak||0)+1 : 1;
+  s.last=t; s.streak=streak;
+  var d=readState().days||{}; d[t]=true; s.days=d;
+  writeState(s); return s;
+}
+function currentStreak(){
+  var s=readState();
+  if(!s || !s.last) return 0;
+  if(s.last===todayYmd() || s.last===yesterdayYmd()) return s.streak||0;
+  return 0;                                                 /* broken but not "failed" — just resets to 0, never a red X */
+}
+function doneToday(){ return readState().last === todayYmd(); }
+
+/* ---------- runtime ---------- */
+var idx=0, revealed=false;
+
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){
+    var d=document.createElement('div'); d.className='dot' + (i<idx?' done':(i===idx?' on':''));
+    p.appendChild(d);
+  }
+}
+function renderStep(){
+  var st=STEPS[idx];
+  var stage=document.getElementById('stage');
+  var body='';
+  body += '<div class="kicker" style="color:var(--accent-hi); margin-bottom:14px;">'+st.kicker+'</div>';
+  body += '<div class="prompt">'+st.prompt+'</div>';
+  body += '<div class="hint" id="hint">Say it aloud &middot; then reveal</div>';
+  if(st.mantra){
+    body += '<div class="reveal-wrap" id="rw"><div class="mantra">'+st.mantra+'</div></div>';
+  } else {
+    var inner=''; for(var i=0;i<st.lines.length;i++) inner += '<div class="line">'+st.lines[i]+'</div>';
+    body += '<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  }
+  body += '<div class="bar">'
+       +   '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+       +   '<button class="btn" id="nextBtn" onclick="next()" disabled>'+ (idx===STEPS.length-1 ? 'Finish' : 'Next') +'</button>'
+       + '</div>';
+  stage.innerHTML=body;
+  revealed=false;
+  paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  var h=document.getElementById('hint'); if(h) h.style.opacity='.4';
+  revealed=true;
+}
+function next(){
+  if(idx < STEPS.length-1){ idx++; renderStep(); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  var streakLine = 'Recall streak: '+ (s.streak||0) + ' day' + ((s.streak||0)===1?'':'s');
+  document.getElementById('streak').textContent = streakLine;
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  idx=0;
+  document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display='';
+  document.getElementById('progress').style.opacity='';
+  renderStep();
+}
+
+/* ---------- boot ---------- */
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', renderStep); else renderStep();
+</script>
+
+</body>
+</html>
