@@ -53,7 +53,8 @@
   <div class="filters" id="tag-filters"></div>
 
   <div class="card">
-    <h2>Sleep &amp; completion over time</h2>
+    <h2>Sleep, completion &amp; breathing over time</h2>
+    <div class="caption" style="font-size:11px;color:#8a97ad;margin-top:-4px;margin-bottom:8px;"><span style="color:#4a9de8">Sleep</span> · <span style="color:#5bd6a0">Tasks closed %</span> · <span style="color:#b48cff">Breathing min (scaled: 30 min = top)</span></div>
     <div id="ts-chart"></div>
     <div class="legend">
       <span><span class="swatch" style="background:var(--blue)"></span> Sleep score</span>
@@ -77,6 +78,7 @@ var SYNC_URL = 'https://forge-sync.yoseanreid.workers.dev';
 var WORKER   = 'https://forge-input.yoseanreid.workers.dev';
 var K_DAILY  = 'forge-daily-log';
 var TRACK_ALC = '2026-08-03';              /* alcohol logged reliably from here; earlier = untracked */
+var K_BLOG = 'forge-breathe-log';           /* synced breathing session log (read-only here) */
 /* BC statutory holidays 2026 — UPDATE for 2027 when the year turns (hardcoded, will go stale) */
 var BC_HOLIDAYS = ['2026-01-01','2026-02-16','2026-04-03','2026-05-18','2026-07-01',
                    '2026-08-03','2026-09-07','2026-09-30','2026-10-12','2026-11-11','2026-12-25'];
@@ -122,6 +124,16 @@ function alcoholFor(date, hist){
   if (v === undefined || v === null || v === '') return 0;  /* logged, blank = sober */
   v = +v; return isNaN(v) ? null : v;
 }
+/* total breathing minutes on `date` given forge-breathe-log; null if the log has never been touched at all */
+function breatheMinutes(date, blog){
+  if (!blog || typeof blog !== 'object') return null;
+  if (!Object.keys(blog).length) return null;    /* no logger data at all - untracked, not zero */
+  var day = blog[date];
+  if (!day || !Array.isArray(day.s)) return 0;   /* logger active but no session that day = 0 */
+  var t = 0;
+  day.s.forEach(function(x){ if (x && typeof x.sec === 'number' && x.sec > 0) t += x.sec; });
+  return Math.round(t / 60);
+}
 function median(arr){
   var a = arr.filter(function(x){ return typeof x === 'number'; }).sort(function(x,y){ return x-y; });
   if (!a.length) return null;
@@ -134,7 +146,7 @@ function mean(arr){
   return a.reduce(function(s,x){ return s+x; }, 0) / a.length;
 }
 /* build the per-day derived series from the log + /health, honouring active tag filters */
-function deriveDays(log, hist, eveSet){
+function deriveDays(log, hist, eveSet, blog){
   return Object.keys(log).sort().map(function(d){
     var rec = log[d] || {};
     return {
@@ -143,6 +155,7 @@ function deriveDays(log, hist, eveSet){
       completion: completion(rec),
       keystone: keystone(rec),
       alcohol: alcoholFor(d, hist),
+      breathe: breatheMinutes(d, blog),
       tag: rec.tag || 'normal',
       eve: !!eveSet[d]
     };
@@ -185,11 +198,34 @@ function mergeCloud(local, cloud){
 
 function boot(){
   var log = fdRead(K_DAILY, {});
+  var blog = fdRead(K_BLOG, {});
   var pulls = [];
   pulls.push(
     fetch(SYNC_URL + '/' + encodeURIComponent(K_DAILY))
       .then(function(r){ return r.ok ? r.json() : null; })
       .then(function(cloud){ log = mergeCloud(log, cloud); fdWrite(K_DAILY, log); })
+      .catch(function(){})
+  );
+  pulls.push(
+    fetch(SYNC_URL + '/' + encodeURIComponent(K_BLOG))
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(cloud){
+        if (!cloud || typeof cloud !== 'object' || cloud.error) return;
+        /* union by session id (ts fallback) per day, same rule the logger uses */
+        Object.keys(cloud).forEach(function(dk){
+          var cc = cloud[dk]; if (!cc || typeof cc !== 'object') return;
+          var cs = Array.isArray(cc.s) ? cc.s : [];
+          var ls = (blog[dk] && Array.isArray(blog[dk].s)) ? blog[dk].s : [];
+          var seen = {}, out = [];
+          ls.concat(cs).forEach(function(x){
+            if (!x || typeof x !== 'object') return;
+            var id = String(x.id || x.ts || ''); if (!id || seen[id]) return;
+            seen[id] = 1; out.push(x);
+          });
+          if (out.length !== ls.length){ blog[dk] = { s: out }; }
+        });
+        fdWrite(K_BLOG, blog);
+      })
       .catch(function(){})
   );
   var hist = {};
@@ -201,11 +237,13 @@ function boot(){
   );
   Promise.all(pulls).then(function(){
     var eves = holidayEveSet(BC_HOLIDAYS);
-    ALL = deriveDays(log, hist, eves);
+    ALL = deriveDays(log, hist, eves, blog);
     TAGS.forEach(function(t){ ACTIVE[t] = true; });
     var days = Object.keys(log).length;
-    setStatus(days ? (days + ' days on record. Confounds joined from /health.') :
-                     'No daily-log records yet. This fills in as you debrief.');
+    var bMin = Object.keys(blog).reduce(function(t,dk){ var a=(blog[dk]&&blog[dk].s)||[]; a.forEach(function(x){ if(x && x.sec>0) t+=x.sec; }); return t; }, 0);
+    var bDays = Object.keys(blog).filter(function(dk){ var a=(blog[dk]&&blog[dk].s)||[]; return a.some(function(x){ return x&&x.sec>0; }); }).length;
+    setStatus(days ? (days + ' days on record. Confounds joined from /health.' + (bDays? ' Breathing: ' + bDays + ' days, ' + Math.round(bMin/60) + ' min.' : ''))
+                   : 'No daily-log records yet. This fills in as you debrief.');
     renderFilters();
     renderAll();
   });
@@ -265,6 +303,25 @@ function renderTimeSeries(days){
   }
   polyline('sleep', '#4a9de8');
   polyline('completion', '#5bd6a0');
+  /* breathing minutes overlay - scaled so 30 min = top; dashed to signal a different unit */
+  (function(){
+    var seg=[], out=[];
+    days.forEach(function(d,i){
+      var v = d.breathe;
+      if (v === null){ if (seg.length){ out.push(seg); seg=[]; } }
+      else { var y2 = padT + (100 - Math.min(100, v * (100/30))) * (H-padT-padB)/100; seg.push(x(i)+','+y2); }
+    });
+    if (seg.length) out.push(seg);
+    out.forEach(function(pts){
+      svg.push('<polyline points="'+pts.join(' ')+'" fill="none" stroke="#b48cff" stroke-width="1.75" stroke-dasharray="4 3"/>');
+    });
+    days.forEach(function(d,i){
+      if (d.breathe !== null && d.breathe > 0){
+        var y2 = padT + (100 - Math.min(100, d.breathe * (100/30))) * (H-padT-padB)/100;
+        svg.push('<circle cx="'+x(i)+'" cy="'+y2+'" r="2" fill="#b48cff"/>');
+      }
+    });
+  })();
   /* drinking-night markers along the bottom */
   days.forEach(function(d,i){
     if (typeof d.alcohol === 'number' && d.alcohol > 0)
@@ -315,6 +372,15 @@ function renderGroups(days){
     html += '</table>';
   }
   block('By sleep', groupBy(days, sleepBuckets), med===null?'':' (median '+Math.round(med)+')');
+  /* By breathing: median split over days that logged any breathing (positive value) */
+  var bMins = days.map(function(x){ return x.breathe; }).filter(function(v){ return typeof v==='number' && v>0; });
+  var bMed = median(bMins);
+  var breatheBuckets = bMed===null ? [] : [
+    { label:'More breathing', test:function(x){ return typeof x.breathe==='number' && x.breathe >= bMed; } },
+    { label:'Less breathing', test:function(x){ return typeof x.breathe==='number' && x.breathe <  bMed && x.breathe > 0; } },
+    { label:'None logged',    test:function(x){ return x.breathe === 0; } }
+  ];
+  block('By breathing', groupBy(days, breatheBuckets), bMed===null?'':' (median '+bMed+' min)');
   block('By drinking', groupBy(days, alcoholBuckets));
   block('By day type', groupBy(days, tagBuckets));
   host.innerHTML = html || '<div class="empty">Not enough tagged data yet.</div>';
@@ -323,7 +389,7 @@ function renderGroups(days){
 /* expose pure fns for tests when loaded under node */
 if (typeof module !== 'undefined' && module.exports){
   module.exports = { prevDay, holidayEveSet, effSleep, completion, keystone, alcoholFor,
-                     median, mean, deriveDays, groupBy, mergeCloud, TRACK_ALC };
+                     breatheMinutes, median, mean, deriveDays, groupBy, mergeCloud, TRACK_ALC };
 }
 
 if (typeof document !== 'undefined' && document.getElementById('status')) boot();
