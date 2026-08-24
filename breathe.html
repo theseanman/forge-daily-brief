@@ -42,6 +42,18 @@
   #done.on{ display:flex; }
   #done .big{ font-size:30px; font-weight:200; letter-spacing:.06em; }
   #done .sub{ font-size:12px; letter-spacing:.22em; text-transform:uppercase; margin-top:10px; opacity:.9; font-weight:700; }
+  /* palm sway - gentle breeze, two layers */
+  #palmL,#palmR{ transform-box:fill-box; transform-origin:50% 100%; }
+  #frondsL,#frondsR{ transform-box:fill-box; transform-origin:50% 95%; }
+  #palmL{ animation:swayT 5.6s ease-in-out -1.2s infinite alternate; }
+  #palmR{ animation:swayT 6.4s ease-in-out -3.1s infinite alternate; }
+  #frondsL{ animation:swayF 3.8s ease-in-out -0.7s infinite alternate; }
+  #frondsR{ animation:swayF 4.4s ease-in-out -2.2s infinite alternate; }
+  @keyframes swayT{ from{ transform:rotate(-0.7deg);} to{ transform:rotate(0.7deg);} }
+  @keyframes swayF{ from{ transform:rotate(-1.6deg);} to{ transform:rotate(1.6deg);} }
+  @media (prefers-reduced-motion: reduce){
+    #palmL,#palmR,#frondsL,#frondsR{ animation:none; }
+  }
   @media (prefers-reduced-motion: reduce){ .rm-hide{ display:none; } }
 </style>
 </head>
@@ -73,7 +85,7 @@
   <!-- palms (foreground) -->
   <g id="palmL" stroke-linecap="round">
     <path d="M60,700 C70,600 62,540 90,470" stroke="#6b4a32" stroke-width="22" fill="none"/>
-    <g fill="none" stroke-width="14">
+    <g id="frondsL" fill="none" stroke-width="14">
       <path d="M90,470 C40,430 8,436 -20,470" stroke="#0f5d3a"/>
       <path d="M90,470 C60,410 30,392 -6,392" stroke="#157347"/>
       <path d="M90,470 C86,404 66,368 34,346" stroke="#1d8a52"/>
@@ -85,7 +97,7 @@
   </g>
   <g id="palmR" stroke-linecap="round">
     <path d="M950,700 C938,590 948,530 916,462" stroke="#6b4a32" stroke-width="24" fill="none"/>
-    <g fill="none" stroke-width="15">
+    <g id="frondsR" fill="none" stroke-width="15">
       <path d="M916,462 C966,420 1000,426 1030,462" stroke="#0f5d3a"/>
       <path d="M916,462 C948,398 980,382 1016,384" stroke="#157347"/>
       <path d="M916,462 C920,394 942,356 976,336" stroke="#1d8a52"/>
@@ -111,7 +123,8 @@
 
 <div id="done">
   <div class="big">Done.</div>
-  <div class="sub">Tap anywhere to return</div>
+  <div class="sub" id="done-total" style="letter-spacing:.18em;"></div>
+  <div class="sub" style="opacity:.75;">Tap anywhere to return</div>
 </div>
 
 <div id="menu"></div>
@@ -283,11 +296,80 @@ function setSound(on){
   uiSave();
 }
 
+
+/* ---------- session log: forge-breathe-log (synced, union by ts) ---------- */
+var SYNC_URL='https://forge-sync.yoseanreid.workers.dev';
+var BLOG_KEY='forge-breathe-log', BLOG_MIN_SEC=20, BLOG_MAX_DAYS=120, BLOG_MAX_PER_DAY=40;
+function blogYmd(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function blogRead(){ try{ var v=JSON.parse(localStorage.getItem(BLOG_KEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function blogWrite(all){ try{ localStorage.setItem(BLOG_KEY, JSON.stringify(all)); }catch(e){} }
+function blogUnionDay(a,b){
+  var seen={}, out=[];
+  (a||[]).concat(b||[]).forEach(function(s){
+    if(!s||typeof s!=='object') return;
+    var id=String(s.id||s.ts||''); if(!id||seen[id]) return; seen[id]=1; out.push(s);
+  });
+  out.sort(function(x,y){ return (x.ts||0)-(y.ts||0); });
+  if(out.length>BLOG_MAX_PER_DAY) out=out.slice(-BLOG_MAX_PER_DAY);
+  return out;
+}
+function blogAppend(all, dk, sess){
+  if(!all||typeof all!=='object'||Array.isArray(all)) all={};
+  var day=(all[dk]&&Array.isArray(all[dk].s))?all[dk].s:[];
+  all[dk]={ s: blogUnionDay(day,[sess]) };
+  var keys=Object.keys(all).sort();
+  if(keys.length>BLOG_MAX_DAYS){ var o={}; keys.slice(-BLOG_MAX_DAYS).forEach(function(k){o[k]=all[k];}); if(!o[dk]) o[dk]=all[dk]; all=o; }
+  return all;
+}
+function blogTodaySec(all, dk){
+  var day=(all[dk]&&Array.isArray(all[dk].s))?all[dk].s:[], t=0;
+  day.forEach(function(s){ t += (typeof s.sec==='number'&&s.sec>0)?s.sec:0; });
+  return t;
+}
+function blogPush(all){
+  try{ fetch(SYNC_URL + '/' + encodeURIComponent(BLOG_KEY), { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(all) }).catch(function(){}); }catch(e){}
+}
+function blogPull(){
+  fetch(SYNC_URL + '/' + encodeURIComponent(BLOG_KEY))
+    .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function(cloud){
+      if(!cloud||typeof cloud!=='object'||Array.isArray(cloud)||cloud.error) return;
+      var all=blogRead(), changed=false;
+      for(var dk in cloud){
+        if(!cloud.hasOwnProperty(dk)) continue;
+        var cc=cloud[dk]; if(!cc||typeof cc!=='object') continue;
+        var cs=Array.isArray(cc.s)?cc.s:[];
+        var ls=(all[dk]&&Array.isArray(all[dk].s))?all[dk].s:[];
+        var u=blogUnionDay(ls,cs);
+        if(u.length!==ls.length){ all[dk]={s:u}; changed=true; }
+      }
+      if(changed) blogWrite(all);
+    }).catch(function(){});
+}
+function blogRecord(pid, optLabel, sec){
+  if(sec < BLOG_MIN_SEC) return -1;
+  var d=new Date();
+  var sess={ ts: Date.now(),
+             id: String(Date.now())+'-'+Math.floor(Math.random()*1000000),
+             hm: ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2),
+             p: pid, o: optLabel, sec: Math.round(sec) };
+  var all=blogRead();
+  var dk=blogYmd();
+  all=blogAppend(all, dk, sess);
+  blogWrite(all); blogPush(all);
+  return blogTodaySec(all, dk);
+}
+
 /* ================= session runtime ================= */
 var running = false, sess = null, idx = 0, phStart = 0, phFrom = 0.35, startAt = 0, raf = 0;
+var curPid = '', curOpt = '';
 function fmtCount(x){ var n = Math.ceil(x); return n < 0 ? 0 : n; }
 function setText(id, s){ var el = document.getElementById(id); if (el) el.textContent = s; }
 function startSession(pid, opt){
+  curPid = pid;
+  curOpt = (pid==='coherent') ? String((opt&&opt.pace)||'')+'s'
+         : (pid==='sigh') ? String((opt&&opt.mode)||'')
+         : (pid==='co2') ? String((opt&&opt.level)||'') : '';
   sess = buildSession(pid, opt);
   idx = 0; startAt = performance.now(); phStart = startAt; phFrom = level;
   running = true;
@@ -304,7 +386,15 @@ function endSession(toDone){
   running = false;
   if (raf) cancelAnimationFrame(raf);
   audioStopAll();
+  var todaySec = -1;
+  if (startAt > 0){
+    var elapsed = (performance.now() - startAt) / 1000;
+    startAt = 0;
+    try{ todaySec = blogRecord(curPid, curOpt, elapsed); }catch(e){}
+  }
   document.getElementById('hud').className = '';
+  var tt = document.getElementById('done-total');
+  if (tt) tt.textContent = (todaySec > 0) ? ('TODAY: ' + Math.round(todaySec/60) + ' MIN') : '';
   if (toDone){ document.getElementById('done').className = 'on'; }
   else { document.getElementById('menu').style.display = 'block'; }
 }
@@ -436,6 +526,7 @@ function boot(){
   document.getElementById('stopBtn').onclick = function(){ endSession(false); };
   document.getElementById('sndBtn').onclick = function(){ setSound(!soundOn); };
   setSound(soundOn);
+  try{ blogPull(); }catch(e){}
   document.getElementById('done').onclick = function(){
     document.getElementById('done').className = '';
     document.getElementById('menu').style.display = 'block';

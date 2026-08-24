@@ -392,6 +392,12 @@
         <div class="field"><div class="field-label">What the pre-decided response was</div><textarea id="col-response" style="min-height:48px;"></textarea></div>
       </div>
 
+      <!-- breathing today (read-only, logged by breathe.html) -->
+      <div class="rocks-card" id="breathe-card" style="margin-top:6px;">
+        <div style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#3ec3d4; margin-bottom:6px;">Breathing today</div>
+        <div class="note-line" id="breathe-line" style="margin:0;"></div>
+      </div>
+
       <div class="btn-row">
         <button class="btn" onclick="prev()"><i class="ti ti-arrow-left"></i></button>
         <button class="btn primary" onclick="next()">Next <i class="ti ti-arrow-right"></i></button>
@@ -704,6 +710,7 @@ var K_TOP5='forge-top5', K_BACKLOG='forge-backlog', K_FUN='forge-fun',
 var K_FRAME='forge-frame', K_MUSHIN='forge-mushin'; /* install13 */
 var K_REPS='forge-reps'; /* install23 */
 var K_STRESS='forge-stressinoc'; /* stressinoc */
+var K_BLOG='forge-breathe-log'; /* breathe log, read-only here */
 var K_VIDEO='forge-video'; /* install25 */
 var K_PROTO='forge-protocol-counts'; /* debrief_protocol_review_aug14 */
 var K_PARKED='forge-parked', K_PROJ='forge-project'; /* install20 */
@@ -739,7 +746,7 @@ function syncPush(key) {
    An entry that is EMPTY in the cloud never overwrites a populated local one.
    That is deliberate: stale-but-present beats silently wiped. The cost is that
    deliberately clearing something on one surface will not propagate here. */
-var PULL_KEYS = [K_TOP5, K_ROCKS, K_FRAME, K_MUSHIN, K_BACKLOG, K_FUN, K_PARKED, K_PROJ, K_REPS, K_VIDEO, K_PROTO, K_DAILY, K_STRESS]; /* install25 + tally_pull_key_aug14 + dailylog_backup + stressinoc */
+var PULL_KEYS = [K_TOP5, K_ROCKS, K_FRAME, K_MUSHIN, K_BACKLOG, K_FUN, K_PARKED, K_PROJ, K_REPS, K_VIDEO, K_PROTO, K_DAILY, K_STRESS, K_BLOG]; /* install25 + tally_pull_key_aug14 + dailylog_backup + stressinoc + breathelog */
 
 function fdBlank(v) {
   if (v === null || v === undefined) return true;
@@ -816,6 +823,21 @@ function fdMergeEntry(key, local, dk, cloudVal) {
     lDone.concat(cDone).forEach(function(x){ if (typeof x === 'string' && !seen[x]) { seen[x]=1; wantDone.push(x); } });
     if (wantPick === lPick && wantDone.length === lDone.length) return false;
     local[dk] = { pick: wantPick, done: wantDone };
+    return true;
+  }
+
+  if (key === K_BLOG) {                       /* breathe sessions: union by id (ts fallback) */
+    var lS = (localVal && Array.isArray(localVal.s)) ? localVal.s : [];
+    var cS = (cloudVal && Array.isArray(cloudVal.s)) ? cloudVal.s : [];
+    var seenB = {}, outB = [];
+    lS.concat(cS).forEach(function(x){
+      if (!x || typeof x !== 'object') return;
+      var idb = String(x.id || x.ts || ''); if (!idb || seenB[idb]) return;
+      seenB[idb] = 1; outB.push(x);
+    });
+    if (outB.length === lS.length) return false;
+    outB.sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
+    local[dk] = { s: outB };
     return true;
   }
 
@@ -1023,6 +1045,7 @@ function initPlanRows(){
   try { initStress(); } catch(e) {}
   try { initDomains(); } catch(e) {}
   try { initCollision(); } catch(e) {}
+  try { initBreathe(); } catch(e) {}
   try { paintVideo(); } catch(e) {} /* install25 */
   try { renderWeeklyReview(); } catch (e) {} /* install20 */
 }
@@ -1951,6 +1974,39 @@ function saveCollision(){
   if(keys.length>60){ var o={}; keys.slice(-60).forEach(function(k){o[k]=all[k];}); all=o; }
   fdWrite(K_COLLISION,all);
 }
+
+/* ---------- breathing log line (read-only; sessions written by breathe.html) ---------- */
+function fmtMS(sec){ var m=Math.floor(sec/60), s=Math.round(sec%60); return m+':'+('0'+s).slice(-2); }
+var BLOG_NAMES={coherent:'Coherent',reset:'Reset',sigh:'Sighs',box:'Box',endday:'Wind-down',co2:'CO\u2082'};
+function initBreathe(){
+  var card=document.getElementById('breathe-card'), line=document.getElementById('breathe-line');
+  if(!card||!line) return;
+  var all=fdRead(K_BLOG,{});
+  if(!all||typeof all!=='object'||Array.isArray(all)){ card.classList.remove('show'); return; }
+  var today=fdToday(), per={}, todaySec=0, order=[];
+  var day=all[today]; var s=(day&&Array.isArray(day.s))?day.s:[];
+  s.forEach(function(x){
+    var sec=(typeof x.sec==='number'&&x.sec>0)?x.sec:0; if(sec<=0) return;
+    todaySec+=sec; var k=x.p||'other';
+    if(per[k]===undefined){ per[k]=0; order.push(k); }
+    per[k]+=sec;
+  });
+  var wkSec=0, wkDays=0, i;
+  for(i=0;i<7;i++){
+    var dk=fdYmd(new Date(Date.now()-i*86400000));
+    var dd=all[dk]; var arr=(dd&&Array.isArray(dd.s))?dd.s:[];
+    var t=0; arr.forEach(function(x){ t+=(typeof x.sec==='number'&&x.sec>0)?x.sec:0; });
+    if(t>0){ wkSec+=t; wkDays++; }
+  }
+  if(todaySec<=0 && wkSec<=0){ card.classList.remove('show'); return; }
+  var parts=[];
+  order.forEach(function(k){ parts.push((BLOG_NAMES[k]||k)+' '+fmtMS(per[k])); });
+  var txt = parts.length ? parts.join(' \u00b7 ') : 'No sessions yet today';
+  txt += ' \u2014 last 7 days: '+Math.round(wkSec/60)+' min \u00b7 '+wkDays+(wkDays===1?' day':' days');
+  line.textContent=txt;
+  card.classList.add('show');
+}
+
 
 
 
