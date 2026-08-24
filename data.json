@@ -1,1 +1,99 @@
-{"welltory": {"stress": 53, "energy": 60, "health": 100}, "body_comp": {"weight": 200, "body_fat": 26, "muscle_mass": null, "bmi": 28.6, "visceral_fat": null}, "sleep": {"score": null, "duration": null, "hr_range": null, "rem": 100, "core": 212, "deep": 86, "awake": 9, "duration_min": 398, "time_in_bed_min": 445, "computed_score": 91, "computed_score_parts": {"duration": 33.1, "deep": 20, "rem": 20, "efficiency": 17.9}, "capture_method": "health_auto_export_v1", "capture_method_since": "2026-08-13", "stage_source_date": "2026-08-20"}, "notes": "", "updated": "2026-08-23T15:37:13.124Z", "calendar": [{"date": "Tue Aug 25", "time": "All day", "title": "POF \u2014 Japan dry run (commit plan FIRST, then pull data)"}, {"date": "Tue Aug 25", "time": "All day", "title": "Commit the Japan analysis plan file with a real date then pull the JSON Bin data and run the dry run"}, {"date": "Tue Aug 25", "time": "All day", "title": "Finish the deposit, insert my orchid ID and email, verify the seven flags citations, either source or soften the cardiac-regulation prognostic claim in S6 and reconcile the five category classified against chapter 10 of the book then upload to ZENODON record the DOI"}, {"date": "Tue Aug 25", "time": "01:00 PM", "title": "Dr. Heng will phone me"}, {"date": "Wed Aug 26", "time": "05:55 PM", "title": "BC ferries departs be there an hour early"}, {"date": "Thu Aug 27", "time": "All day", "title": "POF \u2014 Finalise and upload the Zenodo deposit"}, {"date": "Thu Aug 27", "time": "02:20 PM", "title": "Dr. Ip first injection"}, {"date": "Sun Aug 30", "time": "All day", "title": "My Hold On my gym membership ends"}, {"date": "Sun Aug 30", "time": "08:30 PM", "title": "Football fantasy draft"}, {"date": "Fri Aug 28", "time": "04:30 AM", "title": "ONE Friday Fights 168 & The Inner Circle 28"}, {"date": "Fri Aug 28", "time": "04:20 PM", "title": "RMT - Private Visit - 60 mins with Roland Boros for Sean Reid"}, {"date": "Sat Aug 29", "time": "03:00 AM", "title": "UFC Fight Night: Nurmagomedov vs Song"}]}
+{
+  "welltory": {
+    "stress": 83,
+    "energy": 31,
+    "health": 100
+  },
+  "body_comp": {
+    "weight": 200,
+    "body_fat": 26,
+    "muscle_mass": null,
+    "bmi": 28.6,
+    "visceral_fat": null
+  },
+  "sleep": {
+    "score": null,
+    "duration": null,
+    "hr_range": null,
+    "rem": 100,
+    "core": 212,
+    "deep": 86,
+    "awake": 9,
+    "duration_min": 398,
+    "time_in_bed_min": 445,
+    "computed_score": 91,
+    "computed_score_parts": {
+      "duration": 33.1,
+      "deep": 20,
+      "rem": 20,
+      "efficiency": 17.9
+    },
+    "capture_method": "health_auto_export_v1",
+    "capture_method_since": "2026-08-13",
+    "stage_source_date": "2026-08-20"
+  },
+  "notes": "",
+  "updated": "2026-08-24T16:14:32.111Z",
+  "calendar": [
+    {
+      "date": "Tue Aug 25",
+      "time": "All day",
+      "title": "POF — Japan dry run (commit plan FIRST, then pull data)"
+    },
+    {
+      "date": "Tue Aug 25",
+      "time": "All day",
+      "title": "Commit the Japan analysis plan file with a real date then pull the JSON Bin data and run the dry run"
+    },
+    {
+      "date": "Tue Aug 25",
+      "time": "All day",
+      "title": "Finish the deposit, insert my orchid ID and email, verify the seven flags citations, either source or soften the cardiac-regulation prognostic claim in S6 and reconcile the five category classified against chapter 10 of the book then upload to ZENODON record the DOI"
+    },
+    {
+      "date": "Tue Aug 25",
+      "time": "01:00 PM",
+      "title": "Dr. Heng will phone me"
+    },
+    {
+      "date": "Wed Aug 26",
+      "time": "05:55 PM",
+      "title": "BC ferries departs be there an hour early"
+    },
+    {
+      "date": "Thu Aug 27",
+      "time": "All day",
+      "title": "POF — Finalise and upload the Zenodo deposit"
+    },
+    {
+      "date": "Thu Aug 27",
+      "time": "02:20 PM",
+      "title": "Dr. Ip first injection"
+    },
+    {
+      "date": "Sun Aug 30",
+      "time": "All day",
+      "title": "My Hold On my gym membership ends"
+    },
+    {
+      "date": "Sun Aug 30",
+      "time": "08:30 PM",
+      "title": "Football fantasy draft"
+    },
+    {
+      "date": "Fri Aug 28",
+      "time": "04:30 AM",
+      "title": "ONE Friday Fights 168 & The Inner Circle 28"
+    },
+    {
+      "date": "Fri Aug 28",
+      "time": "04:20 PM",
+      "title": "RMT - Private Visit - 60 mins with Roland Boros for Sean Reid"
+    },
+    {
+      "date": "Sat Aug 29",
+      "time": "03:00 AM",
+      "title": "UFC Fight Night: Nurmagomedov vs Song"
+    }
+  ]
+}
