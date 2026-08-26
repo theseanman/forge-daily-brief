@@ -2516,7 +2516,9 @@ var CUES = [
   'Stop for half a beat before your most important word. The silence does more than volume.',
   'In relation to magnetism, warmth lands before competence. Do not lead with what you know.',
   'One follow-up question deeper than the answer required.',
-  'Pay attention to the person, not to how you are performing.'
+  'Pay attention to the person, not to how you are performing.',
+  'Name the emotion before your content &mdash; &ldquo;that must have been hard,&rdquo; &ldquo;you sound proud.&rdquo; They feel heard, not answered.',
+  'Learn one name and one detail about someone new. Use both next time &mdash; it is rare enough to be memorable.'
 ];
 function pfCue() {{
   var d = new Date();
@@ -2587,6 +2589,8 @@ function paintPractice() {{
     '<div style="border-top:2px solid #1a5fa8; margin-top:10px; padding-top:10px;">' +
       '<div style="font-size:10px; letter-spacing:0.16em; color:#1a5fa8; font-weight:700; margin-bottom:3px;">TODAY&rsquo;S CUE</div>' +
       '<div style="font-size:13px; font-weight:600; line-height:1.45; margin-bottom:12px;">' + pfCue() + '</div>' +
+      '<div style="font-size:10px; letter-spacing:0.16em; color:#1a5fa8; font-weight:700; margin-bottom:3px;">DEPTH</div>' +
+      '<div style="font-size:12px; line-height:1.5; margin-bottom:12px;">Go one layer deeper with someone today &mdash; then match with your own at the same layer. That is how an acquaintance becomes a friend.</div>' +
       '<div style="font-size:10px; letter-spacing:0.16em; color:#1a5fa8; font-weight:700; margin-bottom:4px;">DECIDING</div>' +
       '<div style="font-size:12px; line-height:1.55;">' +
         '<strong style="color:#1a5fa8;">3 seconds</strong> &mdash; minor, everyday, nothing survives the night. Which room, what to say, put the phone down. Auditing it <em>is</em> the problem.<br>' +
@@ -2600,6 +2604,7 @@ function paintPractice() {{
         '<strong style="color:#1a5fa8;">Over</strong> &mdash; it is finished. Driving home. Sunday. Kids asleep. Where could I have improved? The time to evaluate my performance is after the fact, not during, according to the experts.<br>' +
         '<strong style="color:#1a5fa8;">Never review while it is live.</strong> The more the moment matters, the more true this is &mdash; that is when monitoring does the most damage, not an exception to the rule.' +
       '</div>' +
+      '<a href="./charisma.html" style="display:block; text-align:center; margin-top:13px; padding:11px; border-radius:10px; background:rgba(74,157,232,0.28); border:1px solid rgba(74,157,232,0.55); color:#eaf4ff; font-weight:800; letter-spacing:0.06em; text-decoration:none; font-size:13px;">Charisma protocol &amp; drill &rarr;</a>' +
     '</div>';
 }}
 
