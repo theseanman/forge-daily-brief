@@ -73,6 +73,12 @@
       border-radius: 6px; padding: 8px; font-size: 15px; font-family: inherit; color: #0d0d0d;
     }
     .t5txt.done { text-decoration: line-through; opacity: 0.55; }
+    .t5star {
+      width: 26px; height: 26px; flex-shrink: 0; border: 2px solid #0d0d0d; border-radius: 6px;
+      background: rgba(255,255,255,0.6); font-size: 15px; line-height: 1; color: rgba(13,13,13,0.28);
+      cursor: pointer; touch-action: manipulation; padding: 0;
+    }
+    .t5star.on { background: #0d0d0d; color: #ffc107; border-color: #0d0d0d; }
     .t5hr {
       width: 78px; flex-shrink: 0; border: 2px solid #0d0d0d; border-radius: 6px;
       background: rgba(255,255,255,0.6); font-size: 13px; font-weight: 700;
@@ -752,7 +758,14 @@ function renderTop5(){
       sel.innerHTML = hourOptions(it.h);
       sel.onchange = function(){ var a = loadTop5(); a[i].h = this.value; saveTop5(a); renderTop5(); paintNext(); paintChips(); };
 
-      row.appendChild(num); row.appendChild(chk); row.appendChild(txt); row.appendChild(sel);
+      var star = document.createElement('button');
+      star.type = 'button';
+      star.className = 't5star' + (it.k ? ' on' : '');
+      star.innerHTML = '\u2605';
+      star.title = 'Keystone';
+      star.onclick = function(){ var a = loadTop5(); var was = !!(a[i] && a[i].k); for (var j = 0; j < 5; j++){ if (a[j]) a[j].k = false; } if (a[i]) a[i].k = !was; saveTop5(a); renderTop5(); };
+
+      row.appendChild(num); row.appendChild(chk); row.appendChild(star); row.appendChild(txt); row.appendChild(sel);
 
       var row2 = document.createElement('div');
       row2.className = 't5row2';
