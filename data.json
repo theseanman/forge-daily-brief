@@ -1,1 +1,129 @@
-{"welltory": {"stress": 53, "energy": 54, "health": 100}, "body_comp": {"weight": 200, "body_fat": 26, "muscle_mass": null, "bmi": 28.6, "visceral_fat": null}, "sleep": {"score": null, "duration": null, "hr_range": null, "rem": 107, "core": 258, "deep": 87, "awake": 97, "duration_min": 452, "time_in_bed_min": 561, "computed_score": 94, "computed_score_parts": {"duration": 37.6, "deep": 20, "rem": 20, "efficiency": 16.1}, "capture_method": "health_auto_export_v1", "capture_method_since": "2026-08-13", "stage_source_date": "2026-08-25"}, "notes": "", "updated": "2026-08-25T16:21:53.733Z", "calendar": [{"date": "Tue Aug 25", "time": "All day", "title": "Commit the Japan analysis plan file with a real date then pull the JSON Bin data and run the dry run"}, {"date": "Tue Aug 25", "time": "All day", "title": "Finish the deposit, insert my orchid ID and email, verify the seven flags citations, either source or soften the cardiac-regulation prognostic claim in S6 and reconcile the five category classified against chapter 10 of the book then upload to ZENODON record the DOI"}, {"date": "Wed Aug 26", "time": "05:55 PM", "title": "BC ferries departs be there an hour early"}, {"date": "Thu Aug 27", "time": "All day", "title": "POF \u2014 Finalise and upload the Zenodo deposit"}, {"date": "Thu Aug 27", "time": "02:20 PM", "title": "Dr. Ip first injection"}, {"date": "Sat Aug 29", "time": "11:45 AM", "title": "Barber's appointment"}, {"date": "Sun Aug 30", "time": "All day", "title": "My Hold On my gym membership ends"}, {"date": "Sun Aug 30", "time": "08:30 PM", "title": "Football fantasy draft"}, {"date": "Mon Aug 31", "time": "09:30 AM", "title": "Cairo at Blundell"}, {"date": "Mon Aug 31", "time": "11:15 AM", "title": "Kayla asthma test "}, {"date": "Mon Aug 31", "time": "01:45 PM", "title": "Kinesiology appointment with Raphael Steveston location "}, {"date": "Tue Sep 01", "time": "All day", "title": "POF \u2014 No tasks this month (protected)"}, {"date": "Fri Aug 28", "time": "02:00 AM", "title": "Road To UFC: Maheshate vs Flowers"}, {"date": "Fri Aug 28", "time": "04:30 AM", "title": "ONE Friday Fights 168 & The Inner Circle 28"}, {"date": "Fri Aug 28", "time": "04:20 PM", "title": "RMT - Private Visit - 60 mins with Roland Boros for Sean Reid"}, {"date": "Sat Aug 29", "time": "03:00 AM", "title": "UFC Fight Night: Nurmagomedov vs Song"}, {"date": "Mon Aug 31", "time": "09:30 AM", "title": "Chiropractic \u2013 Private Subsequent Visit (30 Minutes) with Harriet Lee for Sean Reid"}, {"date": "Mon Aug 31", "time": "01:45 PM", "title": "Kinesiology \u2013 Strength & Conditioning Visit (30 Minutes) with Rafael Carlo Magtibay for Sean Reid"}]}
+{
+  "welltory": {
+    "stress": 68,
+    "energy": 46,
+    "health": 100
+  },
+  "body_comp": {
+    "weight": 200,
+    "body_fat": 26,
+    "muscle_mass": null,
+    "bmi": 28.6,
+    "visceral_fat": null
+  },
+  "sleep": {
+    "score": null,
+    "duration": null,
+    "hr_range": null,
+    "rem": 107,
+    "core": 258,
+    "deep": 87,
+    "awake": 97,
+    "duration_min": 452,
+    "time_in_bed_min": 561,
+    "computed_score": 94,
+    "computed_score_parts": {
+      "duration": 37.6,
+      "deep": 20,
+      "rem": 20,
+      "efficiency": 16.1
+    },
+    "capture_method": "health_auto_export_v1",
+    "capture_method_since": "2026-08-13",
+    "stage_source_date": "2026-08-25"
+  },
+  "notes": "",
+  "updated": "2026-08-26T14:29:04.277Z",
+  "calendar": [
+    {
+      "date": "Tue Aug 25",
+      "time": "All day",
+      "title": "Commit the Japan analysis plan file with a real date then pull the JSON Bin data and run the dry run"
+    },
+    {
+      "date": "Tue Aug 25",
+      "time": "All day",
+      "title": "Finish the deposit, insert my orchid ID and email, verify the seven flags citations, either source or soften the cardiac-regulation prognostic claim in S6 and reconcile the five category classified against chapter 10 of the book then upload to ZENODON record the DOI"
+    },
+    {
+      "date": "Wed Aug 26",
+      "time": "05:55 PM",
+      "title": "BC ferries departs be there an hour early"
+    },
+    {
+      "date": "Thu Aug 27",
+      "time": "All day",
+      "title": "POF — Finalise and upload the Zenodo deposit"
+    },
+    {
+      "date": "Thu Aug 27",
+      "time": "02:20 PM",
+      "title": "Dr. Ip first injection"
+    },
+    {
+      "date": "Sat Aug 29",
+      "time": "11:45 AM",
+      "title": "Barber's appointment"
+    },
+    {
+      "date": "Sun Aug 30",
+      "time": "All day",
+      "title": "My Hold On my gym membership ends"
+    },
+    {
+      "date": "Sun Aug 30",
+      "time": "08:30 PM",
+      "title": "Football fantasy draft"
+    },
+    {
+      "date": "Mon Aug 31",
+      "time": "09:30 AM",
+      "title": "Cairo at Blundell"
+    },
+    {
+      "date": "Mon Aug 31",
+      "time": "11:15 AM",
+      "title": "Kayla asthma test "
+    },
+    {
+      "date": "Mon Aug 31",
+      "time": "01:45 PM",
+      "title": "Kinesiology appointment with Raphael Steveston location "
+    },
+    {
+      "date": "Tue Sep 01",
+      "time": "All day",
+      "title": "POF — No tasks this month (protected)"
+    },
+    {
+      "date": "Fri Aug 28",
+      "time": "02:00 AM",
+      "title": "Road To UFC: Maheshate vs Flowers"
+    },
+    {
+      "date": "Fri Aug 28",
+      "time": "04:30 AM",
+      "title": "ONE Friday Fights 168 & The Inner Circle 28"
+    },
+    {
+      "date": "Fri Aug 28",
+      "time": "04:20 PM",
+      "title": "RMT - Private Visit - 60 mins with Roland Boros for Sean Reid"
+    },
+    {
+      "date": "Sat Aug 29",
+      "time": "03:00 AM",
+      "title": "UFC Fight Night: Nurmagomedov vs Song"
+    },
+    {
+      "date": "Mon Aug 31",
+      "time": "09:30 AM",
+      "title": "Chiropractic – Private Subsequent Visit (30 Minutes) with Harriet Lee for Sean Reid"
+    },
+    {
+      "date": "Mon Aug 31",
+      "time": "01:45 PM",
+      "title": "Kinesiology – Strength & Conditioning Visit (30 Minutes) with Rafael Carlo Magtibay for Sean Reid"
+    }
+  ]
+}
