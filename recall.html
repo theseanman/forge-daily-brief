@@ -21,12 +21,13 @@
   .dot{ height:3px; flex:1; max-width:44px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
   .dot.on{ background:var(--accent); }
   .dot.done{ background:var(--accent-hi); }
-  .mid{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px 6px; }
+  .mid{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; text-align:center; padding:24px 6px; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+  .mid::before, .mid::after{ content:''; margin:auto; flex:0 0 auto; }
   .prompt{ font-size:clamp(22px,6vw,32px); font-weight:300; line-height:1.35; letter-spacing:-.01em; max-width:640px; }
   .prompt b{ font-weight:700; color:var(--accent-hi); }
   .hint{ font-size:12.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:20px; font-weight:700; }
-  .reveal-wrap{ margin-top:22px; width:100%; max-width:640px; opacity:0; transform:translateY(6px); transition:opacity .35s ease, transform .35s ease; pointer-events:none; }
-  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:640px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden; transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:22px; }
   .reveal{ background:rgba(74,157,232,0.14); border-left:4px solid var(--accent); border-radius:12px; padding:16px 18px; text-align:left; }
   .reveal .line{ font-size:16px; line-height:1.55; color:var(--ink); margin-bottom:7px; }
   .reveal .line:last-child{ margin-bottom:0; }
