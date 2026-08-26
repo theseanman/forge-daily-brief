@@ -2604,7 +2604,7 @@ function paintPractice() {{
         '<strong style="color:#1a5fa8;">Over</strong> &mdash; it is finished. Driving home. Sunday. Kids asleep. Where could I have improved? The time to evaluate my performance is after the fact, not during, according to the experts.<br>' +
         '<strong style="color:#1a5fa8;">Never review while it is live.</strong> The more the moment matters, the more true this is &mdash; that is when monitoring does the most damage, not an exception to the rule.' +
       '</div>' +
-      '<a href="./charisma.html" style="display:block; text-align:center; margin-top:13px; padding:11px; border-radius:10px; background:rgba(74,157,232,0.28); border:1px solid rgba(74,157,232,0.55); color:#eaf4ff; font-weight:800; letter-spacing:0.06em; text-decoration:none; font-size:13px;">Charisma protocol &amp; drill &rarr;</a>' +
+      '<a href="./protocols.html" style="display:block; text-align:center; margin-top:13px; padding:11px; border-radius:10px; background:rgba(74,157,232,0.28); border:1px solid rgba(74,157,232,0.55); color:#eaf4ff; font-weight:800; letter-spacing:0.06em; text-decoration:none; font-size:13px;">Protocols &rarr;</a>' +
     '</div>';
 }}
 
