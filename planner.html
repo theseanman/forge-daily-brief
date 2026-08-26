@@ -297,11 +297,12 @@ var K_BACKUP = 'forge-backup';
 var K_MUSHIN = 'forge-mushin', K_PROJ = 'forge-project'; /* install14 */
 var K_PARKED = 'forge-parked'; /* install21 */
 var K_REPS = 'forge-reps'; /* install22 */
+var K_APPROACH = 'forge-approach'; /* approach mechanic tally */
 
 /* ---------- cloud sync ---------- */
 var SYNC_URL = 'https://forge-sync.yoseanreid.workers.dev';
 var K_FRAME = 'forge-frame'; /* install30: read for the off-day flag and the fight */
-var SYNC_KEYS = [K_TOP5, K_PLAN, K_BACKLOG, K_FUN, 'forge-week-rocks', K_MUSHIN, K_PROJ, K_PARKED, K_REPS, K_FRAME]; /* install22, install30 */
+var SYNC_KEYS = [K_TOP5, K_PLAN, K_BACKLOG, K_FUN, 'forge-week-rocks', K_MUSHIN, K_PROJ, K_PARKED, K_REPS, K_FRAME, K_APPROACH]; /* install22, install30, approach */
 
 function syncBadge(state) {
   var el = document.getElementById('sync-badge');
@@ -391,6 +392,14 @@ function syncPull(cb) {
                   local[dk] = { n: wantN, att: wantAtt };
                   changed = true;
                 }
+                continue;
+              }
+              if (key === K_APPROACH) { /* approach counts only ever go up */
+                var la = local[dk], ca = cloud[dk];
+                var laN = (la && typeof la.n === 'number') ? la.n : -1;
+                var caN = (ca && typeof ca.n === 'number') ? ca.n : -1;
+                var wantAN = caN > laN ? caN : (laN > 0 ? laN : 0);
+                if (wantAN !== (laN > 0 ? laN : 0)) { local[dk] = { n: wantAN }; changed = true; }
                 continue;
               }
               if (key === K_FRAME) { /* install30: merge fields, never drop an off day */
@@ -1872,6 +1881,16 @@ function renderPractice(){
           'font-weight:800;font-size:12px;cursor:pointer;touch-action:manipulation;' +
           'background:#ffc107;color:#0d0d0d;">+1</button>' +
       '</div>' +
+      '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid rgba(255,201,7,0.25);">' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-size:10px;letter-spacing:0.16em;opacity:0.75;">\u2197 APPROACHES</div>' +
+          '<div style="font-size:19px;font-weight:800;line-height:1.25;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;">' +
+            '<input id="p-appr-in" type="number" inputmode="numeric" min="0" value="' + apprEntry(pDayKey()).n + '" onchange="apprSet(this.value)" style="width:66px;background:rgba(255,201,7,0.12);border:1px solid rgba(255,201,7,0.4);border-radius:6px;color:#ffc107;font-size:18px;font-weight:800;padding:3px 6px;text-align:center;-webkit-appearance:none;" />' +
+            '<span style="font-size:12px;font-weight:600;opacity:0.6;">today &middot; <span id="p-appr-wk">' + apprWeek() + '</span> / 200 this week</span>' +
+          '</div>' +
+          '<div style="font-size:10px;opacity:0.7;margin-top:2px;">eye contact \u2192 eyebrow flash \u2192 head tilt \u2192 smile</div>' +
+        '</div>' +
+      '</div>' +
     '</div>';
 }
 
@@ -1908,6 +1927,14 @@ function paintReps(){
   var el = document.getElementById('p-reps-n');
   if (el) el.textContent = repsEntry(pDayKey()).n;
 }
+
+/* approach mechanic tally (daily number; weekly total, Monday-start, toward 200) */
+var APPR_KEEP = 60;
+function apprAll(){ var o = readJSON(K_APPROACH, {}); return (o && typeof o === 'object' && !Array.isArray(o)) ? o : {}; }
+function apprEntry(dk){ var e = apprAll()[dk]; var n = (e && typeof e.n === 'number' && e.n > 0) ? Math.floor(e.n) : 0; return { n: n }; }
+function apprWeek(){ var all = apprAll(), sum = 0, now = new Date(), dow = (now.getDay() + 6) % 7, d, e; for (var i = 0; i <= dow; i++){ d = new Date(now); d.setDate(now.getDate() - i); e = all[ymd(d)]; if (e && typeof e.n === 'number' && e.n > 0) sum += Math.floor(e.n); } return sum; }
+function apprSet(v){ var dk = pDayKey(), all = apprAll(); var n = parseInt(v, 10); if (isNaN(n) || n < 0) n = 0; all[dk] = { n: n }; var ks = Object.keys(all).sort(); if (ks.length > APPR_KEEP){ var t = {}; ks.slice(-APPR_KEEP).forEach(function(x){ t[x] = all[x]; }); all = t; } writeJSON(K_APPROACH, all); syncPush(K_APPROACH); paintAppr(); }
+function paintAppr(){ var w = document.getElementById('p-appr-wk'); if (w) w.textContent = apprWeek(); var inp = document.getElementById('p-appr-in'); if (inp && document.activeElement !== inp) inp.value = apprEntry(pDayKey()).n; }
 
 function practiceTick(){
   var live = false;
