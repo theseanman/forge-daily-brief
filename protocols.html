@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Protocols</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#081627; --surface:#0f2438; --surface-2:#15304a; --line:#23415f;
+    --blue:#4a9de8; --gold:#e0a854; --violet:#8a9ad0; --green:#3fd0a0;
+    --text:#eaf2fb; --muted:#8fa8c4; --radius:16px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:linear-gradient(180deg,#0a1a2c 0%, var(--ink) 100%); background-color:var(--ink);
+    color:var(--text); font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    line-height:1.55; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:680px;margin:0 auto;padding:26px 18px 80px}
+  header{padding-bottom:20px;border-bottom:1px solid var(--line);margin-bottom:24px}
+  .eyebrow{font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--blue);margin:0 0 8px}
+  h1{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:clamp(32px,8vw,48px);letter-spacing:-.02em;margin:0}
+  .sub{color:var(--muted);font-size:15px;margin:10px 0 0;max-width:52ch}
+
+  .list{display:flex;flex-direction:column;gap:14px}
+  a.protocol{
+    display:flex;align-items:center;gap:16px;text-decoration:none;color:inherit;
+    background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--blue);
+    border-radius:var(--radius);padding:18px 20px;transition:.16s;
+  }
+  a.protocol:hover{background:var(--surface-2);border-left-color:var(--gold);transform:translateX(2px)}
+  a.protocol:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+  a.protocol.gold{border-left-color:var(--gold)}
+  a.protocol.gold:hover{border-left-color:var(--blue)}
+  .p-body{flex:1;min-width:0}
+  .p-name{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:19px;letter-spacing:-.01em}
+  .p-desc{color:var(--muted);font-size:14px;margin-top:3px}
+  .p-modes{font-family:"Space Mono",monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-top:8px}
+  .p-arrow{font-size:22px;color:var(--muted);flex:none;transition:.16s}
+  a.protocol:hover .p-arrow{color:var(--gold);transform:translateX(3px)}
+
+  .count{font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:26px 0 10px}
+  footer{border-top:1px solid var(--line);margin-top:34px;padding-top:16px;color:var(--muted);font-size:13px}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Forge OS</p>
+    <h1>Protocols</h1>
+    <p class="sub">Your protocol library. Tap one to read it or run the drill — kept behind this one door so the brief stays uncluttered.</p>
+  </header>
+
+  <p class="count">Available protocols</p>
+  <div class="list">
+
+    <!-- Add a new protocol by copying one block and pointing href at its ./page.html -->
+    <a class="protocol" href="./charisma.html">
+      <div class="p-body">
+        <div class="p-name">The Charisma Protocol</div>
+        <div class="p-desc">Grounded presence, a credible floor, warm approach, attentional generosity, calibrated depth.</div>
+        <div class="p-modes">Read · Drill</div>
+      </div>
+      <div class="p-arrow">&rarr;</div>
+    </a>
+
+    <a class="protocol gold" href="./posture-reset.html">
+      <div class="p-body">
+        <div class="p-name">The Stack — Posture Reset</div>
+        <div class="p-desc">Reset the anterior-tilt pattern: release, control, and rehearse a stacked stance. Read it or run the daily routine.</div>
+        <div class="p-modes">Read · Drill</div>
+      </div>
+      <div class="p-arrow">&rarr;</div>
+    </a>
+
+  </div>
+
+  <footer>Forge OS · one link on the brief, every protocol behind it. New protocols get added here — the OS stays a single door.</footer>
+</div>
+</body>
+</html>
