@@ -2587,18 +2587,18 @@ function paintPractice() {{
     '</div>' +
     /* install27: today's cue + the decision tiers. install31: LIVE OR OVER. */
     '<div style="border-top:2px solid #1a5fa8; margin-top:10px; padding-top:10px;">' +
-      '<div style="font-size:10px; letter-spacing:0.16em; color:#1a5fa8; font-weight:700; margin-bottom:3px;">TODAY&rsquo;S CUE</div>' +
+      '<div style="font-size:13px; letter-spacing:0.16em; color:#1a5fa8; font-weight:700; margin-bottom:3px;">TODAY&rsquo;S CUE</div>' +
       '<div style="font-size:13px; font-weight:600; line-height:1.45; margin-bottom:12px;">' + pfCue() + '</div>' +
-      '<div style="font-size:10px; letter-spacing:0.16em; color:#1a5fa8; font-weight:700; margin-bottom:3px;">DEPTH</div>' +
+      '<div style="font-size:13px; letter-spacing:0.16em; color:#1a5fa8; font-weight:700; margin-bottom:3px;">DEPTH</div>' +
       '<div style="font-size:12px; line-height:1.5; margin-bottom:12px;">Go one layer deeper with someone today &mdash; then match with your own at the same layer. That is how an acquaintance becomes a friend.</div>' +
-      '<div style="font-size:10px; letter-spacing:0.16em; color:#1a5fa8; font-weight:700; margin-bottom:4px;">DECIDING</div>' +
+      '<div style="font-size:13px; letter-spacing:0.16em; color:#1a5fa8; font-weight:700; margin-bottom:4px;">DECIDING</div>' +
       '<div style="font-size:12px; line-height:1.55;">' +
         '<strong style="color:#1a5fa8;">3 seconds</strong> &mdash; minor, everyday, nothing survives the night. Which room, what to say, put the phone down. Auditing it <em>is</em> the problem.<br>' +
         '<strong style="color:#1a5fa8;">7 breaths</strong> &mdash; consequential, already in front of you, cannot be deferred. A deadline, an offer, a trip. Stewing adds nothing: decide and move.<br>' +
         '<strong style="color:#1a5fa8;">Sunday</strong> &mdash; anything that opens a new loop or commits future time, however urgent it feels. Especially the ones you generated yourself.' +
       '</div>' +
       '<div style="font-size:10px; opacity:0.65; margin-top:7px; line-height:1.5;">Seven breaths is from the Hagakure, c.1710 &mdash; a maxim from one retainer&rsquo;s reflections, not documented samurai practice. Roughly 30&ndash;45 seconds.</div>' +
-      '<div style="font-size:10px; letter-spacing:0.16em; color:#1a5fa8; font-weight:700; margin-top:13px; margin-bottom:4px;">LIVE OR OVER</div>' +
+      '<div style="font-size:13px; letter-spacing:0.16em; color:#1a5fa8; font-weight:700; margin-top:13px; margin-bottom:4px;">LIVE OR OVER</div>' +
       '<div style="font-size:12px; line-height:1.55;">' +
         '<strong style="color:#1a5fa8;">Live</strong> &mdash; someone is in front of me, right now. A person talking. My daughters in the room. Attention goes outward: their face, their words. Not onto how I am doing.<br>' +
         '<strong style="color:#1a5fa8;">Over</strong> &mdash; it is finished. Driving home. Sunday. Kids asleep. Where could I have improved? The time to evaluate my performance is after the fact, not during, according to the experts.<br>' +
