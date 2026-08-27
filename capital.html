@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Capital Protocol</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* read cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; }
+  .band b{ color:var(--gold); }
+  .seq{ font-size:14px; line-height:1.6; }
+  .seq div{ padding:8px 0; border-bottom:1px solid var(--line); }
+  .seq div:last-child{ border-bottom:none; }
+  .seq b{ color:var(--accent-hi); }
+
+  /* drill (reuses the fixed reveal mechanic) */
+  #drill{ display:none; }
+  .d-top{ text-align:center; margin-bottom:10px; }
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(20px,5.4vw,28px); font-weight:300; line-height:1.35; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./" class="back">&larr; Brief</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>The Capital Protocol</h1>
+    <div class="sub">Capture, don't beat. The edge isn't which securities you hold &mdash; it's cost, diversification, behaviour, and time. Optimise <b>structure</b>, not selection, and let it compound toward the exit.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">1</span><span class="p-name">The Base Rate</span></div>
+      <div class="p-ess">You don't need to beat the market. Capturing it is nearly free &mdash; the main way people forfeit the return is by trying to do better.</div>
+      <div class="move"><b>The Index Default</b> &mdash; the question is no longer "which stock or move" but "why would I do anything other than own the whole market cheaply?" Every deviation now carries a high burden of proof.</div>
+      <div class="move"><b>Verified or vibe?</b> &mdash; before any specific bet, ask what you know that the market's aggregate of informed participants doesn't already know and price. You'll almost never clear it. That's the pillar working.</div>
+      <div class="move"><b>Kill the tip reflex</b> &mdash; a hot tip gives a small hit of excitement. Do nothing with it. Not "research it later." Nothing.</div>
+      <div class="note">Even full-time professionals mostly can't beat the market net of costs over time &mdash; ~92% of active US equity funds lagged over 20 years. The prior that you will, in your evenings after teaching, should be very low. That's liberating, not an insult.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">2</span><span class="p-name">The Only Free Edge</span></div>
+      <div class="p-ess">You can't control returns. You almost fully control what you subtract &mdash; fees, tax, friction &mdash; and every dollar you don't subtract compounds for decades.</div>
+      <div class="move"><b>The total-cost audit</b> &mdash; find your real all-in cost once: every MER, advisor fee, account fee, trading cost. Above ~0.5% for something you could index at 0.05&ndash;0.20% is free money on the floor.</div>
+      <div class="move"><b>The fee line</b> &mdash; you don't buy a product whose MER you haven't looked up and can't justify against a broad index. "I'm not paying for that" is a complete sentence.</div>
+      <div class="move"><b>RESP grant first</b> &mdash; $2,500 per child per year captures the 20% CESG, up to $500 free per child. A guaranteed, instant 20% before the market does anything.</div>
+      <div class="note">Cost is one of the only reliable predictors of future return &mdash; and it predicts negatively. A 2% fee can quietly eat a third to a half of your final wealth. Verify current numbers against the CRA.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">3</span><span class="p-name">The Free Lunch</span></div>
+      <div class="p-ess">How you split across asset classes matters far more than which securities you hold. Allocation dominates selection; selection is close to noise.</div>
+      <div class="move"><b>The big split, made once</b> &mdash; decide stock vs. bond, confirm the stock side is globally diversified not home-biased, and write the target percentages down. Everything downstream implements this.</div>
+      <div class="move"><b>The one-fund test</b> &mdash; the whole structure is usually one or two low-cost, global, all-in-one funds that rebalance themselves. If you're building something elaborate, that's the complexity error &mdash; check it.</div>
+      <div class="move"><b>The rebalance rule</b> &mdash; set a band or a date and follow it mechanically. It sells high and buys low with no forecasting.</div>
+      <div class="note">Diversification is the one move that cuts risk without cutting expected return. Canadians massively overweight Canada &mdash; ~3% of world markets &mdash; concentrating in one lopsided market for no return benefit.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">4</span><span class="p-name">The Behaviour Gap</span></div>
+      <div class="p-ess">You are the largest risk to your own returns. The portfolio is rarely the problem; the hand on the portfolio is.</div>
+      <div class="move"><b>Write the IPS</b> &mdash; the one-page policy is the master move (see the Output Layer). Pre-decide in calm what you'd otherwise decide badly in the moment.</div>
+      <div class="move"><b>Automate everything</b> &mdash; contributions on payday into your allocation. You never feel like buying; you've already bought. The gap can't open where there's no discretionary hand.</div>
+      <div class="move"><b>The 24-hour rule</b> &mdash; no trade, buy, sell or "adjustment" executes the day you first want it. Your mushin and "not relevant" cues are exactly this pillar's training, pointed at a screen.</div>
+      <div class="note">The average dollar earned ~1.2%/yr less than its own funds over 2015&ndash;24 &mdash; self-inflicted, and eliminable for free by not acting. Losses hurt ~2&times; as much as gains feel good; a crash feels like an emergency when the right move is almost always nothing.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">5</span><span class="p-name">The Tested Tilt</span></div>
+      <div class="p-ess">A systematic edge can be real &mdash; but the qualifications are the whole point. This is exactly where a smart, systems-minded builder blows himself up.</div>
+      <div class="move"><b>The five-point gate</b> &mdash; out-of-sample &middot; net of ALL costs &middot; beats the index (not cash) risk-adjusted &middot; statistically real (t&gt;3 spirit) &middot; survivable in drawdown. Pass all five or it's paper-trading, not capital.</div>
+      <div class="move"><b>Core-and-satellite cap</b> &mdash; anything active or systematic capped hard, ~5&ndash;15%, with the boring index core for the rest. Decided in advance, not renegotiated when the satellite is hot.</div>
+      <div class="move"><b>The drought pre-commitment</b> &mdash; write, before you buy: "this underperforms for years at a stretch; I hold, decided here in calm." Then execute the pre-decision in the drawdown.</div>
+      <div class="note">Roughly half of a published anomaly's excess return tends to vanish after publication. A few factors are real and durable, but smaller than the back-test promises &mdash; and the ones you can access are the most crowded. Bring ARCHITECTURE.md for the five-point audit as its own session.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">6</span><span class="p-name">Risk, Sizing &amp; Ruin</span></div>
+      <div class="p-ess">Volatility isn't the enemy &mdash; permanent loss and running out of runway are. Size so no single outcome can end the game.</div>
+      <div class="move"><b>Bucket by horizon</b> &mdash; money needed within ~2&ndash;3 years in safe, liquid assets; long-horizon capital in the market. Investing money you'll need soon is how a temporary 30% drop becomes a permanent loss.</div>
+      <div class="move"><b>Emergency fund first</b> &mdash; several months of expenses in cash before any market pillar. It's what lets you hold through a crash without a forced sale, and stay non-reactive.</div>
+      <div class="move"><b>Fractional-Kelly + the ruin check</b> &mdash; before any active bet ask "what if this goes maximally wrong?" If the honest answer forces a bad sale or sets back the exit, it's too big. Applies to the betting-intel system identically.</div>
+      <div class="note">Lose 50% and you need +100% to recover; lose 100% and no edge saves you. Sequence-of-returns risk is THE thing to get right as the exit nears &mdash; a crash in the first drawdown years does far more damage. Its own session closer to the exit.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">&#9678;</span><span class="p-name">The Output Layer</span></div>
+      <div class="p-ess">The one-page Investment Policy Statement &mdash; the six pillars written down and committed. The highest-leverage artifact here.</div>
+      <div class="move"><b>What it states</b> &mdash; the mission (the exit runway, family thriving), the target allocation, the accounts and their order, the contribution and rebalance rules, the behaviour hard lines, the satellite cap, the review cadence.</div>
+      <div class="move"><b>The hard lines</b> &mdash; "When the market falls, I do not sell. No trade the day I first want it. I don't act on tips or media. I check only at my scheduled review." These outrank the in-the-moment feeling every time.</div>
+      <div class="move"><b>Write it, sign it, date it</b> &mdash; then don't rewrite it under pressure, only in deliberate annual review. A market drop is the event the policy already anticipated, not new information.</div>
+      <div class="note">This is your Orientation value hierarchy applied to capital &mdash; the deliberation done here, so that when the market arrives you execute instead of deliberate.</div>
+    </div>
+
+    <div class="section-k">The inversion</div>
+    <div class="band">The field's biggest failure mode is capable people optimising the one thing that barely matters &mdash; which securities to hold &mdash; while ignoring what actually compounds: <b>cost, diversification, behaviour, time, and allocation.</b> Optimise structure, not selection. Simple is not the beginner version you graduate from &mdash; simple is the destination.</div>
+
+    <div class="section-k">The cultivation sequence</div>
+    <div class="seq">
+      <div><b>Weeks 1&ndash;2</b> &mdash; the structure. Open and prioritise the right accounts (RESP grant first if it applies), do the total-cost audit. Cheapest, highest-certainty change; nothing to predict.</div>
+      <div><b>Weeks 3&ndash;4</b> &mdash; allocation &amp; automation. Make the one big split, implement it in one or two low-cost global funds, set automatic contributions. The core machine now runs itself.</div>
+      <div><b>Weeks 5&ndash;6</b> &mdash; the policy. Write the one-page IPS. Pillars 1 and 4 become rules, not intentions. Read them when the market is calm so they're loaded when it isn't.</div>
+      <div><b>Weeks 7+</b> &mdash; internalise, then leave alone. Most of the value is realised here, by the things you don't do.</div>
+      <div><b>Later, optional</b> &mdash; the tilt. Only if the core is solid, only through the five-point gate, only as a capped satellite. No penalty for skipping it entirely.</div>
+    </div>
+
+    <div class="section-k">The one thing</div>
+    <div class="band">Get the money invested low-cost, broadly diversified, and global, inside the right accounts; automate the contributions; write one page of rules you commit to not overriding. That beats almost everything the prospector instinct pulls you toward &mdash; <b>without needing you to be right about anything.</b> The corollary, held just as firmly: don't run the scoring system with real capital until it has passed all five tests. Verify first. Real edges survive the wait.</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <div class="d-top">
+      <div class="section-k" style="margin:6px 0 0;">Recall Drill</div>
+      <div class="progress" id="progress"></div>
+    </div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Committed.</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar" style="margin-top:22px;">
+        <button class="btn" onclick="restart()">Again</button>
+        <button class="btn ghost" onclick="setMode('read')">Read</button>
+      </div>
+    </div>
+    <div class="foot">Say each aloud before revealing.</div>
+  </div>
+
+</div>
+
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  var read = m === 'read';
+  document.getElementById('read').style.display  = read ? '' : 'none';
+  document.getElementById('drill').style.display = read ? 'none' : '';
+  document.getElementById('tab-read').className  = read ? 'on' : '';
+  document.getElementById('tab-drill').className = read ? '' : 'on';
+  if(!read){ idx=0; document.getElementById('done').className='done-view'; document.getElementById('stage').style.display=''; renderStep(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-capital';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+/* long-press to remove */
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- drill ---------------- */
+var STEPS = [
+  { prompt:'Name <b>Pillar 1</b> and its default.', lines:['<b>The Base Rate</b> &mdash; the Index Default.','You don\'t need to beat the market. Capturing it is nearly free.'] },
+  { prompt:'Name <b>Pillar 2</b> and the one lever you control.', lines:['<b>The Only Free Edge</b> &mdash; cost and tax.','The total-cost audit and the fee line. RESP grant first.'] },
+  { prompt:'Name <b>Pillar 3</b> and what dominates.', lines:['<b>The Free Lunch</b> &mdash; allocation over selection.','The big split, made once. Global, not home-biased.'] },
+  { prompt:'Name <b>Pillar 4</b> and its master move.', lines:['<b>The Behaviour Gap</b> &mdash; write the IPS, then automate.','The 24-hour rule. You are the largest risk to your returns.'] },
+  { prompt:'Name <b>Pillar 5</b> and the gate.', lines:['<b>The Tested Tilt</b> &mdash; the five-point verification.','Out-of-sample &middot; net of costs &middot; beats the index &middot; statistically real &middot; survivable.'] },
+  { prompt:'Name <b>Pillar 6</b> and the check.', lines:['<b>Risk, Sizing &amp; Ruin</b> &mdash; the ruin check.','Bucket by horizon. Never risk what ends the game.'] },
+  { prompt:'State the <b>one thing</b> in a line.', lines:['Low-cost, global, automated, in the right accounts &mdash; and a one-page policy you don\'t override.','Verify before real capital. Real edges survive the wait.'] }
+];
+var idx=0, revealed=false;
+
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Say it aloud &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  idx=0; document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-capital-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+</script>
+</body>
+</html>
