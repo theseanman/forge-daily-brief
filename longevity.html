@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Longevity Protocol</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* read cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .grade{ font-size:10px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; color:var(--gold);
+    border:1px solid rgba(245,215,110,.4); border-radius:999px; padding:2px 8px; margin-left:auto; white-space:nowrap; }
+  .grade.skip{ color:var(--ink-quiet); border-color:var(--line); }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .safety{ font-size:13px; color:#ffd9d0; line-height:1.5; margin-top:10px; background:rgba(200,60,40,.14);
+    border-left:4px solid #e07a5f; border-radius:10px; padding:11px 13px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; }
+  .band b{ color:var(--gold); }
+  .seq{ font-size:14px; line-height:1.6; }
+  .seq div{ padding:8px 0; border-bottom:1px solid var(--line); }
+  .seq div:last-child{ border-bottom:none; }
+  .seq b{ color:var(--accent-hi); }
+  .seq .shift{ color:var(--gold); font-weight:700; font-size:11px; letter-spacing:.1em; text-transform:uppercase; }
+
+  /* drill (reuses the fixed reveal mechanic) */
+  #drill{ display:none; }
+  .d-top{ text-align:center; margin-bottom:10px; }
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(20px,5.4vw,28px); font-weight:300; line-height:1.35; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./" class="back">&larr; Brief</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>The Longevity Protocol</h1>
+    <div class="sub">Longevity isn't the exotic stuff. At 47 the gains sit in a handful of boring, high-certainty levers &mdash; what you've already quit, sleep, aerobic fitness, muscle, and food. Optimise those; treat sauna, cold and fasting as garnish, not medicine.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">1</span><span class="p-name">Know Your Numbers</span><span class="grade">Do this first</span></div>
+      <div class="p-ess">One doctor's visit and a set of baseline labs outweigh any training tweak on this page &mdash; they turn a generic protocol into a targeted one.</div>
+      <div class="move"><b>CAC score</b> &mdash; the single highest-value test for your age. A quick CT that catches heart disease years before symptoms; a score of zero is one of the most reassuring results in medicine. If you do one thing on this list, do this.</div>
+      <div class="move"><b>ApoB + full lipid panel</b> &mdash; a better cardiovascular predictor than standard cholesterol. Ask for it by name.</div>
+      <div class="move"><b>Fasting glucose, A1c, blood pressure</b> &mdash; metabolic and pressure baselines. BP matters here because cold and breath-holds spike it &mdash; know your starting point.</div>
+      <div class="move"><b>Liver enzymes (ALT/AST/GGT)</b> &mdash; worth a look given the drinking history. The direct lever on fatty-liver risk is weight loss, not a supplement.</div>
+      <div class="move"><b>Vitamin D</b> &mdash; very likely low at Vancouver's latitude in winter. Test, then correct a deficiency &mdash; don't blindly megadose.</div>
+      <div class="move"><b>VO&#8322;max + grip strength</b> &mdash; two of the strongest single mortality predictors that exist. Get a baseline so the training below has a number to move.</div>
+      <div class="note">Strong signal: a 2025 study of 40,000+ patients found any coronary calcium at all meant 2&ndash;3&times; higher all-cause mortality over five years &mdash; and a zero holds reassuring out to two decades.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">2</span><span class="p-name">The Two Levers</span><span class="grade">Biggest wins</span></div>
+      <div class="p-ess">Moving from excess to rare is the biggest longevity win on this entire page. Nothing in training or supplements comes close.</div>
+      <div class="move"><b>Smoking to zero</b> &mdash; not symmetric with drinking. Cardiovascular damage isn't linear; the first cigarette does a disproportionate share of the endothelial harm, so &ldquo;just occasionally&rdquo; is less safe than it feels. Quitting roughly halves cardiovascular risk inside a year. It's the highest-leverage thing left &mdash; and you're one step from done.</div>
+      <div class="move"><b>Drinking at monthly</b> &mdash; sits at the very bottom of the risk curve. Not zero, but small enough that white-knuckling total abstinence could cost you more in stress than the alcohol does. That's a values call, not a medical emergency.</div>
+      <div class="note">You already won the big fight. Don't let any protocol make you feel a rare indulgence is sabotaging you &mdash; at this frequency it isn't. From here the gains come from the boring pillars below.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">3</span><span class="p-name">Sleep</span><span class="grade">Maybe the biggest</span></div>
+      <div class="p-ess">A 2025 analysis put insufficient sleep (under 7h) ahead of diet, activity or social ties as a predictor of shortened lifespan &mdash; and under six hours tracks to roughly double the cardiovascular mortality risk.</div>
+      <div class="move"><b>Fixed wake &mdash; 7:00 AM weekdays</b>, within &plusmn;30 min on weekends. The single most important behavioural variable; sleeping in creates &ldquo;social jet lag&rdquo; that fragments the following week.</div>
+      <div class="move"><b>Room 18&ndash;20&deg;C</b> &mdash; the highest-ROI environmental lever. Your core has to drop ~1&deg;C to initiate sleep; above 24&deg;C fragments deep and REM sleep. Set the thermostat down by ~21:00.</div>
+      <div class="move"><b>Morning daylight, 5&ndash;10 min</b> &mdash; even cloudy Vancouver light is 5,000&ndash;10,000+ lux, far past any indoor bulb. Anchors that night's melatonin, and matters more for you because the shifts disrupt it.</div>
+      <div class="move"><b>Caffeine cutoff 14:00</b> &mdash; half-life is 5&ndash;7 hours, so this clears enough before a ~10 PM lights-out. Caffeine steals deep sleep even when you fall asleep on time.</div>
+      <div class="move"><b>Dim, then dark</b> &mdash; screens and lights down after ~21:00, blackout the room. Even a dimly lit room raises heart rate and impairs next-morning glucose versus true darkness.</div>
+      <div class="move"><b>Guard the Tue/Thu window</b> &mdash; the shift nights compress you toward ~7 hours. That's the week's weak point: protect it fiercely, keep those days easy, and get daylight the next morning.</div>
+      <div class="note">Optional add-ons: a warm shower 60&ndash;90 min before bed (vasodilation accelerates the core-temp drop); magnesium glycinate 200&ndash;400mg &mdash; not a melatonin replacement. Track on the Amazfit: sleep efficiency &gt;85%, deep sleep &gt;15%, judged on 7&ndash;14 day trends, never single nights.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">4</span><span class="p-name">Aerobic Base &mdash; VO&#8322;max</span><span class="grade">Strong</span></div>
+      <div class="p-ess">Cardiorespiratory fitness may matter more than your weight. A 2024 umbrella review of 20.9 million people put high-vs-low fitness at roughly half the all-cause mortality risk &mdash; a bigger effect than smoking, hypertension or obesity.</div>
+      <div class="move"><b>Zone 2 is the quiet winner</b> &mdash; the long Sunday session builds the aerobic base that lifts VO&#8322;max over time. Each 1-MET gain tracks to ~11&ndash;17% lower mortality, at every rung of the ladder. Bias volume here; it's low-cost, high-return.</div>
+      <div class="move"><b>Fit beats lean</b> &mdash; a 398,000-person analysis found fit-but-overweight people had no significant mortality bump over fit-and-lean, while unfit people ran 2&ndash;3&times; the risk regardless of weight. At 200 lb, raising fitness beats chasing the scale.</div>
+      <div class="move"><b>Let HIIT carry intensity</b> &mdash; twice a week (Wed/Sat), off your shift days. Since Zone 2 is now only once a week, make the intervals genuinely hard so they hold up the aerobic side.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">5</span><span class="p-name">Strength &amp; Power</span><span class="grade">Strong</span></div>
+      <div class="p-ess">Muscle is late-life independence. Grip strength is one of the cleanest single mortality predictors we have &mdash; each 5&nbsp;kg drop is about 16% higher all-cause risk in a 140,000-person study.</div>
+      <div class="move"><b>Compound lifts, 3&times;/week</b> &mdash; Mon (heavier / lower), Tue (moderate upper, ~45 min on the shift day), Fri (compound + grip). Keep the three distinct so back-to-backs recover.</div>
+      <div class="move"><b>Train for speed, not just load</b> &mdash; moving a weight fast (power) predicts mortality even better than raw strength. Make some lifting phases explosive. Cheap upgrade, big signal.</div>
+      <div class="move"><b>Grip work</b> &mdash; loaded carries, hangs, hard pulls. It's a proxy for whole-body robustness, not just forearms.</div>
+      <div class="note">Night-shift caution: shift work with circadian disruption is an IARC probable carcinogen. You may not have a choice about Tue/Thu &mdash; so keep the Tuesday lift moderate, don't stack intensity on a compressed day, and protect the sleep you can get.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">6</span><span class="p-name">Diet</span><span class="grade">Strong</span></div>
+      <div class="p-ess">For body composition and longevity, diet is the bigger lever &mdash; and getting leaner does more for your liver, lipids and glucose than any pill.</div>
+      <div class="move"><b>Protein ~145 g/day</b> &mdash; roughly 1.6 g/kg, spread across meals at ~30&ndash;40 g each (synthesis caps per sitting). The single most protective diet change for holding onto muscle as you age.</div>
+      <div class="move"><b>Mediterranean base</b> &mdash; plants, legumes, olive oil, fish, nuts, whole grains; little ultra-processed food. Not magic, just the pattern that shows up repeatedly in the strongest trial data (PREDIMED).</div>
+      <div class="move"><b>Fibre 30 g+/day from food</b> &mdash; most people get about half that, and it's one of the cleaner long-term predictors. Cheap, easy, ignored.</div>
+      <div class="move"><b>Post-meal walk, 10&ndash;15 min</b> &mdash; meaningfully blunts the glucose spike. Even a lap of the building counts. (This is the piece of &ldquo;break up sitting&rdquo; worth keeping &mdash; acute glucose is a real, separate endpoint from the mortality one your training volume already covers.)</div>
+      <div class="note">Liver-history note: watch fatty-liver risk and go easy on fructose-heavy processed food. Weight down = liver, lipids and glucose all improve together.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">&#9678;</span><span class="p-name">The Garnish</span><span class="grade skip">Real, not pillars</span></div>
+      <div class="p-ess">Separated from the decorative &ldquo;aligns with mitochondrial function&rdquo; language, which sounds like a mechanism and means nothing you can act on. Keep these &mdash; just don't score them as core levers.</div>
+      <div class="move"><b>Supplements</b> &mdash; creatine 3&ndash;5 g/day (genuinely worth it: muscle, strength, maybe cognition; timing irrelevant), omega-3/DHA (keep), Vitamin D if low, magnesium glycinate for sleep. Skip NMN, resveratrol, taurine, spermidine &mdash; human evidence runs thin to absent. Your money buys more life as a CT scan than a cabinet of pills.</div>
+      <div class="move"><b>Sauna</b> &mdash; the best-supported extra (Finnish cohorts show a dose-response with lower mortality), but observational and confounded. A modest bonus; keep it 4+ hours from bed.</div>
+      <div class="move"><b>Cold exposure</b> &mdash; oversold. Longevity claims are extrapolated from mood and metabolic studies, no solid human lifespan evidence, and it spikes blood pressure. Keep only if you enjoy it; don't score it as a lever.</div>
+      <div class="move"><b>Sunday fast</b> &mdash; skip the autophagy hype; the human longevity case is thin. The real benefit is it nudges weight down &mdash; keep it if it helps you eat less overall.</div>
+      <div class="move"><b>Breath-holds / CO&#8322; work</b> &mdash; improve tolerance and calm, not proven to extend life. Given the smoking history, ordinary cardio does far more for actual lung function.</div>
+      <div class="safety"><b>One hard safety line:</b> never do breath-holds or hyperventilation protocols in or near water, or while driving. Shallow-water blackout kills experienced people every year. This one isn't a formality.</div>
+    </div>
+
+    <div class="section-k">The training week</div>
+    <div class="seq">
+      <div><b>Mon</b> &mdash; Strength. Heavier / lower body, loaded carries. Full evening.</div>
+      <div><b>Tue</b> <span class="shift">Night shift</span> &mdash; Strength. Moderate upper body, ~45 min in the pre-5:30 window. The lightest of the three, so Wednesday's legs stay fresh.</div>
+      <div><b>Wed</b> &mdash; HIIT. Hard intervals, ~20 min.</div>
+      <div><b>Thu</b> <span class="shift">Night shift</span> &mdash; Rest. Protect sleep. Slow-breathing (5&ndash;6/min, 5 min) before you leave; nothing hard.</div>
+      <div><b>Fri</b> &mdash; Strength. Compound lifts + grip.</div>
+      <div><b>Sat</b> &mdash; HIIT. Second hard day.</div>
+      <div><b>Sun</b> &mdash; Long Zone 2, 45&ndash;90 min. The aerobic base. Optional 8&ndash;12h light fasting window.</div>
+    </div>
+
+    <div class="section-k">Priority order</div>
+    <div class="band">Keep <b>smoking near zero</b> &rarr; protect <b>sleep</b> (7+ hrs) &rarr; know your <b>numbers</b> (CAC + labs) &rarr; build <b>VO&#8322;max and strength</b> &rarr; hit <b>protein</b> and eat Mediterranean. Everything else is a bonus stacked on top. Sauna, cold and fasting are the garnish &mdash; real, but garnish.</div>
+
+    <div class="section-k">The one thing</div>
+    <div class="band">If you do nothing else new: <b>protect the 7-hour sleep window on your Tue/Thu shift nights</b>, and keep <b>smoking at zero</b>. Those two outrank every supplement and every training tweak on this page.</div>
+
+    <div class="section-k">For the doctor, not the shelf</div>
+    <div class="note">Two items that are physician decisions, flagged only so they're on your radar: the <b>CAC score</b> in Pillar 1, and <b>GLP-1 medications</b> (semaglutide and similar) &mdash; 2024&ndash;25 research increasingly treats them as more than weight-loss drugs, with a large trial showing a ~20% drop in major cardiovascular events in overweight people without diabetes. Real trade-offs and cost; a conversation to have, not something to self-prescribe.</div>
+
+    <div class="note" style="margin-top:18px;">Not medical advice. Book the doctor's visit in Pillar 1 and let a physician own the labs and anything you take daily, especially alongside the liver history.</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <div class="d-top">
+      <div class="section-k" style="margin:6px 0 0;">Recall Drill</div>
+      <div class="progress" id="progress"></div>
+    </div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Locked in.</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar" style="margin-top:22px;">
+        <button class="btn" onclick="restart()">Again</button>
+        <button class="btn ghost" onclick="setMode('read')">Read</button>
+      </div>
+    </div>
+    <div class="foot">Say each aloud before revealing.</div>
+  </div>
+
+</div>
+
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  var read = m === 'read';
+  document.getElementById('read').style.display  = read ? '' : 'none';
+  document.getElementById('drill').style.display = read ? 'none' : '';
+  document.getElementById('tab-read').className  = read ? 'on' : '';
+  document.getElementById('tab-drill').className = read ? '' : 'on';
+  if(!read){ idx=0; document.getElementById('done').className='done-view'; document.getElementById('stage').style.display=''; renderStep(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-longevity';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+/* long-press to remove */
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- drill ---------------- */
+var STEPS = [
+  { prompt:'Name <b>Pillar 1</b> and the single highest-value test.', lines:['<b>Know Your Numbers</b> &mdash; the CAC score.','A zero is one of the most reassuring results in medicine. Labs before tweaks.'] },
+  { prompt:'Name <b>Pillar 2</b>. Which lever is <b>not</b> symmetric &mdash; and why?', lines:['<b>The Two Levers</b> &mdash; smoking to zero.','The first cigarette does outsized harm, so &ldquo;occasional&rdquo; isn\'t safe. Monthly drinking sits at the bottom of the curve.'] },
+  { prompt:'Name <b>Pillar 3</b> and its single most important variable.', lines:['<b>Sleep</b> &mdash; fixed 7:00 AM wake, &plusmn;30 min on weekends.','Room 18&ndash;20&deg;C, morning light, caffeine off by 14:00. Guard the Tue/Thu window.'] },
+  { prompt:'Name <b>Pillar 4</b>. Why does fitness beat the scale?', lines:['<b>Aerobic Base / VO&#8322;max</b> &mdash; Zone 2 is the quiet winner.','Fit-but-overweight ~ fit-and-lean for mortality; unfit runs 2&ndash;3&times; regardless of weight.'] },
+  { prompt:'Name <b>Pillar 5</b> and the free upgrade.', lines:['<b>Strength &amp; Power</b> &mdash; train some lifts explosively.','Power predicts mortality even better than max load. Grip is a clean predictor too.'] },
+  { prompt:'Name <b>Pillar 6</b> and the protein target.', lines:['<b>Diet</b> &mdash; ~145 g protein/day, Mediterranean base, 30 g+ fibre.','Post-meal walk blunts the glucose spike.'] },
+  { prompt:'Name the <b>Garnish</b> tier and the one hard safety line.', lines:['Sauna, cold, fasting, breath-holds, supplements &mdash; real, but not pillars.','Never breath-hold in or near water, or while driving.'] },
+  { prompt:'State the <b>priority order</b> in one line.', lines:['Smoking&rarr;zero &rarr; protect sleep &rarr; know your numbers &rarr; VO&#8322;max + strength &rarr; protein + Mediterranean.','Everything else is garnish.'] }
+];
+var idx=0, revealed=false;
+
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Say it aloud &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  idx=0; document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-longevity-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+</script>
+</body>
+</html>
