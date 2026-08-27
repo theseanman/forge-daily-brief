@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Sleep Protocol</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* read cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .grade{ font-size:10px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; color:var(--gold);
+    border:1px solid rgba(245,215,110,.4); border-radius:999px; padding:2px 8px; margin-left:auto; white-space:nowrap; }
+  .grade.skip{ color:var(--ink-quiet); border-color:var(--line); }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; }
+  .band b{ color:var(--gold); }
+
+  /* drill */
+  #drill{ display:none; }
+  .d-top{ text-align:center; margin-bottom:10px; }
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(20px,5.4vw,28px); font-weight:300; line-height:1.35; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./" class="back">&larr; Brief</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>The Sleep Protocol</h1>
+    <div class="sub">The deep layer under the Longevity protocol's sleep pillar. 2025 research puts insufficient sleep ahead of diet or exercise as a lifespan predictor &mdash; and the target is 7&ndash;8.5 hours of <em>actual</em> sleep, not time in bed. This is how you get there: anchor the rhythm, then attack onset and depth.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">1</span><span class="p-name">Fixed Rhythm</span><span class="grade">Anchors everything</span></div>
+      <div class="p-ess">Same wake time is the single most important behavioural variable &mdash; more than duration. It sets when melatonin releases and cortisol peaks.</div>
+      <div class="move"><b>Fixed wake &mdash; 7:00 AM weekdays</b>, within &plusmn;30 min on weekends (no later than ~7:30). Sleeping in creates &ldquo;social jet lag&rdquo; &mdash; the equivalent of flying 1&ndash;2 time zones and back every week, which fragments the following week's deep sleep.</div>
+      <div class="move"><b>Window, not just time in bed</b> &mdash; you're aiming for 7&ndash;8.5 hours of actual sleep. Onset plus wake-after-onset eats 15&ndash;45 min, so a ~10 PM lights-out for a 7 AM wake lands you in range.</div>
+      <div class="move"><b>Efficiency &gt; length</b> &mdash; track total sleep &divide; time in bed on the Amazfit; target &gt;85%. Consistently under 80% means the window is too long &mdash; tighten it. A shorter, tight window beats a long restless one (core CBT-I principle).</div>
+      <div class="move"><b>Guard the Tue/Thu shift nights</b> &mdash; those compress you toward ~7 hours. Protect them fiercely; don't also short the morning.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">2</span><span class="p-name">Temperature</span><span class="grade">Highest-ROI lever</span></div>
+      <div class="p-ess">Your core has to drop ~1&ndash;1.5&deg;C to initiate sleep. This is the single most controllable variable in sleep architecture.</div>
+      <div class="move"><b>Room 18&ndash;20&deg;C (65&ndash;68&deg;F)</b> &mdash; above 24&deg;C fragments deep and REM sleep; even a 3&ndash;5&deg;C rise over optimal fragmented architecture in controlled studies. Set the thermostat down by ~21:00.</div>
+      <div class="move"><b>Warm shower or bath 60&ndash;90 min before bed</b> &mdash; counterintuitive but well-supported: warming the skin triggers vasodilation, which accelerates the core-temp drop once you get out. For a 10 PM lights-out, that's ~8:30&ndash;9:00 PM.</div>
+      <div class="move"><b>Warm feet, cool room</b> &mdash; socks to bed while the room stays cool drives heat dissipation out of the core.</div>
+      <div class="move"><b>Sauna 4+ hours before bed</b> &mdash; great earlier in the day, but too close raises core temperature exactly when you need it falling. Pair it with daytime Zone 2, not the evening.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">3</span><span class="p-name">Light</span><span class="grade">Master circadian lever</span></div>
+      <div class="p-ess">Light is the most powerful time cue you have. Getting it right sets melatonin release, cortisol timing, and whether the night includes enough deep and REM sleep.</div>
+      <div class="move"><b>Morning daylight, 5&ndash;10 min</b> within 30 min of waking &mdash; even cloudy Vancouver light is 5,000&ndash;10,000+ lux, far past any indoor bulb. Walking out the door by 07:30 locks it in without adding a step.</div>
+      <div class="move"><b>Dim after 21:00</b> &mdash; under 50 lux. A Northwestern study found even a dimly lit room (100 lux) during sleep raised heart rate and impaired next-morning glucose versus near-darkness.</div>
+      <div class="move"><b>Blue and green both matter</b> &mdash; blue-blockers alone aren't enough if the room is bright; green light suppresses melatonin too. Dim the room, not just the screen. Screens off after your 20:30 desk offload.</div>
+      <div class="move"><b>Total darkness at bed</b> &mdash; blackout curtains or an eye mask. Even small amounts of light measurably impair architecture.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">4</span><span class="p-name">Caffeine &amp; Alcohol</span><span class="grade">The two saboteurs</span></div>
+      <div class="p-ess">Both feel harmless at night and both quietly shred sleep quality &mdash; caffeine steals depth, alcohol steals REM. Neither shows up as trouble falling asleep, which is why they're missed.</div>
+      <div class="move"><b>Caffeine hard-stop 14:00</b> &mdash; half-life is 5&ndash;7 hours, so a 2 PM cup is still ~half in your system at a 10 PM bed. It selectively cuts deep sleep even when you fall asleep fine; you won't feel it, but the Amazfit deep-sleep number will. If deep sleep runs low, push the cutoff to noon for two weeks and compare.</div>
+      <div class="move"><b>Alcohol finished 3+ hours before bed</b> &mdash; sedation isn't sleep. It helps you fall asleep, then fragments the second half of the night and suppresses REM (where emotional processing, memory consolidation and neural maintenance happen). Even 1&ndash;2 drinks within 3 hours cut REM and add awakenings. For a 10 PM bed, last drink by ~7 PM.</div>
+      <div class="note">Ties to the Longevity protocol's monthly-drinking call &mdash; at that frequency this is rarely in play, but on the nights you do drink, the timing is what protects the sleep.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">5</span><span class="p-name">Training Timing</span><span class="grade">Time the intensity</span></div>
+      <div class="p-ess">Exercise improves sleep &mdash; but hard training too close to bed spikes sympathetic drive and cortisol that take 2&ndash;3 hours to clear.</div>
+      <div class="move"><b>Hard training (HIIT, heavy strength)</b> &mdash; finish 3+ hours before bed (~7 PM for a 10 PM lights-out). Your Wed/Sat HIIT is daytime anyway, so no conflict.</div>
+      <div class="move"><b>Zone 2 is the gentle exception</b> &mdash; because it's genuinely low-strain, it can end as late as ~1.5&ndash;2 hours before bed (~8:00&ndash;8:30 PM) without harming sleep, and low-intensity work may even shorten sleep onset. The caveat from the largest recent data (4M+ nights): it's <em>strain</em>, not the clock, that disrupts &mdash; keep it truly easy (nose-breathing, conversational). If the effort creeps up, fall back to the 3-hour rule.</div>
+      <div class="move"><b>Morning is still best</b> &mdash; training early pairs the session with the morning light hit and anchors the circadian clock. Timing rules are for the days that has to slide later.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">6</span><span class="p-name">The Pre-Sleep Hour</span><span class="grade">Physiological wind-down</span></div>
+      <div class="p-ess">Your evening protocol already handles the cognitive wind-down &mdash; desk offload, park the loops, the frame. This is the physical setup in the final 60 minutes.</div>
+      <div class="move"><b>60 min before</b> &mdash; dim to warm-tone bulbs or candles, screens already off, room dropping toward 18&ndash;19&deg;C.</div>
+      <div class="move"><b>30 min before</b> &mdash; warm shower now if using the temperature hack; magnesium glycinate 200&ndash;400mg supports GABA and muscle relaxation, safe at these doses. Not a melatonin replacement &mdash; skip nightly exogenous melatonin without clinical guidance.</div>
+      <div class="move"><b>At bed</b> &mdash; dark, cool, quiet. If the mind is still going, the cognitive shuffle (imagine random unrelated objects in sequence &mdash; a dog, a stapler, a mountain, a teacup) occupies the verbal-analytical mind without engaging it. Compatible with your &ldquo;not relevant&rdquo; practice &mdash; a non-narrative attention anchor.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">&#9678;</span><span class="p-name">Extras</span><span class="grade skip">Secondary, real</span></div>
+      <div class="p-ess">Two more levers that matter less than the six above but are worth knowing.</div>
+      <div class="move"><b>Napping</b> &mdash; keep it under 20 min and before 14:00. Longer enters slow-wave sleep and creates grogginess plus steals night-time sleep drive. Consistently needing naps to function is a signal the night sleep is short &mdash; fix the root, don't patch it.</div>
+      <div class="move"><b>Tracking (Amazfit Active Max)</b> &mdash; deep sleep &gt;15% of total, efficiency &gt;85%. Watch the resting-heart-rate trend (rising = overtraining, illness, or poor sleep) and morning HRV via Welltory (a sudden drop confirms a bad night in real time). Judge on 7&ndash;14 day rolling averages, never single nights. Don't compare against old Apple Watch data &mdash; different algorithms, different baselines.</div>
+    </div>
+
+    <div class="section-k">The priority stack</div>
+    <div class="band">If you can only do three: <b>fixed wake time</b> &rarr; <b>room 18&ndash;20&deg;C</b> &rarr; <b>morning light within 30 min</b>. Add three more: <b>caffeine off by 14:00</b> &rarr; <b>screens and lights dim by 21:00</b> &rarr; <b>total darkness</b>. Everything else &mdash; warm-shower timing, magnesium, nap rules, alcohol timing &mdash; is optimization stacked on top of those six.</div>
+
+    <div class="section-k">The one thing</div>
+    <div class="band">If you change one thing: <b>same wake time every day, 7:00 AM, weekends included.</b> It anchors melatonin, cortisol, and every other lever on this page. Nothing else works as well without it.</div>
+
+    <div class="section-k">Where this sits</div>
+    <div class="note">This is the deep layer under the Longevity protocol's Sleep pillar &mdash; that one gives you the headline moves, this one is the full architecture. Not medical advice: persistent insomnia or a suspected sleep disorder is a job for a sleep specialist.</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <div class="d-top">
+      <div class="section-k" style="margin:6px 0 0;">Recall Drill</div>
+      <div class="progress" id="progress"></div>
+    </div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Locked in.</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar" style="margin-top:22px;">
+        <button class="btn" onclick="restart()">Again</button>
+        <button class="btn ghost" onclick="setMode('read')">Read</button>
+      </div>
+    </div>
+    <div class="foot">Say each aloud before revealing.</div>
+  </div>
+
+</div>
+
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  var read = m === 'read';
+  document.getElementById('read').style.display  = read ? '' : 'none';
+  document.getElementById('drill').style.display = read ? 'none' : '';
+  document.getElementById('tab-read').className  = read ? 'on' : '';
+  document.getElementById('tab-drill').className = read ? '' : 'on';
+  if(!read){ idx=0; document.getElementById('done').className='done-view'; document.getElementById('stage').style.display=''; renderStep(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-sleep';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+/* long-press to remove */
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- drill ---------------- */
+var STEPS = [
+  { prompt:'Name <b>Pillar 1</b> and its single most important variable.', lines:['<b>Fixed Rhythm</b> &mdash; same wake time, 7:00 AM, &plusmn;30 min on weekends.','It anchors melatonin and cortisol. Efficiency &gt;85%; tighten the window if it drops.'] },
+  { prompt:'Name <b>Pillar 2</b> and the counterintuitive hack.', lines:['<b>Temperature</b> &mdash; warm shower 60&ndash;90 min before bed.','Vasodilation speeds the core-temp drop afterward. Room 18&ndash;20&deg;C, warm feet.'] },
+  { prompt:'Name <b>Pillar 3</b> and the morning number.', lines:['<b>Light</b> &mdash; 5&ndash;10 min daylight within 30 min of waking.','Cloudy Vancouver is still 5,000&ndash;10,000+ lux. Dim by 21:00, total dark at bed.'] },
+  { prompt:'<b>Pillar 4</b> &mdash; the two cutoffs, and what each protects.', lines:['<b>Caffeine off by 14:00</b> (protects deep sleep) &middot; <b>alcohol done 3+ hrs before bed</b> (protects REM).','Neither shows up as trouble falling asleep &mdash; that's why they're missed.'] },
+  { prompt:'<b>Pillar 5</b> &mdash; how late can Zone 2 go, and why?', lines:['~1.5&ndash;2 hrs before bed (~8:30 PM) &mdash; it's genuinely low-strain.','Hard training stays 3+ hrs out. It's strain, not the clock, that disrupts.'] },
+  { prompt:'<b>Pillar 6</b> &mdash; the 30-min-before move.', lines:['Warm shower + magnesium glycinate 200&ndash;400mg.','Cognitive shuffle at bed for onset &mdash; random unrelated objects, no narrative.'] },
+  { prompt:'Name the <b>Extras</b> &mdash; the nap rule and the tracking rule.', lines:['Naps under 20 min, before 14:00.','Track deep &gt;15%, efficiency &gt;85%, on 7&ndash;14 day averages &mdash; never single nights.'] },
+  { prompt:'State the <b>priority stack</b> &mdash; the top three.', lines:['Fixed wake time &rarr; room 18&ndash;20&deg;C &rarr; morning light within 30 min.','Then: caffeine cutoff &rarr; dim by 21:00 &rarr; total darkness.'] }
+];
+var idx=0, revealed=false;
+
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Say it aloud &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  idx=0; document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-sleep-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+</script>
+</body>
+</html>
