@@ -1770,6 +1770,17 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
         '<a href="./breathe.html" style="display:block; text-align:center; margin-top:12px; padding:11px; border-radius:10px; background:linear-gradient(135deg,#bfe7ff,#7fd4e6); color:#0b2547; font-weight:800; letter-spacing:0.06em; text-decoration:none;">Open the breathing room \u2192</a>'
         '</div>'
     )
+
+    hall_card = (
+        '<div class="card" style="background:linear-gradient(135deg, rgba(43,92,255,0.20), rgba(21,71,214,0.10)); border:2px solid #2b5cff;">'
+        '<div class="card-header"><span class="card-icon">\U0001F3F0</span><span>Valhalla \u2014 The Hall of the Earned</span></div>'
+        '<div style="font-size:14px; line-height:1.65; color:var(--text-bright);">'
+        'The reverentially-respected earn a seat at the table \u2014 each one carrying wisdom that moves the needle. '
+        'First seat: <b>Mike Muir</b>, his own words and the ones he carries from his father.'
+        '</div>'
+        '<a href="./valhalla-hall.html" style="display:block; text-align:center; margin-top:12px; padding:11px; border-radius:10px; background:linear-gradient(135deg,#4f7bff,#2b5cff); color:#ffffff; font-weight:800; letter-spacing:0.06em; text-decoration:none;">Enter the hall \u2192</a>'
+        '</div>'
+    )
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1976,6 +1987,8 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
   {intheroom_card}
 
   {breathe_card}
+
+  {hall_card}
 
   <div class="card">
     <div class="card-header"><span class="card-icon">❤️🌴</span><span>Welltory HRV</span></div>
