@@ -481,6 +481,7 @@
         <div class="pick-wrap" id="carry-forward"></div>
       </div>
 
+      <div id="plan-target-date" style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#4a9de8; margin-bottom:8px;"></div>
       <div class="field-label" style="margin-bottom:2px;">Tomorrow&rsquo;s five</div>
       <div class="note-line" style="margin:0 0 8px;">Tap the star to mark your keystone &mdash; the one that makes the day count.</div>
       <div id="plan-rows"></div>
@@ -567,7 +568,8 @@ let reminders = [];
 const todoChecked = {};
 
 function init() {
-  document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+  document.getElementById('today-date').textContent = fdNow().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+  var _ptd=document.getElementById('plan-target-date'); if(_ptd){ var _pd=new Date(fdTomorrow()+'T00:00:00'); _ptd.textContent='Planning tomorrow: '+_pd.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }
   buildPips();
   buildESPRatings();
   setTomorrowWorkout();
@@ -702,7 +704,7 @@ function next() { if (currentStep < STEPS-1) showStep(currentStep+1); else finis
 function prev() { if (currentStep > 0) showStep(currentStep-1); }
 
 function setTomorrowWorkout() {
-  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+  const tomorrow = fdNow(); tomorrow.setDate(tomorrow.getDate()+1);
   const day = tomorrow.toLocaleDateString('en-US',{weekday:'long'});
   const hiit = ['Tuesday','Thursday','Sunday'].includes(day);
   const el = document.getElementById('tomorrow-workout');
@@ -903,8 +905,9 @@ function syncPullDebrief(cb) {
 function fdRead(k, fb){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):fb; }catch(e){ return fb; } }
 function fdWrite(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } }
 function fdYmd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-function fdToday(){ return fdYmd(new Date()); }
-function fdTomorrow(){ var d=new Date(); d.setDate(d.getDate()+1); return fdYmd(d); }
+function fdNow(){ /* debrief bleeds past midnight: before 4am counts as still the previous night */ var d=new Date(); if(d.getHours() < 4){ d.setDate(d.getDate()-1); } return d; }
+function fdToday(){ return fdYmd(fdNow()); }
+function fdTomorrow(){ var d=fdNow(); d.setDate(d.getDate()+1); return fdYmd(d); }
 function fdHour(h){ var ap=h<12?'AM':'PM', x=h%12; if(x===0)x=12; return x+' '+ap; }
 
 /* ---------- today's Top 5 review ---------- */
