@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valhalla — The Hall of the Earned</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@300;400;500;600;700&family=Permanent+Marker&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#070a1a; --ink:#0c1024; --blue:#2b5cff; --blue-lo:#1f47d6; --blue-hi:#4f7bff;
+    --bone:#eae7dd; --dust:#8b90a8; --gold:#ffcf7a;
+    --wood-a:#3a2a3e; --wood-b:#241826; --wood-hi:#5a4560;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:radial-gradient(120% 90% at 50% 0%, #101736 0%, var(--void) 70%);
+    color:var(--bone); font-family:'Oswald',sans-serif; font-weight:300;
+    -webkit-font-smoothing:antialiased; min-height:100vh; padding:24px 16px 60px;
+  }
+  .masthead{text-align:center; margin:6px 0 22px;}
+  .masthead .eyebrow{font-family:'Space Mono',monospace; font-size:.7rem; letter-spacing:.42em; text-transform:uppercase; color:var(--blue); display:block; margin-bottom:.7rem;}
+  .masthead h1{font-family:'Anton',sans-serif; font-weight:400; text-transform:uppercase; font-size:clamp(2.2rem,7vw,4.6rem); line-height:.9; letter-spacing:.01em;}
+  .masthead h1 em{font-style:normal; color:var(--blue); text-shadow:0 0 34px rgba(43,92,255,.45);}
+  .masthead p{max-width:56ch; margin:1.1rem auto 0; color:var(--dust); font-size:clamp(.9rem,1.8vw,1.05rem); line-height:1.6;}
+
+  .stage{position:relative; width:min(1400px,100%); margin:26px auto 0; aspect-ratio:16/9; border-radius:14px; overflow:hidden; box-shadow:0 30px 90px rgba(0,0,0,.6), 0 0 0 1px rgba(43,92,255,.18); background:var(--void);}
+  .stage > svg{position:absolute; inset:0; width:100%; height:100%; z-index:1;}
+  .board{position:absolute; left:4%; right:4%; top:30%; bottom:5%; z-index:2; overflow-x:auto; overflow-y:hidden; scrollbar-width:thin;}
+  .board::-webkit-scrollbar{height:8px;} .board::-webkit-scrollbar-thumb{background:var(--blue-lo); border-radius:8px;}
+  .board-inner{display:flex; gap:0; width:max-content; min-width:100%; height:100%; justify-content:center; align-items:flex-end;}
+
+  .seat{position:relative; flex:0 0 auto; width:clamp(150px,19vw,214px); height:100%; display:flex; flex-direction:column; align-items:center; justify-content:flex-end;}
+  .throne{position:absolute; left:12%; right:12%; top:2%; bottom:16%; z-index:1;
+    background:linear-gradient(180deg,var(--wood-a),var(--wood-b));
+    border-radius:50% 50% 10px 10px / 30% 30% 6px 6px;
+    box-shadow:inset 0 0 0 3px rgba(90,69,96,.6), inset 0 8px 26px rgba(0,0,0,.5);}
+  .throne::before{content:""; position:absolute; left:50%; top:-4%; transform:translateX(-50%) rotate(45deg); width:16px; height:16px; background:var(--blue); box-shadow:0 0 14px rgba(43,92,255,.7);}
+  .portrait{position:absolute; left:18%; right:18%; top:9%; bottom:14%; z-index:2;
+    border-radius:46% 46% 8px 8px / 30% 30% 6px 6px; overflow:hidden; cursor:pointer;
+    background:linear-gradient(180deg,#161d3e,#0c1126); box-shadow:inset 0 0 0 3px rgba(43,92,255,.35), inset 0 -30px 50px rgba(0,0,0,.55);}
+  .portrait img{width:100%; height:100%; object-fit:cover; object-position:50% var(--posY,50%); transform:scale(var(--zoom,1)); transform-origin:center 30%; display:block;}
+  .portrait .empty{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; text-align:center; padding:8% 8% 22%;}
+  .portrait .empty .bust{width:44%; max-width:70px; opacity:.5;}
+  .portrait .empty .dot{font-family:'Space Mono',monospace; font-size:.58rem; letter-spacing:.28em; text-transform:uppercase; color:var(--blue-hi);}
+  .portrait .empty .plus{font-family:'Permanent Marker',cursive; color:var(--blue); font-size:.8rem;}
+  .portrait.filled::after{content:"✦ hear him"; position:absolute; left:0; right:0; bottom:14%; text-align:center; font-family:'Space Mono',monospace; font-size:.56rem; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); opacity:0; transition:opacity .18s; text-shadow:0 1px 4px #000;}
+  .portrait.filled:hover::after{opacity:.95;}
+  .portrait:hover{box-shadow:inset 0 0 0 3px var(--blue), inset 0 -30px 50px rgba(0,0,0,.55);}
+
+  .tableseg{position:absolute; left:0; right:0; bottom:0; height:20%; z-index:3;
+    background:linear-gradient(180deg,#4a3550 0%,#2c1e30 42%,#1a1020 100%);
+    border-top:2px solid rgba(120,95,130,.55); box-shadow:0 -10px 24px rgba(0,0,0,.45);}
+  .tableseg::before{content:""; position:absolute; inset:0 0 auto 0; height:42%; background:linear-gradient(180deg,rgba(255,207,122,.10),transparent);}
+  .plate{position:absolute; left:8%; right:8%; bottom:5%; z-index:4;
+    background:linear-gradient(180deg,#c9a24e,#8a6a2c); border-radius:4px; padding:5px 6px 4px;
+    box-shadow:0 3px 8px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.35); text-align:center;}
+  .plate .name{font-family:'Oswald',sans-serif; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:#1c1206; font-size:clamp(.62rem,1.4vw,.86rem); line-height:1.1; outline:none; min-height:1em; word-break:break-word;}
+  .plate .name:empty::before{content:"— unclaimed —"; color:#5a4620; font-weight:400; text-transform:none; font-style:italic;}
+  .plate .name:focus{box-shadow:0 0 0 2px var(--blue);}
+
+  .tools{position:absolute; top:3%; left:50%; transform:translateX(-50%); z-index:6; display:flex; gap:5px; opacity:0; transition:opacity .18s; pointer-events:none;}
+  .seat:hover .tools, .seat.editing .tools{opacity:1; pointer-events:auto;}
+  .tools button{width:26px; height:26px; border-radius:50%; border:1px solid rgba(43,92,255,.5); background:rgba(8,12,26,.9); color:var(--bone); cursor:pointer; font-size:.78rem; line-height:1; display:flex; align-items:center; justify-content:center;}
+  .tools button:hover{background:var(--blue); border-color:var(--blue);}
+  .tools button.danger:hover{background:#c0392b; border-color:#c0392b;}
+
+  .frames{position:absolute; left:8%; right:8%; bottom:24%; z-index:7;
+    background:rgba(8,12,26,.96); border:1px solid rgba(43,92,255,.4); border-radius:8px;
+    padding:10px 11px; display:none; flex-direction:column; gap:8px;}
+  .seat.editing .frames{display:flex;}
+  .frames label{font-family:'Space Mono',monospace; font-size:.56rem; letter-spacing:.16em; text-transform:uppercase; color:var(--dust); display:flex; align-items:center; gap:8px;}
+  .frames input[type=range]{flex:1; accent-color:var(--blue); height:3px;}
+  .frames .done{align-self:flex-end; font-family:'Oswald',sans-serif; font-weight:600; text-transform:uppercase; letter-spacing:.08em; font-size:.66rem; padding:5px 14px; border-radius:6px; border:none; background:var(--blue); color:#fff; cursor:pointer;}
+  .frames .done:hover{background:var(--blue-hi);}
+
+  .toolbar{width:min(1400px,100%); margin:20px auto 0; display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:center;}
+  .btn{font-family:'Oswald',sans-serif; font-weight:600; text-transform:uppercase; letter-spacing:.08em; font-size:.82rem; padding:11px 20px; border-radius:8px; cursor:pointer; border:1px solid transparent; transition:.15s;}
+  .btn.primary{background:var(--blue); color:#fff; box-shadow:0 6px 20px rgba(43,92,255,.35);}
+  .btn.primary:hover{background:var(--blue-hi);}
+  .btn.ghost{background:transparent; color:var(--dust); border-color:rgba(139,144,168,.35);}
+  .btn.ghost:hover{color:var(--bone); border-color:var(--blue);}
+  .hint{font-family:'Space Mono',monospace; font-size:.66rem; letter-spacing:.1em; color:var(--dust); text-align:center; margin:14px auto 0; max-width:64ch; line-height:1.7;}
+  .creed{width:min(1400px,100%); margin:30px auto 0; text-align:center;}
+  .creed p{max-width:60ch; margin:0 auto; color:var(--dust); font-size:.95rem; line-height:1.7;}
+  .creed .scrawl{font-family:'Permanent Marker',cursive; color:var(--blue); font-size:1.05rem; display:inline-block; margin-top:14px; transform:rotate(-2deg);}
+  input[type=file]{display:none;}
+
+  /* ---------- WISDOM OVERLAY ---------- */
+  .wisdom{position:fixed; inset:0; z-index:50; display:none; align-items:center; justify-content:center; padding:5vh 5vw;
+    background:radial-gradient(120% 100% at 50% 0%, rgba(20,28,60,.86), rgba(6,8,18,.96)); backdrop-filter:blur(6px);}
+  .wisdom.open{display:flex;}
+  .wisdom-card{position:relative; width:min(760px,100%); max-height:88vh; overflow-y:auto;
+    background:linear-gradient(180deg,#0e1430,#0a0e22); border:1px solid rgba(43,92,255,.35);
+    border-radius:14px; padding:44px clamp(22px,5vw,54px) 40px; box-shadow:0 40px 120px rgba(0,0,0,.7);}
+  .wisdom-card .close{position:absolute; top:14px; right:16px; width:34px; height:34px; border-radius:50%; border:1px solid rgba(139,144,168,.4); background:transparent; color:var(--dust); font-size:1rem; cursor:pointer;}
+  .wisdom-card .close:hover{color:var(--bone); border-color:var(--blue);}
+  .wisdom-card .eyebrow{font-family:'Space Mono',monospace; font-size:.66rem; letter-spacing:.4em; text-transform:uppercase; color:var(--blue); display:block; margin-bottom:.5rem;}
+  .wisdom-card h2{font-family:'Anton',sans-serif; font-weight:400; text-transform:uppercase; font-size:clamp(1.9rem,5vw,3rem); line-height:.92; margin-bottom:1.6rem;}
+  .wisdom-card h2 em{font-style:normal; color:var(--blue);}
+  .qlist{list-style:none; display:flex; flex-direction:column;}
+  .qlist li{padding:16px 0; border-bottom:1px solid rgba(43,92,255,.14); font-size:clamp(1.02rem,2.2vw,1.28rem); font-weight:300; line-height:1.5; color:var(--bone);}
+  .qlist li:last-child{border-bottom:none;}
+  .qlist li.dad{color:#c7cdf0;}
+  .qlist li .mark{font-family:'Space Mono',monospace; font-size:.6rem; letter-spacing:.2em; color:var(--blue); display:block; margin-bottom:5px; text-transform:uppercase;}
+  .wisdom-empty{color:var(--dust); font-style:italic; padding:10px 0 4px;}
+  .wisdom-tools{display:flex; gap:10px; margin-top:26px; justify-content:flex-end;}
+  .wisdom-edit{width:100%; min-height:220px; margin-top:8px; background:#070b1c; color:var(--bone); border:1px solid rgba(43,92,255,.4); border-radius:8px; padding:14px; font-family:'Oswald',sans-serif; font-weight:300; font-size:1rem; line-height:1.55; resize:vertical;}
+  .wisdom-note{font-family:'Space Mono',monospace; font-size:.6rem; letter-spacing:.08em; color:var(--dust); margin-top:8px; line-height:1.6;}
+</style>
+</head>
+<body>
+  <div class="masthead">
+    <span class="eyebrow">the hall of the earned</span>
+    <h1>Val<em>halla</em></h1>
+    <p>Only the reverentially-respected earn a seat at this table — each one carrying wisdom that moves the needle. Induct them one at a time. The board grows as they earn it.</p>
+  </div>
+
+  <div class="stage" id="stage">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+<defs>
+ <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+   <stop offset="0%" stop-color="#080c22"/><stop offset="55%" stop-color="#0d1330"/><stop offset="100%" stop-color="#131a3e"/>
+ </linearGradient>
+ <radialGradient id="hearth" cx="50%" cy="46%" r="60%">
+   <stop offset="0%" stop-color="#fff6de"/><stop offset="20%" stop-color="#ffe4a6"/>
+   <stop offset="48%" stop-color="#e9a94e"/><stop offset="78%" stop-color="#a9662a" stop-opacity="0.5"/>
+   <stop offset="100%" stop-color="#a9662a" stop-opacity="0"/>
+ </radialGradient>
+ <radialGradient id="rose" cx="50%" cy="50%" r="50%">
+   <stop offset="0%" stop-color="#fff2cf"/><stop offset="60%" stop-color="#ffcf7a"/><stop offset="100%" stop-color="#e0952f"/>
+ </radialGradient>
+ <linearGradient id="timber" x1="0" y1="0" x2="1" y2="0">
+   <stop offset="0%" stop-color="#241a2e"/><stop offset="50%" stop-color="#39283c"/><stop offset="100%" stop-color="#201828"/>
+ </linearGradient>
+ <linearGradient id="timberV" x1="0" y1="0" x2="0" y2="1">
+   <stop offset="0%" stop-color="#3a2a3e"/><stop offset="100%" stop-color="#1a1220"/>
+ </linearGradient>
+ <linearGradient id="gable" x1="0" y1="0" x2="0" y2="1">
+   <stop offset="0%" stop-color="#120f28"/><stop offset="100%" stop-color="#0c1026"/>
+ </linearGradient>
+ <linearGradient id="banner" x1="0" y1="0" x2="0" y2="1">
+   <stop offset="0%" stop-color="#3f6cff"/><stop offset="100%" stop-color="#1f47d6"/>
+ </linearGradient>
+ <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+   <stop offset="0%" stop-color="#ffcf7a"/><stop offset="100%" stop-color="#ffcf7a" stop-opacity="0"/>
+ </radialGradient>
+ <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+   <stop offset="0%" stop-color="#151a38"/><stop offset="100%" stop-color="#080a1c"/>
+ </linearGradient>
+ <radialGradient id="vign" cx="50%" cy="42%" r="75%">
+   <stop offset="60%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#02030a" stop-opacity="0.8"/>
+ </radialGradient>
+ <filter id="blur"><feGaussianBlur stdDeviation="7"/></filter>
+</defs>
+<rect preserveAspectRatio="xMidYMid slice" fill="url(#wall)"/>
+<rect y="620" width="1600" height="280" fill="url(#floorGrad)"/>
+<polygon points="800.0,44.0 150.0,322.0 1450.0,322.0" fill="url(#gable)"/>
+<polyline points="150.0,322.0 800.0,44.0 1450.0,322.0" fill="none" stroke="url(#timber)" stroke-width="26" stroke-linjoin="round"/>
+<rect x="150" y="300" width="1300" height="30" fill="url(#timber)"/>
+<rect x="788" y="120" width="24" height="192" fill="url(#timber)"/>
+<line x1="800" y1="150" x2="470" y2="312" stroke="url(#timber)" stroke-width="16"/>
+<line x1="800" y1="150" x2="1130" y2="312" stroke="url(#timber)" stroke-width="16"/>
+<line x1="500" y1="250" x2="800" y2="130" stroke="#2a1e30" stroke-width="10" opacity="0.7"/>
+<line x1="1100" y1="250" x2="800" y2="130" stroke="#2a1e30" stroke-width="10" opacity="0.7"/>
+<line x1="618" y1="122" x2="982" y2="122" stroke="#241a2e" stroke-width="6" opacity="0.6"/>
+<line x1="475" y1="183" x2="1125" y2="183" stroke="#241a2e" stroke-width="6" opacity="0.6"/>
+<line x1="332" y1="244" x2="1268" y2="244" stroke="#241a2e" stroke-width="6" opacity="0.6"/>
+<circle cx="800" cy="205" r="126" fill="url(#glow)" opacity="0.7"/>
+<circle cx="800" cy="205" r="86" fill="url(#rose)"/>
+<circle cx="800" cy="205" r="86" fill="none" stroke="#2a1e30" stroke-width="8"/>
+<line x1="800" y1="205" x2="886" y2="205" stroke="#3a2a1a" stroke-width="4" opacity="0.7"/>
+<line x1="800" y1="205" x2="874" y2="248" stroke="#3a2a1a" stroke-width="4" opacity="0.7"/>
+<line x1="800" y1="205" x2="843" y2="279" stroke="#3a2a1a" stroke-width="4" opacity="0.7"/>
+<line x1="800" y1="205" x2="800" y2="291" stroke="#3a2a1a" stroke-width="4" opacity="0.7"/>
+<line x1="800" y1="205" x2="757" y2="279" stroke="#3a2a1a" stroke-width="4" opacity="0.7"/>
+<line x1="800" y1="205" x2="726" y2="248" stroke="#3a2a1a" stroke-width="4" opacity="0.7"/>
+<line x1="800" y1="205" x2="714" y2="205" stroke="#3a2a1a" stroke-width="4" opacity="0.7"/>
+<line x1="800" y1="205" x2="726" y2="162" stroke="#3a2a1a" stroke-width="4" opacity="0.7"/>
+<line x1="800" y1="205" x2="757" y2="131" stroke="#3a2a1a" stroke-width="4" opacity="0.7"/>
+<line x1="800" y1="205" x2="800" y2="119" stroke="#3a2a1a" stroke-width="4" opacity="0.7"/>
+<line x1="800" y1="205" x2="843" y2="131" stroke="#3a2a1a" stroke-width="4" opacity="0.7"/>
+<line x1="800" y1="205" x2="874" y2="162" stroke="#3a2a1a" stroke-width="4" opacity="0.7"/>
+<circle cx="800" cy="205" r="26" fill="#fff2cf"/><circle cx="800" cy="205" r="26" fill="none" stroke="#2a1e30" stroke-width="5"/>
+<ellipse cx="800" cy="470" rx="440" ry="360" fill="url(#hearth)"/>
+<path d="M650.0 660 L650.0 370 Q650.0 300 800 300 Q950.0 300 950.0 370 L950.0 660 Z" fill="url(#rose)" opacity="0.9"/>
+<path d="M650.0 660 L650.0 370 Q650.0 300 800 300 Q950.0 300 950.0 370 L950.0 660 Z" fill="none" stroke="#5a3a1e" stroke-width="10" opacity="0.8"/>
+<polygon points="800,430 154,60 246,60" fill="#ffe6ad" opacity="0.045"/>
+<polygon points="800,430 274,60 366,60" fill="#ffe6ad" opacity="0.045"/>
+<polygon points="800,430 394,60 486,60" fill="#ffe6ad" opacity="0.045"/>
+<polygon points="800,430 514,60 606,60" fill="#ffe6ad" opacity="0.045"/>
+<polygon points="800,430 634,60 726,60" fill="#ffe6ad" opacity="0.045"/>
+<polygon points="800,430 754,60 846,60" fill="#ffe6ad" opacity="0.045"/>
+<polygon points="800,430 874,60 966,60" fill="#ffe6ad" opacity="0.045"/>
+<polygon points="800,430 994,60 1086,60" fill="#ffe6ad" opacity="0.045"/>
+<polygon points="800,430 1114,60 1206,60" fill="#ffe6ad" opacity="0.045"/>
+<polygon points="800,430 1234,60 1326,60" fill="#ffe6ad" opacity="0.045"/>
+<polygon points="800,430 1354,60 1446,60" fill="#ffe6ad" opacity="0.045"/>
+<rect x="150" y="300" width="66" height="600" fill="url(#timberV)"/>
+<rect x="138" y="300" width="90" height="26" fill="url(#timber)"/>
+<rect x="138" y="870" width="90" height="30" fill="url(#timber)"/>
+<rect x="158" y="330" width="8" height="540" fill="#1a1226" opacity="0.6"/>
+<rect x="1414" y="300" width="66" height="600" fill="url(#timberV)"/>
+<rect x="1402" y="300" width="90" height="26" fill="url(#timber)"/>
+<rect x="1402" y="870" width="90" height="30" fill="url(#timber)"/>
+<rect x="1422" y="330" width="8" height="540" fill="#1a1226" opacity="0.6"/>
+<g opacity="0.95"><rect x="240" y="330" width="120" height="190" fill="url(#banner)"/><polygon points="240,520 360,520 300,546" fill="url(#banner)"/><path d="M240 330 h120" stroke="#dfe7ff" stroke-width="2" opacity="0.4"/><path d="M300 372 l23 23 l-23 23 l-23 -23 z" fill="none" stroke="#eaf0ff" stroke-width="3" opacity="0.92"/><circle cx="300" cy="395" r="5" fill="#eaf0ff" opacity="0.85"/></g>
+<g opacity="0.95"><rect x="1240" y="330" width="120" height="190" fill="url(#banner)"/><polygon points="1240,520 1360,520 1300,546" fill="url(#banner)"/><path d="M1240 330 h120" stroke="#dfe7ff" stroke-width="2" opacity="0.4"/><path d="M1300 372 l23 23 l-23 23 l-23 -23 z" fill="none" stroke="#eaf0ff" stroke-width="3" opacity="0.92"/><circle cx="1300" cy="395" r="5" fill="#eaf0ff" opacity="0.85"/></g>
+<g opacity="0.55"><rect x="474" y="330" width="92" height="150" fill="url(#banner)"/><polygon points="474,480 566,480 520,500" fill="url(#banner)"/><path d="M474 330 h92" stroke="#dfe7ff" stroke-width="2" opacity="0.4"/><path d="M520 364 l17 17 l-17 17 l-17 -17 z" fill="none" stroke="#eaf0ff" stroke-width="3" opacity="0.92"/><circle cx="520" cy="381" r="3" fill="#eaf0ff" opacity="0.85"/></g>
+<g opacity="0.55"><rect x="1034" y="330" width="92" height="150" fill="url(#banner)"/><polygon points="1034,480 1126,480 1080,500" fill="url(#banner)"/><path d="M1034 330 h92" stroke="#dfe7ff" stroke-width="2" opacity="0.4"/><path d="M1080 364 l17 17 l-17 17 l-17 -17 z" fill="none" stroke="#eaf0ff" stroke-width="3" opacity="0.92"/><circle cx="1080" cy="381" r="3" fill="#eaf0ff" opacity="0.85"/></g>
+<g><ellipse cx="183" cy="470" rx="36" ry="50" fill="url(#glow)" opacity="0.6"/><path d="M183 434 q 14 19 0 36 q -14 -19 0 -36 z" fill="#ffb454"/><path d="M183 451 q 7 11 0 19 q -7 -11 0 -19 z" fill="#fff2cf"/><rect x="179" y="478" width="8" height="46" fill="#2a1e14"/></g>
+<g><ellipse cx="1447" cy="470" rx="36" ry="50" fill="url(#glow)" opacity="0.6"/><path d="M1447 434 q 14 19 0 36 q -14 -19 0 -36 z" fill="#ffb454"/><path d="M1447 451 q 7 11 0 19 q -7 -11 0 -19 z" fill="#fff2cf"/><rect x="1443" y="478" width="8" height="46" fill="#2a1e14"/></g>
+<circle cx="610" cy="207" r="1.9" fill="#ffcf7a" opacity="0.16"/>
+<circle cx="839" cy="332" r="0.6" fill="#ffcf7a" opacity="0.41"/>
+<circle cx="300" cy="372" r="0.6" fill="#ffcf7a" opacity="0.17"/>
+<circle cx="718" cy="600" r="0.8" fill="#ffcf7a" opacity="0.25"/>
+<circle cx="938" cy="670" r="1.7" fill="#ffcf7a" opacity="0.35"/>
+<circle cx="1314" cy="147" r="2.3" fill="#ffcf7a" opacity="0.29"/>
+<circle cx="416" cy="188" r="1.1" fill="#ffcf7a" opacity="0.59"/>
+<circle cx="455" cy="457" r="1.8" fill="#ffcf7a" opacity="0.34"/>
+<circle cx="852" cy="156" r="0.6" fill="#ffcf7a" opacity="0.24"/>
+<circle cx="995" cy="368" r="1.2" fill="#ffcf7a" opacity="0.46"/>
+<circle cx="749" cy="294" r="2.2" fill="#ffcf7a" opacity="0.53"/>
+<circle cx="524" cy="453" r="1.6" fill="#ffcf7a" opacity="0.63"/>
+<circle cx="1048" cy="287" r="2.6" fill="#ffcf7a" opacity="0.19"/>
+<circle cx="712" cy="559" r="0.8" fill="#ffcf7a" opacity="0.40"/>
+<circle cx="302" cy="508" r="2.1" fill="#ffcf7a" opacity="0.45"/>
+<circle cx="1206" cy="302" r="2.0" fill="#ffcf7a" opacity="0.46"/>
+<circle cx="886" cy="385" r="2.3" fill="#ffcf7a" opacity="0.67"/>
+<circle cx="772" cy="505" r="0.6" fill="#ffcf7a" opacity="0.53"/>
+<circle cx="959" cy="696" r="2.2" fill="#ffcf7a" opacity="0.29"/>
+<circle cx="677" cy="508" r="0.5" fill="#ffcf7a" opacity="0.39"/>
+<circle cx="441" cy="188" r="0.6" fill="#ffcf7a" opacity="0.57"/>
+<circle cx="400" cy="264" r="1.3" fill="#ffcf7a" opacity="0.63"/>
+<circle cx="347" cy="381" r="1.7" fill="#ffcf7a" opacity="0.63"/>
+<circle cx="1145" cy="621" r="1.1" fill="#ffcf7a" opacity="0.36"/>
+<circle cx="647" cy="633" r="2.5" fill="#ffcf7a" opacity="0.21"/>
+<circle cx="450" cy="255" r="1.0" fill="#ffcf7a" opacity="0.40"/>
+<circle cx="896" cy="272" r="0.5" fill="#ffcf7a" opacity="0.36"/>
+<circle cx="659" cy="448" r="2.5" fill="#ffcf7a" opacity="0.52"/>
+<circle cx="817" cy="478" r="1.9" fill="#ffcf7a" opacity="0.15"/>
+<circle cx="1231" cy="572" r="2.3" fill="#ffcf7a" opacity="0.58"/>
+<circle cx="684" cy="351" r="0.7" fill="#ffcf7a" opacity="0.49"/>
+<circle cx="327" cy="159" r="0.9" fill="#ffcf7a" opacity="0.21"/>
+<circle cx="627" cy="150" r="0.5" fill="#ffcf7a" opacity="0.21"/>
+<circle cx="370" cy="331" r="0.6" fill="#ffcf7a" opacity="0.63"/>
+<circle cx="923" cy="206" r="1.0" fill="#ffcf7a" opacity="0.32"/>
+<circle cx="653" cy="191" r="2.3" fill="#ffcf7a" opacity="0.70"/>
+<circle cx="763" cy="401" r="0.7" fill="#ffcf7a" opacity="0.18"/>
+<circle cx="630" cy="274" r="2.2" fill="#ffcf7a" opacity="0.21"/>
+<circle cx="285" cy="672" r="1.6" fill="#ffcf7a" opacity="0.21"/>
+<circle cx="847" cy="136" r="1.6" fill="#ffcf7a" opacity="0.69"/>
+<circle cx="1192" cy="524" r="1.0" fill="#ffcf7a" opacity="0.33"/>
+<circle cx="440" cy="568" r="1.6" fill="#ffcf7a" opacity="0.57"/>
+<circle cx="616" cy="249" r="2.2" fill="#ffcf7a" opacity="0.69"/>
+<circle cx="1181" cy="588" r="2.2" fill="#ffcf7a" opacity="0.55"/>
+<circle cx="505" cy="420" r="1.2" fill="#ffcf7a" opacity="0.14"/>
+<circle cx="290" cy="282" r="1.0" fill="#ffcf7a" opacity="0.52"/>
+<circle cx="1293" cy="379" r="2.5" fill="#ffcf7a" opacity="0.69"/>
+<circle cx="1291" cy="331" r="1.0" fill="#ffcf7a" opacity="0.25"/>
+<circle cx="472" cy="239" r="1.8" fill="#ffcf7a" opacity="0.64"/>
+<circle cx="1168" cy="398" r="1.9" fill="#ffcf7a" opacity="0.58"/>
+<circle cx="352" cy="503" r="2.4" fill="#ffcf7a" opacity="0.57"/>
+<circle cx="1070" cy="397" r="0.9" fill="#ffcf7a" opacity="0.58"/>
+<circle cx="619" cy="584" r="2.5" fill="#ffcf7a" opacity="0.35"/>
+<circle cx="693" cy="669" r="2.0" fill="#ffcf7a" opacity="0.22"/>
+<circle cx="397" cy="208" r="2.4" fill="#ffcf7a" opacity="0.59"/>
+<circle cx="418" cy="599" r="2.6" fill="#ffcf7a" opacity="0.50"/>
+<circle cx="638" cy="438" r="0.8" fill="#ffcf7a" opacity="0.13"/>
+<circle cx="1309" cy="497" r="1.6" fill="#ffcf7a" opacity="0.66"/>
+<circle cx="729" cy="626" r="2.2" fill="#ffcf7a" opacity="0.24"/>
+<circle cx="532" cy="290" r="1.0" fill="#ffcf7a" opacity="0.46"/>
+<circle cx="540" cy="363" r="0.8" fill="#ffcf7a" opacity="0.65"/>
+<circle cx="642" cy="386" r="1.7" fill="#ffcf7a" opacity="0.64"/>
+<circle cx="714" cy="652" r="1.6" fill="#ffcf7a" opacity="0.43"/>
+<circle cx="825" cy="131" r="1.4" fill="#ffcf7a" opacity="0.23"/>
+<circle cx="264" cy="584" r="0.9" fill="#ffcf7a" opacity="0.39"/>
+<circle cx="1043" cy="443" r="1.2" fill="#ffcf7a" opacity="0.42"/>
+<circle cx="860" cy="575" r="0.7" fill="#ffcf7a" opacity="0.44"/>
+<circle cx="528" cy="281" r="2.1" fill="#ffcf7a" opacity="0.41"/>
+<circle cx="867" cy="561" r="2.4" fill="#ffcf7a" opacity="0.38"/>
+<circle cx="922" cy="413" r="1.6" fill="#ffcf7a" opacity="0.52"/>
+<circle cx="749" cy="429" r="1.5" fill="#ffcf7a" opacity="0.67"/>
+<circle cx="1015" cy="628" r="2.5" fill="#ffcf7a" opacity="0.27"/>
+<circle cx="864" cy="667" r="2.3" fill="#ffcf7a" opacity="0.20"/>
+<circle cx="391" cy="376" r="0.7" fill="#ffcf7a" opacity="0.26"/>
+<circle cx="339" cy="508" r="2.1" fill="#ffcf7a" opacity="0.64"/>
+<circle cx="427" cy="535" r="1.9" fill="#ffcf7a" opacity="0.20"/>
+<circle cx="1213" cy="681" r="1.0" fill="#ffcf7a" opacity="0.67"/>
+<circle cx="690" cy="403" r="2.6" fill="#ffcf7a" opacity="0.60"/>
+<circle cx="434" cy="370" r="1.6" fill="#ffcf7a" opacity="0.32"/>
+<circle cx="471" cy="305" r="2.0" fill="#ffcf7a" opacity="0.13"/>
+<circle cx="858" cy="375" r="0.5" fill="#ffcf7a" opacity="0.31"/>
+<circle cx="934" cy="417" r="0.6" fill="#ffcf7a" opacity="0.69"/>
+<circle cx="1111" cy="684" r="0.7" fill="#ffcf7a" opacity="0.27"/>
+<circle cx="303" cy="572" r="1.1" fill="#ffcf7a" opacity="0.20"/>
+<circle cx="716" cy="649" r="2.2" fill="#ffcf7a" opacity="0.27"/>
+<circle cx="421" cy="653" r="1.7" fill="#ffcf7a" opacity="0.53"/>
+<circle cx="357" cy="153" r="1.9" fill="#ffcf7a" opacity="0.37"/>
+<circle cx="338" cy="664" r="1.8" fill="#ffcf7a" opacity="0.58"/>
+<circle cx="350" cy="617" r="0.6" fill="#ffcf7a" opacity="0.62"/>
+<circle cx="750" cy="317" r="1.7" fill="#ffcf7a" opacity="0.66"/>
+<rect preserveAspectRatio="xMidYMid slice" fill="url(#vign)"/>
+</svg>
+    <div class="board"><div class="board-inner" id="board"></div></div>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn primary" id="addSeat">+ Add a Seat</button>
+    <button class="btn ghost" id="resetHall">Empty the Hall</button>
+  </div>
+  <p class="hint">Click an empty throne to induct someone — upload their portrait and it takes the seat, framed from the table up. Click a seated figure to hear their wisdom. Use the ⛶ tool to nudge the framing, ✎ to edit their words, and the plate to name them. Your hall is saved in this browser.</p>
+
+  <div class="creed">
+    <p>The first seat is Mike Muir's — his own words, and the ones he carries from his father. The rest are earned, not given.</p>
+    <span class="scrawl">earn your seat.</span>
+  </div>
+
+  <input type="file" id="filepick" accept="image/*">
+
+  <!-- wisdom overlay -->
+  <div class="wisdom" id="wisdom">
+    <div class="wisdom-card" id="wisdomCard"></div>
+  </div>
+
+<script>
+(function(){
+  const KEY='valhalla_hall_v2';
+  const board=document.getElementById('board');
+  const filepick=document.getElementById('filepick');
+  const wisdom=document.getElementById('wisdom');
+  const wisdomCard=document.getElementById('wisdomCard');
+  let editingSeatId=null;
+  let openSeatId=null;
+
+  const BUST='data:image/svg+xml;utf8,'+encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><g fill="none" stroke="%234f7bff" stroke-width="3"><circle cx="32" cy="22" r="12"/><path d="M12 58c2-14 12-20 20-20s18 6 20 20"/></g></svg>');
+
+  // Mike Muir's combined wisdom — his own lines + the ones he carries from his father.
+  // dad:true = originates with his father (phrased as Mike says it).
+  const MIKE=[
+    {t:"One good reason to live is worth a hundred reasons to die."},
+    {t:"You can be alive — but you're not living."},
+    {t:"Punk rock was believing in yourself at the time you liked yourself the least."},
+    {t:"I don't know their struggles. But I know if they don't struggle, they don't accomplish anything."},
+    {t:"We're not trying to tell you what to think. We're just trying to make sure you do think."},
+    {t:"My dad said: you have to be in power in your life. Don't ever give that power to someone you'll regret. No matter how bad things are, be the one making the decision.", dad:true},
+    {t:"My dad said: regret lasts forever. Think before you do it.", dad:true},
+    {t:"My dad said: if you want to be happy, you've got to learn how to say no.", dad:true},
+    {t:"My dad said: you try to make other people happy, you're going to be miserable.", dad:true},
+    {t:"My dad said: don't ever confuse your definitions with someone else's. It's what you feel inside.", dad:true},
+    {t:"My dad said: the sure fire way to hate yourself is to get everyone to like you.", dad:true},
+    {t:"My dad said: the best way to be different is to be better.", dad:true},
+    {t:"My dad said: it's easy to see what's wrong with the world — it's a lot harder to see what's wrong with us.", dad:true},
+    {t:"My dad said: I'm not going to tell you what you want to hear, because that's no good.", dad:true},
+    {t:"My dad said: don't deny the truth, but don't give power to a truth that shouldn't have it.", dad:true},
+    {t:"My dad said: you don't sweep dirt under the rug. You clean it up, you do it right.", dad:true},
+    {t:"My dad said: there are always a million reasons not to do something. You just have to find one reason to do it.", dad:true},
+    {t:"My dad said: you can never let your intelligence justify your lack of conviction or laziness. You solve problems.", dad:true},
+    {t:"My dad said: if you don't do anything, someone else is going to do it. Nothing ever gets done.", dad:true},
+    {t:"My dad said: sweat don't lie.", dad:true},
+    {t:"My dad said: it's not what you do, it's why you do it.", dad:true},
+    {t:"My dad said: every step toward something you don't believe you can do is painful — then you get there, and it's amazing.", dad:true},
+    {t:"My dad said: anyone can find the sad. That takes no skill. Finding the good — that's the talent.", dad:true},
+    {t:"My dad said: pain is a good thing. It's telling you you're doing something you shouldn't be doing.", dad:true},
+    {t:"My dad said: the world's not fair. No one said it would be. No one owes you anything.", dad:true},
+    {t:"My dad said: people who live in the past have no future.", dad:true},
+    {t:"My dad said: you grow up — don't grow old.", dad:true},
+    {t:"My dad said: there's where you were, where you are now, and where you want to end up.", dad:true},
+    {t:"My dad said: never become the person you hate.", dad:true},
+    {t:"My dad said: everywhere you go, leave it cleaner than it was when you got there.", dad:true},
+    {t:"My dad said: it's not that I can't fight. I can. I just have better things to do.", dad:true},
+    {t:"My dad said: a couple people call you an asshole, consider the source. Enough of them do — take a look at yourself.", dad:true},
+    {t:"My dad said: when you want to communicate, speak the language of the people you're trying to reach.", dad:true},
+    {t:"My dad said: I didn't want you to be anything. I just wanted you to be happy.", dad:true},
+    {t:"My dad went without, to make sure we got what we needed — not what we thought we needed.", dad:true},
+    {t:"My dad said: success is finishing something and being able to say you're proud of it. Two copies or two million — same thing.", dad:true},
+    {t:"My dad said: you get three families — the one you're born into, the friends you choose, and the one you make yourself.", dad:true}
+  ];
+
+  let seats=load();
+  if(!seats || !seats.length){
+    seats=[
+      {id:uid(), name:'Mike Muir', img:null, posY:32, zoom:1.08, quotes:MIKE},
+      {id:uid(), name:'', img:null, posY:50, zoom:1, quotes:[]},
+      {id:uid(), name:'', img:null, posY:50, zoom:1, quotes:[]}
+    ];
+    save();
+  }
+
+  function uid(){return 's'+Math.random().toString(36).slice(2,9);}
+  function load(){ try{return JSON.parse(localStorage.getItem(KEY));}catch(e){return null;} }
+  function save(){ try{localStorage.setItem(KEY, JSON.stringify(seats));}catch(e){} }
+  function escapeHtml(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+  function render(){
+    board.innerHTML='';
+    seats.forEach(seat=>{
+      if(!seat.quotes) seat.quotes=[];
+      const el=document.createElement('div');
+      el.className='seat'+(editingSeatId===seat.id?' editing':'');
+      el.dataset.id=seat.id;
+      el.innerHTML=`
+        <div class="throne"></div>
+        <div class="portrait ${seat.img?'filled':''}" style="--posY:${seat.posY}%;--zoom:${seat.zoom}">
+          ${seat.img ? `<img src="${seat.img}" alt="">`
+            : `<div class="empty"><img class="bust" src="${BUST}" alt=""><span class="dot">seat unclaimed</span><span class="plus">+ induct</span></div>`}
+        </div>
+        <div class="frames">
+          <label>Pos <input type="range" min="0" max="100" value="${seat.posY}" data-k="posY"></label>
+          <label>Zoom <input type="range" min="1" max="2.6" step="0.02" value="${seat.zoom}" data-k="zoom"></label>
+          <button class="done" data-act="done">Done</button>
+        </div>
+        <div class="tableseg"></div>
+        <div class="plate"><div class="name" contenteditable="true" spellcheck="false">${escapeHtml(seat.name)}</div></div>
+        <div class="tools">
+          <button title="Upload / replace portrait" data-act="upload">⭱</button>
+          <button title="Adjust framing" data-act="frame">⛶</button>
+          <button title="Edit their wisdom" data-act="wisdom">✎</button>
+          <button class="danger" title="Remove seat" data-act="remove">✕</button>
+        </div>`;
+      board.appendChild(el);
+
+      const portrait=el.querySelector('.portrait');
+      portrait.addEventListener('click',(ev)=>{
+        ev.stopPropagation();
+        if(seat.img) openWisdom(seat.id, false);   // filled -> hear him
+        else pickFor(seat.id);                      // empty  -> induct
+      });
+
+      el.querySelectorAll('.tools button, .frames .done').forEach(b=>{
+        b.addEventListener('click',(ev)=>{
+          ev.stopPropagation();
+          const act=b.dataset.act;
+          if(act==='upload') pickFor(seat.id);
+          else if(act==='frame'){ editingSeatId=(editingSeatId===seat.id?null:seat.id); render(); }
+          else if(act==='done'){ editingSeatId=null; render(); }
+          else if(act==='wisdom') openWisdom(seat.id, true);
+          else if(act==='remove'){
+            const who=seat.name?('"'+seat.name+'"'):'this seat';
+            if(confirm('Remove '+who+' from the Hall? Their portrait and words will be cleared.')){
+              seats=seats.filter(s=>s.id!==seat.id); if(editingSeatId===seat.id) editingSeatId=null; save(); render();
+            }
+          }
+        });
+      });
+
+      el.querySelectorAll('.frames input').forEach(inp=>{
+        inp.addEventListener('input',()=>{
+          const k=inp.dataset.k, v=parseFloat(inp.value); seat[k]=v;
+          const p=el.querySelector('.portrait');
+          if(k==='posY') p.style.setProperty('--posY',v+'%');
+          if(k==='zoom') p.style.setProperty('--zoom',v);
+        });
+        inp.addEventListener('change',save);
+      });
+
+      const nameEl=el.querySelector('.name');
+      nameEl.addEventListener('click',e=>e.stopPropagation());
+      nameEl.addEventListener('blur',()=>{ seat.name=nameEl.textContent.trim(); save(); });
+      nameEl.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault(); nameEl.blur();} });
+    });
+  }
+
+  // ---- wisdom overlay ----
+  function openWisdom(id, startEditing){
+    const seat=seats.find(s=>s.id===id); if(!seat) return;
+    openSeatId=id;
+    drawWisdom(seat, !!startEditing);
+    wisdom.classList.add('open');
+  }
+  function closeWisdom(){ wisdom.classList.remove('open'); openSeatId=null; }
+
+  function drawWisdom(seat, editing){
+    const title=seat.name || 'Unclaimed Seat';
+    if(editing){
+      const text=seat.quotes.map(q=>q.t).join('\n\n');
+      wisdomCard.innerHTML=`
+        <button class="close" data-act="close">✕</button>
+        <span class="eyebrow">edit the words</span>
+        <h2>${escapeHtml(title)}</h2>
+        <textarea class="wisdom-edit" id="wedit">${escapeHtml(text)}</textarea>
+        <div class="wisdom-note">One line per quote, blank line between them. Lines beginning with "My dad" are marked as carried from before.</div>
+        <div class="wisdom-tools">
+          <button class="btn ghost" data-act="cancel">Cancel</button>
+          <button class="btn primary" data-act="savewords">Save Words</button>
+        </div>`;
+    } else {
+      let body;
+      if(seat.quotes.length){
+        body='<ul class="qlist">'+seat.quotes.map(q=>{
+          const dad=q.dad || /^my dad/i.test(q.t);
+          return `<li class="${dad?'dad':''}">${dad?'<span class="mark">carried from the old man</span>':''}${escapeHtml(q.t)}</li>`;
+        }).join('')+'</ul>';
+      } else {
+        body='<p class="wisdom-empty">No words recorded yet. Use ✎ to give this seat its wisdom.</p>';
+      }
+      wisdomCard.innerHTML=`
+        <button class="close" data-act="close">✕</button>
+        <span class="eyebrow">wisdom of the seated</span>
+        <h2>${escapeHtml(title)}</h2>
+        ${body}
+        <div class="wisdom-tools"><button class="btn ghost" data-act="editwords">✎ Edit Words</button></div>`;
+    }
+    wisdomCard.querySelectorAll('[data-act]').forEach(b=>{
+      b.addEventListener('click',()=>{
+        const act=b.dataset.act, seat=seats.find(s=>s.id===openSeatId);
+        if(act==='close'||act==='cancel') closeWisdom();
+        else if(act==='editwords') drawWisdom(seat,true);
+        else if(act==='savewords'){
+          const raw=document.getElementById('wedit').value;
+          const lines=raw.split(/\n+/).map(s=>s.trim()).filter(Boolean);
+          seat.quotes=lines.map(t=>({t, dad:/^my dad/i.test(t)}));
+          save(); drawWisdom(seat,false);
+        }
+      });
+    });
+  }
+
+  // ---- upload ----
+  function pickFor(id){
+    filepick.value='';
+    filepick.onchange=()=>{
+      const f=filepick.files[0]; if(!f) return;
+      downscale(f, 760, (dataUrl)=>{
+        const seat=seats.find(s=>s.id===id);
+        seat.img=dataUrl; if(seat.posY==null) seat.posY=50; if(seat.zoom==null) seat.zoom=1;
+        editingSeatId=id; save(); render();
+      });
+    };
+    filepick.click();
+  }
+  function downscale(file, maxDim, cb){
+    const r=new FileReader();
+    r.onload=()=>{ const img=new Image();
+      img.onload=()=>{ let w=img.width,h=img.height; const sc=Math.min(1,maxDim/Math.max(w,h));
+        w=Math.round(w*sc); h=Math.round(h*sc);
+        const c=document.createElement('canvas'); c.width=w; c.height=h;
+        c.getContext('2d').drawImage(img,0,0,w,h); cb(c.toDataURL('image/jpeg',0.84)); };
+      img.src=r.result; };
+    r.readAsDataURL(file);
+  }
+
+  // ---- global dismissers ----
+  document.addEventListener('click',(e)=>{
+    if(editingSeatId){
+      const seatEl=e.target.closest('.seat');
+      if(!seatEl || seatEl.dataset.id!==editingSeatId){ editingSeatId=null; render(); }
+    }
+  });
+  wisdom.addEventListener('click',(e)=>{ if(e.target===wisdom) closeWisdom(); });
+  document.addEventListener('keydown',(e)=>{
+    if(e.key!=='Escape') return;
+    if(wisdom.classList.contains('open')) closeWisdom();
+    else if(editingSeatId){ editingSeatId=null; render(); }
+  });
+
+  document.getElementById('addSeat').addEventListener('click',()=>{
+    seats.push({id:uid(),name:'',img:null,posY:50,zoom:1,quotes:[]}); save(); render();
+    board.parentElement.scrollLeft=board.scrollWidth;
+  });
+  document.getElementById('resetHall').addEventListener('click',()=>{
+    if(confirm('Empty the entire Hall? Every seat, portrait and their words will be cleared.')){
+      seats=[{id:uid(),name:'',img:null,posY:50,zoom:1,quotes:[]}]; save(); editingSeatId=null; render();
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
