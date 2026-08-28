@@ -5,10 +5,10 @@
     "health": 45
   },
   "body_comp": {
-    "weight": 200,
-    "body_fat": 26,
+    "weight": 207.5,
+    "body_fat": 27,
     "muscle_mass": null,
-    "bmi": 28.6,
+    "bmi": 29.7,
     "visceral_fat": null
   },
   "sleep": {
