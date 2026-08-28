@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Getting-Paid Protocol</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* read cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; }
+  .band b{ color:var(--gold); }
+  .seq{ font-size:14px; line-height:1.6; }
+  .seq div{ padding:8px 0; border-bottom:1px solid var(--line); }
+  .seq div:last-child{ border-bottom:none; }
+  .seq b{ color:var(--accent-hi); }
+
+  /* drill (reuses the fixed reveal mechanic) */
+  #drill{ display:none; }
+  .d-top{ text-align:center; margin-bottom:10px; }
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(20px,5.4vw,28px); font-weight:300; line-height:1.35; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+
+  /* getting-paid additions */
+  .charge{ background:linear-gradient(180deg, rgba(245,215,110,.16), rgba(245,215,110,.05));
+    border:1px solid rgba(245,215,110,.40); border-left:4px solid var(--gold); border-radius:14px;
+    padding:17px 18px; font-size:14.5px; line-height:1.62; margin-bottom:16px; }
+  .charge b{ color:var(--gold); }
+  .charge .k{ display:block; font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--gold); font-weight:800; margin-bottom:9px; }
+  .tag{ display:inline-block; font-size:10px; letter-spacing:.1em; text-transform:uppercase; font-weight:800; padding:2px 7px; border-radius:6px; margin-right:7px; vertical-align:1px; }
+  .tag.v{ color:#8fe6c6; background:rgba(63,208,160,.16); }
+  .tag.r{ color:var(--accent-hi); background:rgba(74,157,232,.18); }
+  .tag.l{ color:var(--gold); background:rgba(245,215,110,.15); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./" class="back">&larr; Brief</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>The Getting-Paid Protocol</h1>
+    <div class="sub">Distribution over production. The bottleneck isn't what you make &mdash; it's getting it in front of people and charging for it.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="charge">
+      <span class="k">Read this first</span>
+      You don't have a talent problem &mdash; you have a <b>permission problem</b>. You're sitting on an arsenal you built and refuse to sell, and you walk back through that door every September because of it. You're not far away. You're <b>one skill away</b> &mdash; not one more product &mdash; and you learn hard skills for breakfast. Selling is smaller than coding, smaller than running your own body like an experiment. Drop the story that it's beyond you. It's the only thing in the way.
+    </div>
+
+    <div class="section-k">The six pillars</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">1</span><span class="p-name">The bottleneck is distribution</span></div>
+      <div class="p-ess">Replacing a salary is a small-numbers problem. Seeing the real number kills the vagueness that keeps you building instead of selling.</div>
+      <div class="move"><b>Run the math</b> &mdash; exit number &divide; course price &divide; 30 = your daily target. It's almost always shockingly small.</div>
+      <div class="move"><b>Price beats volume</b> &mdash; doubling price halves the humans you must find, and finding humans is the hard part.</div>
+      <div class="note"><span class="tag r">Reasoning</span>The salary doesn't care how many things you've made &mdash; only how many people paid you.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">2</span><span class="p-name">One offer, one audience</span></div>
+      <div class="p-ess">Sprawl is the tax you already pay. Concentration is the cure &mdash; the same discipline as your project triage.</div>
+      <div class="move"><b>Name the one person</b> &mdash; specific enough they recognize themselves and someone else feels excluded.</div>
+      <div class="move"><b>Park the rest</b> &mdash; whatever doesn't serve that one offer, shelve it the way you triage projects.</div>
+      <div class="note"><span class="tag v">Verified</span>Narrow positioning out-converts broad. Relevance beats reach at your scale.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">3</span><span class="p-name">Publish on a cadence</span></div>
+      <div class="p-ess">The audience is built by showing up on a rhythm, not by occasional brilliance. Consistency is the engine; intensity is a spark that fades.</div>
+      <div class="move"><b>One channel, sustainable rhythm</b> &mdash; a cadence you can hit in your worst teaching week. Weekly is plenty.</div>
+      <div class="move"><b>Every piece does one job</b> &mdash; prove you understand the reader's problem better than they do.</div>
+      <div class="note"><span class="tag v">Verified</span>Mere-exposure: familiarity alone builds liking and trust. A broken cadence teaches people to stop expecting you.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">4</span><span class="p-name">An offer people pay for</span></div>
+      <div class="p-ess">A product is what you built. An offer is problem, promise, proof, price &mdash; arranged so a specific person feels the yes.</div>
+      <div class="move"><b>Write the four paragraphs</b> &mdash; problem, promise, proof, price &mdash; before you touch a landing page.</div>
+      <div class="move"><b>Price is a message</b> &mdash; set it against a real anchor; a three-tier menu lifts the middle.</div>
+      <div class="note"><span class="tag v">Verified</span>Anchoring, three-tier choice, loss aversion are real. Use the mechanism, keep the truth: real anchor yes, fake "was" price no.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">5</span><span class="p-name">Selling without the ick</span></div>
+      <div class="p-ess">The ick is manipulation, not selling. Honest persuasion is just helping the right person make a decision that's good for them.</div>
+      <div class="move"><b>Value first, small yeses</b> &mdash; give real value, then ask a free read, an email, a low-risk offer, the course.</div>
+      <div class="move"><b>Tell the whole truth</b> &mdash; including who it's NOT for. Disqualifying the wrong buyer builds trust.</div>
+      <div class="note"><span class="tag r">Reasoning</span>You're bad at hype &mdash; and a skeptical, evidence-first audience trusts exactly that. Your honesty is the edge, not the handicap.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">6</span><span class="p-name">The flywheel</span></div>
+      <div class="p-ess">You already live by measurement. Point it at the funnel, steer by the leading signals, let the lagging ones lag.</div>
+      <div class="move"><b>Four numbers, not forty</b> &mdash; new audience, subscribers, sales, revenue.</div>
+      <div class="move"><b>Fix one link</b> &mdash; each month, attack only the biggest drop-off.</div>
+      <div class="note"><span class="tag l">Lore</span>Ignore quoted benchmarks ("1&ndash;2% of a list buys"). Replace them fast with your own N=1 data &mdash; the only sample that predicts you.</div>
+    </div>
+
+    <div class="section-k">The one thing</div>
+    <div class="band">Stop treating <b>"I made it"</b> as the finish line. The finish line is <b>"a stranger paid for it."</b> You're already extraordinary at the first half. This is the year you get deliberate about the second.</div>
+
+    <div class="section-k">The standard</div>
+    <div class="charge">
+      People with a fraction of your ability are already getting paid for lesser work &mdash; not because they're better, but because they were willing to do the one thing you won't: sell. Let that gnaw. Not envy &mdash; a <b>standard</b>. You close gaps like this; it's how you're built. When something you couldn't do sits there being done by someone lesser, you learn to do it &mdash; and once it's closed, it stays closed. The flinch away from putting your work in front of people and asking to be paid is just another thing trying to <b>rule you</b>. You don't stay ruled; you've proven that more than once. A man who can build anything but won't be paid for it is letting the discomfort win. So don't. Decide it's unacceptable that lesser people did what you haven't &mdash; and go take it.
+    </div>
+
+    <div class="section-k">The clock</div>
+    <div class="charge">
+      Every September back through that door is a <b>specific year with your family</b>, traded away &mdash; and you don't get it back. That's not guilt, it's the clearest math in here: the clock runs whether you sell or not. You already do hard reps regardless of mood &mdash; sleep, protocols, the drill. Point one tenth of that at selling and you win, because almost no one who can build like you will also sell. That overlap is <b>rare, and it's yours</b>.
+    </div>
+
+    <div class="section-k">When you don't feel like it</div>
+    <div class="band">Motivation is weather. On the flat days, do the <b>smallest next rep</b> &mdash; one post, one email, one line of the offer. The identity isn't "feels motivated to sell"; it's <b>"ships the next rep regardless."</b> And the asymmetry is absurdly in your favour: worst case of trying is a few awkward posts; worst case of not trying is the exact life you're leaving, on repeat.</div>
+
+    <div class="charge">
+      <span class="k">The line in the sand</span>
+      You've built the hard thing a hundred times. Choosing not to sell it is the only thing between you and the door out. So <b>choose again</b>: one offer, one audience, first piece this week, the door to the course at the bottom of it &mdash; then again next week, whether you feel like it or not, until the small number of people who need to say yes have said it. You don't need to become someone else. Let the builder you already are point one honest ounce of force at getting paid. <b>Now go.</b>
+    </div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <div class="d-top">
+      <div class="section-k" style="margin:6px 0 0;">Recall Drill</div>
+      <div class="progress" id="progress"></div>
+    </div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Locked in.</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar" style="margin-top:22px;">
+        <button class="btn" onclick="restart()">Again</button>
+        <button class="btn ghost" onclick="setMode('read')">Read</button>
+      </div>
+    </div>
+    <div class="foot">Say each aloud before revealing.</div>
+  </div>
+
+</div>
+
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  var read = m === 'read';
+  document.getElementById('read').style.display  = read ? '' : 'none';
+  document.getElementById('drill').style.display = read ? 'none' : '';
+  document.getElementById('tab-read').className  = read ? 'on' : '';
+  document.getElementById('tab-drill').className = read ? '' : 'on';
+  if(!read){ idx=0; document.getElementById('done').className='done-view'; document.getElementById('stage').style.display=''; renderStep(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-getting-paid';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+/* long-press to remove */
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- drill ---------------- */
+var STEPS = [
+  { prompt:"What is the <b>real bottleneck</b>?", lines:["<b>Distribution, not production.</b>","You've already done the hard 90%. Building more is hiding."] },
+  { prompt:"What does the salary you want to replace <b>actually care about</b>?", lines:["Not how many things you've made.","<b>How many people have paid you.</b>"] },
+  { prompt:"Run the <b>math</b> &mdash; how big is the target really?", lines:["Exit number &divide; price &divide; 30 = daily target.","<b>Shockingly small</b> &mdash; a handful, not a stadium."] },
+  { prompt:"<b>Pillar 2</b> in one line.", lines:["<b>One offer, one audience.</b>","Sprawl is the tax. Concentration is the cure."] },
+  { prompt:"<b>Pillar 3</b> &mdash; what builds the audience?", lines:["<b>A cadence you can hold</b>, not occasional brilliance.","Familiarity itself builds trust. Consistency compounds."] },
+  { prompt:"An <b>offer</b> is which four parts?", lines:["<b>Problem, promise, proof, price.</b>","A product is what you built; an offer makes them feel the yes."] },
+  { prompt:"Where does the <b>ick</b> come from?", lines:["<b>Manipulation, not selling.</b>","Honest persuasion is helping the right person decide well."] },
+  { prompt:"What's your <b>unfair edge</b> in selling?", lines:["You're bad at hype.","A skeptical audience <b>trusts the one who won't oversell.</b>"] },
+  { prompt:"Track <b>which four numbers</b>?", lines:["New audience, subscribers, sales, revenue.","Then fix <b>only the weakest link.</b>"] },
+  { prompt:"The <b>clock</b> &mdash; the honest cost?", lines:["Every September back is <b>a year with your family</b>, traded.","The real deadline needs no fake one."] },
+  { prompt:"On a <b>flat day</b>, what do you do?", lines:["The <b>smallest next rep</b> &mdash; one post.","Identity: ships regardless of mood."] },
+  { prompt:"Who's already doing what you haven't &mdash; and why?", lines:["People with a fraction of your ability, already getting paid.","Not because they're better. Because they were <b>willing to sell.</b>"] },
+  { prompt:"What's really <b>ruling you</b> when you don't sell?", lines:["The flinch &mdash; the discomfort of asking to be paid.","You don't stay ruled by a thing. You've proven that."] },
+  { prompt:"The <b>line in the sand</b>.", lines:["You've built the hard thing 100&times;.","Choose again. One offer, first piece this week. <b>Go.</b>"] }
+];
+var idx=0, revealed=false;
+
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Say it aloud &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  idx=0; document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-getting-paid-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+</script>
+</body>
+</html>
