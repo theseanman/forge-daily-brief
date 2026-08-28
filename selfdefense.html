@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Self-Defense Protocol</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* read cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.red{ border-left-color:#e0603a; }
+  .card.gold{ border-left-color:var(--gold); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .move.r b{ color:#f2a58c; }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; }
+  .band b{ color:var(--gold); }
+  .seq{ font-size:14px; line-height:1.6; }
+  .seq div{ padding:8px 0; border-bottom:1px solid var(--line); }
+  .seq div:last-child{ border-bottom:none; }
+  .seq b{ color:var(--accent-hi); }
+
+  /* figures */
+  .fig{ margin:16px 0 2px; background:rgba(9,36,80,.3); border:1px solid var(--line); border-radius:14px; padding:13px 11px 6px; }
+  .fig svg{ width:100%; height:auto; display:block; }
+  .fig-cap{ font-size:11.5px; color:var(--ink-quiet); line-height:1.5; margin-top:8px; text-align:center; padding:0 6px; }
+
+  /* tap-to-reveal detail */
+  .how{ margin-top:10px; }
+  .how-btn{ display:inline-flex; align-items:center; gap:7px; background:rgba(74,157,232,.14); border:1px solid var(--line); color:var(--accent-hi);
+    font-size:10.5px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; padding:6px 13px; border-radius:999px; cursor:pointer; }
+  .how-btn .chev{ transition:transform .25s; font-size:9px; }
+  .how-btn.open .chev{ transform:rotate(90deg); }
+  .how-body{ max-height:0; overflow:hidden; transition:max-height .4s ease, margin-top .35s ease; margin-top:0; }
+  .how-body.open{ max-height:900px; margin-top:10px; }
+  .how-body .hb{ font-size:13px; line-height:1.62; color:var(--ink-dim); border-left:3px solid var(--accent);
+    background:rgba(74,157,232,.07); border-radius:9px; padding:11px 13px; }
+  .how-body .hb b{ color:var(--accent-hi); font-weight:700; }
+  .how-body .hb .warn{ color:#f2a58c; font-weight:700; }
+
+  /* drill (reuses the fixed reveal mechanic) */
+  #drill{ display:none; }
+  .d-top{ text-align:center; margin-bottom:10px; }
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; flex-wrap:wrap; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(20px,5.4vw,28px); font-weight:300; line-height:1.35; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./" class="back">&larr; Brief</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>The Self-Defense Protocol</h1>
+    <div class="sub">Everyone home safe, and no criminal liability &mdash; the survival move and the legal move are almost always the same move. Avoid &rarr; de-escalate &rarr; escape. Force is the last branch, and it ends the instant you can leave.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="fig">
+      <svg viewBox="0 0 560 330" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+        <rect x="130" y="8" width="300" height="46" rx="12" fill="rgba(63,174,107,.13)" stroke="#3fae6b" stroke-width="1.5"/>
+        <text x="280" y="36" text-anchor="middle" fill="#eaf4ff" font-size="15" font-weight="700">AVOID</text>
+        <line x1="280" y1="54" x2="280" y2="70" stroke="#7aafff" stroke-width="2"/>
+        <polygon points="280,76 274,67 286,67" fill="#7aafff"/>
+        <rect x="130" y="76" width="300" height="46" rx="12" fill="rgba(63,174,107,.13)" stroke="#3fae6b" stroke-width="1.5"/>
+        <text x="280" y="104" text-anchor="middle" fill="#eaf4ff" font-size="15" font-weight="700">DE-ESCALATE</text>
+        <line x1="280" y1="122" x2="280" y2="138" stroke="#7aafff" stroke-width="2"/>
+        <polygon points="280,144 274,135 286,135" fill="#7aafff"/>
+        <rect x="130" y="144" width="300" height="46" rx="12" fill="rgba(63,174,107,.13)" stroke="#3fae6b" stroke-width="1.5"/>
+        <text x="280" y="172" text-anchor="middle" fill="#eaf4ff" font-size="15" font-weight="700">ESCAPE &#8212; the objective</text>
+        <line x1="280" y1="190" x2="280" y2="206" stroke="#e0603a" stroke-width="2"/>
+        <polygon points="280,212 274,203 286,203" fill="#e0603a"/>
+        <text x="298" y="203" fill="#f0a58c" font-size="11" font-weight="700">only if closed</text>
+        <rect x="130" y="212" width="300" height="46" rx="12" fill="rgba(224,96,58,.15)" stroke="#e0603a" stroke-width="1.5"/>
+        <text x="280" y="240" text-anchor="middle" fill="#eaf4ff" font-size="15" font-weight="700">MINIMUM FORCE</text>
+        <line x1="280" y1="258" x2="280" y2="274" stroke="#3fae6b" stroke-width="2"/>
+        <polygon points="280,280 274,271 286,271" fill="#3fae6b"/>
+        <text x="298" y="271" fill="#8fd6ad" font-size="11" font-weight="700">then stop</text>
+        <rect x="130" y="280" width="300" height="42" rx="12" fill="rgba(63,174,107,.13)" stroke="#3fae6b" stroke-width="1.5"/>
+        <text x="280" y="306" text-anchor="middle" fill="#eaf4ff" font-size="14" font-weight="700">ESCAPE / SAFETY</text>
+      </svg>
+      <div class="fig-cap">The spine. Force is the last branch, never the first &mdash; and it ends the moment the path to safety is open.</div>
+    </div>
+
+    <div class="section-k">The legal floor &middot; BC</div>
+    <div class="card">
+      <div class="p-head"><span class="p-name">Reasonable force, then stop</span></div>
+      <div class="p-ess">Canada has no &ldquo;stand your ground.&rdquo; s.34 is lawful only if all three hold: you reasonably believe force/threat is on you or another; you act to defend; the act is reasonable in the circumstances.</div>
+      <div class="move"><b>Proportionality is the whole game</b> &mdash; only the force needed to stop the harm. It stops the instant you can escape; continued force turns you into the aggressor.</div>
+      <div class="move"><b>Defending family/friends is inside s.34</b> &mdash; covered, not extra legal risk.</div>
+      <div class="move"><b>Your training raises the bar</b> &mdash; a court weighs your Krav skill (R v Khill). A reasonable <i>trained</i> person controls with less. Skill is a reason for restraint, not a licence.</div>
+      <div class="note"><b>Weapons trap:</b> you cannot carry anything for self-defense. Pepper spray is a prohibited weapon; a knife or bear spray carried to defend yourself is an offence. The lawful answer to a known threat is police + a peace bond, never a blade in your pocket.</div>
+    </div>
+
+    <div class="section-k">Read the threat &middot; pre-assault cues</div>
+    <div class="card">
+      <div class="p-head"><span class="p-name">Two or more stacking &rarr; move</span></div>
+      <div class="move">Hidden or busy <b>hands</b> &mdash; a waistband &ldquo;check&rdquo; is a weapon tell.</div>
+      <div class="move"><b>Closing distance</b> after you already stepped back &mdash; bad intent.</div>
+      <div class="move"><b>Blading / loading</b> &mdash; turning side-on, chin drop, weight to the back foot.</div>
+      <div class="move">The <b>&ldquo;interview&rdquo;</b> &mdash; &ldquo;You got a problem?&rdquo; Designed to freeze you while he sets up. Answer the situation, not the question.</div>
+      <div class="move"><b>Sudden calm / target stare</b> after agitation &mdash; the decision is made; the attack is next.</div>
+      <div class="note"><b>Multiple attackers:</b> watch for flanking &mdash; one talks from the front while others drift to your sides. Never let yourself be surrounded, never go to the ground, just leave.</div>
+    </div>
+
+    <div class="fig">
+      <svg viewBox="0 0 560 282" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+        <rect x="16" y="8" width="528" height="46" rx="10" fill="rgba(63,174,107,.11)" stroke="#3fae6b" stroke-width="1.3"/>
+        <circle cx="44" cy="31" r="13" fill="#3fae6b"/><text x="44" y="36" text-anchor="middle" fill="#06264f" font-size="14" font-weight="800">0</text>
+        <text x="70" y="36" fill="#eaf4ff" font-size="13.5" font-weight="600">Nuisance &mdash; ignore, leave</text>
+        <rect x="16" y="62" width="528" height="46" rx="10" fill="rgba(143,191,85,.11)" stroke="#8fbf55" stroke-width="1.3"/>
+        <circle cx="44" cy="85" r="13" fill="#8fbf55"/><text x="44" y="90" text-anchor="middle" fill="#06264f" font-size="14" font-weight="800">1</text>
+        <text x="70" y="90" fill="#eaf4ff" font-size="13.5" font-weight="600">Posturing &mdash; boundary, distance, angle to exit</text>
+        <rect x="16" y="116" width="528" height="46" rx="10" fill="rgba(245,181,61,.11)" stroke="#f5b53d" stroke-width="1.3"/>
+        <circle cx="44" cy="139" r="13" fill="#f5b53d"/><text x="44" y="144" text-anchor="middle" fill="#06264f" font-size="14" font-weight="800">2</text>
+        <text x="70" y="144" fill="#eaf4ff" font-size="13.5" font-weight="600">Pre-assault (2+ cues) &mdash; hands up, move to exit</text>
+        <rect x="16" y="170" width="528" height="46" rx="10" fill="rgba(236,138,60,.12)" stroke="#ec8a3c" stroke-width="1.3"/>
+        <circle cx="44" cy="193" r="13" fill="#ec8a3c"/><text x="44" y="198" text-anchor="middle" fill="#06264f" font-size="14" font-weight="800">3</text>
+        <text x="70" y="198" fill="#eaf4ff" font-size="13.5" font-weight="600">Imminent &mdash; one decisive action, then escape</text>
+        <rect x="16" y="224" width="528" height="46" rx="10" fill="rgba(224,96,58,.13)" stroke="#e0603a" stroke-width="1.3"/>
+        <circle cx="44" cy="247" r="13" fill="#e0603a"/><text x="44" y="252" text-anchor="middle" fill="#fff" font-size="14" font-weight="800">4</text>
+        <text x="70" y="252" fill="#eaf4ff" font-size="13.5" font-weight="600">Weapon / multiple / underway &mdash; extract or comply, escape</text>
+      </svg>
+      <div class="fig-cap">Map what you see to a pre-decided response &mdash; that is the orientation, done while calm.</div>
+    </div>
+
+    <div class="section-k">The two postures</div>
+    <div class="card">
+      <div class="p-head"><span class="p-num">A</span><span class="p-name">Protecting family</span></div>
+      <div class="p-ess">You often can&rsquo;t retreat freely. You are a barrier and an extractor, not a fighter.</div>
+      <div class="move"><b>Command word</b> &mdash; a pre-agreed phrase = <i>go now, to the rally point.</i> Decide the word and the point today. Highest-leverage item on this page.</div>
+      <div class="move"><b>Interpose + loud boundary</b> &mdash; body between threat and them; &ldquo;Back up. Stay back.&rdquo; Creates space and witnesses.</div>
+      <div class="move"><b>Extract as a unit</b> &mdash; you between threat and family, moving to the exit.</div>
+      <div class="move r"><b>Force only if the gap closes</b> &mdash; one opening, then resume extraction. Never pursue.</div>
+    </div>
+    <div class="card">
+      <div class="p-head"><span class="p-num">B</span><span class="p-name">Self or friends</span></div>
+      <div class="p-ess">Escape wins on every axis &mdash; survival, legal, reputational. Ego is the enemy; a fight you could have left is a loss.</div>
+      <div class="move"><b>Leave</b> &mdash; early, before it sets. The whole strategy most of the time.</div>
+      <div class="move"><b>De-escalate</b> &mdash; open hands (a guard that also reads as calm to witnesses), even voice, give him a face-saving exit.</div>
+      <div class="move"><b>Boundary + distance</b> &mdash; &ldquo;I don&rsquo;t want trouble &mdash; back up.&rdquo;</div>
+      <div class="move r"><b>Force only if forced</b> &mdash; minimum to break contact, then leave and <i>you</i> call police first.</div>
+    </div>
+
+    <div class="fig">
+      <svg viewBox="0 0 560 240" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+        <line x1="280" y1="18" x2="280" y2="222" stroke="rgba(122,175,255,.25)" stroke-width="1"/>
+        <text x="140" y="26" text-anchor="middle" fill="#f0a58c" font-size="11.5" font-weight="800" letter-spacing="1">&#10007; AVOID THIS</text>
+        <path d="M140 84 Q92 96 68 118" stroke="#e0603a" stroke-width="1.5" fill="none" stroke-dasharray="4 4"/>
+        <path d="M140 84 Q188 96 212 118" stroke="#e0603a" stroke-width="1.5" fill="none" stroke-dasharray="4 4"/>
+        <circle cx="140" cy="72" r="12" fill="#e0603a"/>
+        <circle cx="60" cy="128" r="12" fill="#e0603a"/>
+        <circle cx="220" cy="128" r="12" fill="#e0603a"/>
+        <circle cx="140" cy="150" r="14" fill="#4a9de8"/>
+        <text x="140" y="182" text-anchor="middle" fill="#cfe6ff" font-size="11" font-weight="700">YOU</text>
+        <text x="140" y="210" text-anchor="middle" fill="#8fd6ad" font-size="11" font-weight="800">keep them on one line &rarr; EXIT</text>
+        <text x="420" y="26" text-anchor="middle" fill="#8fd6ad" font-size="11.5" font-weight="800" letter-spacing="1">&#10003; DO THIS</text>
+        <text x="420" y="52" text-anchor="middle" fill="#f0b4a3" font-size="10.5" font-weight="700">THREAT</text>
+        <circle cx="420" cy="70" r="12" fill="#e0603a"/>
+        <line x1="420" y1="84" x2="420" y2="106" stroke="rgba(234,244,255,.4)" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <circle cx="420" cy="120" r="14" fill="#4a9de8"/>
+        <text x="452" y="124" fill="#cfe6ff" font-size="11" font-weight="700">YOU</text>
+        <circle cx="398" cy="174" r="11" fill="#f5d76e"/>
+        <circle cx="442" cy="174" r="11" fill="#f5d76e"/>
+        <text x="420" y="200" text-anchor="middle" fill="#f3e2a6" font-size="10.5" font-weight="700">FAMILY</text>
+        <line x1="456" y1="174" x2="510" y2="174" stroke="#8fd6ad" stroke-width="2"/>
+        <polygon points="518,174 508,169 508,179" fill="#8fd6ad"/>
+        <text x="500" y="163" text-anchor="middle" fill="#8fd6ad" font-size="10.5" font-weight="800">EXIT</text>
+      </svg>
+      <div class="fig-cap">Left is the mistake &mdash; standing still while they spread around you. Right is the fix &mdash; move so they stack on one line (nearest attacker between you and the rest), your body between threat and family, driving to the exit.</div>
+    </div>
+
+    <div class="section-k">When escape is gone &middot; respond &amp; train</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">Sucker punch / haymaker</span></div>
+      <div class="p-ess">The most common real attack &mdash; an ambush strike from talking range.</div>
+      <div class="move"><b>Respond</b> &mdash; from the hands-up stance: cover/deflect while off-lining, one counter to buy space, disengage.</div>
+      <div class="move"><b>Train</b> &mdash; partner throws from conversational range, telegraphed then surprise timing; drill at elevated heart rate; every rep ends moving to an exit.</div>
+      <div class="move r"><b>If no opening</b> &mdash; continuous defensive action only until one appears, then leave.</div>
+      <div class="how">
+        <button class="how-btn" onclick="toggleHow(this)"><span class="chev">&#9656;</span> The one counter</button>
+        <div class="how-body"><div class="hb">Keep it gross-motor &mdash; fine motor vanishes under adrenaline, so one simple thing beats a combination. From hands-up, the highest-percentage counter is a <b>straight strike forward to the face</b>: shortest distance to travel, puts him on his heels, buys the half-second. Already chest-to-chest? The space-maker is a <b>knee to the midsection</b> to fold him. Throw <b>one</b> thing to make the gap, then leave &mdash; no follow-up, no chasing.</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">Shove / two-hand grab</span></div>
+      <div class="p-ess">The most common precursor to a fight.</div>
+      <div class="move"><b>Respond</b> &mdash; base, clear/break the hands, create distance; default to leave.</div>
+      <div class="move"><b>Train</b> &mdash; grab-break reps, then partner escalates (shove &rarr; grab &rarr; strike); you choose break-and-leave vs break-and-counter off his follow-up.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">Chokes &mdash; front &amp; rear</span></div>
+      <div class="p-ess">Dangerous and fast. The airway is the priority.</div>
+      <div class="move"><b>Respond</b> &mdash; immediate airway defense; clear the hands while countering to make him release, create space, escape.</div>
+      <div class="move"><b>Train</b> &mdash; mechanics slow first, then progressive resistance on the clear-and-counter; controlled airway-pressure reps with a safety word; rear version from a startle.</div>
+      <div class="how">
+        <button class="how-btn" onclick="toggleHow(this)"><span class="chev">&#9656;</span> Defend the airway</button>
+        <div class="how-body"><div class="hb">Two jobs at once. <b>Clear the grip:</b> your hands drive up-and-out against his thumbs/wrists to peel the hands off your throat, while you <b>tuck your chin down</b> to shield the windpipe. <b>Simultaneously counter</b> (the straight strike, or drive forward into him) so he has to deal with something other than choking you. Sequence: chin down &rarr; clear &rarr; counter &rarr; space &rarr; leave. <span class="warn">Airway first, always</span> &mdash; a choke can put you out in seconds, so nothing else happens until the pressure is off your neck.</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">Headlock / bear hug</span></div>
+      <div class="p-ess">Ambush at grappling range; the risk is being lifted or taken down.</div>
+      <div class="move"><b>Respond</b> &mdash; base low (don&rsquo;t get lifted), protect neck/airway, create space at the hips/head, escape to standing.</div>
+      <div class="move"><b>Train</b> &mdash; base + space-creation from each variant against a resisting partner; every rep ends standing and moving away.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">Wall pin / cornered</span></div>
+      <div class="p-ess">Back to a wall, distance gone.</div>
+      <div class="move"><b>Respond</b> &mdash; off-line immediately (head and body off the wall line), open an exit lane, move toward it.</div>
+      <div class="move"><b>Train</b> &mdash; from back-against-wall with a pinning partner; drill converting &ldquo;cornered&rdquo; back into distance + exit; reps in tight space.</div>
+      <div class="how">
+        <button class="how-btn" onclick="toggleHow(this)"><span class="chev">&#9656;</span> &ldquo;Off the wall line&rdquo;</button>
+        <div class="how-body"><div class="hb">Pinned, all his force runs in one straight line &mdash; from him, through you, into the wall behind you. While your spine is on that line you&rsquo;re stuck absorbing it. Getting <b>off the line</b> means <b>rotating or slipping so your head and torso are no longer between him and the wall</b> &mdash; you pivot to the side so the wall ends up <i>beside</i> you, not behind you. The instant you&rsquo;re off the line his force spills past into the wall, you&rsquo;ve got an angle, and there&rsquo;s an open lane. Cornered &rarr; off-line &rarr; lane &rarr; exit.</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">Ground / mounted</span></div>
+      <div class="p-ess">Where you least want to be &mdash; especially with a second attacker.</div>
+      <div class="move"><b>Respond</b> &mdash; protect head, buck/trap/shrimp to make space, GET UP, disengage. Do not stay to grapple.</div>
+      <div class="move"><b>Train</b> &mdash; technical get-ups from mount/guard/pinned; every rep ends standing and leaving, never holding a position.</div>
+      <div class="how">
+        <button class="how-btn" onclick="toggleHow(this)"><span class="chev">&#9656;</span> Technical get-up</button>
+        <div class="how-body"><div class="hb">Mounted = he&rsquo;s sitting on your torso, the worst spot &mdash; especially with a second attacker. <b>Buck and trap:</b> trap one of his arms and the same-side leg, then <b>bridge your hips up hard</b> &mdash; it rolls him off to that trapped side. The instant he&rsquo;s displaced, <b>post up to your feet and leave &mdash; don&rsquo;t stay to grapple.</b> The standing version (technical stand-up): one hand posts behind you, opposite foot plants, lift your hips and slide the trailing leg out to stand, staying <b>faced toward him</b> the whole time. Both share the rule: the rep ends standing and moving away, never holding a position.</div></div>
+      </div>
+    </div>
+
+    <div class="card red">
+      <div class="p-head"><span class="p-name">Weapon when cornered</span></div>
+      <div class="p-ess">Highest-risk category. The trained answer is not to be here.</div>
+      <div class="move r"><b>Respond</b> &mdash; distance / give up property / run, first and always. Only if truly cornered: control the weapon limb, create the gap, escape.</div>
+      <div class="move"><b>Train</b> &mdash; &ldquo;give the wallet, make distance, run&rdquo; reps first and most; control-and-escape against a training knife only for the cornered case, progressive resistance. Treat any weapon defense as a low-percentage last resort.</div>
+      <div class="how">
+        <button class="how-btn" onclick="toggleHow(this)"><span class="chev">&#9656;</span> Control the weapon hand</button>
+        <div class="how-body"><div class="hb">Control the <b>limb</b>, not the blade &mdash; don&rsquo;t chase the point. Get <b>two points of contact on the arm</b>: grip the <b>wrist and above the elbow</b> so you own the whole lever. Pin or redirect that arm <b>away from your centerline</b> and keep it moving so he can&rsquo;t reset or slash back across you. <span class="warn">Never take a hand off that arm while the weapon is live.</span> It&rsquo;s a two-hands-committed, get-to-escape task &mdash; not a strike-trade &mdash; and it&rsquo;s the technique that decays fastest without live reps, so drill it most and trust it least. First choice is still distance / give up property / run.</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">Defending family while engaged</span></div>
+      <div class="p-ess">You&rsquo;re in contact and they need to move.</div>
+      <div class="move"><b>Respond</b> &mdash; interpose, one decisive action to make space, then extract. Fight only enough to move them.</div>
+      <div class="move"><b>Train</b> &mdash; partner is the threat, another plays family; reps are command-interpose-extract, ending with family at the exit. Never pursue.</div>
+    </div>
+
+    <div class="section-k">Training methodology</div>
+    <div class="card">
+      <div class="p-head"><span class="p-name">What class under-trains</span></div>
+      <div class="move"><b>Progressive resistance</b> &mdash; a technique only counts once it works against a partner at 70&ndash;90%.</div>
+      <div class="move"><b>Stress inoculation</b> &mdash; spike your heart rate first (use your HIIT). Fine motor skills vanish at 150+ bpm; train what survives that.</div>
+      <div class="move"><b>Decision drilling</b> &mdash; partner randomly holds distance / closes / shows a &ldquo;weapon&rdquo; / flanks; you call the branch aloud &mdash; leave, boundary, act, extract. This is the highest-value rep for your goal.</div>
+      <div class="move"><b>Escape-to-safety reps</b> &mdash; every scenario ends by moving to a set exit. Never end standing over a downed partner &mdash; that trains the overcommitment that gets people charged.</div>
+      <div class="note">Cadence: a 15&ndash;20 min decision-drill block ~2&times;/week, bolted onto a day you&rsquo;re already warm; one longer scenario session monthly. Technique depth you already get in class &mdash; this adds the decisions, the stress, and the escape-first reflex.</div>
+    </div>
+
+    <div class="section-k">After it happens</div>
+    <div class="band">Stop the instant you can leave. <b>You call 911 first</b> and report you were attacked. Get to witnesses. Say little &mdash; &ldquo;I was attacked, I defended myself, I&rsquo;ll cooperate&rdquo; &mdash; then a lawyer before any detailed statement. Photograph your injuries; write down the cues that made you fear harm &mdash; that is your s.34 evidence.</div>
+
+    <div class="section-k">The one thing</div>
+    <div class="band">Decide it now, not in the moment. The rep that matters most is making <b>leaving</b> your reflex &mdash; pre-load the command word, the rally point, the boundary line. Skill is the backup to the plan, not the plan. And keep training Krav: it is the floor the whole thing stands on.</div>
+
+    <div class="note" style="margin-top:18px;">Preparedness framework, not legal advice &mdash; &ldquo;reasonable&rdquo; is decided by a court on the facts. A short consult with a BC criminal-defense lawyer on s.34/s.35 for your specific situations (home, with the girls, in public) is the one thing that makes the legal half airtight.</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <div class="d-top">
+      <div class="section-k" style="margin:6px 0 0;">Recall Drill</div>
+      <div class="progress" id="progress"></div>
+    </div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Loaded.</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar" style="margin-top:22px;">
+        <button class="btn" onclick="restart()">Again</button>
+        <button class="btn ghost" onclick="setMode('read')">Read</button>
+      </div>
+    </div>
+    <div class="foot">Say each aloud before revealing.</div>
+  </div>
+
+</div>
+
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  var read = m === 'read';
+  document.getElementById('read').style.display  = read ? '' : 'none';
+  document.getElementById('drill').style.display = read ? 'none' : '';
+  document.getElementById('tab-read').className  = read ? 'on' : '';
+  document.getElementById('tab-drill').className = read ? '' : 'on';
+  if(!read){ idx=0; document.getElementById('done').className='done-view'; document.getElementById('stage').style.display=''; renderStep(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- tap-to-reveal detail ---------------- */
+function toggleHow(btn){
+  var body = btn.parentNode.querySelector('.how-body');
+  var open = body.classList.toggle('open');
+  btn.classList.toggle('open', open);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-selfdefense';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+/* long-press to remove */
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- drill ---------------- */
+var STEPS = [
+  { prompt:'State the <b>s.34 test</b> in one line.', lines:['Reasonable belief of a threat + a defensive purpose + a response <b>reasonable in the circumstances</b>.'] },
+  { prompt:'The <b>proportionality</b> rule.', lines:['Only the force needed to escape &mdash; and it <b>stops the instant you can leave</b>.'] },
+  { prompt:'The <b>weapons</b> rule.', lines:['Carry <b>nothing</b> for self-defense. Police + peace bond, never a blade.'] },
+  { prompt:'The <b>priority order</b>.', lines:['<b>Avoid &rarr; de-escalate &rarr; escape &rarr; force.</b> Force is last.'] },
+  { prompt:'<b>Family</b> posture &mdash; three beats.', lines:['<b>Command word &rarr; interpose + boundary &rarr; extract.</b> Never pursue.'] },
+  { prompt:'<b>Self / friends</b> posture.', lines:['<b>Leave.</b> Ego is the enemy; a fight you could have left is a loss.'] },
+  { prompt:'Name <b>three pre-assault cues</b>.', lines:['Hidden hands / closing after you stepped back / target stare after agitation.','(also: blading the body, the &ldquo;interview&rdquo;)'] },
+  { prompt:'The <b>multiple-attacker</b> rule.', lines:['<b>Never surrounded, never the ground.</b> Keep them on one line and leave.'] },
+  { prompt:'Core response when <b>contact is forced</b>.', lines:['Defend + counter &rarr; <b>one opening</b> &rarr; escape.','Continuous action only <i>until</i> the opening.'] },
+  { prompt:'The <b>choke</b> response.', lines:['<b>Airway first</b> &mdash; clear the hands, counter to release, make space, escape.'] },
+  { prompt:'<b>Weapon-when-cornered</b> order.', lines:['<b>Distance / give up property / run</b> first.','Control-and-escape only if truly cornered.'] },
+  { prompt:'<b>After</b> the incident.', lines:['Stop when you can leave. <b>You call 911 first.</b> Lawyer before a detailed statement.'] }
+];
+var idx=0, revealed=false;
+
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Say it aloud &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  idx=0; document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-selfdefense-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+</script>
+</body>
+</html>
