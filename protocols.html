@@ -45,6 +45,11 @@
   .count{font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:26px 0 10px}
   footer{border-top:1px solid var(--line);margin-top:34px;padding-top:16px;color:var(--muted);font-size:13px}
   @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+  /* per-protocol thumbnail (on-device image, if present) */
+  a.protocol .p-thumb{ flex:none; width:60px; height:60px; border-radius:12px;
+    background-size:cover; background-position:center; border:1px solid var(--line); display:none; }
+  a.protocol .p-thumb.set{ display:block; }
 </style>
 </head>
 <body>
@@ -60,6 +65,7 @@
 
     <!-- Add a new protocol by copying one block and pointing href at its ./page.html -->
     <a class="protocol" href="./charisma.html">
+      <div class="p-thumb"></div>
       <div class="p-body">
         <div class="p-name">The Charisma Protocol</div>
         <div class="p-desc">Grounded presence, a credible floor, warm approach, attentional generosity, calibrated depth.</div>
@@ -69,6 +75,7 @@
     </a>
 
     <a class="protocol gold" href="./posture-reset.html">
+      <div class="p-thumb"></div>
       <div class="p-body">
         <div class="p-name">The Stack — Posture Reset</div>
         <div class="p-desc">Reset the anterior-tilt pattern: release, control, and rehearse a stacked stance. Read it or run the daily routine.</div>
@@ -78,6 +85,7 @@
     </a>
 
     <a class="protocol" href="./capital.html">
+      <div class="p-thumb"></div>
       <div class="p-body">
         <div class="p-name">The Capital Protocol</div>
         <div class="p-desc">Capture, don't beat: cost, diversification, behaviour, and the verified-edge gate — capital that compounds toward the exit.</div>
@@ -88,6 +96,7 @@
 
 
     <a class="protocol gold" href="./fantasy.html">
+      <div class="p-thumb"></div>
       <div class="p-body">
         <div class="p-name">The Winning Protocol</div>
         <div class="p-desc">Draft and season playbook for the 12-team half-PPR league — five laws, slot branches, the waiver edge.</div>
@@ -96,6 +105,7 @@
       <div class="p-arrow">&rarr;</div>
     </a>
     <a class="protocol" href="./longevity.html">
+      <div class="p-thumb"></div>
       <div class="p-body">
         <div class="p-name">The Longevity Protocol</div>
         <div class="p-desc">The high-certainty levers at 47 &mdash; sleep, VO&#8322;max, muscle, food &mdash; with sauna, cold and fasting kept as garnish, not medicine.</div>
@@ -104,6 +114,7 @@
       <div class="p-arrow">&rarr;</div>
     </a>
     <a class="protocol" href="./sleep.html">
+      <div class="p-thumb"></div>
       <div class="p-body">
         <div class="p-name">The Sleep Protocol</div>
         <div class="p-desc">The full architecture under the longevity sleep pillar &mdash; rhythm, temperature, light, and the inputs that wreck depth and REM.</div>
@@ -112,6 +123,7 @@
       <div class="p-arrow">&rarr;</div>
     </a>
     <a class="protocol" href="./selfdefense.html">
+      <div class="p-thumb"></div>
       <div class="p-body">
         <div class="p-name">The Self-Defense Protocol</div>
         <div class="p-desc">Threat cues, the legal lines under s.34, and the decisions pre-made &mdash; get home safe, no liability, force only as a last branch.</div>
@@ -123,5 +135,19 @@
 
   <footer>Forge OS · one link on the brief, every protocol behind it. New protocols get added here — the OS stays a single door.</footer>
 </div>
+<script>
+(function(){
+  var cards=document.querySelectorAll('a.protocol');
+  for(var i=0;i<cards.length;i++){
+    var a=cards[i];
+    var href=a.getAttribute('href')||'';
+    var name=href.replace(/^\.?\//,'').replace(/\.html.*$/,'');
+    if(!name) continue;
+    var v=''; try{ v=localStorage.getItem('forge-img-'+name)||''; }catch(e){}
+    var t=a.querySelector('.p-thumb');
+    if(t && v){ t.style.backgroundImage='url('+v+')'; t.className='p-thumb set'; }
+  }
+})();
+</script>
 </body>
 </html>
