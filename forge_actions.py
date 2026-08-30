@@ -2421,8 +2421,16 @@ function paintTodayFive() {{
   var arr = all[ymdOffset(0)];
   var real = (arr || []).filter(function (i) {{ return i && i.t; }});
   if (!real.length) {{
-    host.innerHTML = '<div class="t5-empty">No five set for today yet. Set them in the evening debrief or the planner &mdash; they appear here as soon as they exist.</div>';
-    return;
+    var carriedFrom = null;
+    for (var off = -1; off >= -60; off--) {{
+      var cand = all[ymdOffset(off)];
+      var cr = (cand || []).filter(function (i) {{ return i && i.t; }});
+      if (cr.length) {{ real = cr; carriedFrom = ymdOffset(off); break; }}
+    }}
+    if (!carriedFrom) {{
+      host.innerHTML = '<div class="t5-empty">No five set for today yet. Set them in the evening debrief or the planner &mdash; they appear here as soon as they exist.</div>';
+      return;
+    }}
   }}
   var done = real.filter(function (i) {{ return i.done; }}).length;
   var rows = real.map(function (i) {{
@@ -2438,7 +2446,16 @@ function paintTodayFive() {{
            (i.dw ? '<div class="t5-dw">Done when: ' + t5Esc(i.dw) + '</div>' : '') +
            '</div></div>';
   }}).join('');
-  host.innerHTML = '<div class="t5-count">' + done + ' of ' + real.length + ' closed</div>' + rows;
+  var t5hdr = '';
+  if (carriedFrom) {{
+    var _p = carriedFrom.split('-');
+    var _d = new Date(+_p[0], +_p[1] - 1, +_p[2]);
+    var _dn = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    var _mn = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var _nice = _dn[_d.getDay()] + ' ' + _mn[_d.getMonth()] + ' ' + _d.getDate();
+    t5hdr = '<div style="font-size:13px; font-weight:700; color:#7fd4e6; margin-bottom:8px; line-height:1.5;">Carried from ' + _nice + ' &mdash; no five set for today yet.</div>';
+  }}
+  host.innerHTML = t5hdr + '<div class="t5-count">' + done + ' of ' + real.length + ' closed</div>' + rows;
 }}
 function paintYesterday() {{
   var host = document.getElementById('yday-host');
