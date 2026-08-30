@@ -154,7 +154,7 @@
     <div class="date-block">
       <div class="date-main">Sunday</div>
       <div style="font-size:11px; color:var(--muted);">August 30, 2026</div>
-      <div class="date-time" id="live-clock">10:49 AM</div>
+      <div class="date-time" id="live-clock">11:49 AM</div>
     </div>
   </div>
 
@@ -325,7 +325,7 @@
 
   <div class="card">
     <div class="card-header"><span class="card-icon">🌤️🌴</span><span>Richmond Weather</span></div>
-    <div class="mini-card"><div class="mini-detail">Overcast, 15.6°C</div></div>
+    <div class="mini-card"><div class="mini-detail">Overcast, 16.1°C</div></div>
   </div>
 
   <div class="card" data-newscan>
@@ -537,7 +537,7 @@ Sat Sep 26 · 5:30 PM — Oktoberfest #1 [Austria Vancouver]</pre></div>
   <div class="card"><div class="card-header"><span class="card-icon">🎸🌴</span><span>Upcoming Metal Shows</span></div><div class="mini-card"><div class="mini-detail">No upcoming shows.</div></div></div>
 
 
-  <div class="footer">🌴 FORGE OS · AUGUST 30, 2026 · 10:49 AM · theseanman.github.io/forge-daily-brief<span id="sync-state"></span></div>
+  <div class="footer">🌴 FORGE OS · AUGUST 30, 2026 · 11:49 AM · theseanman.github.io/forge-daily-brief<span id="sync-state"></span></div>
 
 </div>
 
@@ -840,8 +840,16 @@ function paintTodayFive() {
   var arr = all[ymdOffset(0)];
   var real = (arr || []).filter(function (i) { return i && i.t; });
   if (!real.length) {
-    host.innerHTML = '<div class="t5-empty">No five set for today yet. Set them in the evening debrief or the planner &mdash; they appear here as soon as they exist.</div>';
-    return;
+    var carriedFrom = null;
+    for (var off = -1; off >= -60; off--) {
+      var cand = all[ymdOffset(off)];
+      var cr = (cand || []).filter(function (i) { return i && i.t; });
+      if (cr.length) { real = cr; carriedFrom = ymdOffset(off); break; }
+    }
+    if (!carriedFrom) {
+      host.innerHTML = '<div class="t5-empty">No five set for today yet. Set them in the evening debrief or the planner &mdash; they appear here as soon as they exist.</div>';
+      return;
+    }
   }
   var done = real.filter(function (i) { return i.done; }).length;
   var rows = real.map(function (i) {
@@ -857,7 +865,16 @@ function paintTodayFive() {
            (i.dw ? '<div class="t5-dw">Done when: ' + t5Esc(i.dw) + '</div>' : '') +
            '</div></div>';
   }).join('');
-  host.innerHTML = '<div class="t5-count">' + done + ' of ' + real.length + ' closed</div>' + rows;
+  var t5hdr = '';
+  if (carriedFrom) {
+    var _p = carriedFrom.split('-');
+    var _d = new Date(+_p[0], +_p[1] - 1, +_p[2]);
+    var _dn = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    var _mn = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var _nice = _dn[_d.getDay()] + ' ' + _mn[_d.getMonth()] + ' ' + _d.getDate();
+    t5hdr = '<div style="font-size:13px; font-weight:700; color:#7fd4e6; margin-bottom:8px; line-height:1.5;">Carried from ' + _nice + ' &mdash; no five set for today yet.</div>';
+  }
+  host.innerHTML = t5hdr + '<div class="t5-count">' + done + ' of ' + real.length + ' closed</div>' + rows;
 }
 function paintYesterday() {
   var host = document.getElementById('yday-host');
