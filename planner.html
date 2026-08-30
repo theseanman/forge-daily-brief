@@ -737,6 +737,8 @@ function renderRound(){
     '</div>';
 }
 
+function ksMax(){ var el=document.getElementById('ksmax-toast'); if(!el){ el=document.createElement('div'); el.id='ksmax-toast'; el.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0d0d0d;color:#ffc107;font-weight:800;font-size:13px;letter-spacing:.03em;padding:9px 15px;border-radius:9px;z-index:99999;opacity:0;transition:opacity .18s;box-shadow:0 4px 14px rgba(0,0,0,.4);pointer-events:none;'; document.body.appendChild(el); } el.textContent='2 keystones max'; el.style.opacity='1'; clearTimeout(el._t); el._t=setTimeout(function(){ el.style.opacity='0'; },1500); }
+
 function renderTop5(){
   var arr = loadTop5();
   var nowH = new Date().getHours();
@@ -772,7 +774,7 @@ function renderTop5(){
       star.className = 't5star' + (it.k ? ' on' : '');
       star.innerHTML = '\u2605';
       star.title = 'Keystone';
-      star.onclick = function(){ var a = loadTop5(); var was = !!(a[i] && a[i].k); for (var j = 0; j < 5; j++){ if (a[j]) a[j].k = false; } if (a[i]) a[i].k = !was; saveTop5(a); renderTop5(); };
+      star.onclick = function(){ var a = loadTop5(); var was = !!(a[i] && a[i].k); if (!was){ var kc = a.filter(function(x){ return x && x.k; }).length; if (kc >= 2){ ksMax(); return; } } if (a[i]) a[i].k = !was; saveTop5(a); renderTop5(); };
 
       row.appendChild(num); row.appendChild(chk); row.appendChild(star); row.appendChild(txt); row.appendChild(sel);
 

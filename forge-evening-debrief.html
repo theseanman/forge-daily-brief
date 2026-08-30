@@ -948,9 +948,9 @@ function renderT5Review(){
   renderMushinRow(host); /* install13 */
   var done = real.filter(function(i){ return i.done; }).length;
   if (note){
-    var key = real.filter(function(i){ return i.k; })[0];
+    var keys = real.filter(function(i){ return i.k; });
     var msg = done+' of '+real.length+' closed.';
-    if (key) msg += key.done ? '  Keystone done — that is the day won.' : '  Keystone still open: '+key.t;
+    if (keys.length){ var kopen = keys.filter(function(i){ return !i.done; }); msg += kopen.length ? '  Keystone still open: '+kopen.map(function(i){ return i.t; }).join('; ') : '  Keystone'+(keys.length>1?'s':'')+' done — that is the day won.'; }
     note.textContent = msg;
   }
 }
@@ -967,13 +967,15 @@ function toggleT5(i){
 }
 
 /* ---------- history, streak, week ---------- */
+function ksMax(){ var el=document.getElementById('ksmax-toast'); if(!el){ el=document.createElement('div'); el.id='ksmax-toast'; el.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0d0d0d;color:#ffc107;font-weight:800;font-size:13px;letter-spacing:.03em;padding:9px 15px;border-radius:9px;z-index:99999;opacity:0;transition:opacity .18s;box-shadow:0 4px 14px rgba(0,0,0,.4);pointer-events:none;'; document.body.appendChild(el); } el.textContent='2 keystones max'; el.style.opacity='1'; clearTimeout(el._t); el._t=setTimeout(function(){ el.style.opacity='0'; },1500); }
+
 function recordHistory(){
   var real = todayT5.filter(function(i){ return i && i.t; });
   var h = fdRead(K_HIST, {});
-  var keyItem = real.filter(function(i){ return i.k; })[0];
+  var keyItems = real.filter(function(i){ return i.k; });
   h[fdToday()] = { done: real.filter(function(i){ return i.done; }).length, total: real.length,
                    debriefed: true,
-                   key: keyItem ? 1 : 0, keyDone: (keyItem && keyItem.done) ? 1 : 0 };
+                   key: keyItems.length ? 1 : 0, keyDone: (keyItems.length && keyItems.every(function(i){ return i.done; })) ? 1 : 0 };
   var keys=Object.keys(h).sort(); if(keys.length>120){ var o={}; keys.slice(-120).forEach(function(k){o[k]=h[k];}); h=o; }
   fdWrite(K_HIST, h);
   return h;
@@ -1088,7 +1090,7 @@ function renderPlanRows(){
     var row=document.createElement('div'); row.className='plan-row';
     var n=document.createElement('div'); n.className='plan-num'; n.textContent=(i+1);
     var st=document.createElement('button'); st.className='plan-star'+(it.k?' on':''); st.innerHTML='&#9733;';
-    st.onclick=function(){ planRows.forEach(function(r,j){ r.k = (j===i && !it.k); }); renderPlanRows(); checkPlan(); };
+    st.onclick=function(){ var cur=!!(planRows[i]&&planRows[i].k); if(!cur){ var kc=planRows.filter(function(x){ return x&&x.k; }).length; if(kc>=2){ ksMax(); return; } } if(planRows[i]) planRows[i].k=!cur; renderPlanRows(); checkPlan(); };
     var tx=document.createElement('input'); tx.className='plan-txt'; tx.type='text';
     tx.value=it.t||''; tx.placeholder='actionable '+(i+1);
     tx.oninput=function(){ planRows[i].t=this.value; checkPlan(); };
@@ -2292,7 +2294,7 @@ function num(id){
 
 function collectDaily(){
   var real = todayT5.filter(function(i){ return i && i.t; });
-  var keyItem = real.filter(function(i){ return i.k; })[0];
+  var keyItems = real.filter(function(i){ return i.k; });
 
   var esp = [];
   for (var n = 1; n <= 3; n++){
@@ -2327,8 +2329,8 @@ function collectDaily(){
     t5: {
       total: real.length,
       done: real.filter(function(i){ return i.done; }).length,
-      keySet: keyItem ? 1 : 0,
-      keyDone: (keyItem && keyItem.done) ? 1 : 0,
+      keySet: keyItems.length ? 1 : 0,
+      keyDone: (keyItems.length && keyItems.every(function(i){ return i.done; })) ? 1 : 0,
       items: real.map(function(i){
         return { t: i.t, done: !!i.done, k: !!i.k, m: i.m || '', dw: i.dw || '',
                  src: i.src || '', carry: i.c || 0 };
