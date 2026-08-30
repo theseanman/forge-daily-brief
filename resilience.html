@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>The Resilience Protocol</title>
+<style>
+  :root{
+    --bg:#0a1428;
+    --bg2:#0f1e3d;
+    --panel:#132a52;
+    --panel2:#17356a;
+    --line:#24467f;
+    --ink:#eaf1ff;
+    --muted:#9fb4dc;
+    --blue:#3d7bff;
+    --blue-bright:#5b9bff;
+    --cyan:#38d6ff;
+    --gold:#ffcf5c;
+    --green:#43d9a3;
+    --amber:#ffb03a;
+    --grey:#7d8fb3;
+    --shadow:0 10px 40px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:
+      radial-gradient(1200px 700px at 15% -10%, rgba(61,123,255,.14) 0, transparent 60%),
+      radial-gradient(1100px 600px at 100% 0%, rgba(56,214,255,.10) 0, transparent 55%),
+      linear-gradient(180deg,var(--bg2) 0%, var(--bg) 100%);
+    background-attachment:fixed;
+    color:var(--ink);
+    line-height:1.55;
+    padding:0 0 80px;
+    min-height:100vh;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:0 18px;}
+
+  /* ---------- photo slot ---------- */
+  .photo{
+    margin:16px auto 6px;
+    width:100%;
+    height:150px;
+    border-radius:18px;
+    border:1.5px dashed var(--line);
+    background:linear-gradient(180deg,var(--panel),var(--bg2));
+    display:flex;align-items:center;justify-content:center;
+    color:var(--muted);font-size:14px;letter-spacing:.02em;
+    overflow:hidden;position:relative;cursor:pointer;user-select:none;
+  }
+  .photo img{width:100%;height:100%;object-fit:cover;display:block;}
+  .photo .hint{padding:0 20px;text-align:center;}
+
+  /* ---------- header ---------- */
+  header{padding:18px 0 6px;}
+  .kicker{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);font-weight:700;}
+  h1{font-size:30px;line-height:1.15;margin:6px 0 4px;font-weight:800;letter-spacing:-.01em;
+     background:linear-gradient(90deg,#eaf1ff,#8fc0ff);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .sub{color:var(--muted);font-size:15px;max-width:560px;}
+
+  .toggle{
+    display:inline-flex;background:var(--bg2);border:1px solid var(--line);
+    border-radius:999px;padding:4px;margin:16px 0 8px;gap:4px;
+  }
+  .toggle button{
+    border:0;background:transparent;color:var(--muted);
+    font-weight:700;font-size:14px;letter-spacing:.03em;
+    padding:8px 20px;border-radius:999px;cursor:pointer;transition:.18s;
+  }
+  .toggle button.on{background:linear-gradient(180deg,var(--blue-bright),var(--blue));color:#fff;box-shadow:0 4px 14px rgba(61,123,255,.45);}
+
+  /* ---------- frame ---------- */
+  .frame{
+    background:linear-gradient(180deg,var(--panel),var(--bg2));
+    border:1px solid var(--line);border-radius:18px;
+    padding:20px 20px 8px;margin:8px 0 22px;box-shadow:var(--shadow);
+  }
+  .frame p{margin:0 0 14px;color:#d7e3ff;}
+  .frame b{color:#fff;}
+
+  /* ---------- spine loop diagram ---------- */
+  .diagram{margin:10px 0 4px;text-align:center;}
+  .diagram svg{max-width:100%;height:auto;}
+  .dcap{font-size:12.5px;color:var(--muted);margin:6px 0 14px;letter-spacing:.01em;}
+
+  /* ---------- pillar cards ---------- */
+  .card{
+    background:linear-gradient(180deg,var(--panel),var(--bg2));
+    border:1px solid var(--line);border-left:4px solid var(--blue);
+    border-radius:16px;padding:18px 18px 16px;margin:14px 0;box-shadow:var(--shadow);
+  }
+  .card .num{font-size:12px;letter-spacing:.2em;color:var(--cyan);font-weight:700;text-transform:uppercase;}
+  .card h2{font-size:21px;margin:3px 0 2px;font-weight:800;}
+  .essence{color:var(--blue-bright);font-size:15px;font-style:italic;margin:0 0 12px;}
+  .moves{list-style:none;padding:0;margin:0 0 6px;}
+  .moves li{position:relative;padding:6px 0 6px 24px;color:#dbe6ff;font-size:15px;border-top:1px solid rgba(36,70,127,.4);}
+  .moves li:first-child{border-top:0;}
+  .moves li::before{content:"";position:absolute;left:4px;top:14px;width:8px;height:8px;border-radius:2px;
+    background:linear-gradient(135deg,var(--cyan),var(--blue));transform:rotate(45deg);}
+  .moves li b{color:#fff;}
+
+  /* ---------- grade badge ---------- */
+  .grade{display:inline-flex;align-items:center;gap:7px;margin-top:10px;font-size:12px;
+    background:var(--bg2);border:1px solid var(--line);border-radius:999px;padding:5px 12px;color:var(--muted);}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+  .g-strong .dot{background:var(--green);} .g-strong{color:#bff0dc;}
+  .g-mod .dot{background:var(--blue-bright);} .g-mod{color:#c7dbff;}
+  .g-prac .dot{background:var(--amber);} .g-prac{color:#ffdca6;}
+  .g-reason .dot{background:var(--grey);} .g-reason{color:#c2ccdf;}
+  .grade i{font-style:normal;opacity:.8;}
+
+  /* ---------- one thing ---------- */
+  .onething{
+    background:linear-gradient(135deg,#123b8a,#0e2a63);
+    border:1px solid var(--blue);border-radius:18px;padding:20px;margin:22px 0 14px;
+    text-align:center;box-shadow:0 12px 40px rgba(61,123,255,.28);
+  }
+  .onething .lbl{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);font-weight:700;}
+  .spine{font-size:22px;font-weight:800;margin:8px 0 6px;letter-spacing:.01em;}
+  .spine span{color:var(--cyan);}
+  .onething p{color:#cfe0ff;font-size:14.5px;margin:6px 0 0;}
+
+  .note{background:var(--bg2);border:1px dashed var(--line);border-radius:14px;padding:14px 16px;margin:14px 0;color:var(--muted);font-size:13.5px;}
+  .note b{color:#dbe6ff;}
+
+  /* ---------- legend ---------- */
+  .legend{margin:22px 0 0;border-top:1px solid var(--line);padding-top:16px;}
+  .legend h3{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;}
+  .legend .row{display:flex;gap:10px;align-items:flex-start;margin:8px 0;font-size:13px;color:var(--muted);}
+  .legend .row b{color:var(--ink);}
+
+  /* ---------- drill ---------- */
+  .drill{display:none;}
+  .drill.on{display:block;}
+  .streak{display:flex;justify-content:space-between;align-items:center;margin:8px 0 14px;color:var(--muted);font-size:13px;}
+  .streak b{color:var(--gold);font-size:20px;}
+  .drillcard{
+    background:linear-gradient(180deg,var(--panel),var(--bg2));
+    border:1px solid var(--line);border-radius:20px;padding:26px 20px;min-height:220px;
+    display:flex;flex-direction:column;justify-content:center;text-align:center;box-shadow:var(--shadow);
+  }
+  .drillcard .q{font-size:19px;font-weight:700;color:#eaf1ff;}
+  .drillcard .a{font-size:17px;color:var(--blue-bright);margin-top:16px;font-weight:600;display:none;}
+  .drillcard .a.show{display:block;animation:fade .3s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .btns{display:flex;gap:10px;margin-top:16px;}
+  .btns button{flex:1;border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:700;cursor:pointer;transition:.15s;}
+  .reveal{background:linear-gradient(180deg,var(--blue-bright),var(--blue));color:#fff;box-shadow:0 6px 18px rgba(61,123,255,.4);}
+  .next{background:var(--panel2);color:#dbe6ff;border:1px solid var(--line);}
+  .btns button:active{transform:scale(.97);}
+
+  footer{margin:34px 0 0;text-align:center;}
+  footer a{color:var(--blue-bright);text-decoration:none;font-weight:700;font-size:14px;letter-spacing:.02em;}
+  footer a:hover{color:var(--cyan);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- device-only photo slot -->
+  <div class="photo" id="photo" title="Tap to add · long-press to remove">
+    <span class="hint" id="photoHint">Tap to add an anchor image<br><small style="opacity:.7">on-device only · never synced</small></span>
+    <input type="file" id="photoInput" accept="image/*" style="display:none">
+  </div>
+
+  <header>
+    <div class="kicker">Forge Protocol</div>
+    <h1>The Resilience Protocol</h1>
+    <div class="sub">How not to break under pressure — the discipline that keeps you composed when the situation is genuinely against you.</div>
+    <div class="toggle">
+      <button id="tRead" class="on" onclick="setMode('read')">Read</button>
+      <button id="tDrill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </header>
+
+  <!-- ============ READ ============ -->
+  <div id="read">
+
+    <div class="frame">
+      <p>Resilience under pressure is <b>not the absence of arousal</b>. The pounding heart, the fast breath, the narrowing vision — those show up in the composed operator too. What separates them is what they <b>do</b> with it.</p>
+      <p>Two dials decide whether pressure sharpens you or breaks you: your <b>physiological arousal</b>, which you can nudge in seconds, and your <b>appraisal</b> of that arousal — the story you tell about it — which you can rewrite on the spot. Everything below works one of those two dials.</p>
+      <p>When you can't remember any of it, fall back to the spine:</p>
+
+      <div class="diagram" aria-label="The spine loop: Breathe, Reframe, Narrow, Act">
+        <svg viewBox="0 0 520 200" role="img">
+          <defs>
+            <linearGradient id="node" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#5b9bff"/><stop offset="1" stop-color="#2f66d8"/>
+            </linearGradient>
+            <marker id="arrow" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="#38d6ff"/>
+            </marker>
+          </defs>
+          <!-- arrows -->
+          <path d="M120,58 L210,58" stroke="#38d6ff" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+          <path d="M330,58 L420,58" stroke="#38d6ff" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+          <path d="M455,86 L455,120" stroke="#38d6ff" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+          <path d="M400,150 L120,150 L120,86" stroke="#38d6ff" stroke-width="2.5" fill="none" marker-end="url(#arrow)" opacity=".55"/>
+          <!-- nodes -->
+          <g font-family="inherit" font-weight="700" font-size="15" fill="#fff" text-anchor="middle">
+            <rect x="40" y="40" width="80" height="36" rx="10" fill="url(#node)"/><text x="80" y="63">Breathe</text>
+            <rect x="215" y="40" width="115" height="36" rx="10" fill="url(#node)"/><text x="272" y="63">Reframe</text>
+            <rect x="410" y="40" width="90" height="36" rx="10" fill="url(#node)"/><text x="455" y="63">Narrow</text>
+            <rect x="410" y="128" width="90" height="36" rx="10" fill="url(#node)"/><text x="455" y="151">Act</text>
+          </g>
+          <text x="260" y="185" text-anchor="middle" fill="#9fb4dc" font-size="12.5">…then loop until it passes</text>
+        </svg>
+      </div>
+      <p class="dcap">Four moves, in order. One physiological sigh, call the feeling readiness, pick the single next action, do it — then run it again.</p>
+    </div>
+
+    <!-- Pillar 1 -->
+    <div class="card">
+      <div class="num">Pillar 01</div>
+      <h2>The Appraisal</h2>
+      <div class="essence">Arousal is fuel, not a verdict.</div>
+      <ul class="moves">
+        <li><b>Rename the signal.</b> "My heart's pounding" isn't fear — say <i>"this is my body getting ready."</i> Same physiology, different meaning.</li>
+        <li><b>Reach for excited, not calm.</b> Before a high-stakes moment, saying "I'm excited" out loud beats "calm down" — it's a shorter jump from high-arousal-negative to high-arousal-positive than to forced calm.</li>
+        <li><b>Hold the stress-is-enhancing view.</b> Treated as help, the stress response sharpens focus and locks in memory. Treated as threat, it leaks into panic.</li>
+      </ul>
+      <div class="grade g-mod"><span class="dot"></span><i>Grade:</i> Moderate — reappraisal as a strategy is strong (Gross); the "say excited" specific is a single well-run study (Brooks, 2014); stress-mindset support is moderate (Crum, 2013).</div>
+
+      <div class="diagram" style="margin-top:14px" aria-label="Arousal-performance curve">
+        <svg viewBox="0 0 520 210" role="img">
+          <defs><linearGradient id="curve" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#38d6ff"/><stop offset=".5" stop-color="#5b9bff"/><stop offset="1" stop-color="#ff7a7a"/>
+          </linearGradient></defs>
+          <line x1="55" y1="170" x2="495" y2="170" stroke="#24467f" stroke-width="1.5"/>
+          <line x1="55" y1="170" x2="55" y2="25" stroke="#24467f" stroke-width="1.5"/>
+          <text x="275" y="200" text-anchor="middle" fill="#9fb4dc" font-size="12">Arousal →</text>
+          <text x="20" y="100" fill="#9fb4dc" font-size="12" transform="rotate(-90 20 100)">Performance →</text>
+          <path d="M55,165 Q200,25 275,45 Q350,25 495,165" fill="none" stroke="url(#curve)" stroke-width="3.5"/>
+          <circle cx="275" cy="45" r="6" fill="#ffcf5c"/>
+          <line x1="275" y1="51" x2="275" y2="170" stroke="#ffcf5c" stroke-width="1" stroke-dasharray="3 4" opacity=".6"/>
+          <text x="275" y="20" text-anchor="middle" fill="#ffcf5c" font-size="12.5" font-weight="700">reappraisal holds you here</text>
+          <text x="470" y="150" text-anchor="end" fill="#ff9a9a" font-size="11.5">panic / freeze</text>
+          <text x="95" y="150" fill="#9fdcff" font-size="11.5">flat / disengaged</text>
+        </svg>
+      </div>
+      <p class="dcap">The classic inverted-U: too little arousal and you're flat, too much and you tip into panic. Reappraisal doesn't kill the arousal — it keeps its meaning at the crest instead of letting it slide into threat.</p>
+    </div>
+
+    <!-- Pillar 2 -->
+    <div class="card">
+      <div class="num">Pillar 02</div>
+      <h2>The Breath</h2>
+      <div class="essence">The one lever that reaches your nervous system in real time.</div>
+      <ul class="moves">
+        <li><b>Physiological sigh.</b> Two inhales through the nose — a full one, then a short top-up on top of it — followed by a long, slow exhale through the mouth. One to three reps drops arousal faster than anything you can think.</li>
+        <li><b>Box breathing to hold a line.</b> In for 4, hold 4, out for 4, hold 4. Use it to keep a steady baseline through sustained pressure.</li>
+        <li><b>Make the exhale longer than the inhale.</b> The long out-breath is the part that engages the parasympathetic brake — that's the actual mechanism, not the ritual.</li>
+      </ul>
+      <div class="grade g-mod"><span class="dot"></span><i>Grade:</i> Physiological sigh — moderate (one solid RCT, Balban et al., 2023). Box breathing — practice-backed (widely used by operators, thinner controlled data). Long-exhale principle — moderate, consistent with respiratory-vagal physiology.</div>
+
+      <div class="diagram" style="margin-top:14px" aria-label="Box breathing 4-4-4-4">
+        <svg viewBox="0 0 300 220" role="img">
+          <rect x="90" y="40" width="120" height="120" rx="10" fill="none" stroke="#3d7bff" stroke-width="3"/>
+          <circle r="7" fill="#38d6ff">
+            <animateMotion dur="16s" repeatCount="indefinite"
+              path="M90,40 L210,40 L210,160 L90,160 L90,40"/>
+          </circle>
+          <text x="150" y="30" text-anchor="middle" fill="#9fdcff" font-size="13" font-weight="700">Inhale · 4</text>
+          <text x="150" y="182" text-anchor="middle" fill="#9fdcff" font-size="13" font-weight="700">Exhale · 4</text>
+          <text x="70" y="104" text-anchor="end" fill="#9fdcff" font-size="13" font-weight="700">Hold · 4</text>
+          <text x="230" y="104" text-anchor="start" fill="#9fdcff" font-size="13" font-weight="700">Hold · 4</text>
+          <text x="150" y="205" text-anchor="middle" fill="#7d8fb3" font-size="11">follow the dot</text>
+        </svg>
+      </div>
+      <p class="dcap">Box breathing, one full lap = one breath cycle. Trace the dot: equal counts on all four sides.</p>
+    </div>
+
+    <!-- Pillar 3 -->
+    <div class="card">
+      <div class="num">Pillar 03</div>
+      <h2>The Aperture</h2>
+      <div class="essence">Shrink the world to the next controllable action.</div>
+      <ul class="moves">
+        <li><b>Sort the field.</b> Split what's in front of you into <i>controllable</i> and <i>not</i>. Act only on the first column; drop the second, deliberately.</li>
+        <li><b>Ask for the very next physical action</b> — one concrete thing your hands can do — and do only that. Panic is the mind trying to solve everything at once.</li>
+        <li><b>Narrow attention on purpose.</b> A fixed point, the task in your hands. It breaks the threat-scan that keeps arousal spiking.</li>
+      </ul>
+      <div class="grade g-mod"><span class="dot"></span><i>Grade:</i> Moderate — attentional-control and locus-of-control research, with consistent sport-psych support for "control the controllables."</div>
+
+      <div class="diagram" style="margin-top:14px" aria-label="Aperture narrowing to next action">
+        <svg viewBox="0 0 300 190" role="img">
+          <circle cx="150" cy="95" r="80" fill="none" stroke="#24467f" stroke-width="1.5" stroke-dasharray="4 5"/>
+          <circle cx="150" cy="95" r="55" fill="none" stroke="#2f66d8" stroke-width="2"/>
+          <circle cx="150" cy="95" r="30" fill="none" stroke="#5b9bff" stroke-width="2.5"/>
+          <circle cx="150" cy="95" r="10" fill="#38d6ff"/>
+          <text x="150" y="99" text-anchor="middle" fill="#0a1428" font-size="10" font-weight="800">NOW</text>
+          <text x="150" y="30" text-anchor="middle" fill="#7d8fb3" font-size="11">everything at once</text>
+          <text x="150" y="150" text-anchor="middle" fill="#9fdcff" font-size="11">→ the single next action</text>
+        </svg>
+      </div>
+      <p class="dcap">From the whole overwhelming field down to one point: the next thing you can actually do.</p>
+    </div>
+
+    <!-- Pillar 4 -->
+    <div class="card">
+      <div class="num">Pillar 04</div>
+      <h2>The Distance</h2>
+      <div class="essence">Talk to yourself like you'd coach someone you respect.</div>
+      <ul class="moves">
+        <li><b>Use your own name and "you."</b> "Sean, you've handled worse — slow down." Third-person self-talk lowers reactivity compared with the first-person "I'm losing it."</li>
+        <li><b>Zoom out in time.</b> "Will this matter in a week? A year?" Temporal distance cools the heat of the moment without denying it.</li>
+        <li><b>Borrow a steadier self.</b> Ask what your calmest version — or someone you genuinely admire — would do next, and do that.</li>
+      </ul>
+      <div class="grade g-strong"><span class="dot"></span><i>Grade:</i> Moderate-to-strong — self-distancing and third-person self-talk have replicated support (Kross and colleagues).</div>
+    </div>
+
+    <!-- Pillar 5 -->
+    <div class="card">
+      <div class="num">Pillar 05</div>
+      <h2>The Rehearsal</h2>
+      <div class="essence">You don't rise to the occasion — you fall to your preparation.</div>
+      <ul class="moves">
+        <li><b>Inoculate.</b> Expose yourself to smaller, deliberate doses of the pressure ahead of time so the real dose isn't novel. Novelty is half of what makes it overwhelming.</li>
+        <li><b>Write if-then scripts.</b> "If X goes wrong, then I do Y." Pre-deciding your response removes the freeze — this is the single best-evidenced item here.</li>
+        <li><b>Run a pre-mortem.</b> Imagine it has already failed, list why, and fix now whatever you still can.</li>
+        <li><b>Rehearse in first person.</b> Run the sequence vividly in your head before you're in it, from behind your own eyes.</li>
+      </ul>
+      <div class="grade g-strong"><span class="dot"></span><i>Grade:</i> If-then plans — strong (implementation-intentions meta-analysis, Gollwitzer &amp; Sheeran). Stress inoculation — solid clinical support (Meichenbaum). Pre-mortem — practice-backed, reasoning more than trials.</div>
+    </div>
+
+    <!-- Pillar 6 -->
+    <div class="card">
+      <div class="num">Pillar 06</div>
+      <h2>The Recovery</h2>
+      <div class="essence">Unspent stress compounds — close the loop or it follows you.</div>
+      <ul class="moves">
+        <li><b>Down-shift deliberately.</b> When it's over, physically signal "done": a few long exhales, loosen the posture, move — a short walk beats sitting in the residue.</li>
+        <li><b>Debrief without spiralling.</b> One pass: what worked, what you'd change, one lesson. Then set it down — rumination is not review.</li>
+        <li><b>Protect the recovery inputs.</b> Sleep and movement are what rebuild capacity for the next round. Skipping them is borrowing against the next crisis.</li>
+      </ul>
+      <div class="grade g-reason"><span class="dot"></span><i>Grade:</i> Reasoning — the stress-recovery / allostatic-load logic is well-founded; the specific steps are principled inference, not a single validated protocol.</div>
+    </div>
+
+    <!-- One Thing -->
+    <div class="onething">
+      <div class="lbl">The One Thing</div>
+      <div class="spine">Breathe <span>→</span> Reframe <span>→</span> Narrow <span>→</span> Act</div>
+      <p>If pressure hits and you remember nothing else: one physiological sigh, call the feeling readiness, choose the next action, do it. That's the entire protocol compressed into four beats.</p>
+    </div>
+
+    <div class="note">
+      <b>On the "SEAL Big 4."</b> You'll see this protocol echoed in the special-operations "Big 4" — goal-setting, mental rehearsal, arousal control, and positive self-talk. It's a genuinely useful field framework and it maps cleanly onto the pillars above, but treat it honestly: it's a <b>practitioner package</b>, effective in training culture, not something validated as a peer-reviewed unit. The individual components (rehearsal, arousal control, self-talk) are what carry the evidence.
+    </div>
+
+    <div class="legend">
+      <h3>How the grades work</h3>
+      <div class="row"><span class="dot" style="background:var(--green);margin-top:4px"></span><div><b>Strong</b> — replicated studies and/or meta-analytic support. Load-bearing; build on it.</div></div>
+      <div class="row"><span class="dot" style="background:var(--blue-bright);margin-top:4px"></span><div><b>Moderate</b> — real evidence, but fewer studies, single labs, or effects that vary by person. Trust it, hold it loosely.</div></div>
+      <div class="row"><span class="dot" style="background:var(--amber);margin-top:4px"></span><div><b>Practice-backed</b> — widely used by people under real pressure, but thin controlled data. Works in the field; the "why" is better than the trials.</div></div>
+      <div class="row"><span class="dot" style="background:var(--grey);margin-top:4px"></span><div><b>Reasoning</b> — sound inference from established principles, not a specific study on this exact move. Flagged so you know it's my reasoning, not proven fact.</div></div>
+    </div>
+
+  </div>
+
+  <!-- ============ DRILL ============ -->
+  <div id="drill" class="drill">
+    <div class="streak">
+      <span>Say the answer out loud <i>before</i> you reveal.</span>
+      <span>Streak <b id="streakN">0</b></span>
+    </div>
+    <div class="drillcard">
+      <div class="q" id="dq"></div>
+      <div class="a" id="da"></div>
+      <div class="btns">
+        <button class="reveal" id="revealBtn" onclick="reveal()">Reveal</button>
+        <button class="next" onclick="nextCard()">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <footer><a href="protocols.html">← Back to Protocols</a></footer>
+
+</div>
+
+<script>
+/* ---------- mode toggle ---------- */
+function setMode(m){
+  var read=m==='read';
+  document.getElementById('read').style.display=read?'block':'none';
+  document.getElementById('drill').classList.toggle('on',!read);
+  document.getElementById('tRead').classList.toggle('on',read);
+  document.getElementById('tDrill').classList.toggle('on',!read);
+  if(!read && !started){ started=true; nextCard(); }
+}
+
+/* ---------- device-only photo slot ---------- */
+var KEY='forge-img-resilience';
+var photo=document.getElementById('photo'),
+    input=document.getElementById('photoInput'),
+    hint=document.getElementById('photoHint');
+function renderPhoto(){
+  var d=localStorage.getItem(KEY);
+  if(d){ photo.innerHTML='<img src="'+d+'" alt="">'; }
+}
+renderPhoto();
+photo.addEventListener('click',function(e){
+  if(photo.querySelector('img')) return; // long-press removes; tap on empty adds
+  input.click();
+});
+input.addEventListener('change',function(){
+  var f=input.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(KEY,r.result); renderPhoto(); }catch(err){ alert('Image too large to store on-device.'); } };
+  r.readAsDataURL(f);
+});
+/* long-press to remove */
+var lpTimer=null;
+function lpStart(){ lpTimer=setTimeout(function(){
+  if(localStorage.getItem(KEY) && confirm('Remove this image?')){
+    localStorage.removeItem(KEY);
+    photo.innerHTML='<span class="hint">Tap to add an anchor image<br><small style="opacity:.7">on-device only · never synced</small></span>';
+  }
+},600); }
+function lpEnd(){ clearTimeout(lpTimer); }
+photo.addEventListener('touchstart',lpStart,{passive:true});
+photo.addEventListener('touchend',lpEnd);
+photo.addEventListener('mousedown',lpStart);
+photo.addEventListener('mouseup',lpEnd);
+photo.addEventListener('mouseleave',lpEnd);
+
+/* ---------- drill deck ---------- */
+var DECK=[
+  {q:"Pressure just hit. What's your first physical move?", a:"One physiological sigh — double inhale through the nose, long exhale through the mouth."},
+  {q:"Your heart is pounding. What do you call it?", a:"Readiness. \u201cThis is my body getting ready\u201d — not fear."},
+  {q:"Your mind is racing over everything at once. What do you do?", a:"Narrow. What's the single next controllable action? Do only that."},
+  {q:"You're rattled and turning on yourself. How do you talk to yourself?", a:"By name, second person: \u201cYou've got this — slow down.\u201d Coach, don't panic."},
+  {q:"Before a known high-stakes moment — what's the prep?", a:"If-then script plus a pre-mortem. Pre-decide your responses to the ways it could go wrong."},
+  {q:"You can feel it tipping past useful into panic. Which breath?", a:"Box breathing — in 4, hold 4, out 4, hold 4 — to pull back to the crest of the curve."},
+  {q:"It's over and you're still wired. What now?", a:"Down-shift: long exhales, loosen up, move. One-line debrief, then set it down."},
+  {q:"Say the spine.", a:"Breathe \u2192 Reframe \u2192 Narrow \u2192 Act."}
+];
+var idx=-1, streak=0, revealed=false, started=false;
+function shuffle(){ for(var i=DECK.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=DECK[i];DECK[i]=DECK[j];DECK[j]=t;} }
+shuffle();
+function paint(){
+  document.getElementById('dq').textContent=DECK[idx].q;
+  var a=document.getElementById('da'); a.textContent=DECK[idx].a; a.classList.remove('show');
+  document.getElementById('revealBtn').textContent='Reveal';
+  revealed=false;
+}
+function nextCard(){
+  idx++; if(idx>=DECK.length){ idx=0; shuffle(); }
+  paint();
+}
+function reveal(){
+  if(revealed){ nextCard(); return; }
+  document.getElementById('da').classList.add('show');
+  document.getElementById('revealBtn').textContent='Got it →';
+  streak++; document.getElementById('streakN').textContent=streak;
+  revealed=true;
+}
+</script>
+</body>
+</html>
