@@ -2124,7 +2124,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
 
 <script>
 var PIMG_SLOTS = ['terrain','tempo','presence','orientation'];
-var PIMG_PUSH = ['terrain','tempo','presence'];
+var PIMG_PUSH = ['terrain','tempo','presence','orientation'];
 function pimgKey(k) {{ return 'forge-img-' + k; }}
 function pimgPaint() {{
   for (var i = 0; i < PIMG_SLOTS.length; i++) {{
