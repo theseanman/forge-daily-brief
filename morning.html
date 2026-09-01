@@ -160,7 +160,6 @@
       <div class="move"><b>Light has the only hard deadline</b> &mdash; everything else can slide. Overcast counts: cloud still delivers far more than any indoor room.</div>
       <div class="move"><b>HRV before breathing, always</b> &mdash; slow breathing raises HRV within minutes through respiratory sinus arrhythmia. Sigh first and the reading is not comparable to yesterday's.</div>
       <div class="move"><b>Sighing stays out of mushin</b> &mdash; it has a target pattern and a measurable output, which makes it an optimisation. Mushin has no target and nothing to score. Merge them and mushin becomes something you can do well or badly.</div>
-      <div class="move"><b>Hair after the outdoor sit</b> &mdash; thirteen minutes outside is exactly what would undo it.</div>
       <div class="move"><b>Cold never follows resistance work</b> &mdash; training moved to after work, so the shower moved with it. Warm, at night, finishing 21:00&ndash;22:00.</div>
       <div class="move"><b>Caffeine runs on a cutoff, not a delay</b> &mdash; last dose near 15:00 against a 23:00 bedtime.</div>
       <div class="move"><b>The buffer is part of the protocol</b> &mdash; a stack with no slack fails the first morning anything goes wrong, and then it fails for good.</div>
@@ -290,17 +289,17 @@ var STEPS = [
     grade:['Emerging &mdash; one trial','g-emg'],
     note:'Honest limits: one study, self-reported mood as the primary outcome, and modest absolute numbers &mdash; about 1.9 points of daily positive-affect change versus 1.2 for meditation. On negative affect the meditation arm did slightly better. The trial found no significant change in HRV or resting heart rate in any group over the month. It is here because you found it works, which is a good reason, not because the evidence is settled.' },
 
-  { id:'wash', at:'07:07', dur:'6 min', name:'Bathroom, teeth, salted water, dress',
-    ess:'This step should contain no decisions at all.',
+  { id:'weigh', at:'07:07', dur:'3 min', name:'Bathroom, weigh in',
+    ess:'A measurement, like the HRV reading &mdash; only useful if the conditions match day to day.',
     moves:[
-      '<b>Salted water</b> &mdash; overnight fluid loss is real, and deficits of one to two percent of body mass measurably degrade mood and vigilance.',
-      '<b>Clothes staged last night</b> &mdash; the single largest resistance cut in the whole stack.'
+      '<b>Same conditions every day</b> &mdash; first thing, after the bathroom, before dressing. Log it in 1byonehealth.',
+      '<b>Read the trend, not the day</b> &mdash; morning weight swings a pound or two on water alone. The seven-day line is the signal.'
     ],
-    grade:['Verified','g-ver'],
-    note:'Water-on-waking fixing anything is reasoning, not verified &mdash; but it is free, and the sodium matters more than the water while you are fasting.' },
+    grade:['Anchor','g-str'],
+    note:'' },
 
-  { id:'bridge', at:'07:13', dur:'5 min', name:'Back bridge and mobility',
-    ess:'Before you go out, so you are not doing floor work in damp clothes.',
+  { id:'bridge', at:'07:10', dur:'5 min', name:'Back bridge and mobility',
+    ess:'Before you dress, so you are not doing floor work in your school clothes.',
     moves:[
       '<b>Low intensity by design</b> &mdash; enough to open the spine and hips, not enough to raise a sweat. Sweat would reintroduce the morning shower this design removed.',
       '<b>Not the training</b> &mdash; the real training is after work. This is mobility, and it does not need to be more.'
@@ -308,19 +307,28 @@ var STEPS = [
     grade:['Structural','g-str'],
     note:'' },
 
-  { id:'mushin', at:'07:18', dur:'13 min', name:'Outside. Mushin in daylight',
+  { id:'dress', at:'07:15', dur:'4 min', name:'Dress, teeth, hair, salted water',
+    ess:'This step should contain no decisions at all.',
+    moves:[
+      '<b>Clothes staged last night</b> &mdash; the single largest resistance cut in the whole stack.',
+      '<b>Salted water</b> &mdash; overnight fluid loss is real, and deficits of one to two percent of body mass measurably degrade mood and vigilance. The sodium matters more than the water while you are fasting.'
+    ],
+    grade:['Verified','g-ver'],
+    note:'Hair goes here, before the sit. The sit may disturb it &mdash; a quick touch-up before you leave handles that.' },
+
+  { id:'mushin', at:'07:19', dur:'13 min', name:'Outside. Mushin in daylight',
     ess:'The highest-value step, and the only one with a deadline.',
     moves:[
       '<b>The dose gap is the point</b> &mdash; outdoors is thousands of lux, an indoor room is a few hundred. Light is the dominant zeitgeber, acting through melanopsin retinal cells onto the suprachiasmatic nucleus.',
-      '<b>One sense channel</b> &mdash; the version you found actually works. Body over breath, because breath is easy to narrate and count.',
-      '<b>No target, no rate, nothing to score</b> &mdash; the light job and the practice share the same minutes, but they are not the same thing.'
+      '<b>Open sky beats direct sun</b> &mdash; the west yard sits in the house\'s shadow this early, but the dose comes from the whole sky overhead, not a beam on your face. Shade under open sky still delivers. A roof, deep overhang or tree directly above is what kills it.',
+      '<b>Eyes down, face the quiet corner</b> &mdash; soft downward gaze, not scanning. Facing a fence or plant changes nothing about the dose and settles the overlooked feeling.'
     ],
     grade:['Verified (light) &middot; moderate (practice)','g-ver'],
     note:'Meditation has moderate evidence for anxiety and depressive symptoms and low or insufficient evidence for most other outcomes. Nobody has shown ten minutes a day of anything changes longevity or income. It is here because your system requires it, and because it is before the phone.',
     rainName:'Threshold sit &mdash; door open, in the light',
     rainNote:'Heavy rain: sit at the open doorway. Glass and walls cut the dose hard, so this is a real loss, not an equivalent. It still beats a lit room. The Log drops this step from its own average on rain days so the weather is not recorded as your failure.' },
 
-  { id:'brief', at:'07:31', dur:'5 min', name:'The brief. Name the one that owns the day',
+  { id:'brief', at:'07:32', dur:'5 min', name:'The brief. Name the one that owns the day',
     ess:'Where the financial-success leg actually has evidence behind it.',
     moves:[
       '<b>Read the five</b> &mdash; specifying when, where and what rather than holding an intention shows a medium-to-large effect across hundreds of studies. Your done-when fields already are implementation intentions.',
@@ -328,14 +336,16 @@ var STEPS = [
       '<b>No email or messages first</b> &mdash; reasoning, not verified. A reactive agenda replaces an authored one.'
     ],
     grade:['Verified','g-ver'],
-    note:'Thirty-one minutes past waking is the front edge of sleep inertia rather than clear of it &mdash; but light, breathing and movement have all come first, and those are the accelerant. If it reads as mush after a week, move it to your arrival at school.' },
+    note:'Thirty-two minutes past waking is the front edge of sleep inertia rather than clear of it &mdash; but light, breathing and movement have all come first, and those are the accelerant. If it reads as mush after a week, move it to your arrival at school.' },
 
-  { id:'out', at:'07:36', dur:'5 min', name:'Hair, bag, coffee, goodbye',
-    ess:'Grooming lands here because thirteen minutes outside would have undone it.',
+  { id:'out', at:'07:37', dur:'4 min', name:'Meds, matcha, hydrogen water, bag, goodbye',
+    ess:'The last stop: meds down, matcha and hydrogen water in hand, hair touched up, out the door.',
     moves:[
-      '<b>Caffeine on a cutoff</b> &mdash; half-life is around five hours, so last dose near 15:00 against a 23:00 bedtime. The delayed-start advice is backwards: adenosine clears during sleep, so nothing is waiting to clear when you wake.'
+      '<b>Meds first</b> &mdash; the one thing here that has to happen. If the morning goes sideways, this is the step not to lose.',
+      '<b>Matcha counts as caffeine</b> &mdash; same cutoff as coffee. Half-life is around five hours, so last dose of either near 15:00 against a 23:00 bedtime. The delayed-start advice is backwards: adenosine clears during sleep, so nothing is waiting to clear when you wake.',
+      '<b>Hydrogen water</b> &mdash; the outcome evidence is thin and mostly small, short trials; treat it as low-cost, not proven. It is not the salted water from the dress step, which does the fasting-hydration job.'
     ],
-    grade:['Reasoning','g-rea'],
+    grade:['Meds verified &middot; hydrogen water emerging','g-emg'],
     note:'' },
 
   { id:'buffer', at:'07:41', dur:'4 min', name:'Buffer',
