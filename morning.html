@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>The Morning Protocol</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --green:#5fd39b; --rose:#f08ba8;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 15px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+  .sub b{ color:var(--accent-hi); font-weight:700; }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* read cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; font-variant-numeric:tabular-nums; }
+  .p-name{ font-size:17.5px; font-weight:700; line-height:1.25; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .grade{ display:inline-block; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; font-weight:800;
+    padding:4px 9px; border-radius:999px; margin-top:10px; }
+  .g-ver{ background:rgba(95,211,155,.16); color:var(--green); }
+  .g-rea{ background:rgba(245,215,110,.14); color:var(--gold); }
+  .g-emg{ background:rgba(240,139,168,.14); color:var(--rose); }
+  .g-str{ background:rgba(127,191,255,.14); color:var(--accent-hi); }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; }
+  .band b{ color:var(--gold); }
+
+  /* run */
+  #run, #log{ display:none; }
+  .nowline{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; margin:2px 0 14px; }
+  .nowline b{ color:var(--accent-hi); }
+  .rainbar{ display:flex; align-items:center; justify-content:space-between; gap:12px; background:rgba(9,36,80,.45);
+    border:1px solid var(--line); border-radius:999px; padding:9px 9px 9px 16px; margin-bottom:14px; }
+  .rainbar span{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:var(--ink-dim); }
+  .rainbar button{ border:1px solid var(--line); background:rgba(6,28,64,.6); color:var(--ink-dim);
+    font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; padding:8px 15px; border-radius:999px; cursor:pointer; }
+  .rainbar button.on{ background:var(--accent); border-color:var(--accent); color:#06264f; }
+
+  .step{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--line); border-radius:14px; margin-bottom:10px; overflow:hidden; }
+  .step.now{ border-left-color:var(--gold); }
+  .step.done{ border-left-color:var(--green); opacity:.6; }
+  .step.snag{ border-left-color:var(--rose); }
+  .srow{ display:flex; align-items:flex-start; gap:13px; padding:14px 15px; cursor:pointer; -webkit-user-select:none; user-select:none; }
+  .tick{ flex:0 0 auto; width:26px; height:26px; border-radius:50%; border:2px solid var(--line); margin-top:1px; position:relative; }
+  .step.done .tick{ background:var(--green); border-color:var(--green); }
+  .step.done .tick:after{ content:''; position:absolute; left:8px; top:4px; width:5px; height:11px;
+    border:solid #06264f; border-width:0 2.5px 2.5px 0; transform:rotate(43deg); }
+  .sbody{ flex:1; min-width:0; }
+  .s-name{ font-size:15.5px; font-weight:700; line-height:1.35; }
+  .step.done .s-name{ text-decoration:line-through; text-decoration-color:var(--ink-quiet); }
+  .s-at{ font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); font-weight:800; margin-top:4px; font-variant-numeric:tabular-nums; }
+  .s-at i{ color:var(--ink-quiet); font-style:normal; }
+  .snagbtn{ border:0; background:transparent; color:var(--rose); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    font-weight:800; padding:0 15px 13px; cursor:pointer; }
+  .chips{ display:flex; flex-wrap:wrap; gap:6px; padding:0 15px 13px; }
+  .chips button{ border:1px solid var(--line); background:rgba(9,36,80,.45); color:var(--ink-dim);
+    font-size:12.5px; font-weight:600; padding:8px 12px; border-radius:999px; cursor:pointer; }
+  .chips button.picked{ background:var(--rose); border-color:var(--rose); color:#3a0c1c; font-weight:800; }
+  .snagmark{ padding:0 15px 13px; font-size:12px; color:var(--rose); cursor:pointer; }
+  .depart{ text-align:center; margin-top:18px; }
+  .depart .k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; }
+  .depart .t{ font-size:34px; font-weight:200; letter-spacing:.05em; color:var(--gold); margin-top:4px; }
+
+  /* log */
+  table.grid{ width:100%; border-collapse:collapse; }
+  table.grid th{ text-align:left; font-size:12.5px; font-weight:600; color:var(--ink-dim); padding:0 8px 9px 0; }
+  table.grid td{ padding:2px 1px; }
+  .cell{ width:13px; height:13px; border-radius:4px; background:rgba(255,255,255,.09); }
+  .cell.y{ background:var(--green); } .cell.n{ background:rgba(240,139,168,.5); } .cell.x{ background:rgba(127,191,255,.28); }
+  .rate{ font-size:12.5px; color:var(--ink-quiet); font-weight:800; padding-left:9px; font-variant-numeric:tabular-nums; }
+  .legend{ font-size:11.5px; color:var(--ink-quiet); line-height:1.6; margin-top:10px; }
+  .btn{ border:0; border-radius:999px; padding:13px 22px; font-size:13px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .tools{ display:flex; gap:10px; margin-top:12px; }
+  .tools .btn{ flex:1; }
+  .tools label{ flex:1; text-align:center; border-radius:999px; padding:13px 22px; font-size:13px; font-weight:800;
+    letter-spacing:.08em; text-transform:uppercase; cursor:pointer; background:rgba(9,36,80,.55); color:#fff; border:1px solid var(--line); }
+  .tools input{ display:none; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .toast{ position:fixed; left:50%; bottom:26px; transform:translateX(-50%); background:rgba(6,28,64,.96); border:1px solid var(--line);
+    color:var(--ink); padding:12px 18px; border-radius:999px; font-size:13px; max-width:88vw; text-align:center;
+    opacity:0; pointer-events:none; transition:opacity .25s ease; }
+  .toast.on{ opacity:1; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./" class="back">&larr; Brief</a>
+    <div class="toggle">
+      <button id="tab-run" class="on" onclick="setMode('run')">Run</button>
+      <button id="tab-read" onclick="setMode('read')">Read</button>
+      <button id="tab-log" onclick="setMode('log')">Log</button>
+    </div>
+  </div>
+
+  <h1>The Morning Protocol</h1>
+  <div class="sub">Alarm <b>07:00</b>, out the door <b>07:45</b>. Eight moves, one of them deliberately empty. Built to be improved &mdash; the Log is the instrument.</div>
+
+  <div class="photo" id="photo" onclick="pickPhoto()">
+    <div class="ph-hint">Tap to add an image</div>
+    <div class="ph-edit">Change</div>
+  </div>
+  <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+  <!-- ===================== RUN ===================== -->
+  <div id="run">
+    <div class="nowline" id="nowline"></div>
+    <div class="rainbar">
+      <span>Heavy rain today</span>
+      <button id="rainbtn" onclick="toggleRain()">Off</button>
+    </div>
+    <div id="steps"></div>
+    <div class="depart"><div class="k">Out the door</div><div class="t">07:45</div></div>
+    <div class="foot">Tap a step to tick it &middot; log a snag if it didn't land</div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <div id="readcards"></div>
+
+    <div class="section-k">Rules that don't move</div>
+    <div class="card">
+      <div class="move"><b>Light has the only hard deadline</b> &mdash; everything else can slide. Overcast counts: cloud still delivers far more than any indoor room.</div>
+      <div class="move"><b>HRV before breathing, always</b> &mdash; slow breathing raises HRV within minutes through respiratory sinus arrhythmia. Sigh first and the reading is not comparable to yesterday's.</div>
+      <div class="move"><b>Sighing stays out of mushin</b> &mdash; it has a target pattern and a measurable output, which makes it an optimisation. Mushin has no target and nothing to score. Merge them and mushin becomes something you can do well or badly.</div>
+      <div class="move"><b>Hair after the outdoor sit</b> &mdash; thirteen minutes outside is exactly what would undo it.</div>
+      <div class="move"><b>Cold never follows resistance work</b> &mdash; training moved to after work, so the shower moved with it. Warm, at night, finishing 21:00&ndash;22:00.</div>
+      <div class="move"><b>Caffeine runs on a cutoff, not a delay</b> &mdash; last dose near 15:00 against a 23:00 bedtime.</div>
+      <div class="move"><b>The buffer is part of the protocol</b> &mdash; a stack with no slack fails the first morning anything goes wrong, and then it fails for good.</div>
+    </div>
+
+    <div class="section-k">Why there is no walk</div>
+    <div class="band">The walk was carrying about ninety percent light and ten percent movement. The movement is covered twice over now &mdash; evening training and the back bridge &mdash; so the only thing needing replacement was the light, and light does not require walking. Sitting outside delivers the same dose. Nothing was substituted in, because anything intense enough to be worth adding brings sweat, and sweat brings back the morning shower this design removed.</div>
+
+    <div class="section-k">Deliberately out</div>
+    <div class="card">
+      <div class="move"><b>Cold exposure</b> &mdash; the weakest standalone outcome data in the stack, and it now conflicts with evening lifting.</div>
+      <div class="move"><b>Gratitude journalling</b> &mdash; effects shrink as designs tighten, and it would cost mushin's slot.</div>
+      <div class="move"><b>Gargling for vagal tone</b> &mdash; humming does raise nasal nitric oxide roughly fifteenfold, but the jump from there to vagal tone is invented and no health outcome was measured.</div>
+      <div class="note">And no claim that willpower is highest early &mdash; ego depletion failed a large multi-lab replication. The real early constraint is sleep inertia: thirty to sixty minutes of genuine cognitive impairment after waking. That is why the brief sits at 07:31 and not at 07:00.</div>
+    </div>
+
+    <div class="section-k">The expiry date on this version</div>
+    <div class="card">
+      <div class="p-ess" style="margin-bottom:0;">This design works because a 07:00 wake in September puts you outdoors after sunrise. Once the clocks change and sunrise drifts toward eight, a 07:18 sit is a sit in the dark and the light step has nothing to stand on. The light box conversation comes back in November. Revisit then, not before.</div>
+    </div>
+
+    <div class="section-k">The one thing</div>
+    <div class="band">If everything else falls over: <b>get outside by 07:18</b>. It is the only step with a deadline, the only dose you cannot get indoors, and the one the whole day's timing hangs off.</div>
+  </div>
+
+  <!-- ===================== LOG ===================== -->
+  <div id="log">
+    <div class="section-k" style="margin-top:6px;">Last 14 days</div>
+    <div id="hist"></div>
+    <div class="section-k">Backup</div>
+    <div class="tools">
+      <button class="btn" onclick="doExport()">Save backup</button>
+      <label for="importFile">Restore<input type="file" accept="application/json,.json" id="importFile"></label>
+    </div>
+    <div class="legend" style="text-align:center;">
+      On this device only &mdash; nothing uploaded, nothing committed. A backup covers every Forge protocol page on this site, not just this one.
+    </div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  var ids = ['run','read','log'];
+  for(var i=0;i<ids.length;i++){
+    var on = ids[i] === m;
+    document.getElementById(ids[i]).style.display = on ? '' : 'none';
+    document.getElementById('tab-'+ids[i]).className = on ? 'on' : '';
+  }
+  if(m === 'log') paintLog();
+  if(m === 'run') paintRun();
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY = 'forge-img-morning';
+function loadPhoto(){
+  var v=''; try{ v = localStorage.getItem(PKEY) || ''; }catch(e){}
+  var el = document.getElementById('photo');
+  if(v){ el.style.backgroundImage = 'url('+v+')'; el.className = 'photo set'; }
+  else { el.style.backgroundImage = ''; el.className = 'photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+
+/* downscale before storing: a full-size phone photo is larger than the whole origin quota */
+function shrink(file, cb){
+  var r = new FileReader();
+  r.onload = function(){
+    var img = new Image();
+    img.onload = function(){
+      var max = 1000, w = img.width, h = img.height;
+      if(w > max || h > max){ var s = max / Math.max(w,h); w = Math.round(w*s); h = Math.round(h*s); }
+      var c = document.createElement('canvas'); c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      cb(c.toDataURL('image/jpeg', 0.82));
+    };
+    img.onerror = function(){ toast("That file isn't an image this browser can read."); };
+    img.src = r.result;
+  };
+  r.onerror = function(){ toast("Couldn't read that file."); };
+  r.readAsDataURL(file);
+}
+
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f = e.target.files && e.target.files[0]; if(!f) return;
+  shrink(f, function(url){
+    try{ localStorage.setItem(PKEY, url); loadPhoto(); }
+    catch(err){ toast('Device storage is full. Save a backup, then clear an old protocol photo.'); }
+  });
+  e.target.value = '';
+});
+
+/* long-press to remove — pointer events, so it works on the Mac as well as the phone */
+var lpTimer = null, lpHeld = false, photoEl = document.getElementById('photo');
+photoEl.addEventListener('pointerdown', function(){
+  lpHeld = false;
+  lpTimer = setTimeout(function(){
+    lpHeld = true;
+    var has=''; try{ has = localStorage.getItem(PKEY) || ''; }catch(e){}
+    if(has && confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+  }, 650);
+});
+['pointerup','pointercancel','pointerleave'].forEach(function(ev){
+  photoEl.addEventListener(ev, function(){ if(lpTimer) clearTimeout(lpTimer); });
+});
+photoEl.addEventListener('click', function(e){ if(lpHeld) e.stopPropagation(); }, true);
+
+/* ---------------- the protocol ---------------- */
+var STEPS = [
+  { id:'hrv', at:'07:00', dur:'2 min', name:'HRV, in bed, before you sit up',
+    ess:'Not an intervention. A measurement-validity step.',
+    moves:[
+      '<b>Before everything</b> &mdash; posture, standing, light, breathing and caffeine all move HRV, so a reading taken after any of them is not comparable to yesterday\'s.',
+      '<b>Read the trend</b> &mdash; seven-day rolling. A single day is mostly noise.'
+    ],
+    grade:['Anchor','g-str'],
+    note:'Same logic as your Amazfit device boundary: a consistent protocol is what makes the series readable even when the absolute numbers are imprecise.' },
+
+  { id:'sigh', at:'07:02', dur:'5 min', name:'Cyclic sighing, still in bed',
+    ess:'Double inhale through the nose, long slow exhale through the mouth. Repeat for five minutes.',
+    moves:[
+      '<b>The trial</b> &mdash; Balban and colleagues, Cell Reports Medicine 2023: a remote randomised study, 108 people, four arms, five minutes daily for 28 days. Cyclic sighing produced the greatest improvement in mood and the largest drop in respiratory rate compared with mindfulness meditation.',
+      '<b>Second, never first</b> &mdash; it goes after the HRV reading, because slow breathing raises HRV within minutes.'
+    ],
+    grade:['Emerging &mdash; one trial','g-emg'],
+    note:'Honest limits: one study, self-reported mood as the primary outcome, and modest absolute numbers &mdash; about 1.9 points of daily positive-affect change versus 1.2 for meditation. On negative affect the meditation arm did slightly better. The trial found no significant change in HRV or resting heart rate in any group over the month. It is here because you found it works, which is a good reason, not because the evidence is settled.' },
+
+  { id:'wash', at:'07:07', dur:'6 min', name:'Bathroom, teeth, salted water, dress',
+    ess:'This step should contain no decisions at all.',
+    moves:[
+      '<b>Salted water</b> &mdash; overnight fluid loss is real, and deficits of one to two percent of body mass measurably degrade mood and vigilance.',
+      '<b>Clothes staged last night</b> &mdash; the single largest resistance cut in the whole stack.'
+    ],
+    grade:['Verified','g-ver'],
+    note:'Water-on-waking fixing anything is reasoning, not verified &mdash; but it is free, and the sodium matters more than the water while you are fasting.' },
+
+  { id:'bridge', at:'07:13', dur:'5 min', name:'Back bridge and mobility',
+    ess:'Before you go out, so you are not doing floor work in damp clothes.',
+    moves:[
+      '<b>Low intensity by design</b> &mdash; enough to open the spine and hips, not enough to raise a sweat. Sweat would reintroduce the morning shower this design removed.',
+      '<b>Not the training</b> &mdash; the real training is after work. This is mobility, and it does not need to be more.'
+    ],
+    grade:['Structural','g-str'],
+    note:'' },
+
+  { id:'mushin', at:'07:18', dur:'13 min', name:'Outside. Mushin in daylight',
+    ess:'The highest-value step, and the only one with a deadline.',
+    moves:[
+      '<b>The dose gap is the point</b> &mdash; outdoors is thousands of lux, an indoor room is a few hundred. Light is the dominant zeitgeber, acting through melanopsin retinal cells onto the suprachiasmatic nucleus.',
+      '<b>One sense channel</b> &mdash; the version you found actually works. Body over breath, because breath is easy to narrate and count.',
+      '<b>No target, no rate, nothing to score</b> &mdash; the light job and the practice share the same minutes, but they are not the same thing.'
+    ],
+    grade:['Verified (light) &middot; moderate (practice)','g-ver'],
+    note:'Meditation has moderate evidence for anxiety and depressive symptoms and low or insufficient evidence for most other outcomes. Nobody has shown ten minutes a day of anything changes longevity or income. It is here because your system requires it, and because it is before the phone.',
+    rainName:'Threshold sit &mdash; door open, in the light',
+    rainNote:'Heavy rain: sit at the open doorway. Glass and walls cut the dose hard, so this is a real loss, not an equivalent. It still beats a lit room. The Log drops this step from its own average on rain days so the weather is not recorded as your failure.' },
+
+  { id:'brief', at:'07:31', dur:'5 min', name:'The brief. Name the one that owns the day',
+    ess:'Where the financial-success leg actually has evidence behind it.',
+    moves:[
+      '<b>Read the five</b> &mdash; specifying when, where and what rather than holding an intention shows a medium-to-large effect across hundreds of studies. Your done-when fields already are implementation intentions.',
+      '<b>Name the OPTIMIZE item</b> &mdash; one, and it owns the day.',
+      '<b>No email or messages first</b> &mdash; reasoning, not verified. A reactive agenda replaces an authored one.'
+    ],
+    grade:['Verified','g-ver'],
+    note:'Thirty-one minutes past waking is the front edge of sleep inertia rather than clear of it &mdash; but light, breathing and movement have all come first, and those are the accelerant. If it reads as mush after a week, move it to your arrival at school.' },
+
+  { id:'out', at:'07:36', dur:'5 min', name:'Hair, bag, coffee, goodbye',
+    ess:'Grooming lands here because thirteen minutes outside would have undone it.',
+    moves:[
+      '<b>Caffeine on a cutoff</b> &mdash; half-life is around five hours, so last dose near 15:00 against a 23:00 bedtime. The delayed-start advice is backwards: adenosine clears during sleep, so nothing is waiting to clear when you wake.'
+    ],
+    grade:['Reasoning','g-rea'],
+    note:'' },
+
+  { id:'buffer', at:'07:41', dur:'4 min', name:'Buffer',
+    ess:'Four minutes that belong to nothing. Not spare &mdash; allocated.',
+    moves:[
+      '<b>Do not fill it</b> &mdash; this is the step that keeps the other seven alive on the morning something goes wrong.'
+    ],
+    grade:['Structural','g-str'],
+    note:'' }
+];
+
+var SNAGS = ['Woke late','Weather','Ran out of time',"Didn't want to",'Interrupted'];
+
+/* ---------------- storage ---------------- */
+var LKEY = 'forge-morning-log';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function readLog(){
+  try{ var v = JSON.parse(localStorage.getItem(LKEY)||'{}'); return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}; }
+  catch(e){ return {}; }
+}
+function writeLog(o){
+  try{ localStorage.setItem(LKEY, JSON.stringify(o)); return true; }
+  catch(e){ toast('Device storage is full &mdash; nothing saved.'); return false; }
+}
+function day(l,k){ if(!l[k]) l[k]={done:{},snag:{},rain:0}; if(!l[k].done) l[k].done={}; if(!l[k].snag) l[k].snag={}; return l[k]; }
+
+var tTimer;
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.innerHTML = msg; t.className = 'toast on';
+  clearTimeout(tTimer); tTimer = setTimeout(function(){ t.className='toast'; }, 2800);
+}
+
+/* ---------------- run ---------------- */
+function mins(s){ var p = s.split(':'); return parseInt(p[0],10)*60 + parseInt(p[1],10); }
+function currentId(){
+  var d = new Date(), m = d.getHours()*60 + d.getMinutes();
+  if(m < mins('07:00') || m > mins('07:45')) return null;
+  var id = STEPS[0].id;
+  for(var i=0;i<STEPS.length;i++){ if(m >= mins(STEPS[i].at)) id = STEPS[i].id; }
+  return id;
+}
+function isRain(){ var l = readLog(); return !!(l[today()] && l[today()].rain); }
+
+function toggleRain(){
+  var l = readLog(), d = day(l, today());
+  d.rain = d.rain ? 0 : 1;
+  writeLog(l); paintRun();
+}
+
+function paintRun(){
+  var l = readLog(), d = day(l, today()), now = currentId(), rain = !!d.rain;
+  document.getElementById('rainbtn').textContent = rain ? 'On' : 'Off';
+  document.getElementById('rainbtn').className = rain ? 'on' : '';
+
+  var host = document.getElementById('steps'); host.innerHTML = '';
+  STEPS.forEach(function(s){
+    var done = !!d.done[s.id], sn = d.snag[s.id] || null;
+    var el = document.createElement('div');
+    el.className = 'step' + (done?' done':'') + (sn?' snag':'') + ((s.id===now && !done && !sn)?' now':'');
+
+    var row = document.createElement('div');
+    row.className = 'srow';
+    row.innerHTML = '<div class="tick"></div><div class="sbody"><div class="s-name"></div><div class="s-at"></div></div>';
+    row.querySelector('.s-name').textContent = (rain && s.rainName) ? s.rainName.replace(/&mdash;/g,'—') : s.name;
+    row.querySelector('.s-at').innerHTML = s.at + ' <i>&middot; ' + s.dur + '</i>';
+    row.addEventListener('click', function(){
+      var L = readLog(), D = day(L, today());
+      if(D.done[s.id]) delete D.done[s.id]; else { D.done[s.id]=1; delete D.snag[s.id]; }
+      writeLog(L); paintRun();
+    });
+    el.appendChild(row);
+
+    if(sn){
+      var mk = document.createElement('div');
+      mk.className = 'snagmark';
+      mk.textContent = 'Snag: ' + sn + ' — tap to change';
+      mk.addEventListener('click', function(){ chips(el, s); });
+      el.appendChild(mk);
+    } else if(!done){
+      var b = document.createElement('button');
+      b.className = 'snagbtn'; b.type = 'button'; b.textContent = 'Log a snag';
+      b.addEventListener('click', function(){ chips(el, s); });
+      el.appendChild(b);
+    }
+    host.appendChild(el);
+  });
+  nowline();
+}
+
+function chips(el, s){
+  var open = el.querySelector('.chips');
+  if(open){ open.parentNode.removeChild(open); return; }
+  var l = readLog(), d = day(l, today());
+  var box = document.createElement('div'); box.className = 'chips';
+  SNAGS.forEach(function(r){
+    var b = document.createElement('button'); b.type='button'; b.textContent = r;
+    if(d.snag[s.id] === r) b.className = 'picked';
+    b.addEventListener('click', function(){
+      var L = readLog(), D = day(L, today());
+      if(D.snag[s.id] === r) delete D.snag[s.id];
+      else { D.snag[s.id] = r; delete D.done[s.id]; }
+      writeLog(L); paintRun();
+    });
+    box.appendChild(b);
+  });
+  el.appendChild(box);
+}
+
+function nowline(){
+  var d = new Date(), hh = ('0'+d.getHours()).slice(-2), mm = ('0'+d.getMinutes()).slice(-2);
+  var id = currentId(), s = null;
+  for(var i=0;i<STEPS.length;i++){ if(STEPS[i].id === id) s = STEPS[i]; }
+  document.getElementById('nowline').innerHTML =
+    hh+':'+mm + (s ? ' &middot; you should be on <b>'+ s.name.split(',')[0] +'</b>' : ' &middot; outside the block');
+}
+
+/* ---------------- read ---------------- */
+function paintRead(){
+  var host = document.getElementById('readcards');
+  STEPS.forEach(function(s){
+    var h = '<div class="card">';
+    h += '<div class="p-head"><span class="p-num">'+s.at+'</span><span class="p-name">'+s.name+'</span></div>';
+    h += '<div class="p-ess">'+s.ess+'</div>';
+    s.moves.forEach(function(m){ h += '<div class="move">'+m+'</div>'; });
+    if(s.rainNote) h += '<div class="move"><b>Heavy rain</b> &mdash; '+s.rainNote+'</div>';
+    h += '<span class="grade '+s.grade[1]+'">'+s.grade[0]+'</span>';
+    if(s.note) h += '<div class="note">'+s.note+'</div>';
+    h += '</div>';
+    host.insertAdjacentHTML('beforeend', h);
+  });
+}
+
+/* ---------------- log ---------------- */
+function lastDays(n){
+  var out = [], t = Date.now();
+  for(var i=n-1;i>=0;i--) out.push(ymd(new Date(t - i*86400000)));
+  return out;
+}
+
+function paintLog(){
+  var l = readLog(), days = lastDays(14), host = document.getElementById('hist');
+  var any = days.some(function(k){ return l[k] && (Object.keys(l[k].done||{}).length || Object.keys(l[k].snag||{}).length); });
+
+  if(!any){
+    host.innerHTML = '<div class="card"><div class="p-ess" style="margin:0;">Nothing logged yet. Run it for a week, then come back &mdash; this is where the weak step shows itself.</div></div>';
+    return;
+  }
+
+  var h = '<div class="card" style="border-left-color:var(--line);"><table class="grid"><tbody>';
+  var weak = null;
+  STEPS.forEach(function(s){
+    var hits = 0, seen = 0, row = '<tr><th>'+ s.name.split(',')[0] +'</th>';
+    days.forEach(function(k){
+      var e = l[k];
+      var logged = e && (Object.keys(e.done||{}).length || Object.keys(e.snag||{}).length);
+      var excused = s.rainName && e && e.rain;
+      var yes = e && e.done && e.done[s.id];
+      if(logged && !excused){ seen++; if(yes) hits++; }
+      var cls = yes ? 'y' : (excused && logged ? 'x' : (logged ? 'n' : ''));
+      row += '<td><div class="cell '+cls+'"></div></td>';
+    });
+    var pct = seen ? Math.round(hits/seen*100) : 0;
+    h += row + '<td class="rate">'+ (seen ? pct+'%' : '—') +'</td></tr>';
+    if(seen >= 5 && (!weak || pct < weak.pct)) weak = { s:s, pct:pct };
+  });
+  h += '</tbody></table>';
+  h += '<div class="legend">Green landed &middot; pink missed &middot; blue excused as a heavy-rain day and left out of the average.</div></div>';
+
+  if(weak && weak.pct < 50){
+    var counts = {}, top = null;
+    days.forEach(function(k){
+      var e = l[k];
+      if(e && e.snag && e.snag[weak.s.id]){
+        var r = e.snag[weak.s.id];
+        counts[r] = (counts[r]||0)+1;
+        if(!top || counts[r] > counts[top]) top = r;
+      }
+    });
+    h += '<div class="band"><b>'+ weak.s.name +'</b> is landing '+ weak.pct +'% of the time'+
+         (top ? ', usually because you ran into &ldquo;'+ top +'&rdquo;' : '') +
+         '. That is the step to cut, move, or fix the friction on &mdash; not the one to try harder at.</div>';
+  }
+  host.innerHTML = h;
+}
+
+/* ---------------- backup ---------------- */
+function doExport(){
+  var bundle = { app:'forge-protocols', saved:new Date().toISOString(), data:{} };
+  try{
+    for(var i=0;i<localStorage.length;i++){
+      var k = localStorage.key(i);
+      if(k && k.indexOf('forge-') === 0) bundle.data[k] = localStorage.getItem(k);
+    }
+  }catch(e){ toast("Couldn't read storage."); return; }
+  var blob = new Blob([JSON.stringify(bundle)], {type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'forge-backup-' + today() + '.json';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.parentNode.removeChild(a); }, 1000);
+  toast('Backup saved. Keep it in Files or iCloud Drive.');
+}
+
+document.getElementById('importFile').addEventListener('change', function(e){
+  var f = e.target.files && e.target.files[0]; if(!f) return;
+  var r = new FileReader();
+  r.onload = function(){
+    var b; try{ b = JSON.parse(r.result); }catch(err){ toast("That file isn't a Forge backup."); return; }
+    if(!b || !b.data){ toast("That file isn't a Forge backup."); return; }
+    var n = 0;
+    Object.keys(b.data).forEach(function(k){ try{ localStorage.setItem(k, b.data[k]); n++; }catch(err){} });
+    loadPhoto(); paintRun(); paintLog();
+    toast('Restored ' + n + ' item' + (n===1?'':'s') + '.');
+  };
+  r.readAsText(f);
+  e.target.value = '';
+});
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+paintRead();
+setMode('run');
+setInterval(nowline, 30000);
+</script>
+</body>
+</html>
