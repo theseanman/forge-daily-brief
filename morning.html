@@ -209,7 +209,7 @@ function setMode(m){
   var ids = ['run','read','log'];
   for(var i=0;i<ids.length;i++){
     var on = ids[i] === m;
-    document.getElementById(ids[i]).style.display = on ? '' : 'none';
+    document.getElementById(ids[i]).style.display = on ? 'block' : 'none';
     document.getElementById('tab-'+ids[i]).className = on ? 'on' : '';
   }
   if(m === 'log') paintLog();
