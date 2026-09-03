@@ -275,7 +275,8 @@ var STEPS = [
     ess:'Not an intervention. A measurement-validity step.',
     moves:[
       '<b>Before everything</b> &mdash; posture, standing, light, breathing and caffeine all move HRV, so a reading taken after any of them is not comparable to yesterday\'s.',
-      '<b>Read the trend</b> &mdash; seven-day rolling. A single day is mostly noise.'
+      '<b>Read the trend</b> &mdash; seven-day rolling. A single day is mostly noise.',
+      '<b>Then the Forge Log form, still in bed</b> &mdash; the three Welltory numbers, plus yesterday&rsquo;s confounds: alcohol, nicotine, stress, busyness, training, sick, last meal. Leave sleep and body comp BLANK &mdash; the export fills those, and the form now merges rather than replaces, so a blank field is skipped instead of wiping what landed.'
     ],
     grade:['Anchor','g-str'],
     note:'Same logic as your Amazfit device boundary: a consistent protocol is what makes the series readable even when the absolute numbers are imprecise.' },
@@ -289,23 +290,23 @@ var STEPS = [
     grade:['Emerging &mdash; one trial','g-emg'],
     note:'Honest limits: one study, self-reported mood as the primary outcome, and modest absolute numbers &mdash; about 1.9 points of daily positive-affect change versus 1.2 for meditation. On negative affect the meditation arm did slightly better. The trial found no significant change in HRV or resting heart rate in any group over the month. It is here because you found it works, which is a good reason, not because the evidence is settled.' },
 
-  { id:'weigh', at:'07:07', dur:'3 min', name:'Bathroom, weigh in',
-    ess:'A measurement, like the HRV reading &mdash; only useful if the conditions match day to day.',
-    moves:[
-      '<b>Same conditions every day</b> &mdash; first thing, after the bathroom, before dressing. Log it in 1byonehealth.',
-      '<b>Read the trend, not the day</b> &mdash; morning weight swings a pound or two on water alone. The seven-day line is the signal.'
-    ],
-    grade:['Anchor','g-str'],
-    note:'' },
-
-  { id:'bridge', at:'07:10', dur:'5 min', name:'Back bridge and mobility',
-    ess:'Before you dress, so you are not doing floor work in your school clothes.',
+  { id:'bridge', at:'07:07', dur:'5 min', name:'Back bridge and mobility',
+    ess:'First thing out of bed, before the scale and well before you dress.',
     moves:[
       '<b>Low intensity by design</b> &mdash; enough to open the spine and hips, not enough to raise a sweat. Sweat would reintroduce the morning shower this design removed.',
       '<b>Not the training</b> &mdash; the real training is after work. This is mobility, and it does not need to be more.'
     ],
     grade:['Structural','g-str'],
-    note:'' },
+    note:'Moved ahead of the weigh-in on 2 September 2026 to match what actually happens.' },
+
+  { id:'weigh', at:'07:12', dur:'3 min', name:'Bathroom, weigh in',
+    ess:'A measurement, like the HRV reading &mdash; only useful if the conditions match day to day.',
+    moves:[
+      '<b>Same conditions every day</b> &mdash; after the bathroom, before dressing. Log it in 1byonehealth.',
+      '<b>Read the trend, not the day</b> &mdash; morning weight swings a pound or two on water alone. The seven-day line is the signal.'
+    ],
+    grade:['Anchor','g-str'],
+    note:'★ CONDITIONS CHANGED 2 September 2026: the mobility work now comes BEFORE this step rather than after it. Same-conditions-every-day is the whole basis of the reading, so expect a small step in the series around that date. It will not matter to a seven-day trend, but it is not nothing, and a future you looking at a shift should find this line rather than puzzle over it.' },
 
   { id:'dress', at:'07:15', dur:'4 min', name:'Dress, teeth, hair, salted water',
     ess:'This step should contain no decisions at all.',
@@ -338,7 +339,18 @@ var STEPS = [
     grade:['Verified','g-ver'],
     note:'Thirty-two minutes past waking is the front edge of sleep inertia rather than clear of it &mdash; but light, breathing and movement have all come first, and those are the accelerant. If it reads as mush after a week, move it to your arrival at school.' },
 
-  { id:'out', at:'07:37', dur:'4 min', name:'Meds, matcha, hydrogen water, bag, goodbye',
+  { id:'export', at:'07:37', dur:'1 min', name:'Sleep export — tap the notification',
+    ess:'The one step here that feeds the system rather than you.',
+    moves:[
+      '<b>The confirmation fires at 07:35</b> &mdash; while you are reading the brief, so the phone is already in your hand. Tap it and the shortcut runs the Health Auto Export automation.',
+      '<b>The tap is not ceremony</b> &mdash; iOS blocks health reads while the phone is locked, so a confirmation you actually tap is what guarantees an unlocked moment. That is the whole reason it is not silent.',
+      '<b>Nothing on screen depends on it landing now</b> &mdash; there is no Sleep card on the brief. What consumes this is the evening debrief, which attaches the day&rsquo;s health onto the nightly record. So the real deadline is tonight, not 07:45.',
+      '<b>If you miss it</b> &mdash; run the shortcut by hand later. That is the route that proved the pipeline in the first place and it works on the tier you already have.'
+    ],
+    grade:['Structural','g-str'],
+    note:'Moved here from 08:15 on 2 September 2026. The old time was set on holiday and put the tap squarely in your commute once school started. 07:35 also sits after the mushin step deliberately &mdash; a notification at 07:30 would land in the middle of the one step that is explicitly before the phone.' },
+
+  { id:'out', at:'07:38', dur:'3 min', name:'Meds, matcha, hydrogen water, bag, goodbye',
     ess:'The last stop: meds down, matcha and hydrogen water in hand, hair touched up, out the door.',
     moves:[
       '<b>Meds first</b> &mdash; the one thing here that has to happen. If the morning goes sideways, this is the step not to lose.',
