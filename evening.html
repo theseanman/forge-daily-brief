@@ -78,6 +78,16 @@
   .step.done .s-name{ text-decoration:line-through; text-decoration-color:var(--ink-quiet); }
   .s-at{ font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); font-weight:800; margin-top:4px; font-variant-numeric:tabular-nums; }
   .s-at i{ color:var(--ink-quiet); font-style:normal; }
+  .timerow{ display:flex; align-items:center; gap:10px; padding:0 15px 13px 48px; }
+  .tlab{ font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; }
+  .tinput{ background:rgba(9,36,80,.6); border:1px solid var(--line); color:var(--accent-hi); border-radius:9px;
+    padding:7px 10px; font-size:14px; font-weight:700; font-family:inherit; min-width:96px; }
+  .tinput:focus{ outline:0; border-color:var(--accent); }
+  .ampt{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px;
+    padding:12px 14px; margin-bottom:12px; font-size:13.5px; line-height:1.5; }
+  .ampt .ar{ display:flex; align-items:center; gap:10px; margin-top:9px; }
+  .ampt button{ border:0; background:var(--gold); color:#2b2000; font-size:11px; font-weight:800;
+    letter-spacing:.12em; text-transform:uppercase; padding:8px 12px; border-radius:9px; cursor:pointer; }
   .snagbtn{ border:0; background:transparent; color:var(--rose); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
     font-weight:800; padding:0 15px 13px; cursor:pointer; }
   .chips{ display:flex; flex-wrap:wrap; gap:6px; padding:0 15px 13px; }
@@ -142,6 +152,7 @@
 
   <div id="run">
     <div class="nowline" id="nowline"></div>
+    <div id="ampt"></div>
     <div class="forkbar">
       <button id="fork-std" onclick="setFork('std')">Standard night</button>
       <button id="fork-long" onclick="setFork('long')">Long night</button>
@@ -186,7 +197,7 @@
       <div class="p-ess">Mon, Tue, Wed, Fri, Sat. Thursday off.</div>
       <div class="move"><b>Tuesday trains inside the working block</b>, not after it &mdash; you are not home until 21:35, and a session that late would fight the temperature drop you are trying to produce.</div>
       <div class="move"><b>The shower after training is warm, not cold</b> &mdash; cold immediately after resistance work measurably blunts hypertrophy and strength adaptation. It also happens to be the version that helps you sleep.</div>
-      <div class="move"><b>The casein shake follows training, not the calendar</b> &mdash; Mon, Wed, Fri and Sat at 21:20, Tuesday at 21:45. Thursday and Sunday get nothing, which is what keeps two uncompromised fasts in the week.</div>
+      <div class="move"><b>The casein shake follows training, not the calendar</b> &mdash; Mon, Wed, Fri and Sat at 21:20, Tuesday at 22:15 after the meal, Saturday at 22:20. Thursday and Sunday get nothing, which is what keeps two uncompromised fasts in the week.</div>
     </div>
 
     <div class="section-k">The honest part</div>
@@ -336,7 +347,7 @@ var STD = [
     moves:['<b>The rule is a cutoff, not a delay</b> &mdash; half-life is around five hours, and 400mg taken six hours before bed measurably disrupts sleep even in people who report no effect. Six hours before 23:00 is 17:00; 15:00 buys you margin for almost nothing.'],
     grade:['Verified','g-ver'], note:'' },
 
-  { id:'food', at:'19:30', dur:'', name:'Last substantial food',
+  { id:'food', at:'19:30', dur:'', name:'Last substantial food', time:'Last food',
     ess:'And the alcohol rule.',
     moves:['<b>Alcohol is the trap</b> &mdash; it shortens onset and then fragments the second half of the night as it metabolises, suppressing REM. The most effective onset aid available and one of the worst quality interventions available.'],
     grade:['Verified','g-ver'], note:'If it is a drinking evening, expect a worse night and do not read it as the protocol failing. The 21:20 casein shake is a deliberate exception on training nights &mdash; 160 calories of protein in water is not a meal, and the circadian cost of late eating comes from large mixed meals, not from this.' },
@@ -358,7 +369,7 @@ var STD = [
     ],
     grade:['Verified','g-ver'], note:'' },
 
-  { id:'casein', at:'21:20', dur:'', name:'Casein shake — training nights only',
+  { id:'casein', at:'21:20', dur:'', name:'Casein shake — training nights only', time:'Shake taken',
     ess:'Mon, Wed, Fri, Sat. It hides itself on Thursday and Sunday &mdash; those stay clean fasts.',
     moves:[
       '<b>40g micellar casein in 200&ndash;250ml cool water</b> &mdash; and nothing to drink after it. The fluid volume, not the protein, is what would wake you at 03:00, and a fragmented night costs more than the feeding gains.',
@@ -406,25 +417,25 @@ var LONG = [
     moves:['<b>Nothing in this protocol outranks it</b> &mdash; and the offload works better once the day is genuinely finished anyway.'],
     grade:['Structural','g-str'], note:'' },
 
-  { id:'casein', at:'21:45', dur:'', name:'Casein shake — Tuesday only',
-    ess:'Tuesday is a training day. Thursday is not &mdash; this step hides itself on Thursday.',
-    moves:[
-      '<b>Straight after the goodnight, before the shower</b> &mdash; 40g micellar casein in 200&ndash;250ml cool water, nothing to drink after it. Seventy-five minutes to lights out.',
-      '<b>This is the weaker version and it should be labelled as one</b> &mdash; Tuesday trains inside the working block, so you are around eight hours post-session by now. The overnight synthesis effect should still hold; the post-exercise synergy the trials actually tested does not apply here.',
-      '<b>Same product rules</b> &mdash; micellar casein or MPC 85, never caseinate, never collagen.'
-    ],
-    grade:['Reasoning','g-rea'],
-    note:'This step removes itself on Thursday and Sunday, so it never shows on a rest night and is never counted as a miss in the 14-day grid. Read mode still lists it, because the reasoning is worth keeping visible.' },
-
   { id:'shower', at:'21:50', dur:'15 min', name:'Warm shower',
     ess:'Lands by luck exactly where the evidence wants it.',
     moves:['<b>Sixty to ninety minutes before a 23:00 lights-out</b> &mdash; arriving home at 21:35 puts the shower in the window without any planning at all. This is the one thing the long night does better than the standard one.'],
     grade:['Verified','g-ver'], note:'' },
 
-  { id:'food', at:'22:05', dur:'', name:'Eat, if you need to',
+  { id:'food', at:'22:05', dur:'', name:'Eat, if you need to', time:'Last food',
     ess:'This breaks the food-timing rule, deliberately.',
     moves:['<b>Late food costs less than going to bed underfed after fourteen hours</b> &mdash; that is a judgement call, labelled as one, not a finding. Keep it light and keep it off alcohol.'],
     grade:['Reasoning','g-rea'], note:'' },
+
+  { id:'casein', at:'22:15', dur:'', name:'Casein shake — Tuesday only', time:'Shake taken',
+    ess:'Tuesday is a training day. Thursday is not &mdash; this step hides itself on Thursday.',
+    moves:[
+      '<b>After the meal, not before it</b> &mdash; 40g micellar casein in 200&ndash;250ml cool water, nothing to drink after it. Forty-five minutes to lights out, which is still more margin than the trial that established the effect: Res 2012 fed it at thirty.',
+      '<b>This is the weaker version and it should be labelled as one</b> &mdash; Tuesday trains inside the working block, so you are around eight hours post-session by now. The overnight synthesis effect should still hold; the post-exercise synergy the trials actually tested does not apply here.',
+      '<b>Same product rules</b> &mdash; micellar casein or MPC 85, never caseinate, never collagen.'
+    ],
+    grade:['Reasoning','g-rea'],
+    note:'Ordered AFTER the food step deliberately: casein works by clotting in stomach acid and emptying slowly, and eating on top of it dilutes the clot you are paying for. This step removes itself on Thursday and Sunday, so it never shows on a rest night and is never counted as a miss in the 14-day grid.' },
 
   { id:'offload', at:'22:20', dur:'5 min', name:'The offload, compressed',
     ess:'Five specific lines. That is the whole thing.',
@@ -466,7 +477,7 @@ var WKND = [
     grade:['Verified','g-ver'],
     note:'Scullin 2018 measured onset latency with polysomnography and found the more specific the next-day list, the faster the onset.' },
 
-  { id:'food', at:'19:30', dur:'', name:'Last substantial food',
+  { id:'food', at:'19:30', dur:'', name:'Last substantial food', time:'Last food',
     ess:'Unchanged. Alcohol is the weekend trap, not the timing.',
     moves:['<b>Alcohol shortens onset and wrecks the second half</b> — it is more likely on a Saturday and it is the single largest thing that will move your night.'],
     grade:['Verified','g-ver'],
@@ -477,7 +488,7 @@ var WKND = [
     moves:['<b>Lamps, not overheads</b> — the melatonin dose–response is steep at the low end, so the difference between a lamp and a ceiling light is not cosmetic.'],
     grade:['Verified','g-ver'], note:'' },
 
-  { id:'casein', at:'22:20', dur:'', name:'Casein shake — Saturday only',
+  { id:'casein', at:'22:20', dur:'', name:'Casein shake — Saturday only', time:'Shake taken',
     ess:'Saturday is a training day. Sunday is not — this step hides itself on Sunday.',
     moves:[
       '<b>40g micellar casein in 200–250ml cool water</b> — nothing to drink after it. Roughly 100 minutes to lights-out, the same clearance as a weekday.',
@@ -538,6 +549,7 @@ function day(l,k){
   if(!l[k]) l[k] = { done:{}, snag:{}, fork:defaultFork() };
   if(!l[k].done) l[k].done = {};
   if(!l[k].snag) l[k].snag = {};
+  if(!l[k].times) l[k].times = {};
   if(!l[k].fork) l[k].fork = defaultFork();
   return l[k];
 }
@@ -585,6 +597,7 @@ function paintRun(){
   document.getElementById('fork-long').className = d.fork === 'long' ? 'on' : '';
   document.getElementById('fork-wknd').className = d.fork === 'wknd' ? 'on' : '';
   document.getElementById('departT').textContent = list[list.length-1].at;
+  paintPrompt(l);
 
   var host = document.getElementById('steps'); host.innerHTML = '';
   list.forEach(function(s){
@@ -616,6 +629,28 @@ function paintRun(){
       b.addEventListener('click', function(){ chips(el, s); });
       el.appendChild(b);
     }
+
+    /* Typed clock time on the steps that carry one. Deliberately NOT defaulted to
+       "now" — entering it is the point, not recording it. Blank when skipped; the
+       morning prompt offers one chance to fill yesterday's and then lets it go.
+       stopPropagation matters: the row above toggles done on click. */
+    if(s.time){
+      (function(step){
+        var tw = document.createElement('div'); tw.className = 'timerow';
+        var lab = document.createElement('span'); lab.className = 'tlab'; lab.textContent = step.time;
+        var inp = document.createElement('input');
+        inp.type = 'time'; inp.className = 'tinput';
+        inp.value = (d.times && d.times[step.id]) || '';
+        inp.addEventListener('click', function(e){ e.stopPropagation(); });
+        inp.addEventListener('change', function(){
+          var L = readLog(), D = day(L, today());
+          if(inp.value) D.times[step.id] = inp.value; else delete D.times[step.id];
+          writeLog(L); paintRun();
+        });
+        tw.appendChild(lab); tw.appendChild(inp);
+        el.appendChild(tw);
+      })(s);
+    }
     host.appendChild(el);
   });
   nowline();
@@ -638,6 +673,37 @@ function chips(el, s){
     box.appendChild(b);
   });
   el.appendChild(box);
+}
+
+/* One nudge, in the morning only, for a last-food time that was never entered.
+   Ignoring it is a valid answer — it does not reappear after noon and never
+   carries forward to a second day. */
+function paintPrompt(l){
+  var host = document.getElementById('ampt');
+  host.innerHTML = '';
+  if(new Date().getHours() >= 12) return;
+  var yk = ymd(new Date(Date.now() - 86400000));
+  var y = l[yk];
+  if(!y) return;
+  var logged = Object.keys(y.done||{}).length || Object.keys(y.snag||{}).length;
+  if(!logged) return;
+  if(y.times && y.times.food) return;
+
+  var box = document.createElement('div'); box.className = 'ampt';
+  var txt = document.createElement('div');
+  txt.innerHTML = 'Last night&rsquo;s <b>last food</b> time was not logged. Fill it in now, or leave it &mdash; blank is a valid answer and this will not ask again.';
+  var row = document.createElement('div'); row.className = 'ar';
+  var inp = document.createElement('input'); inp.type='time'; inp.className='tinput';
+  var btn = document.createElement('button'); btn.type='button'; btn.textContent = 'Save';
+  btn.addEventListener('click', function(){
+    if(!inp.value) return;
+    var L = readLog(), D = day(L, yk);
+    D.times.food = inp.value;
+    writeLog(L); paintRun(); toast('Logged for ' + yk + '.');
+  });
+  row.appendChild(inp); row.appendChild(btn);
+  box.appendChild(txt); box.appendChild(row);
+  host.appendChild(box);
 }
 
 function nowline(){

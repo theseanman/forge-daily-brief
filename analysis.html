@@ -79,6 +79,7 @@ var WORKER   = 'https://forge-input.yoseanreid.workers.dev';
 var K_DAILY  = 'forge-daily-log';
 var TRACK_ALC = '2026-08-03';              /* alcohol logged reliably from here; earlier = untracked */
 var K_BLOG = 'forge-breathe-log';           /* synced breathing session log (read-only here) */
+var K_EVE  = 'forge-evening-log';           /* evening protocol log — typed last-food / shake times */
 /* BC statutory holidays 2026 — UPDATE for 2027 when the year turns (hardcoded, will go stale) */
 var BC_HOLIDAYS = ['2026-01-01','2026-02-16','2026-04-03','2026-05-18','2026-07-01',
                    '2026-08-03','2026-09-07','2026-09-30','2026-10-12','2026-11-11','2026-12-25'];
@@ -124,6 +125,24 @@ function alcoholFor(date, hist){
   if (v === undefined || v === null || v === '') return 0;  /* logged, blank = sober */
   v = +v; return isNaN(v) ? null : v;
 }
+/* A typed HH:MM from the evening protocol as minutes from midnight, or null.
+   Absent means NOT LOGGED, never zero — the same absent-is-not-zero rule the
+   alcohol series uses. Times past midnight are not representable here and are
+   out of scope: the protocol closes food long before that. */
+function evTime(date, eve, id){
+  var e = eve && eve[date];
+  if (!e || !e.times) return null;
+  var v = e.times[id];
+  if (typeof v !== 'string' || !/^\d{1,2}:\d{2}$/.test(v)) return null;
+  var p = v.split(':'), h = +p[0], m = +p[1];
+  if (h > 23 || m > 59) return null;
+  return h*60 + m;
+}
+function hhmm(mins){
+  if (typeof mins !== 'number') return '\u2014';
+  return ('0'+Math.floor(mins/60)).slice(-2) + ':' + ('0'+(mins%60)).slice(-2);
+}
+
 /* total breathing minutes on `date` given forge-breathe-log; null if the log has never been touched at all */
 function breatheMinutes(date, blog){
   if (!blog || typeof blog !== 'object') return null;
@@ -146,7 +165,7 @@ function mean(arr){
   return a.reduce(function(s,x){ return s+x; }, 0) / a.length;
 }
 /* build the per-day derived series from the log + /health, honouring active tag filters */
-function deriveDays(log, hist, eveSet, blog){
+function deriveDays(log, hist, eveSet, blog, eve){
   return Object.keys(log).sort().map(function(d){
     var rec = log[d] || {};
     return {
@@ -156,6 +175,8 @@ function deriveDays(log, hist, eveSet, blog){
       keystone: keystone(rec),
       alcohol: alcoholFor(d, hist),
       breathe: breatheMinutes(d, blog),
+      lastFood: evTime(d, eve, 'food'),
+      shake: evTime(d, eve, 'casein'),
       tag: rec.tag || 'normal',
       eve: !!eveSet[d]
     };
@@ -167,12 +188,15 @@ function groupBy(days, buckets){
     var inb = days.filter(b.test);
     var comps = inb.map(function(x){ return x.completion; }).filter(function(x){ return x!==null; });
     var keys  = inb.map(function(x){ return x.keystone; }).filter(function(x){ return x!==null; });
+    var slps  = inb.map(function(x){ return x.sleep; }).filter(function(x){ return typeof x==='number'; });
     return {
       label: b.label,
       n: comps.length,
       comp: mean(comps),
       keyN: keys.length,
-      keyRate: keys.length ? (mean(keys)*100) : null
+      keyRate: keys.length ? (mean(keys)*100) : null,
+      sleepN: slps.length,
+      sleepAvg: slps.length ? mean(slps) : null
     };
   });
 }
@@ -228,6 +252,7 @@ function boot(){
       })
       .catch(function(){})
   );
+  var eve = fdRead(K_EVE, {});
   var hist = {};
   pulls.push(
     fetch(WORKER + '/health', {method:'GET'})
@@ -237,7 +262,7 @@ function boot(){
   );
   Promise.all(pulls).then(function(){
     var eves = holidayEveSet(BC_HOLIDAYS);
-    ALL = deriveDays(log, hist, eves, blog);
+    ALL = deriveDays(log, hist, eves, blog, eve);
     TAGS.forEach(function(t){ ACTIVE[t] = true; });
     var days = Object.keys(log).length;
     var bMin = Object.keys(blog).reduce(function(t,dk){ var a=(blog[dk]&&blog[dk].s)||[]; a.forEach(function(x){ if(x && x.sec>0) t+=x.sec; }); return t; }, 0);
@@ -371,6 +396,21 @@ function renderGroups(days){
     });
     html += '</table>';
   }
+  /* Same shape as block(), but the outcome column is the sleep score rather than
+     task completion. Rows with no sleep number are dropped, not shown as zero. */
+  function sleepBlock(title, rows, extra){
+    var real = rows.filter(function(r){ return r.sleepN > 0; });
+    if (!real.length) return;
+    html += '<div class="grp-title">'+title+(extra||'')+'</div>';
+    html += '<table><tr><th>Group</th><th class="num">Sleep score</th><th class="num">Tasks closed</th></tr>';
+    real.forEach(function(r){
+      html += '<tr><td>'+r.label+'<span class="n-badge">n='+r.sleepN+'</span></td>'
+           +  '<td class="num">'+(r.sleepAvg===null?'\u2014':Math.round(r.sleepAvg))+'</td>'
+           +  '<td class="num">'+(r.n? pct(r.comp) : '\u2014')+'</td></tr>';
+    });
+    html += '</table>';
+  }
+
   block('By sleep', groupBy(days, sleepBuckets), med===null?'':' (median '+Math.round(med)+')');
   /* By breathing: median split over days that logged any breathing (positive value) */
   var bMins = days.map(function(x){ return x.breathe; }).filter(function(v){ return typeof v==='number' && v>0; });
@@ -383,13 +423,33 @@ function renderGroups(days){
   block('By breathing', groupBy(days, breatheBuckets), bMed===null?'':' (median '+bMed+' min)');
   block('By drinking', groupBy(days, alcoholBuckets));
   block('By day type', groupBy(days, tagBuckets));
+
+  /* ---- last meal vs SLEEP ----------------------------------------------
+     Different outcome from the blocks above on purpose: the question here is
+     whether eating later costs sleep, not whether it costs task completion.
+     The shake is deliberately NOT folded into this — it falls on exactly the
+     training nights, so combining the two would make "late intake" and
+     "training day" the same variable and neither could be read.            */
+  var fMins = days.map(function(x){ return x.lastFood; }).filter(function(v){ return typeof v==='number'; });
+  var fMed = median(fMins);
+  var mealBuckets = fMed===null ? [] : [
+    { label:'Later meals',  test:function(x){ return typeof x.lastFood==='number' && x.lastFood >= fMed; } },
+    { label:'Earlier meals',test:function(x){ return typeof x.lastFood==='number' && x.lastFood <  fMed; } }
+  ];
+  sleepBlock('By last meal &rarr; sleep', groupBy(days, mealBuckets), fMed===null?'':' (median ' + hhmm(fMed) + ')');
+
+  var shakeBuckets = [
+    { label:'Shake nights',    test:function(x){ return typeof x.shake==='number'; } },
+    { label:'No shake logged', test:function(x){ return x.shake === null; } }
+  ];
+  sleepBlock('By casein shake &rarr; sleep', groupBy(days, shakeBuckets));
   host.innerHTML = html || '<div class="empty">Not enough tagged data yet.</div>';
 }
 
 /* expose pure fns for tests when loaded under node */
 if (typeof module !== 'undefined' && module.exports){
   module.exports = { prevDay, holidayEveSet, effSleep, completion, keystone, alcoholFor,
-                     breatheMinutes, median, mean, deriveDays, groupBy, mergeCloud, TRACK_ALC };
+                     breatheMinutes, evTime, hhmm, median, mean, deriveDays, groupBy, mergeCloud, TRACK_ALC };
 }
 
 if (typeof document !== 'undefined' && document.getElementById('status')) boot();
