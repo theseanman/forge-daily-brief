@@ -1,1 +1,104 @@
-{"welltory": {"stress": 73, "energy": 42, "health": 100}, "body_comp": {"weight": 206.8, "body_fat": 27.2, "muscle_mass": null, "bmi": 29.6, "visceral_fat": null}, "sleep": {"score": null, "duration": null, "hr_range": null, "rem": 84, "core": 277, "deep": 65, "awake": 0, "duration_min": 426, "time_in_bed_min": 487, "computed_score": 91, "computed_score_parts": {"duration": 35.5, "deep": 20, "rem": 17.9, "efficiency": 17.5}, "capture_method": "health_auto_export_v1", "capture_method_since": "2026-08-13", "stage_source_date": "2026-09-02"}, "notes": "", "updated": "2026-09-02T14:12:48.231Z", "calendar": [{"date": "Fri Aug 28", "time": "All day", "title": "Commit the Japan analysis plan file with a real date then pull the JSON Bin data and run the dry run"}, {"date": "Fri Aug 28", "time": "All day", "title": "Finish the deposit, insert my orchid ID and email, verify the seven flags citations, either source or soften the cardiac-regulation prognostic claim in S6 and reconcile the five category classified against chapter 10 of the book then upload to ZENODON record the DOI"}, {"date": "Thu Sep 03", "time": "All day", "title": "Chad power season two"}, {"date": "Thu Sep 03", "time": "09:40 AM", "title": "Dr Ghoneim will call"}, {"date": "Thu Sep 03", "time": "01:00 PM", "title": "Dr. Ip next injection"}, {"date": "Mon Sep 07", "time": "All day", "title": "TD statement available online banking"}, {"date": "Tue Sep 08", "time": "All day", "title": "Mr. T documentary on Netflix"}, {"date": "Tue Sep 08", "time": "All day", "title": "First day of school"}, {"date": "Fri Sep 04", "time": "04:30 AM", "title": "ONE Friday Fights 169 & The Inner Circle 29"}, {"date": "Fri Sep 04", "time": "11:00 AM", "title": "RMT - Private Visit - 60 mins with Roland Boros for Sean Reid"}, {"date": "Fri Sep 04", "time": "06:00 PM", "title": "ONE Fight Night 47"}, {"date": "Sat Sep 05", "time": "12:00 PM", "title": "UFC Fight Night: Hooker vs Parnasse"}, {"date": "Mon Sep 07", "time": "12:00 AM", "title": "Labour Day"}]}
+{
+  "welltory": {
+    "stress": 53,
+    "energy": 53,
+    "health": 100
+  },
+  "body_comp": {
+    "weight": 206.8,
+    "body_fat": 27.2,
+    "muscle_mass": null,
+    "bmi": 29.6,
+    "visceral_fat": null
+  },
+  "sleep": {
+    "score": null,
+    "duration": null,
+    "hr_range": null,
+    "rem": 84,
+    "core": 277,
+    "deep": 65,
+    "awake": 0,
+    "duration_min": 426,
+    "time_in_bed_min": 487,
+    "computed_score": 91,
+    "computed_score_parts": {
+      "duration": 35.5,
+      "deep": 20,
+      "rem": 17.9,
+      "efficiency": 17.5
+    },
+    "capture_method": "health_auto_export_v1",
+    "capture_method_since": "2026-08-13",
+    "stage_source_date": "2026-09-02"
+  },
+  "notes": "",
+  "updated": "2026-09-03T17:28:38.596Z",
+  "calendar": [
+    {
+      "date": "Fri Aug 28",
+      "time": "All day",
+      "title": "Commit the Japan analysis plan file with a real date then pull the JSON Bin data and run the dry run"
+    },
+    {
+      "date": "Fri Aug 28",
+      "time": "All day",
+      "title": "Finish the deposit, insert my orchid ID and email, verify the seven flags citations, either source or soften the cardiac-regulation prognostic claim in S6 and reconcile the five category classified against chapter 10 of the book then upload to ZENODON record the DOI"
+    },
+    {
+      "date": "Thu Sep 03",
+      "time": "All day",
+      "title": "Chad power season two"
+    },
+    {
+      "date": "Thu Sep 03",
+      "time": "09:40 AM",
+      "title": "Dr Ghoneim will call"
+    },
+    {
+      "date": "Thu Sep 03",
+      "time": "01:00 PM",
+      "title": "Dr. Ip next injection"
+    },
+    {
+      "date": "Mon Sep 07",
+      "time": "All day",
+      "title": "TD statement available online banking"
+    },
+    {
+      "date": "Tue Sep 08",
+      "time": "All day",
+      "title": "Mr. T documentary on Netflix"
+    },
+    {
+      "date": "Tue Sep 08",
+      "time": "All day",
+      "title": "First day of school"
+    },
+    {
+      "date": "Fri Sep 04",
+      "time": "04:30 AM",
+      "title": "ONE Friday Fights 169 & The Inner Circle 29"
+    },
+    {
+      "date": "Fri Sep 04",
+      "time": "11:00 AM",
+      "title": "RMT - Private Visit - 60 mins with Roland Boros for Sean Reid"
+    },
+    {
+      "date": "Fri Sep 04",
+      "time": "06:00 PM",
+      "title": "ONE Fight Night 47"
+    },
+    {
+      "date": "Sat Sep 05",
+      "time": "12:00 PM",
+      "title": "UFC Fight Night: Hooker vs Parnasse"
+    },
+    {
+      "date": "Mon Sep 07",
+      "time": "12:00 AM",
+      "title": "Labour Day"
+    }
+  ]
+}
