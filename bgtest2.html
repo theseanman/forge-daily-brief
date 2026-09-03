@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Background Audio Test 2 — loop</title>
+<style>
+  html,body{margin:0;padding:0;background:#0b1a2e;color:#dce7f5;
+    font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;}
+  .wrap{max-width:34rem;margin:0 auto;padding:2rem 1.25rem 3rem;}
+  h1{font-size:1.35rem;margin:0 0 .35rem;color:#78b6f0;letter-spacing:.02em;}
+  .sub{color:#7d95b3;font-size:.85rem;margin:0 0 1.75rem;}
+  audio{width:100%;margin:0 0 2rem;}
+  h2{font-size:.78rem;letter-spacing:.11em;text-transform:uppercase;
+    color:#4a9de8;margin:2rem 0 .6rem;}
+  ol{margin:0;padding-left:1.3rem;}
+  li{margin:0 0 .6rem;}
+  .box{background:#12263f;border-left:3px solid #4a9de8;
+    padding:.9rem 1rem;border-radius:0 6px 6px 0;margin:1.25rem 0;}
+  .box b{color:#9ecbf5;}
+  code{background:#0a1626;padding:.1rem .35rem;border-radius:3px;
+    font-size:.85em;color:#a8c8ea;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Background Audio Test 2</h1>
+  <p class="sub">Identical to test 1, but with the loop attribute added. Still no JavaScript.</p>
+
+  <audio controls loop preload="auto" playsinline src="./coherent-60-long.m4a"></audio>
+
+  <h2>What this is</h2>
+  <p>One <code>&lt;audio&gt;</code> tag pointing at a single continuous 10&#8209;minute
+  chime track. No loop attribute, no scripts, no timers, nothing that could stop
+  playback from the page side. If audio dies here, it is iOS doing it, not
+  breathe.html.</p>
+
+  <h2>How to run it</h2>
+  <ol>
+    <li>Open this page in Safari on the phone.</li>
+    <li>Press play. Confirm you hear chimes.</li>
+    <li>Lock the screen. Leave it locked for at least two minutes.</li>
+    <li>Unlock and listen before touching anything.</li>
+    <li>Repeat with an app switch instead of a lock.</li>
+  </ol>
+
+  <div class="box">
+    <b>Still playing after the lock</b> &mdash; the loop seam was the cause.
+    Long tracks fix breathe.html.<br><br>
+    <b>Stopped</b> &mdash; note roughly <i>when</i> it stopped. Immediately on lock is a
+    different signal from stopping after a minute or two.
+  </div>
+
+  <h2>Track</h2>
+  <p>coherent-60-long.m4a &#183; 600s &#183; AAC mono 44.1kHz &#183; 5.9MB &#183;
+  built by concatenating the deployed 12s coherent-60 track 50 times, lossless copy.</p>
+
+</div>
+</body>
+</html>
