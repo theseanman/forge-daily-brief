@@ -61,7 +61,7 @@
   .nowline b{ color:var(--accent-hi); }
   .forkbar{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:4px; margin-bottom:14px; }
   .forkbar button{ flex:1; border:0; background:transparent; color:var(--ink-dim); font-size:12px; font-weight:800;
-    letter-spacing:.1em; text-transform:uppercase; padding:10px 8px; border-radius:999px; cursor:pointer; }
+    letter-spacing:.06em; text-transform:uppercase; padding:10px 5px; border-radius:999px; cursor:pointer; white-space:nowrap; }
   .forkbar button.on{ background:var(--accent); color:#06264f; }
 
   .step{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--line); border-radius:14px; margin-bottom:10px; overflow:hidden; }
@@ -89,6 +89,14 @@
   .depart .k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; }
   .depart .t{ font-size:34px; font-weight:200; letter-spacing:.05em; color:var(--gold); margin-top:4px; }
 
+  table.ev{ width:100%; border-collapse:collapse; font-size:13px; }
+  table.ev th{ text-align:left; font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent);
+    font-weight:800; padding:0 10px 8px 0; border-bottom:1px solid var(--line); }
+  table.ev td{ padding:9px 10px 9px 0; vertical-align:top; line-height:1.45; border-bottom:1px solid rgba(255,255,255,.05); }
+  table.ev td.g{ white-space:normal; font-weight:700; color:var(--green); width:27%; }
+  table.ev td.g.mix{ color:var(--gold); }
+  table.ev td.g.no{ color:var(--rose); }
+  table.ev td.src{ color:var(--ink-quiet); font-size:12px; width:26%; }
   table.grid{ width:100%; border-collapse:collapse; }
   table.grid th{ text-align:left; font-size:12.5px; font-weight:600; color:var(--ink-dim); padding:0 8px 9px 0; }
   table.grid td{ padding:2px 1px; }
@@ -137,9 +145,10 @@
     <div class="forkbar">
       <button id="fork-std" onclick="setFork('std')">Standard night</button>
       <button id="fork-long" onclick="setFork('long')">Long night</button>
+      <button id="fork-wknd" onclick="setFork('wknd')">Weekend</button>
     </div>
     <div id="steps"></div>
-    <div class="depart"><div class="k">Lights out</div><div class="t">23:00</div></div>
+    <div class="depart"><div class="k">Lights out</div><div class="t" id="departT">23:00</div></div>
     <div class="foot">Tap a step to tick it &middot; log a snag if it didn't land</div>
   </div>
 
@@ -156,9 +165,15 @@
     </div>
     <div id="read-long"></div>
 
+    <div class="section-k">Weekend &mdash; Saturday and Sunday</div>
+    <div class="card" style="border-left-color:var(--gold);">
+      <div class="p-ess" style="margin-bottom:0;">Two changes, and only two. Everything else is identical, which is itself the point &mdash; an evening routine that reshapes itself on Friday is not a routine. Lights out goes to 23:59 with a 07:30 wake &mdash; the whole window shifts an hour rather than getting longer &mdash; and the offload moves early to whenever the desk is free. The temperature step and the exit rule do not change and should not. If anything the weekend is where the bath actually happens, since the weekday version competes with a hard stop.</div>
+    </div>
+    <div id="read-wknd"></div>
+
     <div class="section-k">Rules that don't move</div>
     <div class="card">
-      <div class="move"><b>The wake time is the anchor, not the bedtime</b> &mdash; 07:00 regardless of how the night went. It is the component people abandon first and the one the whole system hangs on.</div>
+      <div class="move"><b>The wake time is the anchor, not the bedtime</b> &mdash; 07:00 regardless of how the night went. It is the component people abandon first and the one the whole system hangs on. <b>One bounded exception:</b> 07:30 at the weekend, paired with the later lights-out. That is the only place the anchor moves, and 07:30 is a ceiling rather than a starting point.</div>
       <div class="move"><b>Do not extend the sleep window to fix bad onset</b> &mdash; compressing time in bed is one of the two active components of CBT-I and it works by raising sleep pressure. More time awake in bed means a longer latency the next night, not a shorter one.</div>
       <div class="move"><b>The exit rule</b> &mdash; awake and frustrated for around twenty minutes, get out of bed and do something dull in dim light until sleepy. This is stimulus control, and it is doing real work, not being tidy.</div>
       <div class="move"><b>Warm extremities, cool room</b> &mdash; socks on, room at 18&ndash;19&deg;C. Peripheral warming drives heat away from the core, which is the direction you need.</div>
@@ -176,6 +191,62 @@
 
     <div class="section-k">The honest part</div>
     <div class="band">Two fourteen-hour days a week is a larger variable in your health than anything in this document. A wind-down sequence does not offset it, and I am not going to write as though it does. What this protocol can do is stop those nights from also costing you the sleep.</div>
+
+    <div class="section-k">What is deliberately excluded</div>
+    <div class="card">
+      <div class="move"><b>Melatonin as a sedative</b> &mdash; it is a chronobiotic, not a hypnotic. Verified for phase-shifting, weak for what you would be using it for. If a phase shift is ever the problem, revisit it; for cognitive arousal at lights-out it is the wrong tool.</div>
+      <div class="move"><b>Blue-blocking glasses</b> &mdash; mixed trial evidence, and they distract from the intervention that does work, which is turning the actual room lights down.</div>
+      <div class="move"><b>Alcohol as a wind-down</b> &mdash; it works on the metric you are watching and damages the one you are not.</div>
+      <div class="move"><b>Any nightly scored practice</b> &mdash; a breathing target, a gratitude count, a meditation streak. The evening already has one demanding cognitive step, and stacking a scored item into the last hour reintroduces the evaluation the whole thing is trying to shut down.</div>
+      <div class="move"><b>Reading the sleep score per night</b> &mdash; weekly trend only, and never before the morning HRV reading.</div>
+      <div class="move"><b>Counting sheep</b> &mdash; it underperformed imagery distraction in direct comparison. Genuinely worse than doing nothing specific.</div>
+      <div class="move"><b>Valerian, CBD and the supplement tier</b> &mdash; weak and inconsistent evidence; not worth the slot or the belief.</div>
+      <div class="move"><b>Large fluid intake in the last two hours</b> &mdash; trades an onset problem for a 03:00 bathroom trip. This is why the casein shake is 250ml and why nothing follows it.</div>
+    </div>
+    <div class="band"><b>Superseded &mdash; pre-sleep protein.</b> The August version of this protocol excluded casein outright, on the grounds that it collides with the fasting window and the fast had the stronger claim. That was written as all-or-nothing: every night, or not at all. Restricting it to training nights was not considered, and it should have been. Four nights on with Thursday and Sunday clean is a different trade and a better one, so the exclusion is lifted. The reversal is recorded rather than quietly dropped &mdash; if the reasoning stops holding, this is the entry to come back to.</div>
+
+    <div class="section-k">What to measure, and for how long</div>
+    <div class="card">
+      <div class="p-ess">One number, logged nightly: estimated minutes to fall asleep.</div>
+      <div class="move"><b>Estimated, not measured</b> &mdash; no clock, and the wearable's onset figure is not accurate enough to act on. The estimate is what CBT-I protocols use and it is sufficient.</div>
+      <div class="move"><b>Review weekly, never nightly</b> &mdash; alongside the morning HRV trend. Nightly numbers look like noise because they are.</div>
+      <div class="move"><b>The target is under twenty minutes across a fortnight</b> &mdash; hitting that is the signal to extend the sleep window by fifteen minutes, and given the schedule that will usually mean an earlier lights-out rather than a later wake.</div>
+      <div class="move"><b>Expect three to four weeks before it is readable</b> &mdash; and expect it to get slightly worse before better if the exit rule is being applied properly.</div>
+      <div class="move"><b>For the casein specifically</b> &mdash; two weeks on, two weeks off, comparing wake events and sleep efficiency. Amazfit data only; the July 24 device change reset the baseline and nothing crosses it.</div>
+    </div>
+    <div class="band">If four weeks of consistent application produce no movement, that is the point to stop iterating on a routine and look at a structured CBT-I program or a conversation with a doctor. That is not a failure of the protocol; it is the protocol telling you it is the wrong instrument.</div>
+
+    <div class="section-k">Evidence appendix</div>
+    <div class="card" style="border-left-color:var(--line);">
+      <table class="ev"><tbody>
+      <tr><th>Claim</th><th>Grade</th><th>Source</th></tr>
+      <tr><td>CBT-I is first-line for chronic insomnia and outperforms sleep hygiene; effects persist after treatment ends</td><td class="g">Verified</td><td class="src">CBT-I trial literature; clinical practice guidelines</td></tr>
+      <tr><td>Stimulus control &mdash; getting out of bed when awake &mdash; is among the most consistently supported behavioural sleep interventions</td><td class="g">Verified</td><td class="src">Bootzin; CBT-I component analyses</td></tr>
+      <tr><td>A compressed sleep window consolidates sleep and shortens onset latency</td><td class="g">Verified</td><td class="src">Spielman sleep-restriction therapy</td></tr>
+      <tr><td>Writing a specific next-day to-do list before bed shortens onset latency; specificity increases the effect</td><td class="g">Verified &mdash; RCT with polysomnography</td><td class="src">Scullin et al., 2018</td></tr>
+      <tr><td>Warm bathing 1&ndash;2 h before bed shortens onset by roughly 10 min and improves subjective quality</td><td class="g">Verified &mdash; meta-analysis</td><td class="src">Haghayegh et al., 2019</td></tr>
+      <tr><td>Sleep onset depends on a falling core temperature; distal warming accelerates the drop</td><td class="g">Verified &mdash; mechanistic</td><td class="src">Thermoregulation and sleep-onset literature</td></tr>
+      <tr><td>Evening bright light suppresses melatonin and delays circadian phase, with a steep low-end dose&ndash;response</td><td class="g">Verified</td><td class="src">Melatonin suppression dose&ndash;response studies</td></tr>
+      <tr><td>Alcohol shortens onset but suppresses REM and fragments the second half of the night</td><td class="g">Verified</td><td class="src">Alcohol and sleep-architecture studies</td></tr>
+      <tr><td>400 mg caffeine 6 h before bed measurably disrupts sleep; half-life about 5 h</td><td class="g">Verified</td><td class="src">Drake et al., 2013</td></tr>
+      <tr><td>Imagery distraction shortens onset latency; counting performs worse</td><td class="g">Verified &mdash; small literature</td><td class="src">Harvey &amp; Payne, 2002</td></tr>
+      <tr><td>Clock-watching at night independently predicts longer onset latency</td><td class="g">Verified</td><td class="src">Sleep-effort and monitoring literature</td></tr>
+      <tr><td>Anxious self-monitoring of sleep-tracker data can itself worsen sleep</td><td class="g">Verified as a described phenomenon</td><td class="src">Baron et al., 2017 &mdash; orthosomnia</td></tr>
+      <tr><td>Habitual sleep under 7 h is associated with elevated all-cause mortality and cardiometabolic risk</td><td class="g mix">Verified, observational</td><td class="src">Large prospective sleep-duration cohorts</td></tr>
+      <tr><td>Experimental sleep restriction impairs cognition dose-dependently, and self-assessment of that impairment is unreliable</td><td class="g">Verified &mdash; experimental</td><td class="src">Van Dongen et al., 2003</td></tr>
+      <tr><td>Pre-sleep casein raises overnight muscle protein synthesis</td><td class="g mix">Verified, but in young trained men &mdash; extrapolated to 47</td><td class="src">Res et al., 2012; Snijders et al., 2015</td></tr>
+      <tr><td>The pre-sleep effect is partly a total-protein effect &mdash; those trials added protein as well as moving it, and total daily intake dominates</td><td class="g mix">Reasoning</td><td class="src">Protein-timing component literature</td></tr>
+      <tr><td>Micellar casein clots in stomach acid and slows gastric emptying; caseinate salts do not</td><td class="g">Verified &mdash; mechanistic</td><td class="src">Casein digestion kinetics</td></tr>
+      <tr><td>Collagen cannot trigger muscle protein synthesis &mdash; incomplete, negligible leucine</td><td class="g">Verified</td><td class="src">Amino acid profile; leucine-threshold work</td></tr>
+      <tr><td>Fasting-duration thresholds for autophagy in humans</td><td class="g no">Thin &mdash; mostly rodent work</td><td class="src">Autophagy marker literature</td></tr>
+      <tr><td>Late time-restricted eating performs worse than early at the same window length</td><td class="g mix">Moderate</td><td class="src">Meal-timing crossover trials</td></tr>
+      <tr><td>Melatonin is effective for circadian phase-shifting, weak as a hypnotic</td><td class="g mix">Split</td><td class="src">Phase-response and hypnotic-efficacy literature</td></tr>
+      <tr><td>Blue-blocking glasses for sleep</td><td class="g no">Mixed &mdash; excluded</td><td class="src">Blue-light-filtering trials and reviews</td></tr>
+      <tr><td>Valerian, CBD and similar supplements for sleep onset</td><td class="g no">Weak &mdash; excluded</td><td class="src">Supplement trial literature</td></tr>
+      <tr><td>Frequent sauna use is associated with lower cardiovascular mortality</td><td class="g mix">Verified, observational, confounded</td><td class="src">Laukkanen et al., 2015</td></tr>
+      </tbody></table>
+      <div class="legend">Where a row says observational, the finding is an association in a cohort rather than a demonstrated effect. That caveat is doing real work in the mortality and sauna rows and almost none in the onset rows, which are mostly randomised.</div>
+    </div>
 
     <div class="section-k">The one thing</div>
     <div class="band">If everything else falls over: <b>do the offload</b>. Five specific lines about tomorrow, written down, away from the bed. It is the only step here with a randomised trial measuring the outcome you actually care about.</div>
@@ -287,7 +358,7 @@ var STD = [
     ],
     grade:['Verified','g-ver'], note:'' },
 
-  { id:'casein', at:'21:20', dur:'', name:'Casein shake &mdash; training nights only',
+  { id:'casein', at:'21:20', dur:'', name:'Casein shake — training nights only',
     ess:'Mon, Wed, Fri, Sat. It hides itself on Thursday and Sunday &mdash; those stay clean fasts.',
     moves:[
       '<b>40g micellar casein in 200&ndash;250ml cool water</b> &mdash; and nothing to drink after it. The fluid volume, not the protein, is what would wake you at 03:00, and a fragmented night costs more than the feeding gains.',
@@ -335,7 +406,7 @@ var LONG = [
     moves:['<b>Nothing in this protocol outranks it</b> &mdash; and the offload works better once the day is genuinely finished anyway.'],
     grade:['Structural','g-str'], note:'' },
 
-  { id:'casein', at:'21:45', dur:'', name:'Casein shake &mdash; Tuesday only',
+  { id:'casein', at:'21:45', dur:'', name:'Casein shake — Tuesday only',
     ess:'Tuesday is a training day. Thursday is not &mdash; this step hides itself on Thursday.',
     moves:[
       '<b>Straight after the goodnight, before the shower</b> &mdash; 40g micellar casein in 200&ndash;250ml cool water, nothing to drink after it. Seventy-five minutes to lights out.',
@@ -378,6 +449,76 @@ var ALL_IDS = ['caffeine','goodnight','food','cool','offload','casein','shower',
 var LABELS = { caffeine:'Caffeine cutoff', goodnight:'Goodnight', food:'Food', cool:'Cool + dim',
   offload:'The offload', casein:'Casein shake', shower:'Warm shower', dark:'Screens down', bed:'In bed', out:'Lights out' };
 
+var WKND = [
+  { id:'caffeine', at:'15:00', dur:'', name:'Caffeine cutoff. Last dose of the day',
+    ess:'Unchanged at the weekend. The half-life does not know it is Saturday.',
+    moves:['<b>Same cutoff, even with a later lights-out</b> — the extra 30 minutes of evening is not a licence to move this.'],
+    grade:['Verified','g-ver'],
+    note:'Caffeine 6 hours before bed measurably disrupted sleep in Drake 2013, with a half-life around 5 hours.' },
+
+  { id:'offload', at:'18:00', dur:'10 min', name:'The offload, moved early',
+    ess:'Whenever the desk is free. Earlier rather than skipped.',
+    moves:[
+      '<b>18:00 is fine, and so is earlier</b> — on a family evening this moves forward rather than getting dropped. It is the step that protects the night, so it is the last thing to cut, not the first.',
+      '<b>Tomorrow\'s five still get written</b> — on a Saturday that can legitimately be one OPTIMIZE item and one IMMERSE item. An IMMERSE item still gets written down.',
+      '<b>Specific enough to close the loop</b> — &ldquo;take the girls somewhere&rdquo; is not specific. Specificity is the mechanism, not the writing.'
+    ],
+    grade:['Verified','g-ver'],
+    note:'Scullin 2018 measured onset latency with polysomnography and found the more specific the next-day list, the faster the onset.' },
+
+  { id:'food', at:'19:30', dur:'', name:'Last substantial food',
+    ess:'Unchanged. Alcohol is the weekend trap, not the timing.',
+    moves:['<b>Alcohol shortens onset and wrecks the second half</b> — it is more likely on a Saturday and it is the single largest thing that will move your night.'],
+    grade:['Verified','g-ver'],
+    note:'If it is a drinking evening, expect a worse night and do not read it as the protocol failing.' },
+
+  { id:'cool', at:'21:30', dur:'', name:'Bedroom to 18–19°C, lamps only',
+    ess:'Same as any night. The room does not get a weekend.',
+    moves:['<b>Lamps, not overheads</b> — the melatonin dose–response is steep at the low end, so the difference between a lamp and a ceiling light is not cosmetic.'],
+    grade:['Verified','g-ver'], note:'' },
+
+  { id:'casein', at:'22:20', dur:'', name:'Casein shake — Saturday only',
+    ess:'Saturday is a training day. Sunday is not — this step hides itself on Sunday.',
+    moves:[
+      '<b>40g micellar casein in 200–250ml cool water</b> — nothing to drink after it. Roughly 100 minutes to lights-out, the same clearance as a weekday.',
+      '<b>Micellar casein or MPC 85</b> — never calcium or sodium caseinate, never collagen. Same product rules as any night.'
+    ],
+    grade:['Verified','g-ver'],
+    note:'Sunday is the second uncompromised fast of the week and the step is removed rather than left unticked, so the log does not score it as a miss.' },
+
+  { id:'shower', at:'22:30', dur:'20 min', name:'Warm bath — this is the night for it',
+    ess:'The weekday version competes with a hard stop. This one does not.',
+    moves:[
+      '<b>A real bath, not a rushed shower</b> — 90 minutes before lights-out puts it exactly in the window the meta-analysis used.',
+      '<b>Warm, then a cool room</b> — the point is peripheral warming driving heat away from the core. The drop is what starts sleep, not the warmth itself.'
+    ],
+    grade:['Verified','g-ver'],
+    note:'Haghayegh 2019 found warm bathing 1–2 hours before bed shortened onset by roughly 10 minutes and improved subjective quality.' },
+
+  { id:'dark', at:'23:00', dur:'', name:'Screens down. Dark from here',
+    ess:'Shifted with the anchor, not relaxed.',
+    moves:['<b>The drift is in the bedtime, not in this step</b> — the extra hour gained is the drift spent on the one thing that undoes it.'],
+    grade:['Verified','g-ver'], note:'' },
+
+  { id:'bed', at:'23:30', dur:'', name:'In bed. Socks on, room dark',
+    ess:'Warm extremities, cool room.',
+    moves:[
+      '<b>The exit rule still applies</b> — awake and frustrated around twenty minutes, get out of bed and do something dull in dim light.',
+      '<b>No clock-watching</b> — it independently predicts a longer onset. Turn it away.'
+    ],
+    grade:['Verified','g-ver'], note:'' },
+
+  { id:'out', at:'23:59', dur:'', name:'Lights out — effectively midnight',
+    ess:'An hour later than a weekday, paired with a 07:30 wake. Not a free hour — a shifted one.',
+    moves:[
+      '<b>07:30 is the ceiling, not a suggestion</b> — half an hour, and only at the weekend. Against a 23:59 lights-out that holds time in bed at seven and a half hours, the same as a weekday.',
+      '<b>This is the only place the anchor moves</b> — the fixed wake is the load-bearing rule of the whole system and the first component people abandon. It is bounded here on purpose so that it stays a rule with one exception rather than a habit with a preference.',
+      '<b>A bad weekend night is not fixed with a longer lie-in</b> — hold 07:30, take the hit for one day, and let the extra sleep pressure improve the following night. Sleeping in converts one bad night into a bad week.'
+    ],
+    grade:['Anchor','g-str'],
+    note:'Shown as 23:59 rather than 00:00 because every time on this page is minutes-from-midnight within a single day; a zero would sort ahead of the caffeine cutoff and break the ticker. The one-minute gap is a boundary artefact, not a target. Weekend sleep midpoint lands about 45 minutes later than a weekday — small enough not to argue with.' }
+];
+
 var SNAGS = ['Home too late','Ran long at work','Forgot',"Didn't want to",'Interrupted'];
 
 /* ---------------- storage ---------------- */
@@ -392,7 +533,7 @@ function writeLog(o){
   try{ localStorage.setItem(LKEY, JSON.stringify(o)); return true; }
   catch(e){ toast('Device storage is full &mdash; nothing saved.'); return false; }
 }
-function defaultFork(){ var d = new Date().getDay(); return (d === 2 || d === 4) ? 'long' : 'std'; }
+function defaultFork(){ var d = new Date().getDay(); if(d === 2 || d === 4) return 'long'; if(d === 0 || d === 6) return 'wknd'; return 'std'; }
 function day(l,k){
   if(!l[k]) l[k] = { done:{}, snag:{}, fork:defaultFork() };
   if(!l[k].done) l[k].done = {};
@@ -408,7 +549,7 @@ function toast(msg){
 }
 
 /* ---------------- run ---------------- */
-function stepsFor(fork){ return fork === 'long' ? LONG : STD; }
+function stepsFor(fork){ return fork === 'long' ? LONG : (fork === 'wknd' ? WKND : STD); }
 /* Rest nights: Thursday and Sunday. The casein step is training-nights-only,
    so it is removed from the list rather than shown and left unticked &mdash;
    otherwise the 14-day grid scores it as a miss twice a week. Date is parsed
@@ -427,7 +568,7 @@ function stepsForDay(fork, k){
 function mins(s){ var p = s.split(':'); return parseInt(p[0],10)*60 + parseInt(p[1],10); }
 function currentId(list){
   var d = new Date(), m = d.getHours()*60 + d.getMinutes();
-  if(m < mins(list[0].at) || m > mins('23:15')) return null;
+  if(m < mins(list[0].at) || m > mins(list[list.length-1].at) + 15) return null;
   var id = list[0].id;
   for(var i=0;i<list.length;i++){ if(m >= mins(list[i].at)) id = list[i].id; }
   return id;
@@ -442,6 +583,8 @@ function paintRun(){
   var list = stepsForDay(d.fork, today()), now = currentId(list);
   document.getElementById('fork-std').className  = d.fork === 'std' ? 'on' : '';
   document.getElementById('fork-long').className = d.fork === 'long' ? 'on' : '';
+  document.getElementById('fork-wknd').className = d.fork === 'wknd' ? 'on' : '';
+  document.getElementById('departT').textContent = list[list.length-1].at;
 
   var host = document.getElementById('steps'); host.innerHTML = '';
   list.forEach(function(s){
@@ -614,6 +757,7 @@ document.getElementById('importFile').addEventListener('change', function(e){
 loadPhoto();
 renderCards(STD, 'read-std');
 renderCards(LONG, 'read-long');
+renderCards(WKND, 'read-wknd');
 setMode('run');
 setInterval(nowline, 30000);
 </script>
