@@ -1,1 +1,84 @@
-{"welltory": {"stress": 55, "energy": 40, "health": 100}, "body_comp": {"weight": 206.8, "body_fat": 27.2, "muscle_mass": null, "bmi": 29.6, "visceral_fat": null}, "sleep": {"score": null, "duration": null, "hr_range": null, "rem": 84, "core": 277, "deep": 65, "awake": 0, "duration_min": 426, "time_in_bed_min": 487, "computed_score": 91, "computed_score_parts": {"duration": 35.5, "deep": 20, "rem": 17.9, "efficiency": 17.5}, "capture_method": "health_auto_export_v1", "capture_method_since": "2026-08-13", "stage_source_date": "2026-09-02"}, "notes": "", "updated": "2026-09-04T16:42:37.168Z", "calendar": [{"date": "Sun Aug 30", "time": "All day", "title": "Commit the Japan analysis plan file with a real date then pull the JSON Bin data and run the dry run"}, {"date": "Sun Aug 30", "time": "All day", "title": "Finish the deposit, insert my orchid ID and email, verify the seven flags citations, either source or soften the cardiac-regulation prognostic claim in S6 and reconcile the five category classified against chapter 10 of the book then upload to ZENODON record the DOI"}, {"date": "Mon Sep 07", "time": "All day", "title": "TD statement available online banking"}, {"date": "Tue Sep 08", "time": "All day", "title": "Mr. T documentary on Netflix"}, {"date": "Tue Sep 08", "time": "All day", "title": "First day of school"}, {"date": "Thu Sep 10", "time": "04:15 PM", "title": "Kayla follow up asthma appointment"}, {"date": "Sat Sep 05", "time": "12:00 PM", "title": "UFC Fight Night: Hooker vs Parnasse"}, {"date": "Mon Sep 07", "time": "12:00 AM", "title": "Labour Day"}, {"date": "Fri Sep 11", "time": "04:30 AM", "title": "ONE Friday Fights 170 & The Inner Circle 30"}]}
+{
+  "welltory": {
+    "stress": 55,
+    "energy": 40,
+    "health": 100
+  },
+  "body_comp": {
+    "weight": 206.4,
+    "body_fat": 27.2,
+    "muscle_mass": null,
+    "bmi": 29.5,
+    "visceral_fat": null
+  },
+  "sleep": {
+    "score": null,
+    "duration": null,
+    "hr_range": null,
+    "rem": 84,
+    "core": 277,
+    "deep": 65,
+    "awake": 0,
+    "duration_min": 426,
+    "time_in_bed_min": 487,
+    "computed_score": 91,
+    "computed_score_parts": {
+      "duration": 35.5,
+      "deep": 20,
+      "rem": 17.9,
+      "efficiency": 17.5
+    },
+    "capture_method": "health_auto_export_v1",
+    "capture_method_since": "2026-08-13",
+    "stage_source_date": "2026-09-02"
+  },
+  "notes": "",
+  "updated": "2026-09-04T16:42:37.168Z",
+  "calendar": [
+    {
+      "date": "Sun Aug 30",
+      "time": "All day",
+      "title": "Commit the Japan analysis plan file with a real date then pull the JSON Bin data and run the dry run"
+    },
+    {
+      "date": "Sun Aug 30",
+      "time": "All day",
+      "title": "Finish the deposit, insert my orchid ID and email, verify the seven flags citations, either source or soften the cardiac-regulation prognostic claim in S6 and reconcile the five category classified against chapter 10 of the book then upload to ZENODON record the DOI"
+    },
+    {
+      "date": "Mon Sep 07",
+      "time": "All day",
+      "title": "TD statement available online banking"
+    },
+    {
+      "date": "Tue Sep 08",
+      "time": "All day",
+      "title": "Mr. T documentary on Netflix"
+    },
+    {
+      "date": "Tue Sep 08",
+      "time": "All day",
+      "title": "First day of school"
+    },
+    {
+      "date": "Thu Sep 10",
+      "time": "04:15 PM",
+      "title": "Kayla follow up asthma appointment"
+    },
+    {
+      "date": "Sat Sep 05",
+      "time": "12:00 PM",
+      "title": "UFC Fight Night: Hooker vs Parnasse"
+    },
+    {
+      "date": "Mon Sep 07",
+      "time": "12:00 AM",
+      "title": "Labour Day"
+    },
+    {
+      "date": "Fri Sep 11",
+      "time": "04:30 AM",
+      "title": "ONE Friday Fights 170 & The Inner Circle 30"
+    }
+  ]
+}
