@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Mental Strength Protocol</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* read cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .g{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.09em; padding:2px 6px; border-radius:5px;
+    background:rgba(74,157,232,.24); color:var(--accent-hi); margin-left:5px; vertical-align:1px; }
+  .g.w{ background:rgba(245,215,110,.16); color:var(--gold); }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; }
+  .band b{ color:var(--gold); }
+  .seq{ font-size:14px; line-height:1.6; }
+  .seq div{ padding:8px 0; border-bottom:1px solid var(--line); }
+  .seq div:last-child{ border-bottom:none; }
+  .seq b{ color:var(--accent-hi); }
+
+  /* drill (reuses the fixed reveal mechanic) */
+  #drill{ display:none; }
+  .d-top{ text-align:center; margin-bottom:10px; }
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(20px,5.4vw,28px); font-weight:300; line-height:1.35; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>The Mental Strength Protocol</h1>
+    <div class="sub">Quitting is a phase with a shape, not a verdict. The articulate doubt that arrives when it gets hard is the process running &mdash; not information about whether to stop.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">1</span><span class="p-name">The Crossing</span><span class="g">B</span></div>
+      <div class="p-ess">Acute stops &mdash; a set, a hold, a hard hour, a fast. You stop when required effort exceeds the effort you are willing to spend.</div>
+      <div class="move"><b>Two lines, not one</b> &mdash; the stop is a crossing. It can be produced by effort rising or by willingness falling, and from the inside those feel identical.</div>
+      <div class="move"><b>Move the line you can move</b> &mdash; you cannot lower the work, but perceived effort is trainable. That is where the acute tools act.</div>
+      <div class="note">Marcora's psychobiological model. Genuinely contested &mdash; it is in live dispute with Noakes' central governor model over how much muscle feedback determines the stop.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">2</span><span class="p-name">The Phase</span><span class="g">B</span></div>
+      <div class="p-ess">Chronic stops &mdash; weeks and months. Brandst&auml;tter's <i>action crisis</i>: the inner conflict where you are torn between continuing and disengaging.</div>
+      <div class="move"><b>Deliberation is the phase, not the failure</b> &mdash; an action crisis shifts you out of the implemental mindset and back into cost&ndash;benefit thinking. Its arrival tells you where you are, not what to do.</div>
+      <div class="move"><b>It has a physical signature</b> &mdash; marathon runners in an action crisis showed higher cortisol and worse performance two weeks later. The state is real, and it degrades output before it decides anything.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">3</span><span class="p-name">The Lever</span><span class="g">B</span></div>
+      <div class="p-ess">Attainability, not desirability. The loop runs through <i>can I</i>, not through <i>is it worth it</i>.</div>
+      <div class="move"><b>What the evidence shows</b> &mdash; crisis devalues both the goal's desirability and its attainability, but only low attainability feeds back and deepens the crisis. Devaluing the prize is a consequence, not a driver.</div>
+      <div class="move"><b>So stop giving yourself pep talks</b> &mdash; reminding yourself why it matters aims at the variable that does not drive the crisis. Evidence of capability is what moves the needle.</div>
+      <div class="note">Ghassemi and colleagues, two longitudinal studies, N=364.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">4</span><span class="p-name">Before</span><span class="g">A</span></div>
+      <div class="p-ess">Built when information is cheap, for a version of you who will be worse at deciding and will have an unbeatable argument ready.</div>
+      <div class="move"><b>Write the exit criterion</b> &mdash; in if-then form, naming an observable trigger. "If my grip fails and the bar drops," not "if it gets too hard."</div>
+      <div class="move"><b>Raise the exit cost</b> &mdash; tell someone the target; start where leaving is inconvenient. You will not win the argument in the trough, so arrange for it to be unable to execute.</div>
+      <div class="move"><b>Keep an attainability record</b> &mdash; a running list of durations, loads, distances, fast lengths actually completed. In the trough you cannot generate this from memory, because the trough distorts exactly that appraisal.</div>
+      <div class="move"><b>Pre-plan the segments</b> &mdash; decide the units and markers in advance, so mid-effort you are only ever traveling to the next one.</div>
+      <div class="note">If-then plans: d = 0.65 on goal attainment across 94 tests and 8,000+ participants, and d = 0.77 for preventing derailment. The same technique also aids disengagement from genuinely failing efforts &mdash; it is not a one-way ratchet.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">5</span><span class="p-name">During</span><span class="g">A</span></div>
+      <div class="p-ess">Acute tools. All rehearsed in advance &mdash; you will not assemble them mid-effort.</div>
+      <div class="move"><b>Substrate first</b> &mdash; sleep debt, low fuel, heat and illness all produce quit-shaped thinking. Establish that it survives food and a night's sleep before treating it as a mindset problem. Most false alarms live here.</div>
+      <div class="move"><b>Distanced self-talk</b> &mdash; use your own name or "you," not "I." Kross, seven studies, N=585. Its virtue here is that it is cognitively cheap, and cheap is all you have when depleted.</div>
+      <div class="move"><b>Motivational self-talk</b> &mdash; short, rehearsed phrases. A two-week intervention cut perceived effort and extended cycling time to exhaustion by 18%.</div>
+      <div class="move"><b>Next marker only</b> &mdash; attend to the next segment, never the total remaining. The total is what makes it look unattainable.</div>
+      <div class="move"><b>Reappraise, don't suppress</b> &mdash; the pounding heart is mobilisation, not evidence of failure.</div>
+      <div class="note">Blanchfield and colleagues, 2014 &mdash; note n=24. It worked by lowering perceived effort, which is the other line in the crossing.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">6</span><span class="p-name">In the Crisis</span><span class="g w">D</span></div>
+      <div class="p-ess">What to do once you are in it. Lower-confidence than the rest &mdash; nobody has tested these as coping moves.</div>
+      <div class="move"><b>Name the phase aloud</b> &mdash; "this is the deliberative phase, this is stage three." Naming converts a verdict into a location.</div>
+      <div class="move"><b>Do not decide in the trough</b> &mdash; set the review point in advance and hold the decision until then. The state generating the urge to decide is the state that degrades the decision.</div>
+      <div class="move"><b>Log the justification, don't fight it</b> &mdash; write it down with the date and carry on. Devaluing the goal may be protective, so suppressing it could cost you. Read the log cold at your review point.</div>
+      <div class="move"><b>Repair attainability</b> &mdash; shrink the unit until it is obviously doable and complete one. You are not chasing motivation, you are generating evidence.</div>
+      <div class="move"><b>Use one real interlocutor</b> &mdash; someone who will push back and whose relationship survives it. Arguing with yourself in a state that has already picked an unbeatable position is not a fair fight.</div>
+    </div>
+
+    <div class="section-k">The milestone map</div>
+    <div class="seq">
+      <div><b>1. The surge</b> &mdash; a burst of extra intensity that feels like a second wind. It is stage one of the disengagement cycle. Use it; do not conclude from it.</div>
+      <div><b>2. Irritation</b> &mdash; anger at the task, the conditions, and people with nothing to do with it. Stage two. Not a signal about the goal.</div>
+      <div><b>3. Flatness</b> &mdash; low mood, pointlessness, the sense that something is wrong with you. Stage three of four, and a normal component of disengagement rather than a malfunction. This is the one most often misread.</div>
+      <div><b>4. The weighing returns</b> &mdash; you catch yourself listing and comparing when earlier you were just executing. You did not run this calculation when things went well; the state is generating it.</div>
+      <div><b>5. The unfalsifiable reason</b> &mdash; a noble, unarguable justification arrives. Note the structure: it is always one your own opposition cannot attack. Name it out loud when it shows.</div>
+      <div><b>6. The goal shrinks</b> &mdash; it starts to seem like it mattered less than you thought. Measured and expected. Do not fight it, and do not believe it.</div>
+      <div><b>7. Rumination and stress load</b> &mdash; circling thoughts, disturbed sleep, elevated cortisol.</div>
+      <div><b>8. Doubt after deciding</b> &mdash; the conflict resurfaces even once you have chosen, either way. Recurrence is not evidence you chose wrong.</div>
+    </div>
+    <div class="note" style="margin-top:10px;">Sequence from Klinger's incentive&ndash;disengagement cycle &mdash; invigoration, aggression, depression, recovery. A widely cited 1975 framework, descriptive rather than tested, so hold it as a map and do not expect clean order. <span class="g w">B</span></div>
+
+    <div class="section-k">The honest exit</div>
+    <div class="band">Disengagement on its own tracks with depression and anxiety; it is <b>reengagement</b> that tracks with life satisfaction. So never quit into a vacuum &mdash; name what you are reinvesting in <b>before</b> you stop, not after. A protocol that only ever says <i>continue</i> is not a strength tool, it is a trap.</div>
+
+    <div class="section-k">Not an action crisis</div>
+    <div class="band">Hard stops, not subject to any of the above: <b>chest pain</b>, neurological symptoms, confusion or disorientation in heat, cola-coloured urine after heavy exertion, or a performance drop so sudden it is qualitatively different from fatigue. There is nothing here to work through. Stop and get assessed.</div>
+
+    <div class="section-k">The one thing</div>
+    <div class="band">A compelling reason to stop is <b>a feature of the phase, not information about the goal.</b> Check it against the criterion you wrote while you were fresh.</div>
+
+    <div class="note" style="margin-top:16px;">Weakest join: the acute literature and the chronic literature are not integrated by anyone in the field. That link is mine and it is untested. No study anywhere tests this stack as a stack. <span class="g w">D</span></div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <div class="d-top">
+      <div class="section-k" style="margin:6px 0 0;">Recognition Drill</div>
+      <div class="progress" id="progress"></div>
+    </div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Loaded.</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar" style="margin-top:22px;">
+        <button class="btn" onclick="restart()">Again</button>
+        <button class="btn ghost" onclick="setMode('read')">Read</button>
+      </div>
+    </div>
+    <div class="foot">Say each aloud before revealing.</div>
+  </div>
+
+</div>
+
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  var read = m === 'read';
+  document.getElementById('read').style.display  = read ? '' : 'none';
+  document.getElementById('drill').style.display = read ? 'none' : '';
+  document.getElementById('tab-read').className  = read ? 'on' : '';
+  document.getElementById('tab-drill').className = read ? '' : 'on';
+  if(!read){ idx=0; document.getElementById('done').className='done-view'; document.getElementById('stage').style.display=''; renderStep(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-mental-strength';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+/* long-press to remove */
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- drill ---------------- */
+var STEPS = [
+  { prompt:'A burst of extra intensity arrives. You feel like you found another gear. <b>What is it?</b>',
+    lines:['<b>The surge</b> &mdash; stage one of the disengagement cycle.','Use it. Do not conclude from it.'] },
+  { prompt:'You are irritated at the task, the conditions, and people who have nothing to do with it. <b>What is it?</b>',
+    lines:['<b>Aggression</b> &mdash; stage two.','Not a signal about the goal.'] },
+  { prompt:'Everything goes flat. It feels pointless and you feel like something is wrong with you. <b>What is it?</b>',
+    lines:['<b>Flatness</b> &mdash; stage three of four.','A normal component of disengagement, not a malfunction. Recovery is stage four.'] },
+  { prompt:'You catch yourself weighing and comparing, when earlier you were just executing. <b>What is it?</b>',
+    lines:['<b>The weighing returns</b> &mdash; the deliberative mindset is back.','Diagnostic of the phase, not of the answer. You did not run this calculation when it was going well.'] },
+  { prompt:'A noble, unarguable reason to stop arrives. <b>What is it, and what do you do?</b>',
+    lines:['<b>The unfalsifiable reason</b> &mdash; always one your own opposition cannot attack.','Name it aloud. Log it with the date. Do not obey it.'] },
+  { prompt:'The goal starts to seem like it mattered less than you thought. <b>What is it?</b>',
+    lines:['<b>Goal devaluation</b> &mdash; measured and expected.','Do not fight it, and do not believe it. It may be protective.'] },
+  { prompt:'Name <b>the one lever</b> &mdash; and what it is not.',
+    lines:['<b>Attainability</b>, not desirability.','The loop runs through <i>can I</i>. Pep talks aim at the wrong variable.'] },
+  { prompt:'Before you stop for good, <b>what must exist?</b>',
+    lines:['<b>The reengagement</b> &mdash; named before you stop, not after.','Disengagement alone tracks with distress. Never quit into a vacuum.'] },
+  { prompt:'State <b>the one thing</b>.',
+    lines:['A compelling reason to stop is <b>a feature of the phase</b>, not information about the goal.','Check it against the criterion you wrote while fresh.'] }
+];
+var idx=0, revealed=false;
+
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Say it aloud &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  idx=0; document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-mental-strength-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+</script>
+</body>
+</html>
