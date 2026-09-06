@@ -2576,6 +2576,98 @@ function pfStreak() {{
   return n;
 }}
 
+/* ---------- mismatch: the act-side variables, read out loud ----------
+   Reads only keys the brief already pulls (forge-mushin, forge-project,
+   forge-reps). No new key, no extra fetch. Flat when current, loud when not. */
+var MM_MUSHIN_DAYS = 3;      /* days without a mushin day before it goes loud */
+var MM_PROJ_WEEKS  = 2;      /* weeks with zero project minutes before loud    */
+var MM_REPS_DAYS   = 7;      /* days without a recorded rep before loud        */
+var MM_DAY_CAP     = 120;
+var MM_WEEK_CAP    = 60;
+
+function mmDaysSinceMushin() {{
+  var all = pfAll('forge-mushin');
+  for (var d = 0; d <= MM_DAY_CAP; d++) {{
+    var e = all[ymdOffset(-d)];
+    if (e && typeof e === 'object' && !Array.isArray(e) &&
+        (e.done === true ||
+         (typeof e.sec === 'number' && e.sec >= MUSHIN_TARGET_BRIEF))) return d;
+  }}
+  return -1;
+}}
+
+function mmDaysSinceRep() {{
+  var all = pfAll('forge-reps');
+  for (var d = 0; d <= MM_DAY_CAP; d++) {{
+    var e = all[ymdOffset(-d)];
+    if (e && typeof e === 'object' && !Array.isArray(e) &&
+        typeof e.n === 'number' && e.n > 0) return d;
+  }}
+  return -1;
+}}
+
+/* forge-project is week-keyed, so this counts WEEKS, not days. It asks whether
+   any minutes were logged at all - not whether the 3h floor was cleared. */
+function mmWeeksSinceProject() {{
+  var all = pfAll('forge-project');
+  var probe = new Date();
+  for (var w = 0; w <= MM_WEEK_CAP; w++) {{
+    var e = all[pfWeekKeyFrom(probe)];
+    if (e && typeof e === 'object' && !Array.isArray(e) &&
+        typeof e.sec === 'number' && e.sec > 0) return w;
+    probe.setDate(probe.getDate() - 7);
+  }}
+  return -1;
+}}
+
+function mmPlural(n, one, many) {{ return n === 1 ? one : many; }}
+
+function mmRow(label, txt, loud) {{
+  return '<div style="display:flex; gap:10px; padding:4px 0; font-size:12px; line-height:1.5;">' +
+      '<span style="min-width:92px; opacity:0.7; letter-spacing:0.04em;">' + label + '</span>' +
+      '<span style="flex:1; min-width:0; font-weight:' + (loud ? '800' : '600') +
+        '; color:' + (loud ? '#ff6b6b' : 'inherit') +
+        '; opacity:' + (loud ? '1' : '0.8') + ';">' + txt + '</span>' +
+    '</div>';
+}}
+
+function mmBlock() {{
+  var md = mmDaysSinceMushin();
+  var pw = mmWeeksSinceProject();
+  var rd = mmDaysSinceRep();
+
+  var mLoud = (md < 0 || md >= MM_MUSHIN_DAYS);
+  var pLoud = (pw < 0 || pw >= MM_PROJ_WEEKS);
+  var rLoud = (rd < 0 || rd >= MM_REPS_DAYS);
+  var anyLoud = mLoud || pLoud || rLoud;
+
+  var mTxt, pTxt, rTxt;
+  if (md < 0)       mTxt = 'no mushin day in the last ' + MM_DAY_CAP + ' days';
+  else if (md === 0) mTxt = 'logged today';
+  else               mTxt = md + ' ' + mmPlural(md, 'day', 'days') + ' since a mushin day';
+
+  if (pw < 0)        pTxt = 'no minutes logged in the last ' + MM_WEEK_CAP + ' weeks';
+  else if (pw === 0) pTxt = 'minutes logged this week';
+  else               pTxt = pw + ' ' + mmPlural(pw, 'week', 'weeks') + ' with no minutes logged';
+
+  if (rd < 0)        rTxt = 'no rep recorded in the last ' + MM_DAY_CAP + ' days';
+  else if (rd === 0) rTxt = 'recorded today';
+  else               rTxt = rd + ' ' + mmPlural(rd, 'day', 'days') + ' since a rep was recorded';
+
+  var accent = anyLoud ? '#ff6b6b' : 'rgba(255,255,255,0.45)';
+  var border = anyLoud ? 'rgba(255,107,107,0.45)' : 'rgba(255,255,255,0.16)';
+  var bg     = anyLoud ? 'rgba(255,107,107,0.07)' : 'transparent';
+
+  return '<div style="border:1px solid ' + border + '; border-radius:10px; padding:11px 12px; margin-bottom:13px; background:' + bg + ';">' +
+      '<div style="font-size:13px; letter-spacing:0.16em; color:' + accent + '; font-weight:700; margin-bottom:4px;">MISMATCH</div>' +
+      '<div style="font-size:12px; font-style:italic; line-height:1.45; opacity:0.85; margin-bottom:9px;">Good news is dangerous. Bad news is the only thing that saves you.</div>' +
+      mmRow('Mushin', mTxt, mLoud) +
+      mmRow('Project time', pTxt, pLoud) +
+      mmRow('Reps', rTxt, rLoud) +
+      '<div style="font-size:10px; opacity:0.6; margin-top:9px; line-height:1.55;">This card only sees what is instrumented. Nothing here reports on your daughters, the classroom, or how you are landing with people &mdash; a clean reading is not an all-clear.</div>' +
+    '</div>';
+}}
+
 function paintPractice() {{
   var host = document.getElementById('practice-brief-host');
   if (!host) return;
@@ -2594,6 +2686,7 @@ function paintPractice() {{
   }}
 
   host.innerHTML =
+    mmBlock() +
     '<div class="t5-row' + (mDone ? ' t5-done' : '') + '">' +
       '<span class="t5-tick">' + (mDone ? '&#10003;' : '&#9633;') + '</span>' +
       '<div style="flex:1; min-width:0;">' +
