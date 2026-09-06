@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Daily Checklist</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --heavy:#f5d76e; --mod:#7fbfff; --light:#9fb8d8;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .sync{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; }
+  h1{ font-size:24px; font-weight:300; margin:2px 0 2px; }
+  .datel{ font-size:12.5px; color:var(--ink-dim); margin-bottom:16px; letter-spacing:.04em; }
+
+  /* score panel */
+  .score{ background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:18px; }
+  .total{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+  .total .big{ font-size:40px; font-weight:200; line-height:1; }
+  .total .of{ font-size:14px; color:var(--ink-quiet); font-weight:600; }
+  .total .checks{ font-size:13px; color:var(--ink-dim); font-weight:600; text-align:right; }
+  .meter{ height:5px; background:rgba(255,255,255,.12); border-radius:3px; overflow:hidden; margin:13px 0 14px; }
+  .meter > div{ height:100%; background:linear-gradient(90deg,var(--accent),var(--accent-hi)); width:0; transition:width .3s; }
+  .brk{ font-size:12.5px; line-height:1.7; }
+  .brk .row{ display:flex; justify-content:space-between; gap:10px; padding:3px 0; }
+  .brk .row span:first-child{ color:var(--ink-dim); }
+  .brk .row b{ font-weight:800; }
+  .brk .hd{ font-size:10.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--accent);
+    font-weight:800; margin:12px 0 3px; padding-top:10px; border-top:1px solid var(--line); }
+  .brk .hd:first-child{ border-top:none; padding-top:0; margin-top:0; }
+
+  /* groups */
+  .gh{ display:flex; align-items:baseline; gap:9px; margin:20px 0 8px; }
+  .gh .n{ font-size:12px; letter-spacing:.2em; text-transform:uppercase; font-weight:800; }
+  .gh .w{ font-size:11px; color:var(--ink-quiet); font-weight:700; letter-spacing:.08em; }
+  .g-heavy .n{ color:var(--heavy); } .g-mod .n{ color:var(--mod); }
+  .g-light .n{ color:var(--light); } .g-none .n{ color:var(--ink-quiet); }
+
+  .item{ display:flex; align-items:flex-start; gap:12px; background:var(--panel); border:1px solid var(--line);
+    border-left:4px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:8px; cursor:pointer; }
+  .item.heavy{ border-left-color:var(--heavy); } .item.mod{ border-left-color:var(--mod); }
+  .item.light{ border-left-color:var(--light); } .item.none{ border-left-color:rgba(255,255,255,.18); }
+  .item .bx{ width:22px; height:22px; flex:0 0 22px; border-radius:7px; border:2px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#06264f; margin-top:1px; }
+  .item.on .bx{ background:var(--accent); border-color:var(--accent); }
+  .item.on .nm{ opacity:.55; text-decoration:line-through; }
+  .item .nm{ font-size:14.5px; font-weight:700; line-height:1.4; }
+  .item .src{ font-size:11px; color:var(--ink-quiet); margin-top:2px; letter-spacing:.04em; }
+  .item .pts{ margin-left:auto; font-size:12px; font-weight:800; color:var(--ink-quiet); padding-left:8px; }
+  .star{ color:var(--gold); font-size:12px; }
+  .note{ font-size:12px; color:var(--ink-quiet); line-height:1.55; margin:10px 2px 0; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:24px; font-weight:700; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./" class="back">&larr; Brief</a>
+    <span class="sync" id="sync">&nbsp;</span>
+  </div>
+
+  <h1>Daily Checklist</h1>
+  <div class="datel" id="datel"></div>
+
+  <div class="score">
+    <div class="total">
+      <div><span class="big" id="pts">0</span> <span class="of">/ <span id="maxpts">0</span> points</span></div>
+      <div class="checks"><span id="checks">0</span> of <span id="maxchecks">0</span> checked</div>
+    </div>
+    <div class="meter"><div id="bar"></div></div>
+    <div class="brk">
+      <div class="hd">By weight</div>
+      <div id="by-tier"></div>
+      <div class="hd">By protocol</div>
+      <div id="by-proto"></div>
+    </div>
+  </div>
+
+  <div id="groups"></div>
+
+  <div class="note" id="unscored-note"></div>
+  <div class="foot">Forge OS &middot; forge-checklist</div>
+</div>
+
+<script>
+/* ---------------- items ----------------
+   ids are hand-assigned slugs and must never change: history is keyed on them.
+   Re-tiering later is safe - only ticks are stored, the score is computed here. */
+var ITEMS = [
+  { id:'project-block',  n:'Project time block',            src:'Forge OS',        t:'heavy' },
+  { id:'done-when',      n:'One task run to its done-when', src:'Second Nature',   t:'heavy' },
+  { id:'krav',           n:'Krav session',                  src:'Self-Defense',    t:'heavy' },
+  { id:'training',       n:'Training session',              src:'Longevity',       t:'heavy' },
+  { id:'offload',        n:'The offload, before bed',       src:'Evening',         t:'heavy' },
+
+  { id:'ground-5',       n:'Five minutes of ground',        src:'Second Nature',   t:'mod', pri:true },
+  { id:'pause-reach',    n:'Pause before reach',            src:'Tempo',           t:'mod', pri:true },
+  { id:'standing',       n:'The braced stack &mdash; standing well', src:'The Stack', t:'mod', pri:true },
+  { id:'eyebrow-flash',  n:'Eyebrow flash on approach',     src:'Charisma',        t:'mod', pri:true },
+  { id:'threshold',      n:'Crossing a threshold',          src:'Second Nature',   t:'mod', pri:true },
+  { id:'outside-0718',   n:'Outside by 07:18',              src:'Morning',         t:'mod' },
+  { id:'wake-0700',      n:'Wake at 07:00',                 src:'Sleep',           t:'mod' },
+  { id:'lights-2300',    n:'Lights out 23:00',              src:'Evening',         t:'mod' },
+  { id:'sigh-5',         n:'Cyclic sighing, 5 min',         src:'Morning',         t:'mod' },
+  { id:'distribution',   n:'One distribution action',       src:'Getting-Paid',    t:'mod' },
+
+  { id:'mushin',         n:'Mushin, 10 min',                src:'Forge OS',        t:'light' },
+  { id:'household',      n:'One household task, one channel', src:'Second Nature', t:'light' },
+  { id:'hrv-first',      n:'HRV before breathing',          src:'Morning',         t:'light' },
+  { id:'vocal-floor',    n:'Vocal floor, 2 min',            src:'Charisma',        t:'light' },
+  { id:'non-reaction',   n:'One non-reaction rep',          src:'Charisma',        t:'light' },
+  { id:'rule-24h',       n:'24-hour rule held',             src:'Capital',         t:'light' },
+
+  { id:'live-hour',      n:'A live hour, no steering',      src:'Second Nature',   t:'none' },
+  { id:'unaudited',      n:'One unaudited conversation',    src:'Second Nature',   t:'none' }
+];
+var WEIGHT = { heavy:5, mod:3, light:1, none:0 };
+var TIERNAME = { heavy:'Heavy', mod:'Moderate', light:'Light', none:'Unscored' };
+var GROUPS = [
+  ['heavy','Heavy','5 points'],
+  ['mod','Moderate','3 points'],
+  ['light','Light','1 point'],
+  ['none','Unscored','carried, not counted']
+];
+
+var KEY='forge-checklist';
+var SYNC_URL='https://forge-sync.yoseanreid.workers.dev';
+var PRUNE_DAYS=120;
+
+/* ---------------- storage ---------------- */
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function readAll(){
+  try{ var v=JSON.parse(localStorage.getItem(KEY)||'{}');
+       return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; }
+}
+function writeAll(o){
+  var cut=ymd(new Date(Date.now()-PRUNE_DAYS*86400000)), out={};
+  for(var k in o){ if(o.hasOwnProperty(k) && k>=cut) out[k]=o[k]; }
+  try{ localStorage.setItem(KEY, JSON.stringify(out)); }catch(e){}
+  return out;
+}
+function todayEntry(){
+  var all=readAll(), e=all[today()];
+  return (e&&typeof e==='object'&&!Array.isArray(e))?e:{};
+}
+
+/* ---------------- sync: union merge, a tick is never undone by the cloud ---------------- */
+function setSync(t,warn){ var el=document.getElementById('sync'); el.textContent=t; el.style.color=warn?'#ffc107':''; }
+function unionInto(local, cloud){
+  var changed=false;
+  for(var dk in cloud){
+    if(!cloud.hasOwnProperty(dk)) continue;
+    var cc=cloud[dk]; if(!cc||typeof cc!=='object'||Array.isArray(cc)) continue;
+    if(!local[dk]) { local[dk]={}; changed=true; }
+    for(var it in cc){
+      if(!cc.hasOwnProperty(it)) continue;
+      if(cc[it]===true && local[dk][it]!==true){ local[dk][it]=true; changed=true; }
+    }
+  }
+  return changed;
+}
+function pull(){
+  setSync('syncing\u2026');
+  fetch(SYNC_URL+'/'+encodeURIComponent(KEY))
+    .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function(cloud){
+      if(!cloud||typeof cloud!=='object'||Array.isArray(cloud)){ setSync('synced'); return; }
+      var all=readAll();
+      if(unionInto(all, cloud)){ writeAll(all); render(); }
+      setSync('synced');
+    })
+    .catch(function(){ setSync('offline', true); });
+}
+function push(){
+  var all=readAll();
+  fetch(SYNC_URL+'/'+encodeURIComponent(KEY), {
+    method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(all)
+  }).then(function(r){ setSync(r.ok?'synced':'not backed up', !r.ok); })
+    .catch(function(){ setSync('not backed up', true); });
+}
+
+/* ---------------- render ---------------- */
+function toggle(id){
+  var all=readAll(), t=today();
+  if(!all[t]||typeof all[t]!=='object'||Array.isArray(all[t])) all[t]={};
+  if(all[t][id]===true) delete all[t][id]; else all[t][id]=true;
+  writeAll(all); render(); push();
+}
+function render(){
+  var e=todayEntry();
+  var d=new Date();
+  var days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var mons=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('datel').textContent = days[d.getDay()]+', '+mons[d.getMonth()]+' '+d.getDate();
+
+  var host=document.getElementById('groups'), h='';
+  for(var g=0; g<GROUPS.length; g++){
+    var tier=GROUPS[g][0];
+    var rows=ITEMS.filter(function(x){ return x.t===tier; });
+    if(!rows.length) continue;
+    h+='<div class="gh g-'+tier+'"><span class="n">'+GROUPS[g][1]+'</span><span class="w">'+GROUPS[g][2]+'</span></div>';
+    for(var i=0;i<rows.length;i++){
+      var it=rows[i], on=e[it.id]===true;
+      h+='<div class="item '+tier+(on?' on':'')+'" onclick="toggle(\''+it.id+'\')">'
+       +   '<div class="bx">'+(on?'&#10003;':'')+'</div>'
+       +   '<div style="flex:1; min-width:0;">'
+       +     '<div class="nm">'+(it.pri?'<span class="star">&#9733;</span> ':'')+it.n+'</div>'
+       +     '<div class="src">'+it.src+'</div>'
+       +   '</div>'
+       +   '<div class="pts">'+(WEIGHT[tier]?('+'+WEIGHT[tier]):'&mdash;')+'</div>'
+       + '</div>';
+    }
+  }
+  host.innerHTML=h;
+
+  /* totals */
+  var pts=0, maxPts=0, checks=0, byTier={}, byProto={}, maxTier={}, maxProto={};
+  for(var k=0;k<ITEMS.length;k++){
+    var x=ITEMS[k], w=WEIGHT[x.t], on=e[x.id]===true;
+    maxPts+=w;
+    maxTier[x.t]=(maxTier[x.t]||0)+w;
+    maxProto[x.src]=(maxProto[x.src]||0)+w;
+    if(on){
+      checks++;
+      pts+=w;
+      byTier[x.t]=(byTier[x.t]||0)+w;
+      byProto[x.src]=(byProto[x.src]||0)+w;
+    }
+  }
+  document.getElementById('pts').textContent=pts;
+  document.getElementById('maxpts').textContent=maxPts;
+  document.getElementById('checks').textContent=checks;
+  document.getElementById('maxchecks').textContent=ITEMS.length;
+  document.getElementById('bar').style.width=(maxPts?Math.round(pts/maxPts*100):0)+'%';
+
+  var t='';
+  for(var g2=0; g2<GROUPS.length; g2++){
+    var tr=GROUPS[g2][0];
+    if(!(tr in maxTier)) continue;
+    if(tr==='none'){
+      var doneNone=ITEMS.filter(function(x){ return x.t==='none' && e[x.id]===true; }).length;
+      var allNone=ITEMS.filter(function(x){ return x.t==='none'; }).length;
+      t+='<div class="row"><span>Unscored</span><b>'+doneNone+' of '+allNone+'</b></div>';
+    } else {
+      t+='<div class="row"><span>'+TIERNAME[tr]+'</span><b>'+(byTier[tr]||0)+' / '+maxTier[tr]+'</b></div>';
+    }
+  }
+  document.getElementById('by-tier').innerHTML=t;
+
+  var names=Object.keys(maxProto).sort(function(a,b){ return maxProto[b]-maxProto[a] || a.localeCompare(b); });
+  var p='';
+  for(var m=0;m<names.length;m++){
+    var nm=names[m];
+    if(maxProto[nm]===0) continue;
+    p+='<div class="row"><span>'+nm+'</span><b>'+(byProto[nm]||0)+' / '+maxProto[nm]+'</b></div>';
+  }
+  document.getElementById('by-proto').innerHTML=p;
+
+  document.getElementById('unscored-note').innerHTML =
+    'Unscored items are carried and logged, never counted. Presence is not something to be scored '
+  + '&mdash; that is what the OPTIMIZE / IMMERSE split is for. &#9733; marks a current priority.';
+}
+
+/* ---------------- boot ---------------- */
+render();
+pull();
+</script>
+</body>
+</html>
