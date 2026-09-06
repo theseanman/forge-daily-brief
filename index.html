@@ -154,7 +154,7 @@
     <div class="date-block">
       <div class="date-main">Saturday</div>
       <div style="font-size:11px; color:var(--muted);">September 05, 2026</div>
-      <div class="date-time" id="live-clock">05:42 PM</div>
+      <div class="date-time" id="live-clock">06:49 PM</div>
     </div>
   </div>
 
@@ -325,7 +325,7 @@
 
   <div class="card">
     <div class="card-header"><span class="card-icon">🌤️🌴</span><span>Richmond Weather</span></div>
-    <div class="mini-card"><div class="mini-detail">Mainly clear, 18.9°C</div></div>
+    <div class="mini-card"><div class="mini-detail">Clear sky, 18.0°C</div></div>
   </div>
 
   <div class="card" data-newscan>
@@ -495,7 +495,7 @@ Sat Oct 3 · 5:30 PM — Oktoberfest #2 [Austria Vancouver]</pre></div>
   <div class="card"><div class="card-header"><span class="card-icon">🎸🌴</span><span>Upcoming Metal Shows</span></div><div class="mini-card"><div class="mini-detail">No upcoming shows.</div></div></div>
 
 
-  <div class="footer">🌴 FORGE OS · SEPTEMBER 05, 2026 · 05:42 PM · theseanman.github.io/forge-daily-brief<span id="sync-state"></span></div>
+  <div class="footer">🌴 FORGE OS · SEPTEMBER 05, 2026 · 06:49 PM · theseanman.github.io/forge-daily-brief<span id="sync-state"></span></div>
 
 </div>
 
@@ -1000,11 +1000,16 @@ function mmWeeksSinceProject() {
 function mmPlural(n, one, many) { return n === 1 ? one : many; }
 
 function mmRow(label, txt, loud) {
-  return '<div style="display:flex; gap:10px; padding:4px 0; font-size:12px; line-height:1.5;">' +
-      '<span style="min-width:92px; opacity:0.7; letter-spacing:0.04em;">' + label + '</span>' +
-      '<span style="flex:1; min-width:0; font-weight:' + (loud ? '800' : '600') +
-        '; color:' + (loud ? '#ff6b6b' : 'inherit') +
-        '; opacity:' + (loud ? '1' : '0.8') + ';">' + txt + '</span>' +
+  /* Light theme: body is an orange/amber gradient and text is near-black.
+     Loud is carried by a dark-red chip, never by pale text. */
+  var wrap = loud
+    ? 'display:flex; gap:10px; align-items:baseline; padding:7px 9px; margin:3px 0; font-size:12px; line-height:1.5;' +
+      ' background:rgba(200,60,60,0.16); border-left:3px solid #b03030; border-radius:5px;'
+    : 'display:flex; gap:10px; align-items:baseline; padding:4px 9px; margin:3px 0; font-size:12px; line-height:1.5;';
+  return '<div style="' + wrap + '">' +
+      '<span style="min-width:92px; letter-spacing:0.04em; color:var(--muted);">' + label + '</span>' +
+      '<span style="flex:1; min-width:0; color:var(--text-bright); font-weight:' +
+        (loud ? '800' : '600') + ';">' + txt + '</span>' +
     '</div>';
 }
 
@@ -1031,17 +1036,17 @@ function mmBlock() {
   else if (rd === 0) rTxt = 'recorded today';
   else               rTxt = rd + ' ' + mmPlural(rd, 'day', 'days') + ' since a rep was recorded';
 
-  var accent = anyLoud ? '#ff6b6b' : 'rgba(255,255,255,0.45)';
-  var border = anyLoud ? 'rgba(255,107,107,0.45)' : 'rgba(255,255,255,0.16)';
-  var bg     = anyLoud ? 'rgba(255,107,107,0.07)' : 'transparent';
+  var accent = anyLoud ? '#8f2020' : 'var(--muted)';
+  var border = anyLoud ? 'rgba(200,60,60,0.45)' : 'rgba(0,0,0,0.18)';
+  var bg     = anyLoud ? 'rgba(200,60,60,0.07)' : 'transparent';
 
   return '<div style="border:1px solid ' + border + '; border-radius:10px; padding:11px 12px; margin-bottom:13px; background:' + bg + ';">' +
       '<div style="font-size:13px; letter-spacing:0.16em; color:' + accent + '; font-weight:700; margin-bottom:4px;">MISMATCH</div>' +
-      '<div style="font-size:12px; font-style:italic; line-height:1.45; opacity:0.85; margin-bottom:9px;">Good news is dangerous. Bad news is the only thing that saves you.</div>' +
+      '<div style="font-size:12px; font-style:italic; line-height:1.45; color:var(--text-light); margin-bottom:9px;">Good news is dangerous. Bad news is the only thing that saves you.</div>' +
       mmRow('Mushin', mTxt, mLoud) +
       mmRow('Project time', pTxt, pLoud) +
       mmRow('Reps', rTxt, rLoud) +
-      '<div style="font-size:10px; opacity:0.6; margin-top:9px; line-height:1.55;">This card only sees what is instrumented. Nothing here reports on your daughters, the classroom, or how you are landing with people &mdash; a clean reading is not an all-clear.</div>' +
+      '<div style="font-size:10px; color:var(--muted); margin-top:9px; line-height:1.55;">This card only sees what is instrumented. Nothing here reports on your daughters, the classroom, or how you are landing with people &mdash; a clean reading is not an all-clear.</div>' +
     '</div>';
 }
 
