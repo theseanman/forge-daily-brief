@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Three Moments Protocol</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --m-task:#7fbfff; --m-auto:#5dcaa5; --m-with:#f0997b; --m-open:#c9a9f0;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em;
+    text-transform:uppercase; padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:24px; font-weight:300; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:24px 0 10px; }
+
+  .photo{ position:relative; width:100%; height:160px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px;
+    letter-spacing:.12em; text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; } .photo.set .ph-hint{ display:none; }
+
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px;
+    padding:15px 16px; margin-bottom:13px; }
+  .m-task{ border-left-color:var(--m-task); } .m-auto{ border-left-color:var(--m-auto); }
+  .m-with{ border-left-color:var(--m-with); } .m-open{ border-left-color:var(--m-open); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-tag{ font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.55; margin-top:9px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px;
+    font-size:14px; line-height:1.6; } .band b{ color:var(--gold); }
+
+  table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  td{ padding:8px 6px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.4; }
+  td:last-child{ text-align:right; white-space:nowrap; font-weight:800; font-size:11px; letter-spacing:.1em;
+    text-transform:uppercase; padding-left:10px; }
+  .v-task{ color:var(--m-task); } .v-auto{ color:var(--m-auto); }
+  .v-with{ color:var(--m-with); } .v-open{ color:var(--m-open); }
+  .v-none{ color:var(--ink-quiet); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; } .key b{ color:var(--ink-dim); }
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+
+  #sortv{ display:none; }
+  .q{ font-size:clamp(18px,4.6vw,23px); font-weight:300; line-height:1.4; text-align:center; padding:20px 4px 6px; }
+  .q b{ font-weight:700; color:var(--accent-hi); }
+  .qn{ font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800;
+    text-align:center; margin-bottom:2px; }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:20px; flex-wrap:wrap; }
+  .btn{ border:0; border-radius:999px; padding:14px 30px; font-size:14px; font-weight:800; letter-spacing:.08em;
+    text-transform:uppercase; cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:120px;
+    box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .res{ border-radius:16px; padding:18px; margin-top:6px; border:1px solid var(--line); background:var(--panel); }
+  .res .rn{ font-size:26px; font-weight:300; margin-bottom:6px; }
+  .res .rl{ font-size:14px; line-height:1.6; margin:8px 0; }
+  .res .rl b{ font-weight:700; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet);
+    margin-top:22px; font-weight:700; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-sort" class="on" onclick="setMode('sort')">Sort</button>
+      <button id="tab-read" onclick="setMode('read')">Read</button>
+    </div>
+  </div>
+
+  <!-- ===================== SORT ===================== -->
+  <div id="sortv">
+    <h1>Which moment is this?</h1>
+    <div class="sub">Two questions. Run it <b>at the boundary</b> &mdash; before you walk in, before you sit down, before you start the drive. Not once you are already in the thing. If you genuinely cannot tell mid-moment, the default is attention outward and sort it afterwards.</div>
+    <div id="stage"></div>
+    <div id="stage"></div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="readv">
+    <h1>The Three Moments Protocol</h1>
+    <div class="sub">Every moment is one of three kinds, and each asks for a different sort of thinking. The hard line is the moment, not the thought &mdash; judging each thought on its merits is impossible in real time and is itself a form of monitoring.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="section-k">The three</div>
+
+    <div class="card m-with">
+      <div class="p-head"><span class="p-name">With someone</span><span class="p-tag">Attention out</span></div>
+      <div class="p-ess">Someone is here who can tell whether you are present. Nothing scored, nothing optimised.</div>
+      <div class="move"><b>One channel: them.</b> No steering, no working out how to make it better.</div>
+      <div class="move"><b>Failure signal:</b> the improving thought. It is the thing displacing the hour it wants to improve.</div>
+    </div>
+
+    <div class="card m-task">
+      <div class="p-head"><span class="p-name">Task needs you</span><span class="p-tag">Run the tests</span></div>
+      <div class="p-ess">The work degrades if attention leaves. Teaching prep, a bar over your chest, an unfamiliar problem.</div>
+      <div class="move"><b>Attention on the task</b>, and anything that arrives gets the four tests.</div>
+      <div class="move"><b>Failure signal:</b> you finish and cannot remember doing it.</div>
+    </div>
+
+    <div class="card m-auto">
+      <div class="p-head"><span class="p-name">Free</span><span class="p-tag">Let it drift</span></div>
+      <div class="p-ess">Low demand or no demand, nothing lost if the mind leaves. This is where creative thinking belongs and it is worth protecting.</div>
+      <div class="move"><b>Let it drift.</b> Undirected association is where stuck problems come unstuck.</div>
+      <div class="move"><b>Two things do not get to run here.</b> The loop &mdash; circling why am I like this. And the replay &mdash; rehearsing a conversation that already happened. Both feel like thinking and produce nothing, and an unoccupied mind is exactly where they thrive.</div>
+      <div class="move"><b>Failure signal:</b> you filled it with a screen, so nothing drifted at all.</div>
+      <div class="note">Neither the loop nor the replay feels like an optimising thought, so "not relevant" may not catch them on its own. Same disposal though &mdash; name it, one channel, back to the walk.</div>
+    </div>
+
+    <div class="section-k">The gate</div>
+    <div class="sub" style="margin-top:-2px;">One question, fired at thresholds &mdash; doorways, sitting down, starting the engine.</div>
+    <svg viewBox="0 0 660 250" style="width:100%; height:auto; display:block; margin:4px 0 2px;" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The gate: one question sorting a moment into someone, task or free">
+  <defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#7aafff" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+  <rect x="185" y="14" width="290" height="46" rx="9" fill="rgba(74,157,232,.14)" stroke="rgba(122,175,255,.4)"/>
+  <text x="330" y="42" text-anchor="middle" font-size="16" font-weight="600" fill="#eaf4ff" font-family="-apple-system,sans-serif">What does this moment need?</text>
+  <path d="M330 60 L330 88 L120 88 L120 112" fill="none" stroke="#7aafff" stroke-width="1.5" marker-end="url(#ar)"/>
+  <path d="M330 60 L330 112" fill="none" stroke="#7aafff" stroke-width="1.5" marker-end="url(#ar)"/>
+  <path d="M330 60 L330 88 L540 88 L540 112" fill="none" stroke="#7aafff" stroke-width="1.5" marker-end="url(#ar)"/>
+  <rect x="30" y="117" width="180" height="60" rx="9" fill="rgba(240,153,123,.16)" stroke="#f0997b"/>
+  <text x="120" y="142" text-anchor="middle" font-size="15" font-weight="700" fill="#eaf4ff" font-family="-apple-system,sans-serif">Someone</text>
+  <text x="120" y="163" text-anchor="middle" font-size="12" fill="rgba(234,244,255,.72)" font-family="-apple-system,sans-serif">Attention out</text>
+  <rect x="240" y="117" width="180" height="60" rx="9" fill="rgba(127,191,255,.16)" stroke="#7fbfff"/>
+  <text x="330" y="142" text-anchor="middle" font-size="15" font-weight="700" fill="#eaf4ff" font-family="-apple-system,sans-serif">Task</text>
+  <text x="330" y="163" text-anchor="middle" font-size="12" fill="rgba(234,244,255,.72)" font-family="-apple-system,sans-serif">Run the tests</text>
+  <rect x="450" y="117" width="180" height="60" rx="9" fill="rgba(93,202,165,.16)" stroke="#5dcaa5"/>
+  <text x="540" y="142" text-anchor="middle" font-size="15" font-weight="700" fill="#eaf4ff" font-family="-apple-system,sans-serif">Free</text>
+  <text x="540" y="163" text-anchor="middle" font-size="12" fill="rgba(234,244,255,.72)" font-family="-apple-system,sans-serif">Let it drift</text>
+  <rect x="140" y="196" width="380" height="42" rx="9" fill="rgba(255,255,255,.05)" stroke="rgba(122,175,255,.25)"/>
+  <text x="330" y="222" text-anchor="middle" font-size="13" fill="rgba(234,244,255,.8)" font-family="-apple-system,sans-serif">Fires at thresholds. Not a running process.</text>
+</svg>
+    <div class="band" style="margin-top:10px;"><b>What does this moment need?</b><br>Someone. Task. Free.</div>
+
+    <div class="section-k">Your situations, already sorted</div>
+    <table>
+      <tr><td>Family at home</td><td class="v-with">Someone</td></tr>
+      <tr><td>Watching your kids play sport</td><td class="v-with">Someone</td></tr>
+      <tr><td>Dinner with family</td><td class="v-with">Someone</td></tr>
+      <tr><td>Teaching prep</td><td class="v-task">Task</td></tr>
+      <tr><td>Lifting weights</td><td class="v-task">Task</td></tr>
+      <tr><td>Chess or Call of Duty</td><td class="v-task">Task</td></tr>
+      <tr><td>Driving to and from work</td><td class="v-auto">Free</td></tr>
+      <tr><td>Cardio, steady state</td><td class="v-auto">Free</td></tr>
+      <tr><td>Showering, brushing, flossing</td><td class="v-auto">Free</td></tr>
+      <tr><td>Walking to get or check something</td><td class="v-auto">Free</td></tr>
+      <tr><td>Sauna</td><td class="v-auto">Free</td></tr>
+      <tr><td>Cold pool</td><td class="v-auto">Free</td></tr>
+      <tr><td>Unwinding in the chair after work</td><td class="v-auto">Free</td></tr>
+      <tr><td>TV alone at the end of the day</td><td class="v-auto">Free</td></tr>
+      <tr><td>Going into and leaving work</td><td class="v-none">Threshold</td></tr>
+      <tr><td>Scrolling on the phone</td><td class="v-none">Unsorted</td></tr>
+    </table>
+    <div class="note">Going into and leaving work is not a moment &mdash; it is the cue. That is where the gate fires, and they are the two most valuable thresholds you have.<br><br>Scrolling does not fit, and that is not a gap in the model. It occupies attention without demanding it, which makes it the one activity that prevents drifting rather than permitting it. It competes with Free and usually wins.<br><br>Intervals move cardio to Task. A struggling student moves teaching to Someone.<br><br><b>One thing the table hides.</b> The chair and the drive are both Free, but only the chair is unhurried enough for the big unresolved questions &mdash; direction, the exit, what kind of father you are being. Those need somewhere to go. If no stretch of your day is unhurried, that thinking does not disappear; it leaks into the other two.</div>
+
+    <div class="section-k">Inside Task: the four tests</div>
+    <svg viewBox="0 0 660 300" style="width:100%; height:auto; display:block; margin:4px 0 2px;" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Four tests and three disposals">
+  <defs><marker id="ar2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#7aafff" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+  <rect x="150" y="8" width="360" height="38" rx="8" fill="rgba(74,157,232,.12)" stroke="rgba(122,175,255,.35)"/>
+  <text x="330" y="32" text-anchor="middle" font-size="14" fill="#eaf4ff" font-family="-apple-system,sans-serif">1. Would it change what I do now?</text>
+  <line x1="330" y1="46" x2="330" y2="60" stroke="#7aafff" stroke-width="1.5" marker-end="url(#ar2)"/>
+  <rect x="150" y="65" width="360" height="38" rx="8" fill="rgba(74,157,232,.12)" stroke="rgba(122,175,255,.35)"/>
+  <text x="330" y="89" text-anchor="middle" font-size="14" fill="#eaf4ff" font-family="-apple-system,sans-serif">2. Concrete, or abstract why?</text>
+  <line x1="330" y1="103" x2="330" y2="117" stroke="#7aafff" stroke-width="1.5" marker-end="url(#ar2)"/>
+  <rect x="150" y="122" width="360" height="38" rx="8" fill="rgba(74,157,232,.12)" stroke="rgba(122,175,255,.35)"/>
+  <text x="330" y="146" text-anchor="middle" font-size="14" fill="#eaf4ff" font-family="-apple-system,sans-serif">3. Is it terminating?</text>
+  <line x1="330" y1="160" x2="330" y2="174" stroke="#7aafff" stroke-width="1.5" marker-end="url(#ar2)"/>
+  <rect x="150" y="179" width="360" height="38" rx="8" fill="rgba(74,157,232,.12)" stroke="rgba(122,175,255,.35)"/>
+  <text x="330" y="203" text-anchor="middle" font-size="14" fill="#eaf4ff" font-family="-apple-system,sans-serif">4. Have I already decided this?</text>
+  <path d="M150 198 L95 198 L95 232" fill="none" stroke="#7aafff" stroke-width="1.5" marker-end="url(#ar2)"/>
+  <line x1="330" y1="217" x2="330" y2="232" stroke="#7aafff" stroke-width="1.5" marker-end="url(#ar2)"/>
+  <path d="M510 198 L565 198 L565 232" fill="none" stroke="#7aafff" stroke-width="1.5" marker-end="url(#ar2)"/>
+  <rect x="20" y="237" width="150" height="50" rx="8" fill="rgba(93,202,165,.16)" stroke="#5dcaa5"/>
+  <text x="95" y="258" text-anchor="middle" font-size="13" font-weight="700" fill="#eaf4ff" font-family="-apple-system,sans-serif">Passes</text>
+  <text x="95" y="276" text-anchor="middle" font-size="11.5" fill="rgba(234,244,255,.72)" font-family="-apple-system,sans-serif">Do it now</text>
+  <rect x="245" y="237" width="170" height="50" rx="8" fill="rgba(255,255,255,.06)" stroke="rgba(122,175,255,.3)"/>
+  <text x="330" y="258" text-anchor="middle" font-size="13" font-weight="700" fill="#eaf4ff" font-family="-apple-system,sans-serif">Keep, not now</text>
+  <text x="330" y="276" text-anchor="middle" font-size="11.5" fill="rgba(234,244,255,.72)" font-family="-apple-system,sans-serif">One line, return</text>
+  <rect x="490" y="237" width="150" height="50" rx="8" fill="rgba(240,153,123,.16)" stroke="#f0997b"/>
+  <text x="565" y="258" text-anchor="middle" font-size="13" font-weight="700" fill="#eaf4ff" font-family="-apple-system,sans-serif">Fails</text>
+  <text x="565" y="276" text-anchor="middle" font-size="11.5" fill="rgba(234,244,255,.72)" font-family="-apple-system,sans-serif">Name it, return</text>
+</svg>
+    <div class="card" style="margin-top:10px;">
+      <div class="move"><b>2 is the one to memorise.</b> Concrete versus abstract is the split that predicts outcomes &mdash; not positive versus negative, not planning versus worrying. "Email him Tuesday with the two options" and "how should I be handling this whole situation" are the same topic in two modes, and only one of them ends.</div>
+    </div>
+
+    <div class="section-k">How this retires</div>
+    <div class="card">
+      <div class="move"><b>Every use adds to the table.</b> Sort a new situation once and it stops being a question. The tool consumes its own reason to exist.</div>
+      <div class="move"><b>Fade it deliberately.</b> Weeks one to three, run all three questions. Then predict the answer first and only check yourself. Then stop checking.</div>
+      <div class="move"><b>The new stuff is the point.</b> Sixteen situations are already decided. Richmond High in September will produce a month of unfamiliar ones, and that is what this is for.</div>
+      <div class="note">If you are still running it daily at week eight, that is information rather than a failure &mdash; it means the discrimination has not formed yet, and the honest response is more reps, not more tools.</div>
+    </div>
+
+    <div class="section-k">What this does not cover</div>
+    <div class="card">
+      <div class="move"><b>Emotion is not a thought to be triaged.</b> Grief, dread, the thing that surfaces at 2am &mdash; these fail every test and the correct response is not to name them and return to one channel. Sometimes the work is the sitting with it.</div>
+      <div class="move"><b>People are not tasks.</b> Asking what action a thought about someone would change is instrumental, and people can feel it.</div>
+      <div class="move"><b>Unfamiliar ground needs slow, abstract thinking.</b> Test 2 penalises why questions, but why is the right question when there is no pattern yet to recognise.</div>
+      <div class="move"><b>This is a framework for attention, not for processing.</b> Open time is a slot, not a method. If something keeps arriving that time alone does not resolve, that is outside what any flowchart does well.</div>
+    </div>
+
+    <div class="section-k">Evidence</div>
+    <div class="key">
+      <span class="ev a">A</span> <b>Strong.</b> Kahneman &amp; Klein (2009) on when intuition can be trusted &mdash; an adversarial collaboration. Automaticity as instance retrieval rather than faster processing (Logan 1988).<br><br>
+      <span class="ev b">B</span> <b>Good.</b> Watkins on concrete versus abstract repetitive thought &mdash; the split that predicts outcomes, not positive versus negative. Wood on context cues carrying habits. Gollwitzer on implementation intentions. Beilock &amp; Carr on monitoring degrading skilled execution.<br><br>
+      <span class="ev c">C</span> <b>Suggestive.</b> Incubation and the creative value of mind-wandering. Real effects, smaller and less consistent than the popular framing. Flow research generally is self-report and correlational &mdash; treat it as vocabulary, not evidence.<br><br>
+      <span class="ev d">D</span> <b>Arbitrary.</b> Every threshold and interval here, including the three-week fade. No evidence sets those numbers; they are fixed in advance so they cannot be renegotiated later.<br><br>
+      <b>Verify before quoting.</b> These citations are from recall, not looked up.
+    </div>
+
+    <div class="note" style="margin-top:16px;">Related: <a href="./second-nature.html" style="color:var(--accent-hi);">The Second Nature Protocol</a> covers how skills become implicit. This one covers which mode a moment calls for. Adjacent, deliberately separate.</div>
+
+    <div class="foot">Three Moments &middot; Forge OS</div>
+  </div>
+
+</div>
+<script>
+function setMode(m){
+  var sort = m === 'sort';
+  document.getElementById('sortv').style.display = sort ? 'block' : 'none';
+  document.getElementById('readv').style.display = sort ? 'none' : 'block';
+  document.getElementById('tab-sort').className = sort ? 'on' : '';
+  document.getElementById('tab-read').className = sort ? '' : 'on';
+  if(sort) restart();
+  window.scrollTo(0,0);
+}
+
+var PKEY='forge-img-four-moments';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+
+var RESULTS = {
+  with:  { n:'With someone', v:'m-with',
+    lines:['<b>Attention out. One channel: them.</b>',
+           'Nothing scored, nothing optimised, no steering.',
+           'The improving thought is the failure signal, not a contribution.'] },
+  task:  { n:'Task needs you', v:'m-task',
+    lines:['<b>Attention on the task.</b>',
+           'Anything that arrives gets the four tests.'] },
+  free:  { n:'Free', v:'m-auto',
+    lines:['<b>Let it drift.</b>',
+           'Low demand or none. This is where the creative thinking belongs.',
+           'Two things do not get to run: the loop, and the replay of a conversation already over.',
+           'Do not fill it with a screen &mdash; that is what competes with it.'] }
+};
+
+/* Four tests. `bad` is the answer that disqualifies the thought. */
+var TESTS = [
+  { q:'Would it change <b>what you do now</b>?',       yes:'Yes', no:'No',        bad:false },
+  { q:'Is it <b>concrete</b>, or an abstract why?',    yes:'Concrete', no:'Abstract why', bad:false },
+  { q:'Is it <b>terminating</b>?',                     yes:'Yes', no:'Still looping', bad:false },
+  { q:'Have you <b>already decided</b> this?',         yes:'Yes', no:'No',        bad:true  }
+];
+var DISPOSAL = {
+  now:  { n:'Do it now', v:'m-auto',
+    lines:['<b>It passed, and the action is available.</b>','Stop sorting and do the thing.'] },
+  keep: { n:'One line, then return', v:'m-task',
+    lines:['<b>Worth keeping, but not now.</b>','Write one line. Do not chase it, do not diagnose it.','It goes to the review window, not to the middle of this task.'] },
+  drop: { n:'Name it, return', v:'m-with',
+    lines:['<b>It failed a test.</b>','Name it and put attention back on one channel.','No argument with it. It exists; it has no authority here.'] }
+};
+
+var PHASE='gate', STEP=0, ANS={}, TI=0;
+
+function qBlock(n, total, text, yes, no){
+  return '<div class="qn">Question ' + n + ' of ' + total + '</div>'
+    + '<div class="q">' + text + '</div>'
+    + '<div class="bar">'
+    + '<button class="btn" onclick="ans(true)">' + yes + '</button>'
+    + '<button class="btn ghost" onclick="ans(false)">' + no + '</button>'
+    + '</div>';
+}
+function resBlock(r, note, buttons){
+  var b='<div class="res" style="border-left:4px solid var(--' + r.v + ');">';
+  b+='<div class="rn">' + r.n + '</div>';
+  for(var i=0;i<r.lines.length;i++) b+='<div class="rl">' + r.lines[i] + '</div>';
+  b+='</div>';
+  if(note) b+='<div class="note" style="text-align:center; margin-top:14px;">' + note + '</div>';
+  b+='<div class="bar">' + buttons + '</div>';
+  return b;
+}
+function render(){
+  var s=document.getElementById('stage');
+  if(PHASE==='gate'){
+    if(STEP===0){ s.innerHTML=qBlock(1,2,'Is someone here who can tell whether you are <b>present</b>?','Yes','No'); return; }
+    if(STEP===1){ s.innerHTML=qBlock(2,2,'Does this <b>degrade</b> if your attention leaves?','Yes','No'); return; }
+    var k = ANS.with ? 'with' : (ANS.task ? 'task' : 'free');
+    var extra = (k==='task')
+      ? '<button class="btn" onclick="startTests()">A thought arrived</button><button class="btn ghost" onclick="restart()">Sort another</button>'
+      : '<button class="btn ghost" onclick="restart()">Sort another</button>';
+    s.innerHTML=resBlock(RESULTS[k], 'This situation is now decided. Next time it does not need sorting.', extra);
+    return;
+  }
+  if(PHASE==='tests'){
+    if(TI < TESTS.length){
+      var t=TESTS[TI];
+      s.innerHTML=qBlock(TI+1, TESTS.length, t.q, t.yes, t.no);
+      return;
+    }
+    if(TI === TESTS.length){
+      s.innerHTML=qBlock('+', '', 'Can you <b>act on it right now</b>?', 'Yes', 'Not now');
+      return;
+    }
+    s.innerHTML=resBlock(DISPOSAL[ANS.disposal], null,
+      '<button class="btn ghost" onclick="startTests()">Another thought</button>'
+      + '<button class="btn ghost" onclick="restart()">Start over</button>');
+  }
+}
+function startTests(){ PHASE='tests'; TI=0; ANS.disposal=null; render(); }
+function ans(v){
+  if(PHASE==='gate'){
+    if(STEP===0){ ANS.with=v; STEP = v ? 2 : 1; render(); return; }
+    ANS.task=v; STEP=2; render(); return;
+  }
+  if(TI < TESTS.length){
+    if(v === TESTS[TI].bad){ ANS.disposal='drop'; TI=TESTS.length+1; render(); return; }
+    TI++; render(); return;
+  }
+  ANS.disposal = v ? 'now' : 'keep';
+  TI=TESTS.length+1; render();
+}
+function restart(){ PHASE='gate'; STEP=0; TI=0; ANS={}; render(); }
+
+loadPhoto();
+setMode('sort');
+</script>
+</body>
+</html>
