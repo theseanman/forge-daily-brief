@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Second Nature Protocol</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* read cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; }
+  .band b{ color:var(--gold); }
+  .seq{ font-size:14px; line-height:1.6; }
+  .seq div{ padding:8px 0; border-bottom:1px solid var(--line); }
+  .seq div:last-child{ border-bottom:none; }
+  .seq b{ color:var(--accent-hi); }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+
+  /* ladder */
+  .rung{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px;
+    padding:14px 16px; margin-bottom:11px; }
+  .r-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:5px; flex-wrap:wrap; }
+  .r-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .r-name{ font-size:16.5px; font-weight:700; }
+  .r-dose{ font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; }
+  .r-rule{ font-size:14px; line-height:1.55; margin:6px 0; }
+  .r-rule b{ color:var(--accent-hi); }
+  .r-fail{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:7px; }
+  .r-fail b{ color:var(--ink-dim); }
+
+  /* drill */
+  #drill{ display:none; }
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(19px,5vw,26px); font-weight:300; line-height:1.4; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>The Second Nature Protocol</h1>
+    <div class="sub">Skill stops being assembled and starts being retrieved. The block is not too few reps &mdash; it is being watched while you take them. Boyd called the endpoint <i>Fingerspitzengef&uuml;hl</i>: the feel at the fingertips that acts before deliberation gets a turn.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">1</span><span class="p-name">Stable Structure</span><span class="ev a">A</span></div>
+      <div class="p-ess">Automaticity is retrieval of accumulated instances of the same thing. A target that keeps changing has no instances to accumulate.</div>
+      <div class="move"><b>Freeze the thing being practised</b> &mdash; for a fixed span, decided in advance. Not tuned, not improved, not extended. Bugs only.</div>
+      <div class="move"><b>Count reps against one shape</b> &mdash; ten sessions of one routine beat forty across four. Redesign resets the count to zero.</div>
+      <div class="move"><b>Building and automatising are the opposing pair</b> &mdash; both are needed, and you have been running one side at full for months. The freeze is how you find out what the other side does.</div>
+      <div class="note">Where fluency already exists for you &mdash; driving, Krav &mdash; the rules were fixed and not yours to redesign. That is not a coincidence, it is the mechanism.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">2</span><span class="p-name">Attention Outward</span><span class="ev b">B</span></div>
+      <div class="p-ess">Monitoring an action while performing it keeps it in the explicit system, where it has to be rebuilt from parts every time.</div>
+      <div class="move"><b>One channel</b> &mdash; during execution, attention goes to one outward thing: their face, the road, the bag, the room. Not to how you are doing.</div>
+      <div class="move"><b>&ldquo;Not relevant&rdquo;</b> &mdash; when the optimising thought arrives, name it and return. It exists; it has no authority here.</div>
+      <div class="move"><b>Never review while it is live</b> &mdash; the more the moment matters, the more true this is. That is not an exception to the rule, it is where the rule earns its keep.</div>
+      <div class="note">This is the pillar you already built. LIVE OR OVER and &ldquo;not relevant&rdquo; are it. What was missing was the reason: monitoring does not just degrade the performance, it prevents the skill from ever becoming automatic.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">3</span><span class="p-name">Bounded Review</span><span class="ev b">B</span></div>
+      <div class="p-ess">Evaluation is necessary and must have a closing edge. An assessment with no end time does not stay in the past &mdash; it leaks forward and becomes the narrative.</div>
+      <div class="move"><b>Fixed window</b> &mdash; ten minutes, once, at the debrief. When it closes, the matter is finished whether or not you reached a verdict.</div>
+      <div class="move"><b>&ldquo;Done when&rdquo;, applied to yourself</b> &mdash; the same rule that keeps you from polishing a task past its line. Quality judgements are where the fiddling lives.</div>
+      <div class="move"><b>Same item, fourth time</b> &mdash; that is not analysis, that is the window failing to close. Park it and move.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">4</span><span class="p-name">Learnable Ground</span><span class="ev a">A</span></div>
+      <div class="p-ess">Intuition only forms where the environment is regular enough to be learnable and gives feedback fast enough to learn from. Where either is missing, more reps produce confidence and not skill.</div>
+      <div class="move"><b>Run the test first</b> &mdash; is there a pattern here that repeats, and do I find out whether I was right? Two yeses: practise. Any no: fix the environment, not yourself.</div>
+      <div class="move"><b>Supply the missing channel</b> &mdash; you cannot see your own face, so expressiveness has no feedback loop and will not improve by introspection. Video supplies it. Same logic anywhere else the signal is invisible to you.</div>
+      <div class="move"><b>Accept the unlearnable</b> &mdash; some domains give no reliable signal. Confidence there is a warning, not a result.</div>
+      <div class="note">This is why driving is sharp and expressiveness is not. Nothing about you differs between the two; the feedback does.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">5</span><span class="p-name">Structural Constraint</span><span class="ev c">C</span></div>
+      <div class="p-ess">Drift runs on feedback; intention runs on values. Values lose. The protection has to be built, not resolved upon.</div>
+      <div class="move"><b>Close the exemption</b> &mdash; the three-tier rule already says anything opening a new loop waits for Sunday. A new build is a new loop. That has been the one exception, and it is where the drift lives.</div>
+      <div class="move"><b>Building returns fast, consolidation returns slow</b> &mdash; a card appears tonight; automaticity shows up in weeks and its signature is the absence of a signal. A feedback-driven person picks the fast one every time. That is not weakness, it is arithmetic.</div>
+      <div class="move"><b>Subtraction is the untried move</b> &mdash; sixteen projects went through the first triage and none were ended. Every previous answer to this problem has been an addition.</div>
+    </div>
+
+    <div class="section-k">The Freeze</div>
+    <div class="band">
+      <b>Eight weeks. No new cards, no threshold tuning, no protocol adoption. Bug fixes only.</b><br>
+      It is both the intervention and the test. If capacity rises while the building arm is off, the opposition is real and you have found which side you were over-running. If nothing changes, that is a genuine result and worth more than another card.<br><br>
+      September is itself a load. The eight weeks are for consolidating what already exists, not for stacking a practice on top of a new job &mdash; which is the other reason the ladder starts at home.<br><br><b>Expect week three.</b> That is when one small, obviously useful build will feel entirely reasonable. It will have a good argument attached. The argument is the drift, on schedule.
+    </div>
+
+    <div class="section-k">The Ladder</div>
+    <div class="sub" style="margin-top:-2px;">Eight rungs, rising in stakes rather than duration. It starts at home on purpose &mdash; a stable, repeating setting is what lets instances accumulate, and an unfamiliar one recruits exactly the self-monitoring this is meant to remove. <b>One rung at a time. Do not climb until the current one is boring.</b></div>
+
+    <div class="section-k" style="margin:16px 0 9px; color:var(--ink-quiet);">Home ground</div>
+
+    <div class="rung">
+      <div class="r-head"><span class="r-num">1</span><span class="r-name">One household task</span><span class="r-dose">3 min &middot; daily</span></div>
+      <div class="r-rule">Washing up, folding, making the coffee. <b>Attention on the physical thing</b> &mdash; the water temperature, the weight of it, the sound. One channel, not three.</div>
+      <div class="r-fail"><b>Failure signal:</b> you are planning the next task while doing this one. The hands are here and you are not.</div>
+    </div>
+
+    <div class="rung">
+      <div class="r-head"><span class="r-num">2</span><span class="r-name">Crossing a threshold</span><span class="r-dose">2 sec &middot; many times a day</span></div>
+      <div class="r-rule">The doorway is the trigger. Step through and <b>put attention on the room as it is</b> before deciding anything about it. Two seconds, then carry on.</div>
+      <div class="r-fail"><b>Failure signal:</b> you have already decided what the room means before you finished entering it.</div>
+    </div>
+
+    <div class="rung">
+      <div class="r-head"><span class="r-num">3</span><span class="r-name">Five minutes of ground</span><span class="r-dose">5 min &middot; daily</span></div>
+      <div class="r-rule">Walking, or standing still in the yard. <b>One outward channel</b> &mdash; what you see, or what you hear. Not both. When the narrative starts, &ldquo;not relevant&rdquo;, return to the channel.</div>
+      <div class="r-fail"><b>Failure signal:</b> you are rating how well the five minutes went. That is the audit, running inside the drill.</div>
+    </div>
+
+    <div class="rung">
+      <div class="r-head"><span class="r-num">4</span><span class="r-name">A live hour with your daughters</span><span class="r-dose">1 hour &middot; 3&times; weekly</span></div>
+      <div class="r-rule">Phone away. <b>No steering</b> &mdash; no working out how to make it a better experience, no moving the conversation somewhere more valuable. Whatever it is, that is what it is.</div>
+      <div class="r-fail"><b>Failure signal:</b> the improving thought. This is the rung the whole protocol is for, and it sits at home because home is where you already know the ground.</div>
+    </div>
+
+    <div class="section-k" style="margin:20px 0 9px; color:var(--ink-quiet);">Out of the house</div>
+
+    <div class="rung">
+      <div class="r-head"><span class="r-num">5</span><span class="r-name">One task to its line</span><span class="r-dose">20 min &middot; daily</span></div>
+      <div class="r-rule">A single work task with a done-when set before you start. <b>No quality judgement while working</b> &mdash; the only permitted question at the end is whether the done-when is met.</div>
+      <div class="r-fail"><b>Failure signal:</b> one more pass after the line is met. That is the polish reflex, and it is deliberation returning through the quality door.</div>
+    </div>
+
+    <div class="rung">
+      <div class="r-head"><span class="r-num">6</span><span class="r-name">A teaching block</span><span class="r-dose">80 min &middot; 2&times; weekly</span></div>
+      <div class="r-rule">The structure is imposed and not yours to redesign, which makes it the highest-quality reps available to you. <b>Run it with attention on the room</b>, not on your delivery. Passing time is the review window.</div>
+      <div class="r-fail"><b>Failure signal:</b> you are teaching and simultaneously editing the lesson. Note it; edit after.</div>
+    </div>
+
+    <div class="rung">
+      <div class="r-head"><span class="r-num">7</span><span class="r-name">One unaudited conversation</span><span class="r-dose">1 per day</span></div>
+      <div class="r-rule">A conversation you would normally assess as it happens. <b>No tally, no rating, nothing counted.</b> Attention entirely on them. Review after, once, inside the window &mdash; or not at all.</div>
+      <div class="r-fail"><b>Failure signal:</b> you know, mid-conversation, how it is going. Noticing that is fine; acting on it is the miss.</div>
+    </div>
+
+    <div class="rung">
+      <div class="r-head"><span class="r-num">8</span><span class="r-name">Krav, at full pace</span><span class="r-dose">as trained</span></div>
+      <div class="r-rule">The ceiling rung, and the only one that enforces itself. <b>You cannot monitor and spar.</b> Adrenaline removes the option, which is why this is the one place the skill is already implicit.</div>
+      <div class="r-fail"><b>Failure signal:</b> none available in the moment &mdash; that is the point. Use it as the reference for what the other seven are aiming at.</div>
+    </div>
+
+    <div class="note" style="margin-bottom:13px;">Rungs 6 and 7 are deliberately late. A new building, new colleagues and new students make every ordinary thing unfamiliar, and unfamiliar ground recruits the self-monitoring this protocol exists to remove. Get to know the place first; the reps will be worth more when you do.</div>
+
+    <div class="section-k">The One Thing</div>
+    <div class="band">
+      <b>Freeze the system for eight weeks and get to rung 4.</b><br>
+      Everything else here is support. If only one thing happens, it is the live hour with no steering &mdash; not instrumented, not scored, and the reason the exit is being built at all. It is rung 4 rather than rung 8 because it is home ground, and because it should not wait for October.
+    </div>
+
+    <div class="section-k">Failure Modes</div>
+    <div class="card">
+      <div class="move"><b>Building as practice</b> &mdash; the most convincing one. A new card produces a visible change tonight; a rep produces nothing observable for weeks. The feedback favours the wrong arm.</div>
+      <div class="move"><b>Unbounded Over</b> &mdash; the evaluation window with no closing edge. It does not stay in the past.</div>
+      <div class="move"><b>Practising on unlearnable ground</b> &mdash; grinding reps where no feedback exists produces confidence and nothing else.</div>
+      <div class="move"><b>Reading more about it</b> &mdash; understanding this is orientation work, and orientation is already your strong side. A reading project is a new loop; it waits for Sunday like anything else.</div>
+      <div class="move"><b>Turning the drill into a checklist you run mid-moment</b> &mdash; that is the auditor with a clipboard, which is the exact thing being removed. The Drill tab is review-only. Never during.</div>
+    </div>
+
+    <div class="section-k">Evidence</div>
+    <div class="key">
+      <span class="ev a">A</span> <b>Strong.</b> Kahneman &amp; Klein (2009) on the conditions for intuitive expertise &mdash; an adversarial collaboration, which is why it carries weight. Automaticity as instance retrieval rather than faster processing (Logan 1988); Fitts &amp; Posner's three stages.<br><br>
+      <span class="ev b">B</span> <b>Good, with variance.</b> Monitoring degrading skilled execution (Beilock &amp; Carr); Masters' reinvestment theory &mdash; explicitly learned rules get consciously reinvested under pressure, implicitly acquired skill is more robust. Replicated, effect sizes vary by task and population.<br><br>
+      <span class="ev c">C</span> <b>Extrapolated.</b> March's exploration/exploitation drift is an organisational model; applying it to one person is a borrowed shape, not a tested finding. It fits your record well, which is not the same as being established.<br><br>
+      <span class="ev d">D</span> <b>Arbitrary.</b> The eight-week span and every dose on the ladder. No evidence sets those numbers. They are fixed in advance so they cannot be renegotiated in week three, and that is their only justification.<br><br>
+      <b>Deliberately excluded:</b> the popular 10,000-hours framing &mdash; the Macnamara meta-analysis found deliberate practice explains far less variance than the popular version claims, and the number itself was never a finding.<br><br>
+      <b>Verify before quoting.</b> These citations are from recall, not looked up. Check any of them before they go anywhere public.
+    </div>
+
+    <div class="foot">Second Nature &middot; Forge OS</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h1 style="font-size:20px;">Which is this?</h1>
+    <div class="sub">Recognition, not recall. Each prompt is a moment. Name what it is before revealing. Review only &mdash; never run this during the moment itself.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Done</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn ghost" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  var read = m === 'read';
+  document.getElementById('read').style.display  = read ? '' : 'none';
+  document.getElementById('drill').style.display = read ? 'none' : '';
+  document.getElementById('tab-read').className  = read ? 'on' : '';
+  document.getElementById('tab-drill').className = read ? '' : 'on';
+  if(!read){ idx=0; document.getElementById('done').className='done-view'; document.getElementById('stage').style.display=''; renderStep(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-second-nature';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+/* long-press to remove */
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- drill ---------------- */
+var STEPS = [
+  { prompt:'Mid-conversation, you notice you are working out <b>how you are coming across</b>.',
+    lines:['<b>Live.</b> Attention outward, one channel &mdash; their face.','&ldquo;Not relevant.&rdquo; The thought exists; it has no authority here.'] },
+  { prompt:'Driving home, <b>replaying the meeting</b> for the third time.',
+    lines:['<b>Over &mdash; but unbounded.</b> Review is legitimate; this one has no closing edge.','Ten minutes, once, at the debrief. Then it is finished, verdict or not.'] },
+  { prompt:'You want to know whether <b>your expressiveness is improving</b>.',
+    lines:['<b>Unlearnable ground.</b> You cannot see your own face, so there is no feedback to learn from.','Supply the channel &mdash; video. Introspection here builds confidence, not skill.'] },
+  { prompt:'A build idea arrives on a Wednesday and feels <b>obviously worth doing</b>.',
+    lines:['<b>Sunday.</b> It opens a new loop, so the tier is set by that, not by how urgent it feels.','Especially the ones you generated yourself.'] },
+  { prompt:'The task has hit its done-when and you want <b>one more pass</b>.',
+    lines:['<b>Finished.</b> The line was set before you started, for exactly this moment.','One more pass is deliberation coming back in through the quality door.'] },
+  { prompt:'Week three of the freeze. <b>One small, useful card</b> occurs to you, with a good argument attached.',
+    lines:['<b>The drift, on schedule.</b> The argument being good is the mechanism, not an exception to it.','The freeze outranks it. Write it down; it waits.'] },
+  { prompt:'With your daughters, you are working out <b>how to steer this somewhere better</b>.',
+    lines:['<b>Live.</b> The improving thought is the thing displacing the hour it is trying to improve.','Not relevant. Whatever it is, that is what it is.'] },
+  { prompt:'You have reviewed the <b>same failure four times</b> this week.',
+    lines:['<b>The window is not closing.</b> That is not analysis any more.','Park it. Same rule as the carry gate.'] },
+  { prompt:'Name the <b>one thing</b>.',
+    lines:['<b>Freeze the system eight weeks and get to rung 4.</b>','The live hour, no steering, not instrumented, not scored.'] }
+];
+var idx=0, revealed=false;
+
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Name it &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  idx=0; document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-second-nature-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+</script>
+</body>
+</html>
