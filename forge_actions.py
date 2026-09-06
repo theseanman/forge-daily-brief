@@ -848,7 +848,7 @@ def render_practice_card():
                 ("\U0001F9D8 NOT RELEVANT",
                  "When the optimizing narrative starts \u2014 how to improve this, what it should become \u2014 name it and take away its authority: "
                  "<em>not relevant to being present with my family.</em> It can stay. It does not get a vote.<br>"
-                 "<span style=\"font-weight:400; font-size:13px;\">Scope: optimization thoughts only. Not a general silencer \u2014 some internal signal is load-bearing. Two seconds, then back to one sense channel.</span>",
+                 "<span style=\"font-weight:400; font-size:13px;\">Scope: optimization thoughts, plus two that hide in free time \u2014 the LOOP (circling why am I like this) and the REPLAY (rehearsing a conversation already over). Not a general silencer: some internal signal is load-bearing, and emotion is not a thought to be dismissed. Two seconds, then back to one sense channel.</span>",
                  "Cue: the moment it starts"),
             ],
         },
@@ -2414,6 +2414,22 @@ function syncPullBrief() {{
 function t5Esc(s) {{
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }}
+function nrStanding() {{
+  /* Standing sixth objective. Not stored, not tickable, and excluded from the
+     done count on purpose - "not relevant" is a cue that fires many times a
+     day, not a task that completes. */
+  return '<div style="margin-top:12px; padding:11px 13px; border-radius:11px;' +
+         ' background:rgba(138,154,208,0.16); border-left:4px solid #8a9ad0;">' +
+         '<div style="font-size:11px; letter-spacing:0.18em; text-transform:uppercase;' +
+         ' color:#8a9ad0; font-weight:800; margin-bottom:4px;">Standing &middot; every day</div>' +
+         '<div style="font-size:15px; font-weight:800; line-height:1.4;">&#129496; NOT RELEVANT</div>' +
+         '<div style="font-size:12.5px; line-height:1.5; margin-top:4px; opacity:0.85;">' +
+         'Name it, take away its authority, one sense channel. Optimizing, the loop, the replay.' +
+         '</div>' +
+         '<div style="font-size:10.5px; line-height:1.5; margin-top:6px; opacity:0.6;">' +
+         'No tick. It is a cue, not a task &mdash; it does not count toward enough.' +
+         '</div></div>';
+}}
 function paintTodayFive() {{
   var host = document.getElementById('today-five-host');
   if (!host) return;
@@ -2428,7 +2444,7 @@ function paintTodayFive() {{
       if (cr.length) {{ real = cr; carriedFrom = ymdOffset(off); break; }}
     }}
     if (!carriedFrom) {{
-      host.innerHTML = '<div class="t5-empty">No five set for today yet. Set them in the evening debrief or the planner &mdash; they appear here as soon as they exist.</div>';
+      host.innerHTML = '<div class="t5-empty">No five set for today yet. Set them in the evening debrief or the planner &mdash; they appear here as soon as they exist.</div>' + nrStanding();
       return;
     }}
   }}
@@ -2455,7 +2471,7 @@ function paintTodayFive() {{
     var _nice = _dn[_d.getDay()] + ' ' + _mn[_d.getMonth()] + ' ' + _d.getDate();
     t5hdr = '<div style="font-size:13px; font-weight:700; color:#7fd4e6; margin-bottom:8px; line-height:1.5;">Carried from ' + _nice + ' &mdash; no five set for today yet.</div>';
   }}
-  host.innerHTML = t5hdr + '<div class="t5-count">' + done + ' of ' + real.length + ' closed</div>' + rows;
+  host.innerHTML = t5hdr + '<div class="t5-count">' + done + ' of ' + real.length + ' closed</div>' + rows + nrStanding();
 }}
 function paintYesterday() {{
   var host = document.getElementById('yday-host');
