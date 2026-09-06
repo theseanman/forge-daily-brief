@@ -68,6 +68,7 @@
   #sortv{ display:none; }
   .q{ font-size:clamp(18px,4.6vw,23px); font-weight:300; line-height:1.4; text-align:center; padding:20px 4px 6px; }
   .q b{ font-weight:700; color:var(--accent-hi); }
+  .qs{ font-size:13px; color:var(--ink-quiet); text-align:center; line-height:1.5; margin:6px auto 0; max-width:440px; }
   .qn{ font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800;
     text-align:center; margin-bottom:2px; }
   .bar{ display:flex; gap:12px; justify-content:center; margin-top:20px; flex-wrap:wrap; }
@@ -287,10 +288,10 @@ var RESULTS = {
 
 /* Four tests. `bad` is the answer that disqualifies the thought. */
 var TESTS = [
-  { q:'Would it change <b>what you do now</b>?',       yes:'Yes', no:'No',        bad:false },
-  { q:'Is it <b>concrete</b>, or an abstract why?',    yes:'Concrete', no:'Abstract why', bad:false },
-  { q:'Is it <b>terminating</b>?',                     yes:'Yes', no:'Still looping', bad:false },
-  { q:'Have you <b>already decided</b> this?',         yes:'Yes', no:'No',        bad:true  }
+  { q:'Would this thought change <b>what you do now</b>?', sub:'The thought that just interrupted you.', yes:'Yes', no:'No', bad:false },
+  { q:'Is the thought <b>concrete</b>, or an abstract why?', sub:'How and what next, not why and what it means.', yes:'Concrete', no:'Abstract why', bad:false },
+  { q:'Is it <b>terminating</b>?', sub:'Lap four of the same loop is not analysis.', yes:'Yes', no:'Still looping', bad:false },
+  { q:'Have you <b>already decided</b> this?', sub:'Re-deciding is the clearest tell.', yes:'Yes', no:'No', bad:true }
 ];
 var DISPOSAL = {
   now:  { n:'Do it now', v:'m-auto',
@@ -303,9 +304,10 @@ var DISPOSAL = {
 
 var PHASE='gate', STEP=0, ANS={}, TI=0;
 
-function qBlock(n, total, text, yes, no){
+function qBlock(n, total, text, yes, no, sub){
   return '<div class="qn">Question ' + n + ' of ' + total + '</div>'
     + '<div class="q">' + text + '</div>'
+    + (sub ? '<div class="qs">' + sub + '</div>' : '')
     + '<div class="bar">'
     + '<button class="btn" onclick="ans(true)">' + yes + '</button>'
     + '<button class="btn ghost" onclick="ans(false)">' + no + '</button>'
@@ -327,7 +329,7 @@ function render(){
     if(STEP===1){ s.innerHTML=qBlock(2,2,'Does this <b>degrade</b> if your attention leaves?','Yes','No'); return; }
     var k = ANS.with ? 'with' : (ANS.task ? 'task' : 'free');
     var extra = (k==='task')
-      ? '<button class="btn" onclick="startTests()">A thought arrived</button><button class="btn ghost" onclick="restart()">Sort another</button>'
+      ? '<button class="btn" onclick="startTests()">Sort a thought</button><button class="btn ghost" onclick="restart()">Sort another</button>'
       : '<button class="btn ghost" onclick="restart()">Sort another</button>';
     s.innerHTML=resBlock(RESULTS[k], 'This situation is now decided. Next time it does not need sorting.', extra);
     return;
@@ -335,11 +337,11 @@ function render(){
   if(PHASE==='tests'){
     if(TI < TESTS.length){
       var t=TESTS[TI];
-      s.innerHTML=qBlock(TI+1, TESTS.length, t.q, t.yes, t.no);
+      s.innerHTML=qBlock(TI+1, TESTS.length, t.q, t.yes, t.no, t.sub);
       return;
     }
     if(TI === TESTS.length){
-      s.innerHTML=qBlock('+', '', 'Can you <b>act on it right now</b>?', 'Yes', 'Not now');
+      s.innerHTML=qBlock('+', '', 'Can you <b>act on the thought right now</b>?', 'Yes', 'Not now', 'It passed all four. Only the timing is left.');
       return;
     }
     s.innerHTML=resBlock(DISPOSAL[ANS.disposal], null,
