@@ -195,7 +195,7 @@
 function setMode(m){
   var read = m === 'read';
   document.getElementById('read').style.display  = read ? '' : 'none';
-  document.getElementById('drill').style.display = read ? 'none' : '';
+  document.getElementById('drill').style.display = read ? 'none' : 'block';
   document.getElementById('tab-read').className  = read ? 'on' : '';
   document.getElementById('tab-drill').className = read ? '' : 'on';
   if(!read){ idx=0; document.getElementById('done').className='done-view'; document.getElementById('stage').style.display=''; renderStep(); }
