@@ -456,6 +456,20 @@
         <div class="proto-ctr"><button class="proto-btn" onclick="protoInc('cal_ai',-1)">&minus;</button><div class="proto-val" id="pv-cal_ai">0</div><button class="proto-btn" onclick="protoInc('cal_ai',1)">+</button></div>
       </div>
 
+      <!-- checklist_card_20260906 -->
+      <div class="proto-sec" style="background:linear-gradient(135deg,rgba(26,95,168,.22),rgba(18,58,108,.10)); border:1px solid #4a9de8; margin-bottom:14px;">
+        <div class="proto-head" style="color:#4a9de8;">DAILY CHECKLIST</div>
+        <div class="proto-sub" style="color:#4a9de8;">Today&rsquo;s tick count, read straight from the checklist.</div>
+        <div style="padding:2px 12px 12px;">
+          <div id="cl-count" style="font-size:20px; font-weight:700; color:#f0f0f8; margin-bottom:8px;">&mdash;</div>
+          <div style="height:6px; border-radius:99px; background:rgba(74,157,232,.18); overflow:hidden; margin-bottom:10px;">
+            <div id="cl-bar" style="height:100%; width:0%; border-radius:99px; background:linear-gradient(90deg,#4a9de8,#7fc4ff);"></div>
+          </div>
+          <div id="cl-sub" style="font-size:12px; color:#8a9ad0; line-height:1.5; margin-bottom:12px;"></div>
+          <a href="./checklist.html" target="_blank" rel="noopener" style="display:inline-block; text-decoration:none; font-size:13px; font-weight:600; color:#0d1b2e; background:#4a9de8; border-radius:8px; padding:9px 16px;">Open the checklist &nearr;</a>
+        </div>
+      </div>
+
       <div class="btn-row">
         <button class="btn" onclick="prev()"><i class="ti ti-arrow-left"></i></button>
         <button class="btn primary" onclick="next()">Tomorrow&rsquo;s five <i class="ti ti-arrow-right"></i></button>
@@ -691,7 +705,7 @@ function selectWorkout(btn, val) {
 }
 
 function showStep(n) {
-  if (n === 6) protoLoad();
+  if (n === 6) { protoLoad(); try { renderChecklistCard(); } catch (e) {} }
   if (n === 7) initPlanRows();
   document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
   document.getElementById('step-'+n).classList.add('active');
@@ -723,6 +737,7 @@ var K_BLOG='forge-breathe-log'; /* breathe log, read-only here */
 var K_JOTS='forge-collision-jots'; /* collision jots, read-only here */
 var K_VIDEO='forge-video'; /* install25 */
 var K_PROTO='forge-protocol-counts'; /* debrief_protocol_review_aug14 */
+var K_CHECKLIST='forge-checklist'; /* checklist_card_20260906, read-only here */
 var K_PARKED='forge-parked', K_PROJ='forge-project'; /* install20 */
 var PROJ_TARGET_WK = 10800;
 var MUSHIN_TARGET_SEC = 600;
@@ -756,7 +771,7 @@ function syncPush(key) {
    An entry that is EMPTY in the cloud never overwrites a populated local one.
    That is deliberate: stale-but-present beats silently wiped. The cost is that
    deliberately clearing something on one surface will not propagate here. */
-var PULL_KEYS = [K_TOP5, K_ROCKS, K_FRAME, K_MUSHIN, K_BACKLOG, K_FUN, K_PARKED, K_PROJ, K_REPS, K_VIDEO, K_PROTO, K_DAILY, K_STRESS, K_BLOG, K_JOTS]; /* install25 + tally_pull_key_aug14 + dailylog_backup + stressinoc + breathelog + jots */
+var PULL_KEYS = [K_TOP5, K_ROCKS, K_FRAME, K_MUSHIN, K_BACKLOG, K_FUN, K_PARKED, K_PROJ, K_REPS, K_VIDEO, K_PROTO, K_DAILY, K_STRESS, K_BLOG, K_JOTS, K_CHECKLIST]; /* install25 + tally_pull_key_aug14 + dailylog_backup + stressinoc + breathelog + jots + checklist_card_20260906 */
 
 function fdBlank(v) {
   if (v === null || v === undefined) return true;
@@ -792,6 +807,20 @@ function fdMergeEntry(key, local, dk, cloudVal) {
       return true;
     }
     return false;
+  }
+
+  if (key === K_CHECKLIST) {                   /* checklist_card_20260906: union of ticks, never un-ticks */
+    if (!cloudVal || typeof cloudVal !== 'object' || Array.isArray(cloudVal)) return false;
+    var lDay = (localVal && typeof localVal === 'object' && !Array.isArray(localVal)) ? localVal : null;
+    var merged = {}, ck, added = false;
+    if (lDay) { for (ck in lDay) { if (lDay.hasOwnProperty(ck) && lDay[ck] === true) merged[ck] = true; } }
+    for (ck in cloudVal) {
+      if (!cloudVal.hasOwnProperty(ck)) continue;
+      if (cloudVal[ck] === true && merged[ck] !== true) { merged[ck] = true; added = true; }
+    }
+    if (!added) return false;
+    local[dk] = merged;
+    return true;
   }
 
   if (key === K_VIDEO) {                       /* install25: done is sticky, never un-ticked */
@@ -897,7 +926,7 @@ function syncPullDebrief(cb) {
   function finish() {
     if (done + errs < total) return;
     syncBadge(errs === total ? 'offline' : (errs ? 'partial' : 'synced'));
-    if (touched) { try { loadTodayTop5(); } catch (e) {} try { renderWeeklyReview(); } catch (e) {} try { protoLoad(); } catch (e) {} }
+    if (touched) { try { loadTodayTop5(); } catch (e) {} try { renderWeeklyReview(); } catch (e) {} try { protoLoad(); } catch (e) {} try { renderChecklistCard(); } catch (e) {} }
     if (cb) cb();
   }
 }
@@ -907,6 +936,36 @@ function fdWrite(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); return 
 function fdYmd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function fdNow(){ /* debrief bleeds past midnight: before 4am counts as still the previous night */ var d=new Date(); if(d.getHours() < 4){ d.setDate(d.getDate()-1); } return d; }
 function fdToday(){ return fdYmd(fdNow()); }
+
+/* ---- checklist_card_20260906 ----
+   READ ONLY. checklist.html owns the ticks and owns the score. CL_TOTAL is the
+   only fact copied out of that page -- bump it if the item list changes. */
+var CL_TOTAL = 23;
+function renderChecklistCard(){
+  var el = document.getElementById('cl-count');
+  if (!el) return;
+  var sub = document.getElementById('cl-sub');
+  var bar = document.getElementById('cl-bar');
+  var all = fdRead(K_CHECKLIST, {});
+  if (!all || typeof all !== 'object' || Array.isArray(all)) all = {};
+  var day = all[fdToday()];
+  var opened = !!(day && typeof day === 'object' && !Array.isArray(day));
+  var n = 0;
+  if (opened) { for (var k in day) { if (day.hasOwnProperty(k) && day[k] === true) n++; } }
+  if (!opened) {
+    el.textContent = 'Not opened today';
+    if (sub) sub.textContent = 'Opens in a new tab, so nothing you have entered here is lost.';
+  } else {
+    el.textContent = n + ' of ' + CL_TOTAL + ' ticked today';
+    if (sub) sub.textContent = (n >= CL_TOTAL)
+      ? 'Full sweep. Opens in a new tab \u2014 this debrief keeps its place.'
+      : 'Opens in a new tab, so nothing you have entered here is lost.';
+  }
+  var pct = CL_TOTAL > 0 ? Math.round(100 * n / CL_TOTAL) : 0;
+  if (pct > 100) pct = 100;
+  if (pct < 0) pct = 0;
+  if (bar) bar.style.width = pct + '%';
+}
 function fdTomorrow(){ var d=fdNow(); d.setDate(d.getDate()+1); return fdYmd(d); }
 function fdHour(h){ var ap=h<12?'AM':'PM', x=h%12; if(x===0)x=12; return x+' '+ap; }
 
