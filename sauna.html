@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Sauna Protocol</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --warn:#f0997b; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  h1{ font-size:25px; font-weight:300; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.55; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:26px 0 10px; }
+
+  .photo{ position:relative; width:100%; height:160px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px;
+    letter-spacing:.12em; text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; } .photo.set .ph-hint{ display:none; }
+
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px;
+    padding:15px 16px; margin-bottom:13px; }
+  .p-name{ font-size:18px; font-weight:700; margin-bottom:4px; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.55; margin-top:9px; }
+
+  .phrase{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px;
+    padding:15px 16px; margin-bottom:11px; }
+  .phrase .when{ font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); font-weight:800; margin-bottom:5px; }
+  .phrase .say{ font-size:21px; font-weight:700; line-height:1.35; }
+  .phrase .why{ font-size:13px; color:var(--ink-dim); line-height:1.55; margin-top:7px; }
+
+  .danger{ background:rgba(240,153,123,.13); border:1px solid rgba(240,153,123,.4); border-left:4px solid var(--warn);
+    border-radius:12px; padding:15px 16px; margin-bottom:13px; }
+  .danger .hd{ font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--warn); font-weight:800; margin-bottom:6px; }
+  .danger .body{ font-size:14px; line-height:1.6; }
+  .danger b{ color:#ffd9c9; }
+
+  table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  td{ padding:9px 6px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.45; }
+  td:last-child{ text-align:right; white-space:nowrap; padding-left:10px; }
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+  .key{ font-size:12.5px; color:var(--ink-quiet); line-height:1.7; } .key b{ color:var(--ink-dim); }
+  a.x{ color:var(--accent-hi); }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet);
+    margin-top:24px; font-weight:700; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+  </div>
+
+  <h1>The Sauna Protocol</h1>
+  <div class="sub">This is a <b>practice</b> protocol that happens to have health evidence attached, not the other way round. The health case is real but modest and mostly observational &mdash; <a class="x" href="./longevity.html">Longevity</a> is right that sauna is garnish, not medicine. What the sauna is unusually good for is reps: the argument to leave shows up reliably, the stakes are low, and a timer can enforce the rule without you.</div>
+
+  <div class="photo" id="photo" onclick="pickPhoto()">
+    <div class="ph-hint">Tap to add an image</div>
+    <div class="ph-edit">Change</div>
+  </div>
+  <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+  <div class="section-k">The rule</div>
+  <div class="card">
+    <div class="p-name">The number is set outside the room</div>
+    <div class="p-ess">"As long as I possibly can" cannot be satisfied, only abandoned. So every session ends in what feels like giving in, and the argument is guaranteed to run.</div>
+    <div class="move"><b>Decide the minutes before you walk in.</b> Hit it and get out, even if you could have done more &mdash; especially then.</div>
+    <div class="move"><b>It does not move once you are inside.</b> Raising it mid-session is the same failure as lowering it: the room is not where the number gets decided.</div>
+    <div class="move"><b>Raise it between sessions, not within one.</b> Heat tolerance genuinely adapts, so the number should climb over weeks. That gets you the adaptation without the argument.</div>
+    <div class="note">This converts an unsatisfiable goal into a completable one, which is the whole intervention. Everything below is what to do while the timer runs.</div>
+  </div>
+
+  <div class="section-k">The two phrases</div>
+
+  <div class="phrase">
+    <div class="when">At the door</div>
+    <div class="say">The timer decides.</div>
+    <div class="why">Said before you sit down, while you can still think clearly. If the number is set outside the room and the timer holds it, there is nothing left for you to adjudicate. Your only job is to remain seated.</div>
+  </div>
+
+  <div class="phrase">
+    <div class="when">When it starts</div>
+    <div class="say">Not relevant. Skin, breath, count.</div>
+    <div class="why">The same phrase you already use, deliberately &mdash; every sauna session is another rep of it. It concedes the thought exists and denies it a vote. The three words after it are where attention goes instead: a sensory channel, not a counter-argument. Arguing back is engagement, and engagement is what keeps it alive.</div>
+  </div>
+
+  <div class="note" style="margin:-4px 2px 14px;">Deliberately the same phrase as everywhere else in the OS rather than a sauna-specific one. Three or four sessions a week, and the argument shows up reliably in every one &mdash; that is roughly thirty extra reps of &ldquo;not relevant&rdquo; over eight weeks, against a stable structure that enforces itself.</div>
+
+  <div class="danger">
+    <div class="hd">The line that makes the rest safe</div>
+    <div class="body"><b>Words are noise. Body is signal. &ldquo;Not relevant&rdquo; fires on the first and NEVER on the second.</b><br>
+    "This is pointless, you have done enough, you could go now" is commentary &mdash; dismiss it.<br>
+    Dizziness, nausea, a heart rate that will not settle, confusion, or feeling faint on standing are physiology &mdash; <b>obey immediately, no deliberation</b>. Leaving on those is not losing the argument.<br><br>
+    Muddling those two is the one way this protocol could hurt you. If you are ever unsure which you are hearing, treat it as signal and get out.<br><br>This is the scope rule that has always come with the phrase &mdash; it is not a general silencer, because some internal signal is load-bearing. Here that is not an abstraction: the load-bearing signal is your physiology, and it outranks the practice every time.</div>
+  </div>
+
+  <div class="section-k">Why the argument shows up at all</div>
+  <div class="card">
+    <div class="p-ess">You have hit the number many times and nothing bad happened. The arguing continues anyway. That tells you it is not an assessment.</div>
+    <div class="move"><b>It is not a thought, it is a sensation with words attached.</b> Heat and hunger generate it. More evidence will not settle it, which is why trying to win it is the error.</div>
+    <div class="move"><b>The argument does not have to stop for you to finish.</b> Both can run at once &mdash; the case for leaving, loudly, and you sitting there until the timer goes.</div>
+    <div class="move"><b>A loud session is a better rep than a quiet one.</b> You are not training a quiet mind. You are training the ability to sit still while it argues. If it never showed up you would get nothing.</div>
+    <div class="note">The alternative reading &mdash; loud session means I am losing ground &mdash; is what turns this into another thing to fail at. See <a class="x" href="./mental-strength.html">Mental Strength</a> on the action crisis: the argument costs you while it runs, and what stops the drain is the question being closed, not which way it closes.</div>
+  </div>
+
+  <div class="section-k">What the evidence actually supports</div>
+  <table>
+    <tr><td><b>Frequency and mortality</b><br><span class="key">4&ndash;7 sessions a week associated with lower all-cause and cardiovascular mortality vs once weekly, with a dose-response. Finnish KIHD cohort, middle-aged Finnish men.</span></td><td><span class="ev c">C</span></td></tr>
+    <tr><td><b>Dementia and Alzheimer's</b><br><span class="key">Same cohort, same group, similar dose-response. Weaker than the mortality finding &mdash; reverse causation is live, since early cognitive decline reduces sauna-going.</span></td><td><span class="ev c">C</span></td></tr>
+    <tr><td><b>Cardiovascular function</b><br><span class="key">Repeated heat exposure improves vascular function and lowers blood pressure. Small randomised trials exist here, not only cohorts. The best-supported claim on the page.</span></td><td><span class="ev b">B</span></td></tr>
+    <tr><td><b>Heat shock proteins</b><br><span class="key">Heat reliably induces them. Real biology.</span></td><td><span class="ev b">B</span></td></tr>
+    <tr><td><b>HSPs therefore extend human lifespan</b><br><span class="key">Not evidenced. A mechanism is not an outcome, and this leap is where most sauna longevity content goes wrong.</span></td><td><span class="ev d">D</span></td></tr>
+    <tr><td><b>Mental toughness transfer</b><br><span class="key">Essentially no direct evidence that heat tolerance transfers to psychological resilience elsewhere. What justifies the practice is the mechanism in the rest of this OS &mdash; reps against a stable structure, attention outward, a criterion set in advance &mdash; not a sauna literature.</span></td><td><span class="ev d">D</span></td></tr>
+  </table>
+  <div class="note">The cohort work is observational and the obvious confound is that people who sauna daily are people healthy enough to. Suggestive, not causal. Nothing here is strong enough to justify the practice on health grounds alone &mdash; which is fine, because that is not why you are doing it.</div>
+
+  <div class="section-k">Dose</div>
+  <div class="card">
+    <div class="move"><b>What the cohort used:</b> roughly 19&ndash;20 minutes at around 79&deg;C, 4&ndash;7 times weekly, traditional Finnish dry sauna. <span class="ev c">C</span></div>
+    <div class="move"><b>What that means for you:</b> your 3&ndash;4 sessions a week already sit inside the studied range. Frequency looks to matter more than duration, so more shorter sessions beat fewer heroic ones.</div>
+    <div class="move"><b>There is no evidence that longer is better.</b> The dose-response in the data is about how often, not how long. That is worth knowing, because the argument you are having is about duration.</div>
+    <div class="note">Every number in this section is from an observational cohort in a different population. Treat them as a sane range, not a target to optimise. <span class="ev d">D</span> on any precise figure.</div>
+  </div>
+
+  <div class="section-k">Fasted sessions</div>
+  <div class="danger">
+    <div class="hd">Compounding risk</div>
+    <div class="body">Heat and fasting stack dehydration and drop blood pressure together. On a fasted day the margin is smaller and the body signals arrive sooner and mean more.<br><br>
+    <b>Cut the number, do not defend it.</b> A fasted session is not the place to hold a personal best, and the pre-set number should be lower before you walk in. Electrolytes matter more, standing up matters more, and any neurological symptom ends the session immediately.</div>
+  </div>
+
+  <div class="section-k">What this protocol is not</div>
+  <div class="card">
+    <div class="move"><b>No streak, no log, no tally.</b> The variable already moves &mdash; you either hit the number or you did not, and the timer records that. Scoring it would put the auditor back in the room you are clearing it from.</div>
+    <div class="move"><b>Not a place to test limits.</b> The point is completing a pre-set number calmly, repeatedly. Sessions that go long are not better sessions.</div>
+    <div class="move"><b>Not medicine.</b> Sleep, aerobic fitness, muscle and food are the high-certainty levers. This sits below all of them on health grounds and above most of them as practice.</div>
+  </div>
+
+  <div class="note" style="margin-top:16px;">Related: <a class="x" href="./four-moments.html">Three Moments</a> &mdash; the sauna is Free by default, and a session run to a pre-set number is Task while it runs. <a class="x" href="./second-nature.html">Second Nature</a> &mdash; this is a rung that enforces itself, like Krav. <a class="x" href="./longevity.html">Longevity</a> for where it sits among the real levers.</div>
+
+  <div class="key" style="margin-top:14px;">Citations here are from recall rather than looked up. Verify before quoting any of it, and check with a doctor before starting or extending heat exposure if there is any cardiovascular history.</div>
+
+  <div class="foot">Sauna &middot; Forge OS</div>
+</div>
+<script>
+var PKEY='forge-img-sauna';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+loadPhoto();
+</script>
+</body>
+</html>
