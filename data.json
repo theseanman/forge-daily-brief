@@ -1,1 +1,74 @@
-{"welltory": {"stress": 28, "energy": 72, "health": 100}, "body_comp": {"weight": 205.7, "body_fat": 27.1, "muscle_mass": null, "bmi": 29.4, "visceral_fat": null}, "sleep": {"score": null, "duration": null, "hr_range": null, "rem": 84, "core": 277, "deep": 65, "awake": 0, "duration_min": 426, "time_in_bed_min": 487, "computed_score": 91, "computed_score_parts": {"duration": 35.5, "deep": 20, "rem": 17.9, "efficiency": 17.5}, "capture_method": "health_auto_export_v1", "capture_method_since": "2026-08-13", "stage_source_date": "2026-09-02"}, "notes": "", "updated": "2026-09-11T14:16:24.528Z", "calendar": [{"date": "Sat Sep 05", "time": "All day", "title": "Commit the Japan analysis plan file with a real date then pull the JSON Bin data and run the dry run"}, {"date": "Sat Sep 05", "time": "All day", "title": "Finish the deposit, insert my orchid ID and email, verify the seven flags citations, either source or soften the cardiac-regulation prognostic claim in S6 and reconcile the five category classified against chapter 10 of the book then upload to ZENODON record the DOI"}, {"date": "Thu Sep 17", "time": "03:00 PM", "title": "Elk department meeting at lunch rm 130"}, {"date": "Fri Sep 11", "time": "04:30 AM", "title": "ONE Friday Fights 170 & The Inner Circle 30"}, {"date": "Fri Sep 11", "time": "06:00 PM", "title": "Family Night"}, {"date": "Sat Sep 12", "time": "01:30 AM", "title": "ONE Samurai 3"}, {"date": "Sat Sep 12", "time": "02:00 PM", "title": "Noche UFC: Silva vs Delgado"}]}
+{
+  "welltory": {
+    "stress": 28,
+    "energy": 72,
+    "health": 100
+  },
+  "body_comp": {
+    "weight": 205.7,
+    "body_fat": 27.1,
+    "muscle_mass": null,
+    "bmi": 29.4,
+    "visceral_fat": null
+  },
+  "sleep": {
+    "score": null,
+    "duration": null,
+    "hr_range": null,
+    "rem": 84,
+    "core": 277,
+    "deep": 65,
+    "awake": 0,
+    "duration_min": 426,
+    "time_in_bed_min": 487,
+    "computed_score": 91,
+    "computed_score_parts": {
+      "duration": 35.5,
+      "deep": 20,
+      "rem": 17.9,
+      "efficiency": 17.5
+    },
+    "capture_method": "health_auto_export_v1",
+    "capture_method_since": "2026-08-13",
+    "stage_source_date": "2026-09-02"
+  },
+  "notes": "",
+  "updated": "2026-09-11T14:16:24.528Z",
+  "calendar": [
+    {
+      "date": "Sat Sep 05",
+      "time": "All day",
+      "title": "Commit the Japan analysis plan file with a real date then pull the JSON Bin data and run the dry run"
+    },
+    {
+      "date": "Sat Sep 05",
+      "time": "All day",
+      "title": "Finish the deposit, insert my orchid ID and email, verify the seven flags citations, either source or soften the cardiac-regulation prognostic claim in S6 and reconcile the five category classified against chapter 10 of the book then upload to ZENODON record the DOI"
+    },
+    {
+      "date": "Thu Sep 17",
+      "time": "03:00 PM",
+      "title": "Elk department meeting at lunch rm 130"
+    },
+    {
+      "date": "Fri Sep 11",
+      "time": "04:30 AM",
+      "title": "ONE Friday Fights 170 & The Inner Circle 30"
+    },
+    {
+      "date": "Fri Sep 11",
+      "time": "06:00 PM",
+      "title": "Family Night"
+    },
+    {
+      "date": "Sat Sep 12",
+      "time": "01:30 AM",
+      "title": "ONE Samurai 3"
+    },
+    {
+      "date": "Sat Sep 12",
+      "time": "02:00 PM",
+      "title": "Noche UFC: Silva vs Delgado"
+    }
+  ]
+}
