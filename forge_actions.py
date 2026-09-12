@@ -212,6 +212,22 @@ def get_weather():
         print(f"Weather fetch failed: {e}")
         return "Weather unavailable"
 
+ZERO_WIDTH_CHARS = "\ufeff\u200b\u200c\u200d\u2060"
+
+
+def clean_title(s):
+    """Remove byte-order marks and zero-width characters from a calendar
+    title, then trim surrounding whitespace. School feed events are pasted
+    from Word/PDF and carry these invisibly; they break title matching in
+    dedupe_events() and can render as stray glyphs."""
+    if not s:
+        return s
+    s = str(s)
+    for ch in ZERO_WIDTH_CHARS:
+        s = s.replace(ch, "")
+    return s.strip()
+
+
 def fetch_events_for_range(calendars, start, end):
     """Fetch and format events for a given date range."""
     all_events = []
@@ -223,7 +239,7 @@ def fetch_events_for_range(calendars, start, end):
             for event in events:
                 try:
                     vevent = event.vobject_instance.vevent
-                    summary = str(vevent.summary.value) if hasattr(vevent, 'summary') else "Event"
+                    summary = clean_title(vevent.summary.value) if hasattr(vevent, 'summary') else "Event"
                     dtstart = vevent.dtstart.value
                     if hasattr(dtstart, 'hour'):
                         all_events.append((str(dtstart), f"{dtstart.strftime('%a %b %-d')} · {dtstart.strftime('%-I:%M %p')} — {summary}"))
@@ -251,7 +267,7 @@ def fetch_events_structured(calendars, start, end):
             for event in events:
                 try:
                     vevent = event.vobject_instance.vevent
-                    summary = str(vevent.summary.value) if hasattr(vevent, 'summary') else "Event"
+                    summary = clean_title(vevent.summary.value) if hasattr(vevent, 'summary') else "Event"
                     dtstart = vevent.dtstart.value
                     if hasattr(dtstart, 'hour'):
                         all_events.append({
@@ -314,7 +330,7 @@ def fetch_ics_events(start_dt, end_dt):
                     summary = feed_name
                     for line in block.splitlines():
                         if line.startswith("SUMMARY:"):
-                            summary = line[8:].strip()
+                            summary = clean_title(line[8:])
                             break
 
                     dtstart_raw = ""
@@ -384,7 +400,7 @@ def fetch_ics_structured(start_dt, end_dt):
                     if line.startswith("SUMMARY") and not summary_set(summary, feed_name):
                         pass
                     if line.startswith("SUMMARY"):
-                        summary = line.split(":", 1)[-1].strip()
+                        summary = clean_title(line.split(":", 1)[-1])
                     elif line.startswith("DTSTART") and not dtstart_raw:
                         dtstart_raw = line.split(":", 1)[-1].strip()
                 if not dtstart_raw:
