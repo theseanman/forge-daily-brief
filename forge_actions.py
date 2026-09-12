@@ -291,7 +291,7 @@ SUBSCRIBED_ICS_URLS = [
     ("Doctor 2", "https://p147-caldav.icloud.com/published/2/MjA4NzgzMDU5MjA4NzgzMKp8OzvkKcO0VBjXnAPWsZ3QfUpZTMmqDhS1RS2Q4Unql2HwH_zVrF_S7pswdX5EkPscxgI5CxoYg1ulgXc7ME0"),
     ("Richmond Blundell Physio", "https://richmondblundellphysio.janeapp.com/ical/yphai5OwEVtmTOppT6Fx/appointments.ics"),
     ("ONE Championship", "https://calendar.onefc.com/ONE-Championship-events.ics"),
-    ("Brighouse School", "https://brighouse.sd38.bc.ca/calendar-feed.ics"),
+    ("Richmond Secondary", "https://rhs.sd38.bc.ca/calendar-feed.ics"),
 ]
 
 def fetch_ics_events(start_dt, end_dt):
