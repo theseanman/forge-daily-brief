@@ -1,1 +1,114 @@
-{"welltory": {"stress": 82, "energy": 42, "health": 100}, "body_comp": {"weight": 204.4, "body_fat": 26.8, "muscle_mass": null, "bmi": 29.3, "visceral_fat": null}, "sleep": {"score": null, "duration": null, "hr_range": null, "rem": 84, "core": 277, "deep": 65, "awake": 0, "duration_min": 426, "time_in_bed_min": 487, "computed_score": 91, "computed_score_parts": {"duration": 35.5, "deep": 20, "rem": 17.9, "efficiency": 17.5}, "capture_method": "health_auto_export_v1", "capture_method_since": "2026-08-13", "stage_source_date": "2026-09-02"}, "notes": "", "updated": "2026-09-13T16:16:19.171Z", "calendar": [{"date": "Mon Sep 07", "time": "All day", "title": "Commit the Japan analysis plan file with a real date then pull the JSON Bin data and run the dry run"}, {"date": "Mon Sep 07", "time": "All day", "title": "Finish the deposit, insert my orchid ID and email, verify the seven flags citations, either source or soften the cardiac-regulation prognostic claim in S6 and reconcile the five category classified against chapter 10 of the book then upload to ZENODON record the DOI"}, {"date": "Thu Sep 17", "time": "03:00 PM", "title": "Elk department meeting at lunch rm 130"}, {"date": "Mon Sep 14", "time": "All day", "title": "EFGH"}, {"date": "Tue Sep 15", "time": "All day", "title": "Grade 8 Terry Fox Run Assembly in Block D"}, {"date": "Tue Sep 15", "time": "All day", "title": "ABCD"}, {"date": "Wed Sep 16", "time": "All day", "title": "CT-EFGH"}, {"date": "Wed Sep 16", "time": "All day", "title": "6:30pm PAC Meeting"}, {"date": "Thu Sep 17", "time": "All day", "title": "A-PLT-BCD"}, {"date": "Thu Sep 17", "time": "All day", "title": "6:30pm Meet the Teacher Night"}, {"date": "Thu Sep 17", "time": "All day", "title": "Lunch: KPU Visit"}, {"date": "Fri Sep 18", "time": "All day", "title": "Photo Day"}, {"date": "Fri Sep 18", "time": "All day", "title": "EFGH"}, {"date": "Fri Sep 18", "time": "04:30 AM", "title": "ONE Friday Fights 171 & The Inner Circle 31"}, {"date": "Fri Sep 18", "time": "06:00 PM", "title": "Family Night"}]}
+{
+  "welltory": {
+    "stress": 82,
+    "energy": 42,
+    "health": 100
+  },
+  "body_comp": {
+    "weight": 206.8,
+    "body_fat": 27.1,
+    "muscle_mass": null,
+    "bmi": 29.6,
+    "visceral_fat": null
+  },
+  "sleep": {
+    "score": null,
+    "duration": null,
+    "hr_range": null,
+    "rem": 84,
+    "core": 277,
+    "deep": 65,
+    "awake": 0,
+    "duration_min": 426,
+    "time_in_bed_min": 487,
+    "computed_score": 91,
+    "computed_score_parts": {
+      "duration": 35.5,
+      "deep": 20,
+      "rem": 17.9,
+      "efficiency": 17.5
+    },
+    "capture_method": "health_auto_export_v1",
+    "capture_method_since": "2026-08-13",
+    "stage_source_date": "2026-09-02"
+  },
+  "notes": "",
+  "updated": "2026-09-13T16:16:19.171Z",
+  "calendar": [
+    {
+      "date": "Mon Sep 07",
+      "time": "All day",
+      "title": "Commit the Japan analysis plan file with a real date then pull the JSON Bin data and run the dry run"
+    },
+    {
+      "date": "Mon Sep 07",
+      "time": "All day",
+      "title": "Finish the deposit, insert my orchid ID and email, verify the seven flags citations, either source or soften the cardiac-regulation prognostic claim in S6 and reconcile the five category classified against chapter 10 of the book then upload to ZENODON record the DOI"
+    },
+    {
+      "date": "Thu Sep 17",
+      "time": "03:00 PM",
+      "title": "Elk department meeting at lunch rm 130"
+    },
+    {
+      "date": "Mon Sep 14",
+      "time": "All day",
+      "title": "EFGH"
+    },
+    {
+      "date": "Tue Sep 15",
+      "time": "All day",
+      "title": "Grade 8 Terry Fox Run Assembly in Block D"
+    },
+    {
+      "date": "Tue Sep 15",
+      "time": "All day",
+      "title": "ABCD"
+    },
+    {
+      "date": "Wed Sep 16",
+      "time": "All day",
+      "title": "CT-EFGH"
+    },
+    {
+      "date": "Wed Sep 16",
+      "time": "All day",
+      "title": "6:30pm PAC Meeting"
+    },
+    {
+      "date": "Thu Sep 17",
+      "time": "All day",
+      "title": "A-PLT-BCD"
+    },
+    {
+      "date": "Thu Sep 17",
+      "time": "All day",
+      "title": "6:30pm Meet the Teacher Night"
+    },
+    {
+      "date": "Thu Sep 17",
+      "time": "All day",
+      "title": "Lunch: KPU Visit"
+    },
+    {
+      "date": "Fri Sep 18",
+      "time": "All day",
+      "title": "Photo Day"
+    },
+    {
+      "date": "Fri Sep 18",
+      "time": "All day",
+      "title": "EFGH"
+    },
+    {
+      "date": "Fri Sep 18",
+      "time": "04:30 AM",
+      "title": "ONE Friday Fights 171 & The Inner Circle 31"
+    },
+    {
+      "date": "Fri Sep 18",
+      "time": "06:00 PM",
+      "title": "Family Night"
+    }
+  ]
+}
