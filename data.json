@@ -1,1 +1,134 @@
-{"welltory": {"stress": 54, "energy": 55, "health": 100}, "body_comp": {"weight": 207.9, "body_fat": 27.3, "muscle_mass": null, "bmi": 29.8, "visceral_fat": null}, "sleep": {"score": null, "duration": null, "hr_range": null, "rem": 84, "core": 277, "deep": 65, "awake": 0, "duration_min": 426, "time_in_bed_min": 487, "computed_score": 91, "computed_score_parts": {"duration": 35.5, "deep": 20, "rem": 17.9, "efficiency": 17.5}, "capture_method": "health_auto_export_v1", "capture_method_since": "2026-08-13", "stage_source_date": "2026-09-02"}, "notes": "", "updated": "2026-09-17T14:21:20.172Z", "calendar": [{"date": "Sat Sep 12", "time": "All day", "title": "Commit the Japan analysis plan file with a real date then pull the JSON Bin data and run the dry run"}, {"date": "Sat Sep 12", "time": "All day", "title": "Finish the deposit, insert my orchid ID and email, verify the seven flags citations, either source or soften the cardiac-regulation prognostic claim in S6 and reconcile the five category classified against chapter 10 of the book then upload to ZENODON record the DOI"}, {"date": "Mon Sep 21", "time": "03:00 PM", "title": "Dr. Song online appointment"}, {"date": "Mon Sep 21", "time": "08:00 PM", "title": "Happy Birthday Goto"}, {"date": "Tue Sep 22", "time": "All day", "title": "Terry Fox run Block app"}, {"date": "Wed Sep 23", "time": "03:30 PM", "title": "Dr. Heng will call"}, {"date": "Fri Sep 18", "time": "All day", "title": "Photo Day"}, {"date": "Fri Sep 18", "time": "All day", "title": "EFGH"}, {"date": "Fri Sep 18", "time": "04:30 AM", "title": "ONE Friday Fights 171 & The Inner Circle 31"}, {"date": "Fri Sep 18", "time": "06:00 PM", "title": "Family Night"}, {"date": "Sat Sep 19", "time": "06:00 PM", "title": "UFC 331: Van vs Pantoja 2"}, {"date": "Mon Sep 21", "time": "All day", "title": "ABCD"}, {"date": "Tue Sep 22", "time": "All day", "title": "EFGH"}, {"date": "Tue Sep 22", "time": "All day", "title": "5:00pm PSBC Fair"}, {"date": "Wed Sep 23", "time": "All day", "title": "A-PLT-BCD"}, {"date": "Wed Sep 23", "time": "All day", "title": "6:30pm 2026 IB Grad"}, {"date": "Wed Sep 23", "time": "All day", "title": "Grade 12 Assembly on Block B"}, {"date": "Thu Sep 24", "time": "All day", "title": "Grade 8 Mini Camp"}, {"date": "Thu Sep 24", "time": "All day", "title": "E-PLT-FGH"}]}
+{
+  "welltory": {
+    "stress": 54,
+    "energy": 55,
+    "health": 100
+  },
+  "body_comp": {
+    "weight": 207.9,
+    "body_fat": 27.3,
+    "muscle_mass": null,
+    "bmi": 29.8,
+    "visceral_fat": null
+  },
+  "sleep": {
+    "score": null,
+    "duration": null,
+    "hr_range": null,
+    "rem": 84,
+    "core": 277,
+    "deep": 65,
+    "awake": 0,
+    "duration_min": 426,
+    "time_in_bed_min": 487,
+    "computed_score": 91,
+    "computed_score_parts": {
+      "duration": 35.5,
+      "deep": 20,
+      "rem": 17.9,
+      "efficiency": 17.5
+    },
+    "capture_method": "health_auto_export_v1",
+    "capture_method_since": "2026-08-13",
+    "stage_source_date": "2026-09-02"
+  },
+  "notes": "",
+  "updated": "2026-09-17T14:21:20.172Z",
+  "calendar": [
+    {
+      "date": "Sat Sep 12",
+      "time": "All day",
+      "title": "Commit the Japan analysis plan file with a real date then pull the JSON Bin data and run the dry run"
+    },
+    {
+      "date": "Sat Sep 12",
+      "time": "All day",
+      "title": "Finish the deposit, insert my orchid ID and email, verify the seven flags citations, either source or soften the cardiac-regulation prognostic claim in S6 and reconcile the five category classified against chapter 10 of the book then upload to ZENODON record the DOI"
+    },
+    {
+      "date": "Mon Sep 21",
+      "time": "03:00 PM",
+      "title": "Dr. Song online appointment"
+    },
+    {
+      "date": "Mon Sep 21",
+      "time": "08:00 PM",
+      "title": "Happy Birthday Goto"
+    },
+    {
+      "date": "Tue Sep 22",
+      "time": "All day",
+      "title": "Terry Fox run Block app"
+    },
+    {
+      "date": "Wed Sep 23",
+      "time": "03:30 PM",
+      "title": "Dr. Heng will call"
+    },
+    {
+      "date": "Fri Sep 18",
+      "time": "All day",
+      "title": "Photo Day"
+    },
+    {
+      "date": "Fri Sep 18",
+      "time": "All day",
+      "title": "EFGH"
+    },
+    {
+      "date": "Fri Sep 18",
+      "time": "04:30 AM",
+      "title": "ONE Friday Fights 171 & The Inner Circle 31"
+    },
+    {
+      "date": "Fri Sep 18",
+      "time": "06:00 PM",
+      "title": "Family Night"
+    },
+    {
+      "date": "Sat Sep 19",
+      "time": "06:00 PM",
+      "title": "UFC 331: Van vs Pantoja 2"
+    },
+    {
+      "date": "Mon Sep 21",
+      "time": "All day",
+      "title": "ABCD"
+    },
+    {
+      "date": "Tue Sep 22",
+      "time": "All day",
+      "title": "EFGH"
+    },
+    {
+      "date": "Tue Sep 22",
+      "time": "All day",
+      "title": "5:00pm PSBC Fair"
+    },
+    {
+      "date": "Wed Sep 23",
+      "time": "All day",
+      "title": "A-PLT-BCD"
+    },
+    {
+      "date": "Wed Sep 23",
+      "time": "All day",
+      "title": "6:30pm 2026 IB Grad"
+    },
+    {
+      "date": "Wed Sep 23",
+      "time": "All day",
+      "title": "Grade 12 Assembly on Block B"
+    },
+    {
+      "date": "Thu Sep 24",
+      "time": "All day",
+      "title": "Grade 8 Mini Camp"
+    },
+    {
+      "date": "Thu Sep 24",
+      "time": "All day",
+      "title": "E-PLT-FGH"
+    }
+  ]
+}
