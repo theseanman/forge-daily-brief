@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Optimizing AI</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.8); --ink-quiet:rgba(234,244,255,.55);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0; --violet:#a99cff; --coral:#ff9e7a; --green:#6fdc8c; --pink:#f59ad0; --sky:#6cc4ff; --amber:#ffc15e;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; background-color:var(--bg-deep); color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  button:focus-visible, summary:focus-visible, a:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  h1{ font-size:30px; font-weight:300; letter-spacing:-.01em; margin:2px 0 4px; }
+  .sub{ font-size:14px; color:var(--ink-dim); margin-bottom:16px; line-height:1.55; }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  .honest{ font-size:13px; color:var(--ink-dim); line-height:1.55; background:rgba(169,156,255,.12); border-left:4px solid var(--violet);
+    border-radius:12px; padding:11px 14px; margin-bottom:18px; }
+  .honest b{ color:var(--violet); }
+  .tools{ display:flex; justify-content:flex-end; margin:-4px 0 10px; }
+  .linkbtn{ border:1px solid var(--line); background:rgba(9,36,80,.45); color:var(--accent-hi); font-size:11.5px; font-weight:800; letter-spacing:.1em;
+    text-transform:uppercase; padding:7px 13px; border-radius:999px; cursor:pointer; }
+
+  /* read cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.alt{ border-left-color:var(--sky); }
+  .p-head{ display:flex; align-items:baseline; gap:10px; margin-bottom:5px; }
+  .p-num{ font-size:13px; font-weight:800; color:var(--gold); min-width:18px; }
+  .p-name{ font-size:18.5px; font-weight:700; line-height:1.3; }
+  .p-ess{ font-size:14px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:8px; }
+  .why{ font-size:14px; line-height:1.55; margin-bottom:12px; }
+  .lbl{ font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; margin-bottom:6px; }
+
+  .pr{ display:flex; align-items:flex-start; gap:10px; background:rgba(6,28,64,.65); border:1px solid rgba(122,175,255,.35);
+    border-radius:11px; padding:11px 12px; }
+  .pr-text{ flex:1; font-size:15px; line-height:1.5; color:#fff; }
+  .pr-text:before{ content:'\201C'; color:var(--accent-hi); } .pr-text:after{ content:'\201D'; color:var(--accent-hi); }
+  .pr.sm .pr-text{ font-size:14px; color:var(--ink); }
+  .copy{ flex:none; border:0; background:var(--accent); color:#06264f; font-size:11px; font-weight:800; letter-spacing:.08em;
+    text-transform:uppercase; padding:6px 11px; border-radius:999px; cursor:pointer; }
+  .copy.ok{ background:var(--green); }
+
+  details.uses{ margin-top:12px; border-top:1px solid var(--line); padding-top:10px; }
+  details.uses summary{ cursor:pointer; font-size:13.5px; font-weight:700; color:var(--accent-hi); list-style:none; }
+  details.uses summary::-webkit-details-marker{ display:none; }
+  details.uses summary:before{ content:'\25B8'; display:inline-block; width:16px; }
+  details.uses[open] summary:before{ content:'\25BE'; }
+  .s-meta{ font-weight:500; color:var(--ink-quiet); font-size:12.5px; margin-left:4px; }
+  .use{ margin-top:12px; }
+  .u-sit{ font-size:14px; line-height:1.5; margin:6px 0 7px; color:var(--ink-dim); }
+  .chip{ display:inline-block; font-size:11px; font-weight:800; letter-spacing:.06em; padding:3px 10px; border-radius:999px; color:#06264f; }
+  .c-teach{ background:var(--sky); } .c-build{ background:var(--teal); } .c-money{ background:var(--amber); } .c-write{ background:var(--violet); }
+  .c-cons{ background:var(--coral); } .c-health{ background:var(--green); } .c-career{ background:var(--gold); } .c-home{ background:var(--pink); }
+
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:24px 0 10px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; }
+  .band b{ color:var(--gold); }
+  .band .pr{ margin-top:10px; }
+  .seq{ font-size:14px; line-height:1.55; background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:4px 15px; }
+  .seq div{ padding:10px 0; border-bottom:1px solid var(--line); display:flex; gap:12px; }
+  .seq div:last-child{ border-bottom:none; }
+  .seq .st{ flex:none; width:22px; height:22px; border-radius:50%; background:var(--accent); color:#06264f; font-size:12px; font-weight:800;
+    display:flex; align-items:center; justify-content:center; margin-top:1px; }
+  .seq b{ color:var(--accent-hi); }
+  .one{ background:linear-gradient(135deg, rgba(74,157,232,.28), rgba(169,156,255,.2)); border:1px solid rgba(122,175,255,.45);
+    border-radius:16px; padding:18px 18px; }
+  .one .big{ font-size:21px; font-weight:300; line-height:1.4; margin-bottom:8px; }
+  .one .big b{ font-weight:700; color:#fff; }
+  .one p{ font-size:14px; color:var(--ink-dim); line-height:1.55; }
+
+  /* drill */
+  #drill{ display:none; }
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(19px,5vw,26px); font-weight:300; line-height:1.4; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:8px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .reveal .pr{ margin-top:4px; }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>Optimizing AI</h1>
+    <div class="sub">Ten questions that pull the most valuable knowledge out of an AI model. The highest-value things a model holds are patterns across thousands of cases, the names of things, and how systems really work. It gives up very little of that unless you ask.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="honest"><b>Reasoned, not researched.</b> This list is Claude's judgment about where AI adds the most value. It carries no evidence grades because no study ranks these moves; treat the ordering as a strong opinion.</div>
+
+    <div class="tools"><button class="linkbtn" id="expandAll" type="button" onclick="toggleAll()">Show all examples</button></div>
+
+    <div class="card" id="m1">
+      <div class="p-head"><span class="p-num">1</span><span class="p-name">How things like this usually fail</span></div>
+      <div class="p-ess">Your plan is rarely the first of its kind. The model has read thousands of accounts of plans like it going wrong.</div>
+      <div class="why">Failure patterns repeat across a type of project far more reliably than success patterns do. Knowing the usual three ways it dies is cheap insurance before you commit.</div>
+      <div class="lbl">The prompt</div>
+      <div class="pr"><div class="pr-text">What are the most common ways projects like this fail, and which am I most exposed to?</div><button class="copy" type="button" data-p="What are the most common ways projects like this fail, and which am I most exposed to?" onclick="copyP(this)">Copy</button></div>
+      <details class="uses">
+        <summary>When to use it <span class="s-meta">3 examples &middot; teacher, builder, money</span></summary>
+        <div class="use"><span class="chip c-teach">Teacher</span><div class="u-sit">Launching a new classroom routine in the first weeks at Richmond High.</div><div class="pr sm"><div class="pr-text">What are the most common ways a new classroom routine falls apart by October, and which is my setup most exposed to?</div><button class="copy" type="button" data-p="What are the most common ways a new classroom routine falls apart by October, and which is my setup most exposed to?" onclick="copyP(this)">Copy</button></div></div><div class="use"><span class="chip c-build">Builder</span><div class="u-sit">Before starting a new Forge build.</div><div class="pr sm"><div class="pr-text">How do personal automation systems like this usually get abandoned, and what in my design invites that?</div><button class="copy" type="button" data-p="How do personal automation systems like this usually get abandoned, and what in my design invites that?" onclick="copyP(this)">Copy</button></div></div><div class="use"><span class="chip c-money">Money</span><div class="u-sit">Before trusting a backtested signal with real money.</div><div class="pr sm"><div class="pr-text">What are the typical ways a backtested scoring system fails once it goes live, and which could my validation test miss?</div><button class="copy" type="button" data-p="What are the typical ways a backtested scoring system fails once it goes live, and which could my validation test miss?" onclick="copyP(this)">Copy</button></div></div>
+      </details>
+    </div>
+    <div class="card alt" id="m2">
+      <div class="p-head"><span class="p-num">2</span><span class="p-name">The questions you didn&#x27;t know to ask</span></div>
+      <div class="p-ess">An expert&#x27;s first move is usually a question the beginner never thought of. Ask the model to supply it.</div>
+      <div class="why">Most bad advice comes from answering the question as asked. This move surfaces the missing context before any answer is given, so everything after it is better aimed.</div>
+      <div class="lbl">The prompt</div>
+      <div class="pr"><div class="pr-text">What would an expert in this field ask me before giving advice?</div><button class="copy" type="button" data-p="What would an expert in this field ask me before giving advice?" onclick="copyP(this)">Copy</button></div>
+      <details class="uses">
+        <summary>When to use it <span class="s-meta">3 examples &middot; teacher, builder, consumer</span></summary>
+        <div class="use"><span class="chip c-teach">Teacher</span><div class="u-sit">A unit plan that feels finished.</div><div class="pr sm"><div class="pr-text">What would an experienced ELL department head ask me about this unit before approving it?</div><button class="copy" type="button" data-p="What would an experienced ELL department head ask me about this unit before approving it?" onclick="copyP(this)">Copy</button></div></div><div class="use"><span class="chip c-build">Builder</span><div class="u-sit">About to automate something in the brief.</div><div class="pr sm"><div class="pr-text">What would a senior engineer ask me before I build this?</div><button class="copy" type="button" data-p="What would a senior engineer ask me before I build this?" onclick="copyP(this)">Copy</button></div></div><div class="use"><span class="chip c-cons">Consumer</span><div class="u-sit">Signing up for a phone plan, lease or insurance renewal.</div><div class="pr sm"><div class="pr-text">What questions would a savvy buyer ask before signing this?</div><button class="copy" type="button" data-p="What questions would a savvy buyer ask before signing this?" onclick="copyP(this)">Copy</button></div></div>
+      </details>
+    </div>
+    <div class="card" id="m3">
+      <div class="p-head"><span class="p-num">3</span><span class="p-name">The strongest case against your view</span></div>
+      <div class="p-ess">People ask AI to help carry out a decision far more often than to attack it. The attack is where the value is.</div>
+      <div class="why">Models lean toward agreeing with whoever is asking. An explicit request to argue the other side overrides that lean and gives you the objection you would otherwise meet too late.</div>
+      <div class="lbl">The prompt</div>
+      <div class="pr"><div class="pr-text">Argue as hard as you can that this is the wrong move.</div><button class="copy" type="button" data-p="Argue as hard as you can that this is the wrong move." onclick="copyP(this)">Copy</button></div>
+      <details class="uses">
+        <summary>When to use it <span class="s-meta">3 examples &middot; money, writer, career</span></summary>
+        <div class="use"><span class="chip c-money">Money</span><div class="u-sit">A position or pick you are sure of.</div><div class="pr sm"><div class="pr-text">Make the strongest bear case against this position, using only the facts I have given you.</div><button class="copy" type="button" data-p="Make the strongest bear case against this position, using only the facts I have given you." onclick="copyP(this)">Copy</button></div></div><div class="use"><span class="chip c-write">Writer</span><div class="u-sit">A chapter you think is done.</div><div class="pr sm"><div class="pr-text">Argue that this chapter&#x27;s central claim is wrong, the way a hostile reviewer would.</div><button class="copy" type="button" data-p="Argue that this chapter&#x27;s central claim is wrong, the way a hostile reviewer would." onclick="copyP(this)">Copy</button></div></div><div class="use"><span class="chip c-career">Career</span><div class="u-sit">Your plan for replacing the teaching salary.</div><div class="pr sm"><div class="pr-text">Argue that my plan for building non-teaching income is on the wrong track, and tell me what evidence would prove you right.</div><button class="copy" type="button" data-p="Argue that my plan for building non-teaching income is on the wrong track, and tell me what evidence would prove you right." onclick="copyP(this)">Copy</button></div></div>
+      </details>
+    </div>
+    <div class="card alt" id="m4">
+      <div class="p-head"><span class="p-num">4</span><span class="p-name">The name for the thing</span></div>
+      <div class="p-ess">Once a problem has a name, decades of other people&#x27;s work on it become searchable.</div>
+      <div class="why">A vague problem can only be solved from scratch. A named one comes with research, known fixes and known traps. The name is often the single most valuable word in the answer.</div>
+      <div class="lbl">The prompt</div>
+      <div class="pr"><div class="pr-text">Is there a technical term for this, and what does the research say about it?</div><button class="copy" type="button" data-p="Is there a technical term for this, and what does the research say about it?" onclick="copyP(this)">Copy</button></div>
+      <details class="uses">
+        <summary>When to use it <span class="s-meta">3 examples &middot; teacher, builder, health</span></summary>
+        <div class="use"><span class="chip c-teach">Teacher</span><div class="u-sit">A student reads aloud fluently but can&#x27;t say what happened in the text.</div><div class="pr sm"><div class="pr-text">Is there a name for a student who decodes well but doesn&#x27;t comprehend, and what does the research suggest doing about it?</div><button class="copy" type="button" data-p="Is there a name for a student who decodes well but doesn&#x27;t comprehend, and what does the research suggest doing about it?" onclick="copyP(this)">Copy</button></div></div><div class="use"><span class="chip c-build">Builder</span><div class="u-sit">You keep rebuilding systems instead of using them.</div><div class="pr sm"><div class="pr-text">Is there a name for the pattern of redesigning a system instead of running it, and what is known about breaking it?</div><button class="copy" type="button" data-p="Is there a name for the pattern of redesigning a system instead of running it, and what is known about breaking it?" onclick="copyP(this)">Copy</button></div></div><div class="use"><span class="chip c-health">Health</span><div class="u-sit">Something you notice in your sleep or training that you can&#x27;t put a label on.</div><div class="pr sm"><div class="pr-text">What&#x27;s the technical term for what I&#x27;m describing, so I can look up the research myself?</div><button class="copy" type="button" data-p="What&#x27;s the technical term for what I&#x27;m describing, so I can look up the research myself?" onclick="copyP(this)">Copy</button></div></div>
+      </details>
+    </div>
+    <div class="card" id="m5">
+      <div class="p-head"><span class="p-num">5</span><span class="p-name">Solutions from other fields</span></div>
+      <div class="p-ess">Your problem has probably already been solved somewhere you would never think to look.</div>
+      <div class="why">Fields reinvent each other&#x27;s solutions constantly. The model has read across all of them at once, which no single specialist has.</div>
+      <div class="lbl">The prompt</div>
+      <div class="pr"><div class="pr-text">Which other fields have faced a structurally similar problem, and how did they solve it?</div><button class="copy" type="button" data-p="Which other fields have faced a structurally similar problem, and how did they solve it?" onclick="copyP(this)">Copy</button></div>
+      <details class="uses">
+        <summary>When to use it <span class="s-meta">3 examples &middot; teacher, builder, money</span></summary>
+        <div class="use"><span class="chip c-teach">Teacher</span><div class="u-sit">Transitions between activities eat too much class time.</div><div class="pr sm"><div class="pr-text">Who else has to get thirty people to switch tasks quickly on cue, like stage managers or flight crews, and how do they do it?</div><button class="copy" type="button" data-p="Who else has to get thirty people to switch tasks quickly on cue, like stage managers or flight crews, and how do they do it?" onclick="copyP(this)">Copy</button></div></div><div class="use"><span class="chip c-build">Builder</span><div class="u-sit">The brief shows so many alerts that you&#x27;ve started ignoring them.</div><div class="pr sm"><div class="pr-text">How do hospitals and aviation handle alarm fatigue, and what can I borrow for a personal dashboard?</div><button class="copy" type="button" data-p="How do hospitals and aviation handle alarm fatigue, and what can I borrow for a personal dashboard?" onclick="copyP(this)">Copy</button></div></div><div class="use"><span class="chip c-money">Money</span><div class="u-sit">A betting or fantasy decision under heavy uncertainty.</div><div class="pr sm"><div class="pr-text">How do professional poker players or actuaries make decisions under this kind of uncertainty?</div><button class="copy" type="button" data-p="How do professional poker players or actuaries make decisions under this kind of uncertainty?" onclick="copyP(this)">Copy</button></div></div>
+      </details>
+    </div>
+    <div class="card alt" id="m6">
+      <div class="p-head"><span class="p-num">6</span><span class="p-name">How institutions actually work</span></div>
+      <div class="p-ess">Outcomes often turn on procedural levers most people never use: appeal routes, clauses, escalation paths, what a rep is allowed to do.</div>
+      <div class="why">This is where the return is most direct, in money or hours. It is also where models are most likely to be out of date, so it pairs with the check-the-specifics rule below.</div>
+      <div class="lbl">The prompt</div>
+      <div class="pr"><div class="pr-text">What are the formal and informal levers in this process that most people don&#x27;t use?</div><button class="copy" type="button" data-p="What are the formal and informal levers in this process that most people don&#x27;t use?" onclick="copyP(this)">Copy</button></div>
+      <details class="uses">
+        <summary>When to use it <span class="s-meta">3 examples &middot; teacher, consumer, money</span></summary>
+        <div class="use"><span class="chip c-teach">Teacher</span><div class="u-sit">A question about prep time, class size or composition.</div><div class="pr sm"><div class="pr-text">What provisions in a BC teachers&#x27; collective agreement typically govern this, and how do teachers normally raise it?</div><button class="copy" type="button" data-p="What provisions in a BC teachers&#x27; collective agreement typically govern this, and how do teachers normally raise it?" onclick="copyP(this)">Copy</button></div></div><div class="use"><span class="chip c-cons">Consumer</span><div class="u-sit">A charge on a bill you think is wrong.</div><div class="pr sm"><div class="pr-text">What is the full escalation path for disputing a charge with a Canadian telecom, and what are they actually allowed to do for me?</div><button class="copy" type="button" data-p="What is the full escalation path for disputing a charge with a Canadian telecom, and what are they actually allowed to do for me?" onclick="copyP(this)">Copy</button></div></div><div class="use"><span class="chip c-money">Money</span><div class="u-sit">Tax time with a salary plus side income.</div><div class="pr sm"><div class="pr-text">What CRA rules and deductions commonly apply to a salaried teacher who also earns income from books and courses?</div><button class="copy" type="button" data-p="What CRA rules and deductions commonly apply to a salaried teacher who also earns income from books and courses?" onclick="copyP(this)">Copy</button></div></div>
+      </details>
+    </div>
+    <div class="card" id="m7">
+      <div class="p-head"><span class="p-num">7</span><span class="p-name">Consensus versus popular advice</span></div>
+      <div class="p-ess">In health, money, parenting and learning, what everyone repeats and what the evidence supports are often different things.</div>
+      <div class="why">Separating settled from contested stops you from building a routine on a claim that was never solid. It also tells you where your own judgment is genuinely needed.</div>
+      <div class="lbl">The prompt</div>
+      <div class="pr"><div class="pr-text">What&#x27;s settled, what&#x27;s genuinely contested, and where does common advice diverge from the evidence?</div><button class="copy" type="button" data-p="What&#x27;s settled, what&#x27;s genuinely contested, and where does common advice diverge from the evidence?" onclick="copyP(this)">Copy</button></div>
+      <details class="uses">
+        <summary>When to use it <span class="s-meta">3 examples &middot; health, teacher, home</span></summary>
+        <div class="use"><span class="chip c-health">Health</span><div class="u-sit">A supplement or protocol that&#x27;s everywhere online.</div><div class="pr sm"><div class="pr-text">On this supplement, what&#x27;s settled, what&#x27;s contested, and where does popular advice outrun the evidence?</div><button class="copy" type="button" data-p="On this supplement, what&#x27;s settled, what&#x27;s contested, and where does popular advice outrun the evidence?" onclick="copyP(this)">Copy</button></div></div><div class="use"><span class="chip c-teach">Teacher</span><div class="u-sit">A teaching practice colleagues swear by.</div><div class="pr sm"><div class="pr-text">Which popular teaching practices have weak evidence behind them, and what does the research support instead?</div><button class="copy" type="button" data-p="Which popular teaching practices have weak evidence behind them, and what does the research support instead?" onclick="copyP(this)">Copy</button></div></div><div class="use"><span class="chip c-home">Home</span><div class="u-sit">A parenting question with loud opinions on every side.</div><div class="pr sm"><div class="pr-text">What does research actually settle about this for children, and what is still genuinely unknown?</div><button class="copy" type="button" data-p="What does research actually settle about this for children, and what is still genuinely unknown?" onclick="copyP(this)">Copy</button></div></div>
+      </details>
+    </div>
+    <div class="card alt" id="m8">
+      <div class="p-head"><span class="p-num">8</span><span class="p-name">What practitioners know</span></div>
+      <div class="p-ess">The rules of thumb experienced people use are rarely taught. They show up mainly when practitioners write about their mistakes.</div>
+      <div class="why">This compresses years of other people&#x27;s trial and error into a short list. It is most useful at the start of anything, when you cannot yet tell which mistakes are expensive.</div>
+      <div class="lbl">The prompt</div>
+      <div class="pr"><div class="pr-text">What do people with twenty years in this wish they&#x27;d known in year one?</div><button class="copy" type="button" data-p="What do people with twenty years in this wish they&#x27;d known in year one?" onclick="copyP(this)">Copy</button></div>
+      <details class="uses">
+        <summary>When to use it <span class="s-meta">3 examples &middot; teacher, writer, career</span></summary>
+        <div class="use"><span class="chip c-teach">Teacher</span><div class="u-sit">Your first high-school year in fifteen years.</div><div class="pr sm"><div class="pr-text">What do teachers who returned to high school after a long gap wish they&#x27;d known in the first month?</div><button class="copy" type="button" data-p="What do teachers who returned to high school after a long gap wish they&#x27;d known in the first month?" onclick="copyP(this)">Copy</button></div></div><div class="use"><span class="chip c-write">Writer</span><div class="u-sit">Before drafting a nonfiction book.</div><div class="pr sm"><div class="pr-text">What do authors who built a real readership for nonfiction wish they&#x27;d known before writing the first draft?</div><button class="copy" type="button" data-p="What do authors who built a real readership for nonfiction wish they&#x27;d known before writing the first draft?" onclick="copyP(this)">Copy</button></div></div><div class="use"><span class="chip c-career">Career</span><div class="u-sit">Before launching a course.</div><div class="pr sm"><div class="pr-text">What do people who have sold online courses wish they&#x27;d known before launch?</div><button class="copy" type="button" data-p="What do people who have sold online courses wish they&#x27;d known before launch?" onclick="copyP(this)">Copy</button></div></div>
+      </details>
+    </div>
+    <div class="card" id="m9">
+      <div class="p-head"><span class="p-num">9</span><span class="p-name">The cheapest test that would settle it</span></div>
+      <div class="p-ess">Before you spend time or money, find the smallest experiment that tells you whether the belief underneath is true.</div>
+      <div class="why">Gate expensive action behind cheap verification. The model is good at designing the test, even when it can&#x27;t answer the question itself.</div>
+      <div class="lbl">The prompt</div>
+      <div class="pr"><div class="pr-text">What&#x27;s the smallest, cheapest experiment that would tell me whether this is true?</div><button class="copy" type="button" data-p="What&#x27;s the smallest, cheapest experiment that would tell me whether this is true?" onclick="copyP(this)">Copy</button></div>
+      <details class="uses">
+        <summary>When to use it <span class="s-meta">3 examples &middot; builder, career, teacher</span></summary>
+        <div class="use"><span class="chip c-build">Builder</span><div class="u-sit">Before building an analysis page.</div><div class="pr sm"><div class="pr-text">Before I build this, what&#x27;s the cheapest test that shows whether my data can actually answer the question?</div><button class="copy" type="button" data-p="Before I build this, what&#x27;s the cheapest test that shows whether my data can actually answer the question?" onclick="copyP(this)">Copy</button></div></div><div class="use"><span class="chip c-career">Career</span><div class="u-sit">Before writing a book or course.</div><div class="pr sm"><div class="pr-text">What&#x27;s the smallest test that would tell me whether anyone wants this before I write it?</div><button class="copy" type="button" data-p="What&#x27;s the smallest test that would tell me whether anyone wants this before I write it?" onclick="copyP(this)">Copy</button></div></div><div class="use"><span class="chip c-teach">Teacher</span><div class="u-sit">Before redesigning a whole unit.</div><div class="pr sm"><div class="pr-text">What one-lesson test would tell me whether this approach works with these students?</div><button class="copy" type="button" data-p="What one-lesson test would tell me whether this approach works with these students?" onclick="copyP(this)">Copy</button></div></div>
+      </details>
+    </div>
+    <div class="card alt" id="m10">
+      <div class="p-head"><span class="p-num">10</span><span class="p-name">Patterns in your own thinking</span></div>
+      <div class="p-ess">The model can read everything you&#x27;ve said in a conversation and point out what you keep assuming without examining it.</div>
+      <div class="why">You can&#x27;t see your own assumptions, for the same reason you can&#x27;t see your own face. The model supplies the missing view, and it works best late in a long conversation.</div>
+      <div class="lbl">The prompt</div>
+      <div class="pr"><div class="pr-text">Based on what I&#x27;ve said, what am I taking for granted?</div><button class="copy" type="button" data-p="Based on what I&#x27;ve said, what am I taking for granted?" onclick="copyP(this)">Copy</button></div>
+      <details class="uses">
+        <summary>When to use it <span class="s-meta">3 examples &middot; builder, writer, career</span></summary>
+        <div class="use"><span class="chip c-build">Builder</span><div class="u-sit">At the end of a long planning session.</div><div class="pr sm"><div class="pr-text">Based on everything I&#x27;ve said in this conversation, what am I taking for granted?</div><button class="copy" type="button" data-p="Based on everything I&#x27;ve said in this conversation, what am I taking for granted?" onclick="copyP(this)">Copy</button></div></div><div class="use"><span class="chip c-write">Writer</span><div class="u-sit">You have several drafts in front of you.</div><div class="pr sm"><div class="pr-text">What do these pieces have in common that I might not be seeing?</div><button class="copy" type="button" data-p="What do these pieces have in common that I might not be seeing?" onclick="copyP(this)">Copy</button></div></div><div class="use"><span class="chip c-career">Career</span><div class="u-sit">A decision you have explained several times.</div><div class="pr sm"><div class="pr-text">Which of my stated reasons sound like the real reason, and which sound like justification?</div><button class="copy" type="button" data-p="Which of my stated reasons sound like the real reason, and which sound like justification?" onclick="copyP(this)">Copy</button></div></div>
+      </details>
+    </div>
+
+    <div class="section-k">Check the specifics</div>
+    <div class="band">
+      <b>Learn which levers exist from the model. Confirm the details from the source.</b><br>
+      Moves 6 and 7 are where a model is most likely to sound confident and be wrong or out of date: exact rules, clause numbers, deadlines, dosages, current policy. Use the answer to find out what to look for, then check it with the district, the CRA, the provider, or the primary study before you act.
+      <div class="pr"><div class="pr-text">What in your answer should I verify, and where would I check it?</div><button class="copy" type="button" data-p="What in your answer should I verify, and where would I check it?" onclick="copyP(this)">Copy</button></div>
+    </div>
+
+    <div class="section-k">For a big decision</div>
+    <div class="sub" style="margin-top:-2px;">One order that works when a decision matters. It's a suggestion, not a rule.</div>
+    <div class="seq">
+      <div><span class="st">1</span><span><b>Name it</b> (move 4), so you are working on a known problem.</span></div>
+      <div><span class="st">2</span><span><b>Ask the expert's questions</b> (move 2), and answer them.</span></div>
+      <div><span class="st">3</span><span><b>Get the failure modes</b> (move 1) for plans of this type.</span></div>
+      <div><span class="st">4</span><span><b>Hear the case against</b> (move 3) once your plan has taken shape.</span></div>
+      <div><span class="st">5</span><span><b>Run the cheapest test</b> (move 9) before committing anything expensive.</span></div>
+    </div>
+
+    <div class="section-k">The one thing</div>
+    <div class="one">
+      <div class="big"><b>Before asking for an answer, ask what an expert would ask you.</b></div>
+      <p>It opens the door to most of the other moves, because the expert's questions surface the failure modes, the missing names and the institutional levers on their own. If you only remember one prompt from this page, remember that one.</p>
+    </div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h1 style="font-size:20px;">Which move?</h1>
+    <div class="sub">Recognition, not recall. Each prompt is a situation. Say aloud which move fits and roughly what you'd type, then reveal. Ten situations per round, drawn at random.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Done</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn ghost" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  var read = m === 'read';
+  document.getElementById('read').style.display  = read ? 'block' : 'none';
+  document.getElementById('drill').style.display = read ? 'none' : 'block';
+  document.getElementById('tab-read').className  = read ? 'on' : '';
+  document.getElementById('tab-drill').className = read ? '' : 'on';
+  if(!read){ restart(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- copy ---------------- */
+function copyP(btn){
+  var t=btn.getAttribute('data-p');
+  function ok(){ btn.textContent='Copied'; btn.className='copy ok'; setTimeout(function(){ btn.textContent='Copy'; btn.className='copy'; },1400); }
+  function fallback(){
+    var ta=document.createElement('textarea'); ta.value=t; ta.setAttribute('readonly',''); ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); ok(); }catch(e){} document.body.removeChild(ta);
+  }
+  try{ if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(ok, fallback); } else { fallback(); } }
+  catch(e){ fallback(); }
+}
+
+/* ---------------- expand all examples ---------------- */
+var allOpen=false;
+function toggleAll(){
+  allOpen=!allOpen;
+  var d=document.querySelectorAll('details.uses');
+  for(var i=0;i<d.length;i++) d[i].open=allOpen;
+  document.getElementById('expandAll').textContent = allOpen ? 'Hide all examples' : 'Show all examples';
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-optimizing-ai';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+var lpFired=false;
+function pickPhoto(){ if(lpFired){ lpFired=false; return; } document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+/* long-press to remove (touch or mouse) */
+var lpTimer=null;
+function lpStart(){ lpTimer=setTimeout(function(){
+  lpFired=true;
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); }
+function lpEnd(){ if(lpTimer) clearTimeout(lpTimer); }
+var ph=document.getElementById('photo');
+ph.addEventListener('touchstart', lpStart); ph.addEventListener('touchend', lpEnd);
+ph.addEventListener('mousedown', lpStart); ph.addEventListener('mouseup', lpEnd); ph.addEventListener('mouseleave', lpEnd);
+
+/* ---------------- drill ---------------- */
+var POOL = [{"p": "You're about to sign a <b>two-year contract</b> for a service.", "m": 2, "name": "The questions you didn't know to ask", "l": "Supply the missing questions before you sign.", "q": "What questions would a savvy buyer ask before signing this?"}, {"p": "Your plan feels <b>obviously right</b> and everyone you've told agrees.", "m": 3, "name": "The strongest case against your view", "l": "Agreement is when you need the attack most.", "q": "Argue as hard as you can that this is the wrong move."}, {"p": "Something keeps going wrong and you <b>can't describe it</b> except vaguely.", "m": 4, "name": "The name for the thing", "l": "Find the name first. The name unlocks the research.", "q": "Is there a technical term for what I'm describing?"}, {"p": "A protocol all over social media <b>promises big results</b>.", "m": 7, "name": "Consensus versus popular advice", "l": "Separate settled from contested before you adopt it.", "q": "What's settled, what's contested, and where does this advice outrun the evidence?"}, {"p": "You're about to <b>spend a weekend building</b> a new feature.", "m": 9, "name": "The cheapest test that would settle it", "l": "Cheap test before expensive action.", "q": "What's the cheapest test that shows whether this is worth building?"}, {"p": "You're starting something of a <b>very common type</b> for the first time.", "m": 1, "name": "How things like this usually fail", "l": "Learn the usual failure modes before you commit.", "q": "What are the most common ways projects like this fail, and which am I most exposed to?"}, {"p": "You're stuck, and <b>every standard approach</b> in your field has failed.", "m": 5, "name": "Solutions from other fields", "l": "Look sideways into another field.", "q": "Which other fields have faced a structurally similar problem, and how did they solve it?"}, {"p": "A <b>charge on a bill</b> looks wrong.", "m": 6, "name": "How institutions actually work", "l": "Find the levers, then check them against the source.", "q": "What is the full escalation path for this, and what are they allowed to do for me?"}, {"p": "You're stepping into a role you <b>haven't done in years</b>.", "m": 8, "name": "What practitioners know", "l": "Borrow practitioners' hard-won rules of thumb.", "q": "What do people who returned to this after a long gap wish they'd known in the first month?"}, {"p": "You've talked through a decision for an hour and <b>keep circling</b>.", "m": 10, "name": "Patterns in your own thinking", "l": "Ask for the assumptions you can't see.", "q": "Based on what I've said, what am I taking for granted?"}, {"p": "You're asking for advice in an area <b>you know little about</b>.", "m": 2, "name": "The questions you didn't know to ask", "l": "Let the expert's questions frame the problem.", "q": "What would an expert in this field ask me before giving advice?"}, {"p": "You're <b>certain</b> a pick or position is a winner.", "m": 3, "name": "The strongest case against your view", "l": "Certainty is the signal to request the other side.", "q": "Make the strongest case against this, using only the facts I've given you."}, {"p": "Several students keep making <b>the same unusual mistake</b>.", "m": 4, "name": "The name for the thing", "l": "It likely has a name and a literature.", "q": "Is there a name for this error pattern, and what does research suggest doing about it?"}, {"p": "You want a new unit to <b>survive real students</b>, not just look good on paper.", "m": 1, "name": "How things like this usually fail", "l": "Check how units like this usually fail.", "q": "What are the common ways a unit like this breaks down in a real classroom?"}, {"p": "Your dashboard has so many alerts that you've <b>stopped reading them</b>.", "m": 5, "name": "Solutions from other fields", "l": "Other fields have solved exactly this.", "q": "How do hospitals and aviation handle alarm fatigue?"}, {"p": "Someone says <b>&ldquo;studies show&rdquo;</b> about nutrition.", "m": 7, "name": "Consensus versus popular advice", "l": "Ask what's settled and what's contested.", "q": "What does the evidence actually settle here, and what's still disputed?"}, {"p": "You want to launch something but <b>don't know if anyone wants it</b>.", "m": 9, "name": "The cheapest test that would settle it", "l": "Test demand before building.", "q": "What's the smallest test that would tell me whether anyone wants this?"}, {"p": "You're writing for an <b>audience you haven't reached yet</b>.", "m": 8, "name": "What practitioners know", "l": "Borrow from people who've already reached it.", "q": "What do people who built this kind of audience wish they'd known at the start?"}, {"p": "You notice you've <b>rejected three suggestions in a row</b>.", "m": 10, "name": "Patterns in your own thinking", "l": "The pattern may be in you rather than the suggestions.", "q": "What am I assuming that makes me reject these?"}, {"p": "You're dealing with a <b>large organization</b>, such as the district or an insurer.", "m": 6, "name": "How institutions actually work", "l": "Learn the procedure, then verify it.", "q": "What are the formal and informal levers in this process that most people don't use?"}];
+var ROUND = 10;
+var STEPS = [], idx=0, revealed=false;
+function escA(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function newRound(){ STEPS = shuffle(POOL.slice()).slice(0, ROUND); idx=0; }
+
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.p+'</div>';
+  b+='<div class="hint">Name the move &middot; then reveal</div>';
+  var inner='<div class="line"><b>Move '+st.m+': '+escA(st.name)+'.</b> '+escA(st.l)+'</div>'
+    + '<div class="pr sm"><div class="pr-text">'+escA(st.q)+'</div><button class="copy" type="button" data-p="'+escA(st.q)+'" onclick="copyP(this)">Copy</button></div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  newRound();
+  document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display='flex'; document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-optimizing-ai-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+</script>
+</body>
+</html>
