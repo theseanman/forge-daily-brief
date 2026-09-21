@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Entropy Protocol</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+  a.inl{ color:var(--accent-hi); }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* read cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.phys{ border-left-color:var(--teal); background:rgba(63,208,192,.08); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .trig{ font-size:13px; line-height:1.5; margin:4px 0 8px; color:var(--ink-dim); }
+  .trig b{ color:var(--gold); font-weight:800; letter-spacing:.04em; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .ex{ margin-top:11px; padding-top:10px; border-top:1px solid var(--line); }
+  .ex-row{ font-size:13.5px; line-height:1.55; margin:6px 0; }
+  .ex-row .tag{ display:inline-block; min-width:74px; font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .para{ font-size:14px; line-height:1.6; margin:7px 0; }
+  .para b{ color:var(--accent-hi); }
+  .card.phys .para b{ color:#8ff0e4; }
+
+  /* coin box */
+  .coinbox{ margin:12px 0 4px; background:rgba(6,28,64,.55); border:1px solid var(--line); border-radius:12px; padding:13px; }
+  .coins{ display:grid; grid-template-columns:repeat(8,1fr); gap:7px; max-width:360px; margin:0 auto; }
+  .coin{ aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800;
+    border:2px solid rgba(122,175,255,.4); color:rgba(234,244,255,.45); background:rgba(9,36,80,.6); transition:transform .25s ease, background .25s ease; }
+  .coin.h{ background:var(--gold); color:#3a2a00; border-color:#fff1b8; }
+  .coin.spin{ transform:rotateY(180deg); }
+  .coin-read{ text-align:center; font-size:14px; line-height:1.55; margin-top:12px; min-height:44px; }
+  .coin-read b{ color:var(--gold); }
+  .coin-bar{ display:flex; justify-content:center; gap:10px; margin-top:10px; }
+  .coin-tally{ text-align:center; font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; margin-top:10px; }
+
+  /* tools */
+  .tool{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:14px 16px; margin-bottom:11px; }
+  .t-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:5px; flex-wrap:wrap; }
+  .t-name{ font-size:16.5px; font-weight:700; }
+  .t-dose{ font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; }
+  .t-rule{ font-size:14px; line-height:1.55; margin:6px 0; }
+  .t-rule b{ color:var(--accent-hi); }
+  .q{ font-size:14px; line-height:1.55; margin:6px 0 6px 4px; padding-left:12px; border-left:2px solid var(--gold); }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+
+  /* drill */
+  #drill{ display:none; }
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(19px,5vw,26px); font-weight:300; line-height:1.4; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .btn:focus-visible, .toggle button:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>The Entropy Protocol</h1>
+    <div class="sub">Left alone, things drift from rare arrangements to common ones. You cannot stop the drift. You can decide what it drifts toward, what it costs you, how fast it runs, and what it powers on the way.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="section-k">The physics</div>
+
+    <div class="card phys">
+      <div class="p-head"><span class="p-name">The deck</span><span class="ev a">A</span></div>
+      <div class="para">A new deck sits in exactly <b>one</b> sorted order. It can sit in about <b>8 &times; 10<sup>67</sup></b> orders in total &mdash; a number with 68 digits. Shuffle it and it lands in a mixed-up order, not because shuffling prefers mess, but because almost every possible order is a mixed-up one.</div>
+      <div class="para"><b>Entropy is a count of arrangements.</b> Specifically: how many microscopic arrangements look the same from the outside. &ldquo;Sorted&rdquo; has one. &ldquo;Mixed&rdquo; has nearly all of them. Boltzmann wrote it as S = k log W, and it is carved on his tombstone.</div>
+    </div>
+
+    <div class="card phys">
+      <div class="p-head"><span class="p-name">Shake the box</span></div>
+      <div class="para">Sixteen coins. There is one way to get sixteen heads and 12,870 ways to get eight. Shake it and see where it lands.</div>
+      <div class="coinbox">
+        <div class="coins" id="coins"></div>
+        <div class="coin-read" id="coin-read">Every coin starts heads &mdash; the one rare arrangement.</div>
+        <div class="coin-bar">
+          <button class="btn" id="shakeBtn" onclick="shake()">Shake</button>
+          <button class="btn ghost" onclick="resetCoins()">Reset</button>
+        </div>
+        <div class="coin-tally" id="coin-tally"></div>
+      </div>
+    </div>
+
+    <div class="card phys">
+      <div class="p-head"><span class="p-name">Direction, then stillness</span><span class="ev a">A</span></div>
+      <div class="para"><b>Change has a direction.</b> Ink spreads through water and never gathers back into a drop. Coffee cools to the room and never reheats. Nothing forbids the reverse; it is just so outnumbered that it never happens. That one-way drift is the second law of thermodynamics, and it is the only law of physics that tells past from future.</div>
+      <div class="para"><b>Then the drift stops.</b> Once something reaches its most common arrangement &mdash; ink fully spread, coffee at room temperature &mdash; nothing you would notice changes any more. That is equilibrium. Entropy is not endless change; it is why change has a direction and why it runs out.</div>
+      <div class="para"><b>Order is possible, at a price.</b> A fridge, a body, a tidy room: each holds a rare arrangement by spending energy, and pays for it by creating more disorder somewhere else. Local order is always bought, never free.</div>
+    </div>
+
+    <div class="band"><b>Where the physics ends.</b> Everything below this line is analogy. People, classrooms and habits are not thermodynamic systems, and &ldquo;entropy says&rdquo; is never an argument for a life decision. The pattern carries over well &mdash; left alone, things drift toward whatever is easiest and most available &mdash; so each move is graded on its own behavioural evidence, not on borrowed authority from physics.</div>
+
+    <div class="section-k">The four moves</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">1</span><span class="p-name">Make the good outcome the likely one</span><span class="ev a">A</span></div>
+      <div class="p-ess">The cheapest way to get an outcome is not to push for it every time. It is to arrange things so that it is what happens when nobody pushes.</div>
+      <div class="trig"><b>Use when</b> you want something to happen repeatedly, or you have pushed for the same thing twice.</div>
+      <div class="move"><b>Set the default</b> &mdash; decide once, in advance, so the good option is what happens if you do nothing.</div>
+      <div class="move"><b>Move the cue into reach and the rival out of it</b> &mdash; whatever is closest wins most of the time.</div>
+      <div class="move"><b>Shorten the path</b> &mdash; count the steps to the good option and the steps to the bad one. Make the first number smaller.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Room 148</span> Warm-up on screen and books on desks before the bell. The easiest thing to do on arrival is start.</div>
+        <div class="ex-row"><span class="tag">Home</span> Phone charges in another room during time with the girls. Being present becomes the default instead of an act of will.</div>
+        <div class="ex-row"><span class="tag">Health</span> Blood work booked as a yearly recurring appointment. Things with no default never happen, however much you mean to.</div>
+        <div class="ex-row"><span class="tag">Income</span> The weekly project block sits in the calendar as a fixed slot, not as something you find time for.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">2</span><span class="p-name">Count the upkeep</span><span class="ev c">C</span></div>
+      <div class="p-ess">Everything organised costs energy to stay organised, forever. Every new thing you start is a permanent bill, not a one-time purchase.</div>
+      <div class="trig"><b>Use when</b> you are about to start anything new &mdash; a build, a commitment, a system, a protocol.</div>
+      <div class="move"><b>Price the year, not the evening</b> &mdash; ask what it will cost to keep alive in twelve months, not what it costs to make tonight.</div>
+      <div class="move"><b>One in, one out</b> &mdash; name what retires to make room before you start.</div>
+      <div class="move"><b>Maintain small and often</b> &mdash; a weekly tidy costs far less than a rescue after a month of drift.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Forge OS</span> The blank Drill tab sat in eight protocol pages for weeks before anyone noticed. Nothing broke it; nobody was paying the upkeep.</div>
+        <div class="ex-row"><span class="tag">Room 148</span> Routines taught in September drift after every break. Re-teaching them in the first class back is upkeep, not repetition.</div>
+        <div class="ex-row"><span class="tag">Home</span> Ten minutes of reset each evening beats the Saturday rescue.</div>
+      </div>
+      <div class="note">This page is itself an addition. It earns its place only if it replaces pushing with design. Otherwise it is one more thing to maintain.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">3</span><span class="p-name">Slow the drifts you can&rsquo;t stop</span><span class="ev a">A</span></div>
+      <div class="p-ess">Some declines are certain but slow, and their speed is negotiable. You will not stop them. You can decide how long they take.</div>
+      <div class="trig"><b>Use when</b> a decline is gradual and inevitable &mdash; the kind nobody notices month to month.</div>
+      <div class="move"><b>Watch the rate, not just the direction</b> &mdash; &ldquo;it is declining&rdquo; is fixed; &ldquo;how fast&rdquo; is the part you control.</div>
+      <div class="move"><b>Put a small, regular brake on it</b> &mdash; many little applications beat one large effort later.</div>
+      <div class="move"><b>Start before it shows</b> &mdash; by the time a slow drift is visible, most of it has already happened.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Muscle</span> Loss after 40 is certain; its pace is not. Lifting three days and protein around 1.6 g/kg on eating days are the brake.</div>
+        <div class="ex-row"><span class="tag">Fitness</span> Cardiorespiratory fitness falls with age. Aerobic volume is what slows it, which is why cardio minutes matter as much as lifting.</div>
+        <div class="ex-row"><span class="tag">Friends</span> Closeness fades with time apart. Small regular contact slows it far more cheaply than rebuilding a friendship that has lapsed.</div>
+        <div class="ex-row"><span class="tag">Blood</span> Markers like ApoB and blood pressure drift silently for years. A yearly check sees the rate while it is still cheap to change.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">4</span><span class="p-name">Harness drifts already flowing</span><span class="ev b">B</span></div>
+      <div class="p-ess">Most useful work in the world is drift being channelled &mdash; water running downhill through a wheel. Fight a strong tendency only when it cannot be pointed somewhere useful.</div>
+      <div class="trig"><b>Use when</b> you keep fighting the same tendency, in yourself or in a room.</div>
+      <div class="move"><b>Find which way it already runs</b> &mdash; name the tendency without judging it.</div>
+      <div class="move"><b>Attach what you want to it</b> &mdash; &ldquo;when X happens, I will Y,&rdquo; riding on something that already occurs.</div>
+      <div class="move"><b>Fight only what cannot be channelled</b> &mdash; some drifts, like the phone during family time, have no useful direction. Those get Move 1 instead.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Room 148</span> Students drift toward talking to each other. Structured partner talk turns the thing you would suppress into the lesson.</div>
+        <div class="ex-row"><span class="tag">You</span> You drift toward building. Pointed at low-impact work it is a problem; pointed deliberately at income work (<a class="inl" href="./getting-paid.html">Getting Paid</a>) it is the engine of the exit.</div>
+        <div class="ex-row"><span class="tag">Walks</span> Listening to protocols on walks already rides this: the walk happens anyway, and the learning is carried on it.</div>
+      </div>
+    </div>
+
+    <div class="note" style="margin:-2px 0 13px;">Move 1 overlaps with the Friction Engineering protocol in your terrain doctrine document. That one goes deeper on physical set-up; this one is the reason it works.</div>
+
+    <div class="section-k">The tools</div>
+
+    <div class="tool">
+      <div class="t-head"><span class="t-name">The drift map</span><span class="t-dose">10 min &middot; once, then each quarter</span></div>
+      <div class="t-rule">Write down <b>three drifts working against you</b> and <b>three working for you</b>. Beside each, name the move it needs: 1 to redesign, 2 to price, 3 to slow, 4 to harness.</div>
+      <div class="q">What slides every time I stop paying attention to it?</div>
+      <div class="q">What do I keep pushing for that never sticks?</div>
+      <div class="q">What happens easily that I could point somewhere better?</div>
+    </div>
+
+    <div class="tool">
+      <div class="t-head"><span class="t-name">Pushed twice</span><span class="t-dose">standing rule</span></div>
+      <div class="t-rule">If you have pushed for the same outcome twice, <b>the third time is a redesign, not a push</b>. Reminding, resolving and trying harder are all pushes. Changing the conditions is the only thing that counts as the third move.</div>
+    </div>
+
+    <div class="tool">
+      <div class="t-head"><span class="t-name">The upkeep check</span><span class="t-dose">before any new build</span></div>
+      <div class="q">What does this cost each week to keep alive?</div>
+      <div class="q">What breaks, quietly, if I stop paying that?</div>
+      <div class="q">What am I retiring to make room for it?</div>
+      <div class="t-rule">No answer to the third question means <b>it waits for Sunday</b>.</div>
+    </div>
+
+    <div class="tool">
+      <div class="t-head"><span class="t-name">The weekly drift audit</span><span class="t-dose">2 questions &middot; Sunday review</span></div>
+      <div class="q">What did I have to push for more than once this week?</div>
+      <div class="q">What slid without my noticing?</div>
+      <div class="t-rule">The first feeds <b>Pushed twice</b>. The second feeds <b>Move 3</b>. Folded into the existing Sunday review, with nothing new to track.</div>
+    </div>
+
+    <div class="section-k">The One Thing</div>
+    <div class="band" style="margin-bottom:0;">
+      <b>When you have pushed for something twice, stop pushing and redesign the conditions.</b><br>
+      Everything else here supports that one move. Effort spent holding something uphill is effort spent forever. Effort spent reshaping the slope is spent once.
+    </div>
+
+    <div class="section-k">Failure modes</div>
+    <div class="card">
+      <div class="move"><b>Redesign as displacement</b> &mdash; endlessly engineering the environment instead of doing the work it was meant to make easy. The redesign is a build, and builds are your known drift.</div>
+      <div class="move"><b>Analogy overreach</b> &mdash; treating &ldquo;entropy&rdquo; as proof. It is a lens for spotting patterns, never evidence that a pattern exists.</div>
+      <div class="move"><b>Defaults decay too</b> &mdash; a system set up once erodes like anything else. The weekly audit is what catches it.</div>
+      <div class="move"><b>Harnessing what should be blocked</b> &mdash; some drifts have no useful direction. Trying to &ldquo;channel&rdquo; the phone during family time just keeps it in the room.</div>
+      <div class="move"><b>Upkeep as an excuse</b> &mdash; counting the cost is not a reason to never start. Some things are worth their bill. The point is to know the bill before signing.</div>
+    </div>
+
+    <div class="section-k">Evidence</div>
+    <div class="key">
+      <span class="ev a">A</span> <b>Strong.</b> The physics itself: Boltzmann's statistical entropy and the second law. The deck count (52! &asymp; 8.07 &times; 10<sup>67</sup>) and the coin counts were computed, not recalled. Defaults: Johnson &amp; Goldstein (2003) on organ-donor defaults; Madrian &amp; Shea (2001) on automatic pension enrolment. Resistance training and adequate protein slowing age-related muscle loss. Implementation intentions (Gollwitzer &amp; Sheeran 2006 meta-analysis) for the &ldquo;when X, I will Y&rdquo; step.<br><br>
+      <span class="ev b">B</span> <b>Good, with variance.</b> Habits as context-cued behaviour (Wood &amp; Neal; Wood &amp; R&uuml;nger). Temptation bundling (Milkman et al. 2014), the closest tested version of harnessing a drift. Friendship closeness decaying with reduced contact (Roberts &amp; Dunbar).<br><br>
+      <span class="ev c">C</span> <b>Extrapolated.</b> The four-move frame is an organising lens, not a tested model. &ldquo;Count the upkeep&rdquo; borrows from planning-fallacy research, which is about underestimating time to finish, not ongoing cost. The extension is reasonable and untested.<br><br>
+      <span class="ev d">D</span> <b>Arbitrary.</b> &ldquo;Twice&rdquo;, the audit questions, one in one out, and the quarterly drift map. No evidence sets these. They are fixed in advance so they cannot be renegotiated in the moment.<br><br>
+      <b>Deliberately excluded:</b> &ldquo;life is a battle against entropy&rdquo; and claims that entropy explains ageing or decline. As a physical explanation that is wrong; living things are open systems. Also excluded: the popular &ldquo;20-second rule&rdquo; for friction, which has little direct testing behind the number.<br><br>
+      <b>Verify before quoting.</b> Citations are from recall, not looked up. Check any of them before they go anywhere public.
+    </div>
+
+    <div class="foot">Entropy &middot; Forge OS</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h1 style="font-size:20px;">Which move is this?</h1>
+    <div class="sub">Recognition, not recall. Each prompt is a situation. Name the move &mdash; redesign, upkeep, slow or harness &mdash; before revealing. Some ask for the physics instead.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Done</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn ghost" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  var read = m === 'read';
+  document.getElementById('read').style.display  = read ? 'block' : 'none';
+  document.getElementById('drill').style.display = read ? 'none' : 'block';
+  document.getElementById('tab-read').className  = read ? 'on' : '';
+  document.getElementById('tab-drill').className = read ? '' : 'on';
+  if(!read){ idx=0; document.getElementById('done').className='done-view'; document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity=''; renderStep(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-entropy';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+/* long-press to remove */
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- coin box ---------------- */
+var NCOIN=16, coinState=[], shakes=0, sawAllHeads=0;
+function comb(n,k){ var r=1; for(var i=1;i<=k;i++){ r=r*(n-k+i)/i; } return Math.round(r); }
+function fmt(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+function paintCoins(spin){
+  var box=document.getElementById('coins'); box.innerHTML='';
+  for(var i=0;i<NCOIN;i++){
+    var c=document.createElement('div');
+    c.className='coin'+(coinState[i]?' h':'')+(spin?' spin':'');
+    c.textContent=coinState[i]?'H':'T';
+    box.appendChild(c);
+  }
+  if(spin){ setTimeout(function(){ var cs=document.querySelectorAll('.coin'); for(var j=0;j<cs.length;j++){ cs[j].className=cs[j].className.replace(' spin',''); } }, 260); }
+}
+function resetCoins(){
+  coinState=[]; for(var i=0;i<NCOIN;i++) coinState.push(1);
+  shakes=0; sawAllHeads=0; paintCoins(false);
+  document.getElementById('coin-read').innerHTML='Every coin starts heads &mdash; the one rare arrangement.';
+  document.getElementById('coin-tally').textContent='';
+}
+function shake(){
+  var h=0;
+  for(var i=0;i<NCOIN;i++){ coinState[i]=Math.random()<0.5?1:0; h+=coinState[i]; }
+  shakes++; if(h===NCOIN) sawAllHeads++;
+  paintCoins(true);
+  var ways=comb(NCOIN,h);
+  document.getElementById('coin-read').innerHTML='<b>'+h+' heads.</b> '+fmt(ways)+' of the 65,536 possible arrangements look like this. All heads: 1.';
+  document.getElementById('coin-tally').textContent='Shakes: '+shakes+' \u00b7 back to all heads: '+sawAllHeads;
+}
+
+/* ---------------- drill ---------------- */
+var STEPS = [
+  { prompt:'Third time this week you have reminded the class to <b>take out their books</b>.',
+    lines:['<b>Move 1 &mdash; redesign.</b> Pushed twice already; the third move is a change of conditions, not a louder reminder.','Books on desks and the warm-up on screen before the bell, so starting is the easy thing.'] },
+  { prompt:'A clean idea for <b>a new OS page</b> arrives. One evening to build.',
+    lines:['<b>Move 2 &mdash; count the upkeep.</b> The evening is the cheap part. The bill is every week after.','What does it cost to keep alive, and what retires to make room? No answer to the second means it waits for Sunday.'] },
+  { prompt:'Partner talk keeps collapsing into <b>off-topic chat</b>.',
+    lines:['<b>Move 4 &mdash; harness.</b> They want to talk; that drift is already running.','Give the talk a structure and a product &mdash; sentence frames, a report-back &mdash; so the talking does the lesson&rsquo;s work.'] },
+  { prompt:'Your phone keeps pulling you out of <b>the hour with the girls</b>.',
+    lines:['<b>Move 1 &mdash; redesign.</b> Not Move 4: this drift has no useful direction to channel.','It charges in another room. Presence becomes the default rather than a feat of will.'] },
+  { prompt:'You are 47, and <b>muscle and aerobic fitness</b> will decline from here.',
+    lines:['<b>Move 3 &mdash; slow it.</b> The direction is fixed; the rate is yours.','Lifting, protein on eating days, and enough cardio minutes &mdash; small brakes applied every week, starting before it shows.'] },
+  { prompt:'A friend you have not spoken to <b>in months</b>.',
+    lines:['<b>Move 3 &mdash; slow it.</b> Closeness decays with time apart, gradually and without any single moment of loss.','A short, regular contact is the brake, and far cheaper than rebuilding later.'] },
+  { prompt:'The yearly <b>blood work</b> you meant to book in June still is not booked.',
+    lines:['<b>Move 1 &mdash; redesign.</b> It has no default, so it never happens, however much you mean it.','Book it as a recurring appointment. The decision gets made once.'] },
+  { prompt:'You feel the pull to build, and tonight it is <b>another tracker</b>.',
+    lines:['<b>Move 4 &mdash; harness</b>, checked by <b>Move 2</b>.','The building drift is real and strong. Point it at income work instead of another thing to maintain.'] },
+  { prompt:'A bug sat in <b>eight protocol pages</b> for weeks before anyone noticed.',
+    lines:['<b>Move 2 &mdash; the upkeep nobody paid.</b> Nothing broke it; drift did.','Maintain small and often. The weekly audit question &mdash; what slid without my noticing? &mdash; is built for exactly this.'] },
+  { prompt:'Physics: why does a shuffled deck <b>never come back to sorted</b>?',
+    lines:['<b>Numbers, not force.</b> One sorted order against about 8 &times; 10<sup>67</sup> in total.','Shuffling does not prefer mess. Mess is simply where almost all the arrangements are.'] },
+  { prompt:'Physics: the coffee on your desk is at <b>room temperature</b> and will stay there.',
+    lines:['<b>Equilibrium.</b> The drift has reached the most common arrangement, so noticeable change stops.','Entropy is why change has a direction, and why it runs out.'] },
+  { prompt:'Name <b>the one thing</b>.',
+    lines:['<b>When you have pushed for something twice, stop pushing and redesign the conditions.</b>','Holding something uphill costs forever. Reshaping the slope costs once.'] }
+];
+var idx=0, revealed=false;
+
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Name it &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  idx=0; document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-entropy-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+resetCoins();
+</script>
+</body>
+</html>
