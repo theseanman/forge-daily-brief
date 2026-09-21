@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Sick Day Protocol</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* read cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; }
+  .band b{ color:var(--gold); }
+  .seq{ font-size:14px; line-height:1.6; }
+  .seq div{ padding:8px 0; border-bottom:1px solid var(--line); }
+  .seq div:last-child{ border-bottom:none; }
+  .seq b{ color:var(--accent-hi); }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+
+  /* ladder */
+  .rung{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px;
+    padding:14px 16px; margin-bottom:11px; }
+  .r-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:5px; flex-wrap:wrap; }
+  .r-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .r-name{ font-size:16.5px; font-weight:700; }
+  .r-dose{ font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; }
+  .r-rule{ font-size:14px; line-height:1.55; margin:6px 0; }
+  .r-rule b{ color:var(--accent-hi); }
+  .r-fail{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:7px; }
+  .r-fail b{ color:var(--ink-dim); }
+
+  /* drill */
+  #drill{ display:none; }
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(19px,5vw,26px); font-weight:300; line-height:1.4; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+
+  /* ---- sick-day additions ---- */
+  :root{ --sup:#4fd1a5; --part:#f5d76e; --myth:#ff9a76; --harm:#ff5d73; --teal:#5fd3e6; --violet:#a98bff; }
+  .jump{ display:flex; flex-wrap:wrap; gap:7px; margin:0 0 18px; }
+  .jump a{ font-size:12px; font-weight:700; color:var(--ink); text-decoration:none; padding:7px 12px; border-radius:999px;
+    background:rgba(74,157,232,.16); border:1px solid var(--line); }
+  .jump a:nth-child(3n+2){ background:rgba(95,211,230,.14); }
+  .jump a:nth-child(3n){ background:rgba(169,139,255,.16); }
+  .jump a:focus-visible, .toggle button:focus-visible, .btn:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .part-h{ font-size:21px; font-weight:300; margin:30px 0 4px; padding-top:6px; scroll-margin-top:12px; }
+  .part-h small{ display:block; font-size:13px; color:var(--ink-dim); font-weight:400; margin-top:4px; line-height:1.5; }
+  .card.teal{ border-left-color:var(--teal); } .card.violet{ border-left-color:var(--violet); }
+  .card.gold{ border-left-color:var(--gold); } .card.red{ border-left-color:var(--harm); background:rgba(255,93,115,.08); }
+  .vd{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 8px; border-radius:999px; vertical-align:middle; color:#06203f; }
+  .vd.sup{ background:var(--sup); } .vd.part{ background:var(--part); } .vd.myth{ background:var(--myth); }
+  .vd.harm{ background:var(--harm); color:#fff; } .vd.unp{ background:rgba(255,255,255,.55); }
+  .row{ padding:12px 0; border-bottom:1px solid var(--line); }
+  .row:last-child{ border-bottom:none; }
+  .row-h{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px; }
+  .row-n{ font-size:15.5px; font-weight:700; }
+  .row p{ font-size:14px; line-height:1.55; color:var(--ink); }
+  .row p b{ color:var(--accent-hi); }
+  .row .use{ font-size:13px; color:var(--ink-dim); margin-top:5px; line-height:1.5; }
+  .row .use b{ color:var(--gold); }
+  .flag{ background:rgba(255,93,115,.10); border-left:4px solid var(--harm); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:12px; }
+  .flag b{ color:#ffb3bd; }
+  .flag .fh{ font-size:15px; font-weight:800; color:#ffc2ca; margin-bottom:4px; }
+  .kit div{ padding:8px 0 8px 26px; position:relative; border-bottom:1px solid var(--line); font-size:14px; line-height:1.5; }
+  .kit div:last-child{ border-bottom:none; }
+  .kit div:before{ content:''; position:absolute; left:2px; top:11px; width:13px; height:13px; border-radius:4px; border:2px solid var(--teal); }
+  .kit b{ color:var(--teal); }
+  .src{ font-size:12.5px; color:var(--ink-dim); line-height:1.6; }
+  .src div{ padding:5px 0; border-bottom:1px solid var(--line); }
+  .src div:last-child{ border-bottom:none; }
+  .src i{ color:var(--ink-quiet); }
+  .legend{ display:grid; grid-template-columns:auto 1fr; gap:6px 10px; align-items:center; font-size:12.5px; color:var(--ink-dim); line-height:1.45; }
+  .top-link{ display:block; text-align:right; font-size:11.5px; color:var(--ink-quiet); text-decoration:none; margin-top:4px; }
+  @media (prefers-reduced-motion: reduce){ .reveal-wrap{ transition:none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>The Sick Day Protocol</h1>
+    <div class="sub">How respiratory bugs actually reach you, what measurably keeps them out, and what to do in the first day &mdash; the only window where most of the useful moves still work. Every claim carries a grade, and every piece of folklore gets a verdict. General information, not medical advice: a pharmacist or HealthLink BC (8-1-1) outranks this page.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="jump">
+      <a href="#door">How you catch it</a>
+      <a href="#walls">Prevention</a>
+      <a href="#first">First 48 hours</a>
+      <a href="#relief">Relief</a>
+      <a href="#ledger">Supplements</a>
+      <a href="#folk">Folklore on trial</a>
+      <a href="#flags">Red flags</a>
+      <a href="#back">Coming back</a>
+      <a href="#kit">The kit</a>
+      <a href="#one">The one thing</a>
+    </div>
+
+    <div class="card violet">
+      <div class="p-name" style="margin-bottom:8px;">How to read the grades</div>
+      <div class="legend">
+        <span class="ev a">A</span><span>Consistent randomised trials, a solid meta-analysis, or settled public-health fact.</span>
+        <span class="ev b">B</span><span>Real trials with real limits &mdash; small, unblinded, mixed &mdash; or strong observational data.</span>
+        <span class="ev c">C</span><span>A single trial, a lab or mechanism finding, or evidence that points both ways.</span>
+        <span class="ev d">D</span><span>No human evidence. Tradition, anecdote, or expert habit.</span>
+      </div>
+      <div class="note">Folklore also gets a verdict: <span class="vd sup">SUPPORTED</span> <span class="vd part">PARTLY TRUE</span> <span class="vd myth">MYTH</span> <span class="vd harm">HARMFUL</span> <span class="vd unp">UNPROVEN</span>. A grade says how strong the evidence is; a verdict says what it concludes.</div>
+    </div>
+
+    <!-- ===================== THE DOOR IN ===================== -->
+    <div class="part-h" id="door">How you catch it<small>Nobody catches a cold from the weather. A virus gets in through a door, at a time when the guard is thin. Both halves matter.</small></div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">How it travels</span><span class="ev b">B</span></div>
+      <div class="p-ess">Three routes, and their share differs by virus. The room, the hands, and the face are the whole map.</div>
+      <div class="move"><b>Shared air</b> &mdash; small particles that hang in a room for minutes to hours. The dominant route for flu and COVID, and the reason crowded, stuffy rooms are where outbreaks happen.</div>
+      <div class="move"><b>Close range</b> &mdash; larger droplets from a cough, sneeze or conversation within a metre or two. Face-to-face at a desk counts.</div>
+      <div class="move"><b>Hands to face</b> &mdash; especially important for rhinovirus, the main common-cold virus. It survives for hours on hands and surfaces and gets in through the nose and the eyes, which drain into the nose. The mouth is a minor door.</div>
+      <div class="note">For a teacher this means handed-in paper, shared markers and door handles are carriers, and the classroom air is the bigger exposure in flu season.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">The clock</span><span class="ev a">A</span></div>
+      <div class="p-ess">You are usually infectious before you feel anything, and so was whoever gave it to you.</div>
+      <div class="move"><b>Incubation</b> &mdash; common cold roughly 1&ndash;3 days; flu 1&ndash;4 days, typically about 2; COVID now about 3; RSV 4&ndash;6.</div>
+      <div class="move"><b>Most contagious</b> &mdash; colds in the first two to three days of symptoms; flu from the day before symptoms to about a week after.</div>
+      <div class="move"><b>What that means</b> &mdash; the exposure that made you sick was probably two or three days ago, from someone who felt fine. The useful question is not &ldquo;who gave me this&rdquo; but &ldquo;who am I giving it to today&rdquo;.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">What thins the guard</span><span class="ev b">B</span></div>
+      <div class="p-ess">Exposure is constant. Whether it becomes an illness depends heavily on the state you are in when it arrives.</div>
+      <div class="move"><b>Short sleep</b> &mdash; in the best-known study (Prather, 2015), 164 adults wore sleep trackers for a week, then had a cold virus dripped into their noses in quarantine. Those averaging under six hours were about four times as likely to get sick as those sleeping over seven. Six to seven hours showed no significant difference. Sleep outranked age, stress, income and smoking as a predictor.</div>
+      <div class="move"><b>Chronic stress</b> &mdash; Cohen&rsquo;s virus-challenge studies (1991 onward) found a dose-response: the more psychological stress people reported, the more often a deliberate exposure turned into a cold.</div>
+      <div class="move"><b>A cold nose</b> &mdash; a 2022 study (Huang, Bleier and colleagues) found the inside of the nose drops about 5&deg;C in cold air, and at that temperature nasal cells released roughly 42% fewer of the virus-trapping vesicles that form part of the nose&rsquo;s first defence. That result is from cells in a dish, so treat it as mechanism, not proof.</div>
+      <div class="move"><b>Load</b> &mdash; young children average up to 10&ndash;12 colds a year. Standing in a room of teenagers every day is a higher dose than most jobs.</div>
+      <div class="note">Sleep is graded as association, not cause: the authors themselves said it is still open whether sleeping more protects you. It is the strongest predictor on the list, and it is also the one you control.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">Why September</span><span class="ev b">B</span></div>
+      <div class="p-ess">Every year, colds spike within weeks of school starting &mdash; before the weather turns.</div>
+      <div class="move"><b>The back-to-school surge</b> &mdash; rhinovirus rises sharply in September as children re-mix after summer, and it shows up in hospital data as a reliable autumn peak in asthma flare-ups.</div>
+      <div class="move"><b>Your version</b> &mdash; a new building, new students, new germs your immune system has not met, and the extra load of a new job hitting sleep and stress at the same moment. Expect the first cold of the year soon. It is not a failure of the protocol; it is the base rate.</div>
+    </div>
+    <a class="top-link" href="#read">&uarr; top</a>
+
+    <!-- ===================== PREVENTION ===================== -->
+    <div class="part-h" id="walls">Prevention, ranked<small>Ordered by what you get for the effort. The top of the list is boring on purpose.</small></div>
+
+    <div class="card teal">
+      <div class="p-head"><span class="p-num">1</span><span class="p-name">Seven hours, protected</span><span class="ev b">B</span></div>
+      <div class="p-ess">The biggest single lever in the evidence, and it costs nothing but an evening.</div>
+      <div class="move"><b>Guard the floor, not the average</b> &mdash; the risk in the Prather data sat below six hours. A string of short nights in a stressful week is exactly the setup.</div>
+      <div class="move"><b>Front-load it in exposure weeks</b> &mdash; the week school starts, a week after a sick room, the week before a trip.</div>
+      <div class="note">The whole playbook lives in the <a href="./sleep.html" style="color:var(--accent-hi);">Sleep protocol</a>. The brief already tracks it; a run of low scores in a heavy week is the signal to act.</div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><span class="p-num">2</span><span class="p-name">Vaccines</span><span class="ev a">A</span></div>
+      <div class="p-ess">The only item here that reliably prevents severe flu and COVID rather than shaving days off a cold.</div>
+      <div class="move"><b>Flu, every autumn</b> &mdash; effectiveness varies by season; in years when the vaccine matches the circulating strains it cuts the risk of illness needing medical care by roughly 40&ndash;60%, and it lowers the odds of a severe case even in poorly matched years. It is reformulated each year, which is why last year&rsquo;s does not carry over.</div>
+      <div class="move"><b>COVID, on current guidance</b> &mdash; eligibility and timing change year to year. Check ImmunizeBC for this fall&rsquo;s program before assuming.</div>
+      <div class="move"><b>It cannot give you the flu</b> &mdash; the injected vaccine contains no live virus. A sore arm or a day of feeling off is the immune response, not an infection.</div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><span class="p-num">3</span><span class="p-name">Hands off the face</span><span class="ev b">B</span></div>
+      <div class="p-ess">Across trials in schools, homes and offices, hand hygiene cut respiratory illness by about 14% (Cochrane, 2023, moderate certainty). It did not clearly reduce lab-confirmed flu, which fits flu being mostly airborne.</div>
+      <div class="move"><b>Wash at the transitions</b> &mdash; after collecting papers or handling shared materials, before eating, when you get home.</div>
+      <div class="move"><b>Sanitiser for the gaps</b> &mdash; alcohol rub is a reasonable stand-in when a sink is not near.</div>
+      <div class="move"><b>Eyes and nose</b> &mdash; those are the doors for rhinovirus. The habit of rubbing your eyes at the end of a marking stack is the one to catch.</div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><span class="p-num">4</span><span class="p-name">Air that moves</span><span class="ev c">C</span></div>
+      <div class="p-ess">Airborne viruses build up in still, crowded rooms. Diluting the air lowers the dose everyone is breathing.</div>
+      <div class="move"><b>Open what opens</b> &mdash; a window cracked, a door propped, especially in the last minutes of a full class.</div>
+      <div class="move"><b>A CO&#8322; monitor as a gauge</b> &mdash; CO&#8322; tracks exhaled air. Readings climbing well past 1,000 ppm mean the room is recycling a lot of breath; under about 800 is commonly used as a good-ventilation mark. It measures air change, not virus.</div>
+      <div class="move"><b>Portable HEPA filter</b> &mdash; a reasonable add in a room with poor airflow.</div>
+      <div class="note">Graded C because the case rests mostly on physics and observational school studies rather than clean trials. The mechanism is not in doubt; the size of the effect is.</div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><span class="p-num">5</span><span class="p-name">Move most days</span><span class="ev b">B</span></div>
+      <div class="p-ess">In a prospective study of about 1,000 adults (Nieman, 2011), those doing aerobic exercise five or more days a week had roughly 40% fewer days with respiratory illness than the least active.</div>
+      <div class="move"><b>Regular and moderate</b> &mdash; that is the pattern associated with fewer sick days. Observational, so fitter people may differ in other ways too.</div>
+      <div class="move"><b>Extreme bouts are different</b> &mdash; marathon-type efforts are followed by more colds in several studies. Relevant around a big event, not a normal training week.</div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><span class="p-name">Smaller walls</span><span class="ev c">C</span></div>
+      <div class="p-ess">Cheap, low-risk, weaker evidence. Worth knowing; not worth building a routine around unless you want to.</div>
+      <div class="move"><b>Gargle plain water</b> &mdash; a Japanese trial (Satomura, 2005) had healthy adults gargle water three times a day and found about 36% fewer respiratory infections. One trial, unblinded.</div>
+      <div class="move"><b>Probiotics</b> &mdash; a 2022 Cochrane review found fewer upper-respiratory infections with probiotics, at low-to-moderate certainty, with strains and doses all over the map. Details in the ledger.</div>
+      <div class="move"><b>Keep the nose warm</b> &mdash; a scarf over the nose in cold wind follows the 2022 nasal-temperature finding. Mechanism only, costs nothing.</div>
+      <div class="move"><b>Masks</b> &mdash; the 2023 Cochrane review found community mask trials uncertain, and no clear difference between N95s and surgical masks for lab-confirmed flu in the trials it pooled. Trials of this kind are hard to run, and a well-fitted respirator in a packed room during a bad season is a reasonable personal choice. The evidence does not settle it either way.</div>
+    </div>
+    <a class="top-link" href="#read">&uarr; top</a>
+
+    <!-- ===================== FIRST 48 HOURS ===================== -->
+    <div class="part-h" id="first">The first 48 hours<small>The scratchy throat is a deadline, not a maybe. Most of what shortens an illness only works if it starts early, and waiting to see is the most common way to lose the window.</small></div>
+
+    <div class="card gold">
+      <div class="p-head"><span class="p-num">1</span><span class="p-name">The first tickle</span><span class="ev b">B</span></div>
+      <div class="p-ess">Hour zero. Act the same day, not tomorrow.</div>
+      <div class="move"><b>Zinc lozenges, dissolved slowly</b> &mdash; zinc acetate or gluconate, adding up to more than 75&nbsp;mg of elemental zinc across the day, one every two to three waking hours, started within 24 hours. Stop after about five days, or sooner if nausea starts.</div>
+      <div class="move"><b>Salt water, both ends</b> &mdash; start a saline nasal rinse and a salt-water gargle today. How and why in the Relief section.</div>
+      <div class="move"><b>Cancel the hard session</b> &mdash; a hard workout on day one is spending the resource you need.</div>
+      <div class="move"><b>Bed early tonight</b> &mdash; the extra hour is the cheapest thing on this page.</div>
+      <div class="note">The zinc evidence is genuinely disputed and that is worth knowing. Hemil&auml;&rsquo;s pooled analysis of lozenge trials at that dose found colds about a third shorter. The 2024 Cochrane review, which mixed lozenge types, doses and zinc used for prevention, rated it low certainty with colds perhaps two days shorter. Both agree the effect, if real, depends on dose and form &mdash; low-dose lozenges showed nothing.</div>
+    </div>
+
+    <div class="card gold">
+      <div class="p-head"><span class="p-num">2</span><span class="p-name">Is this a cold, or more?</span><span class="ev a">A</span></div>
+      <div class="p-ess">Hours 6 to 24. The answer decides whether there is a treatment window to catch.</div>
+      <div class="move"><b>Cold pattern</b> &mdash; creeps in over a day or two, sore throat first, runny nose, little or no fever, you feel rough but functional.</div>
+      <div class="move"><b>Flu pattern</b> &mdash; comes on in hours: fever, chills, aching muscles, a flattened feeling. That speed is the tell.</div>
+      <div class="move"><b>Test</b> &mdash; a rapid COVID test at home. Keep a few in the cupboard before the season, not after.</div>
+      <div class="move"><b>Know the windows</b> &mdash; flu antivirals such as oseltamivir work best started within about 48 hours of symptoms; COVID&rsquo;s Paxlovid must start within five days. Both are mainly for people at higher risk of complications, and Paxlovid interacts with many medications. If you might qualify, call a pharmacist or 8-1-1 on day one, not day four.</div>
+    </div>
+
+    <div class="card gold">
+      <div class="p-head"><span class="p-num">3</span><span class="p-name">Teach or stay home</span><span class="ev b">B</span></div>
+      <div class="p-ess">The current public-health rule, used across respiratory viruses: stay home until you have been fever-free for 24 hours without fever-reducing medication and your symptoms are improving overall.</div>
+      <div class="move"><b>Fever means home</b> &mdash; not negotiable, and masking a fever with ibuprofen to get through a teaching day does not change it.</div>
+      <div class="move"><b>A mild cold without fever</b> &mdash; working is reasonable. Keep your distance from students&rsquo; desks, wash hands after coughing, and consider a mask for a few days to protect the room.</div>
+      <div class="move"><b>Decide the night before</b> &mdash; morning decisions made feeling half-awake default to going in.</div>
+      <div class="move"><b>Build the sub folder now, while well</b> &mdash; one emergency plan per course that a stranger can run. The main reason people teach sick is that staying home costs more work than going in. Remove that cost in advance.</div>
+    </div>
+
+    <div class="card gold">
+      <div class="p-head"><span class="p-num">4</span><span class="p-name">Days two and three</span><span class="ev c">C</span></div>
+      <div class="p-ess">The peak. The goal is to not make it worse and to not make it longer.</div>
+      <div class="move"><b>Eat</b> &mdash; for a viral illness, eating is the side the evidence leans towards (see &ldquo;feed a cold&rdquo; in the folklore section). Don&rsquo;t force food if you have no appetite, but don&rsquo;t fast on purpose.</div>
+      <div class="move"><b>Drink to thirst, plus a bit</b> &mdash; there are no trials showing extra fluids shorten a cold, but fever, a dry indoor atmosphere and mouth-breathing all cost water. Warm drinks earn their place for comfort alone.</div>
+      <div class="move"><b>Honey for the cough</b> and the rest of the relief table below, matched to the symptom you actually have.</div>
+      <div class="move"><b>Sleep as much as the body asks</b> &mdash; the sleepiness is part of the immune response, not laziness.</div>
+    </div>
+    <a class="top-link" href="#read">&uarr; top</a>
+
+    <!-- ===================== RELIEF ===================== -->
+    <div class="part-h" id="relief">Relief, by symptom<small>Nothing here cures a cold. These make it more bearable, and two of them may make it shorter. Match the remedy to the symptom you have instead of taking one of everything.</small></div>
+
+    <div class="card">
+      <div class="p-name" style="margin-bottom:4px;">Cough</div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">Honey</span><span class="ev b">B</span><span class="vd sup">WORKS</span></div>
+        <p>A 2021 systematic review (Abuelgasim, Oxford) of 14 trials found honey beat usual care for <b>cough frequency, cough severity and overall symptoms</b>. It outperformed diphenhydramine and did about as well as dextromethorphan.</p>
+        <div class="use"><b>Use:</b> a spoonful or two straight or in a warm drink, as needed, especially before bed. Never give honey to a baby under one.</div>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">Dextromethorphan (the &ldquo;DM&rdquo; syrups)</span><span class="ev c">C</span><span class="vd part">MARGINAL</span></div>
+        <p>Trials of over-the-counter cough medicines for colds are mixed and mostly small. Honey is the better first move.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-name" style="margin-bottom:4px;">Blocked or running nose</div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">Salt-water rinse and gargle</span><span class="ev b">B</span><span class="vd sup">PROMISING</span></div>
+        <p>In the Edinburgh ELVIS pilot trial (Ramalingam, 2019), 66 adults with colds who did <b>hypertonic saline nasal irrigation and gargling</b> recovered about two days sooner, used fewer medicines, and passed the cold to fewer household members. The 2024 ELVIS-Kids trial of about 300 children with colds found salt-water nose drops cut symptoms from about eight days to six. Neither trial was blinded.</p>
+        <div class="use"><b>Use:</b> a squeeze bottle or neti pot with saline, several times a day while symptoms last, plus a salt-water gargle. <b>Only ever with distilled, sterile, or boiled-then-cooled water</b> &mdash; see the neti-pot entry in the folklore section for why.</div>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">Pseudoephedrine (behind the pharmacy counter)</span><span class="ev b">B</span><span class="vd sup">WORKS, MODESTLY</span></div>
+        <p>A real oral decongestant with a small, genuine benefit for congestion in adults. It can raise blood pressure and heart rate and disturb sleep, so it is a pharmacist conversation if you have blood pressure issues or take other medications.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">Oral phenylephrine (the &ldquo;PE&rdquo; products)</span><span class="ev a">A</span><span class="vd myth">DOESN&rsquo;T WORK</span></div>
+        <p>The US FDA&rsquo;s advisory committee voted unanimously in 2023 that oral phenylephrine does not work as a decongestant, and in 2024 the FDA proposed removing it; less than 1% of the swallowed dose reaches the bloodstream. Many cold-and-flu combination products still contain it. <b>Check the label.</b></p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">Decongestant sprays (oxymetazoline, xylometazoline)</span><span class="ev b">B</span><span class="vd part">SHORT TERM ONLY</span></div>
+        <p>Fast and effective, but more than about three days of use causes rebound congestion that is worse than what you started with.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">Antihistamines alone</span><span class="ev b">B</span><span class="vd myth">LITTLE BENEFIT</span></div>
+        <p>For a cold, on their own, a small short-lived effect on sneezing and not much else. The drowsy ones are a sleep aid, not a cold treatment.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-name" style="margin-bottom:4px;">Sore throat, aches, fever</div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">Ibuprofen or acetaminophen</span><span class="ev a">A</span><span class="vd sup">WORKS</span></div>
+        <p>Both reliably ease headache, sore throat, muscle aches and fever. <b>They do nothing for the runny nose or cough.</b></p>
+        <div class="use"><b>Use:</b> for comfort, not to chase a number on the thermometer. Fever is part of the defence, and a couple of older cold-virus studies linked aspirin and acetaminophen to a weaker antibody response and, for aspirin, more virus shedding. Small studies, graded C. If the fever is making you miserable or stopping sleep, treat it.</div>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">Combination &ldquo;cold and flu&rdquo; products</span><span class="ev b">B</span><span class="vd part">CAREFUL</span></div>
+        <p>Combinations of a painkiller, a decongestant and an antihistamine give a small overall benefit in trials. The real risk is stacking: many contain acetaminophen, and taking a combination product <b>plus</b> plain acetaminophen is how people overshoot the daily maximum without noticing. Read every label and add up the acetaminophen.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">Hot drinks</span><span class="ev c">C</span><span class="vd sup">FEELS BETTER</span></div>
+        <p>A small Cardiff study (Sanu and Eccles, 2008) found a hot drink gave immediate, sustained relief of runny nose, cough, sneezing, sore throat and tiredness; the same drink at room temperature helped only some symptoms. Comfort is a legitimate outcome.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">Steam and humidified air</span><span class="ev b">B</span><span class="vd myth">NO CLEAR BENEFIT</span></div>
+        <p>A Cochrane review of heated humidified air for colds found no consistent benefit. It won&rsquo;t hurt, but don&rsquo;t expect much &mdash; and never lean over a pot of boiling water, which is a common way to get scalded.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">Menthol chest rubs</span><span class="ev c">C</span><span class="vd part">SUBJECTIVE</span></div>
+        <p>Menthol makes airflow feel easier without measurably changing it. In one trial with children, a vapour rub improved parents&rsquo; ratings of sleep and cough. Chest and neck only; never in or under the nose.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">Antibiotics</span><span class="ev a">A</span><span class="vd harm">WRONG TOOL</span></div>
+        <p>Colds and flu are viral; antibiotics do nothing against them, cause side effects, and breed resistance. They matter only when a bacterial complication develops &mdash; which is a doctor&rsquo;s call, and one of the red flags below.</p>
+      </div>
+    </div>
+    <a class="top-link" href="#read">&uarr; top</a>
+
+    <!-- ===================== LEDGER ===================== -->
+    <div class="part-h" id="ledger">The supplement ledger<small>What the aisle promises against what the trials found. The honest summary: one supplement has a real case at the onset of a cold, one fixes a deficiency, and most of the rest are unproven either way.</small></div>
+
+    <div class="card violet">
+      <div class="row">
+        <div class="row-h"><span class="row-n">Zinc lozenges</span><span class="ev b">B</span><span class="vd sup">WORTH IT, AT ONSET</span></div>
+        <p>The best-supported item on the shelf, but only in a specific form: <b>acetate or gluconate lozenges, dissolved slowly, over 75 mg elemental zinc per day, started within 24 hours</b>. Low-dose lozenges showed no effect. Hemil&auml;&rsquo;s analysis of seven high-dose trials found colds about 33% shorter; the 2024 Cochrane review rated the evidence low certainty.</p>
+        <div class="use"><b>Watch for:</b> bad taste and nausea are common. Avoid lozenges containing citric acid, which binds zinc. <b>Never use zinc nasal sprays or gels</b> &mdash; they have been linked to permanent loss of smell. Short courses only; months of high-dose zinc can deplete copper.</div>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">Vitamin C</span><span class="ev a">A</span><span class="vd part">DAILY, NOT RESCUE</span></div>
+        <p>The Cochrane review (Hemil&auml; and Chalker, 2013) is clear on three points. Taken <b>every day</b>, at least 200 mg shortened colds in adults by about 8%. It did not reduce how many colds ordinary people caught. And starting high doses <b>after</b> symptoms began showed no consistent effect. The exception: in marathon runners, skiers and soldiers in subarctic exercise, it halved cold risk.</p>
+        <div class="use"><b>Verdict:</b> a fruit-and-vegetable diet gets most people there. Megadosing at the first sneeze is not supported.</div>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">Vitamin D</span><span class="ev b">B</span><span class="vd part">FIX A DEFICIENCY</span></div>
+        <p>The 2021 meta-analysis (Jolliffe, Martineau) found a small protective effect, strongest with <b>daily</b> doses of 400&ndash;1,000 IU, with big weekly or monthly doses not working. The 2025 update, adding a very large new trial, gave a similar estimate but <b>no longer statistically significant</b>.</p>
+        <div class="use"><b>Verdict:</b> at Richmond&rsquo;s latitude the winter sun is too weak to make much vitamin D, so a modest daily dose through the dark months is reasonable, and a blood test settles whether you are low. It is not a cold remedy.</div>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">Probiotics</span><span class="ev c">C</span><span class="vd part">MAYBE, FOR PREVENTION</span></div>
+        <p>Cochrane (2022, 23 trials, about 7,000 people) found probiotics better than placebo at preventing upper-respiratory infections, with low-to-moderate certainty and many different strains and doses. Side effects were minor and digestive.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">Echinacea</span><span class="ev c">C</span><span class="vd unp">UNPROVEN</span></div>
+        <p>Cochrane (2014, 24 trials) found no significant prevention, while not ruling out a small effect. Products vary so much in species, plant part and extraction that &ldquo;echinacea&rdquo; is barely one thing. Allergy risk if you react to ragweed or daisies.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">Elderberry</span><span class="ev c">C</span><span class="vd unp">UNPROVEN</span></div>
+        <p>A 2021 systematic review (Wieland) found only five trials. Elderberry probably doesn&rsquo;t prevent colds; it may shorten colds and flu, but the evidence is uncertain. No evidence it overstimulates the immune system. Raw berries, leaves and stems are toxic &mdash; commercial syrups only.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">Garlic</span><span class="ev c">C</span><span class="vd unp">UNPROVEN</span></div>
+        <p>The Cochrane review found a single eligible trial of 146 people with fewer colds on garlic. One trial is a hint, not an answer. Fine as food.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">Andrographis and pelargonium</span><span class="ev c">C</span><span class="vd unp">WEAK SIGNAL</span></div>
+        <p>Both herbal extracts have trials suggesting some symptom relief &mdash; andrographis for cough and sore throat, pelargonium (sold as Umcka) mainly for acute bronchitis &mdash; but most trials are small and low quality. Both carry side-effect reports, including digestive upset and allergy, and pelargonium has case reports of liver injury.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">N-acetylcysteine (NAC)</span><span class="ev c">C</span><span class="vd unp">UNPROVEN</span></div>
+        <p>One Italian trial in older adults found fewer symptomatic flu-like episodes over a winter. Not replicated. No case for it at the onset of a cold.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">Colloidal silver</span><span class="ev d">D</span><span class="vd harm">HARMFUL</span></div>
+        <p>No evidence of benefit taken by mouth. Long-term use can cause <b>argyria</b>, a permanent blue-grey discolouration of the skin, and it interferes with some antibiotics and thyroid medication.</p>
+      </div>
+    </div>
+    <a class="top-link" href="#read">&uarr; top</a>
+
+    <!-- ===================== FOLKLORE ===================== -->
+    <div class="part-h" id="folk">Folklore on trial<small>Grandmothers were right more often than the internet gives them credit for &mdash; and wrong in some specific, checkable ways.</small></div>
+
+    <div class="card gold">
+      <div class="row">
+        <div class="row-h"><span class="row-n">&ldquo;Chicken soup cures a cold&rdquo;</span><span class="ev c">C</span><span class="vd part">PARTLY TRUE</span></div>
+        <p>Not a cure. A 2000 lab study (Rennard) found chicken soup slowed the movement of inflammatory white cells in a dish, a possible mild anti-inflammatory effect. The rest of its value is solid: warm fluid, salt, calories, and steam that feels good. As a vehicle for eating when sick, it is excellent.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">&ldquo;Feed a cold, starve a fever&rdquo;</span><span class="ev c">C</span><span class="vd part">PARTLY TRUE</span></div>
+        <p>A 2016 Yale study (Wang, Medzhitov) found that in mice with flu, feeding, specifically glucose, improved survival, while in mice with a bacterial infection, feeding killed them. That fits the proverb surprisingly well, but it was in mice. In people: eat when you have a viral illness, and don&rsquo;t force food when you have none. Whether a fever is viral or bacterial is often not something you can tell at home.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">&ldquo;Go out with wet hair and you&rsquo;ll catch a cold&rdquo;</span><span class="ev c">C</span><span class="vd part">PARTLY TRUE</span></div>
+        <p>Cold does not create a virus, and older virus-challenge studies found chilling did not make volunteers easier to infect. But a Cardiff trial (Johnson and Eccles, 2005) had 90 people sit with their feet in cold water for 20 minutes: 13 reported a cold in the following days, against 5 of 90 controls. The theory is that chilling tips an infection you were already quietly carrying into symptoms. The trial was unblinded and relied on self-report. Add the 2022 nasal-temperature work, and &ldquo;wrap up&rdquo; is reasonable &mdash; for the virus you already caught.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">&ldquo;Dairy makes more mucus&rdquo;</span><span class="ev b">B</span><span class="vd myth">MYTH</span></div>
+        <p>In a study that infected volunteers with a cold virus and weighed their nasal secretions (Pinnock, 1990), milk intake was not linked to mucus production. Milk can leave a coating in the mouth that feels like phlegm. If you like milk, there is no reason to drop it while sick.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">&ldquo;A hot toddy&rdquo;</span><span class="ev c">C</span><span class="vd part">PARTLY TRUE</span></div>
+        <p>The hot water, lemon and honey help. The whisky doesn&rsquo;t: alcohol fragments sleep and nudges dehydration, which are the two things you need least. Make it without the spirit and keep the good half.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">&ldquo;Sweat it out&rdquo;</span><span class="ev d">D</span><span class="vd myth">MYTH</span></div>
+        <p>No evidence that deliberate sweating clears a virus. With a fever, a sauna or heavy layering adds heat and fluid loss to a body already struggling with both. The <a href="./sauna.html" style="color:var(--accent-hi);">Sauna protocol</a> is for healthy days.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">&ldquo;Vicks on the soles of your feet&rdquo;</span><span class="ev d">D</span><span class="vd myth">MYTH</span></div>
+        <p>Whatever vapour rubs do, they do by being smelled. On the feet, under socks, there is no route by which it could affect a cough. Any effect is the menthol drifting up, or the ritual.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">&ldquo;Sliced onion in your socks&rdquo;</span><span class="ev d">D</span><span class="vd myth">MYTH</span></div>
+        <p>No trials and no plausible mechanism. Onions do not draw toxins or viruses out through the feet. Harmless, pointless, and your socks will smell of onion.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">&ldquo;Green snot means you need antibiotics&rdquo;</span><span class="ev b">B</span><span class="vd myth">MYTH</span></div>
+        <p>The colour comes from an enzyme in white blood cells, which turn up for viral infections too. Studies of patients with cough found sputum colour a poor guide to whether bacteria were involved. What matters is the pattern over time, not the colour on a given day.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">&ldquo;Antibiotics will knock it out&rdquo;</span><span class="ev a">A</span><span class="vd harm">HARMFUL</span></div>
+        <p>No effect on viruses; real side effects; contributes to resistance. See Relief.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">&ldquo;The flu shot gives you the flu&rdquo;</span><span class="ev a">A</span><span class="vd myth">MYTH</span></div>
+        <p>The injected vaccine has no live virus and cannot cause flu. Feeling achy for a day is the immune system responding. Catching something in the fortnight before protection builds, or catching a different virus entirely, gets blamed on the shot.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">&ldquo;You&rsquo;re only contagious with a fever&rdquo;</span><span class="ev a">A</span><span class="vd myth">MYTH</span></div>
+        <p>Flu spreads from the day before symptoms; colds spread easily with no fever at all. Feeling fine is not proof of not spreading it.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">&ldquo;A cold can turn into the flu&rdquo;</span><span class="ev a">A</span><span class="vd myth">MYTH</span></div>
+        <p>Different viruses; one cannot become the other. What does happen is a <b>secondary</b> bacterial infection &mdash; sinus, ear, chest &mdash; after a cold. Its signature is getting better and then getting worse, which is on the red-flag list.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">&ldquo;Megadose vitamin C the moment it starts&rdquo;</span><span class="ev a">A</span><span class="vd myth">MYTH</span></div>
+        <p>Trials that started vitamin C after symptoms began showed no consistent effect. See the ledger.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">&ldquo;Gargle with salt water&rdquo;</span><span class="ev b">B</span><span class="vd sup">SUPPORTED</span></div>
+        <p>Soothing for a sore throat, and part of the saline routine that shortened colds in the ELVIS trials. Half a teaspoon of salt in a glass of warm water.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">&ldquo;Honey for a cough&rdquo;</span><span class="ev b">B</span><span class="vd sup">SUPPORTED</span></div>
+        <p>One of the few remedies that beat usual care head to head. See Relief.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">&ldquo;Go to bed and sleep it off&rdquo;</span><span class="ev b">B</span><span class="vd sup">SUPPORTED</span></div>
+        <p>Sleep is tied to immune function in both directions, and the sleepiness of illness is part of the response. The old advice is sound.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">&ldquo;Work out and burn it off&rdquo;</span><span class="ev d">D</span><span class="vd part">PARTLY TRUE</span></div>
+        <p>The &ldquo;neck check&rdquo; used by sports medicine: symptoms only above the neck &mdash; runny nose, mild sore throat &mdash; and light-to-moderate exercise is usually fine if you feel up to it. Fever, body aches, chest symptoms or gut symptoms mean no exercise, because viral illness can inflame the heart muscle and hard exertion then is a known risk. This is expert consensus, not trial evidence. Exercise does not shorten a cold.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">Ginger shots, apple cider vinegar, oil of oregano</span><span class="ev d">D</span><span class="vd unp">UNPROVEN</span></div>
+        <p>Each has lab studies showing some antimicrobial or anti-inflammatory activity, and none has good human trials for colds. In food amounts they are harmless. Concentrated oregano oil can burn the mouth and upset the stomach, and undiluted vinegar can damage teeth and throat.</p>
+      </div>
+      <div class="row">
+        <div class="row-h"><span class="row-n">&ldquo;Rinse your nose with tap water&rdquo;</span><span class="ev a">A</span><span class="vd harm">HARMFUL</span></div>
+        <p>Rare but real: tap water can carry organisms, including the amoeba <i>Naegleria fowleri</i>, that are harmless to drink but can cause a fatal brain infection when flushed up the nose. Rinses use distilled or sterile water, or water boiled for a minute and cooled. Clean and dry the bottle after every use.</p>
+      </div>
+    </div>
+    <a class="top-link" href="#read">&uarr; top</a>
+
+    <!-- ===================== RED FLAGS ===================== -->
+    <div class="part-h" id="flags">Red flags<small>Most colds and flu resolve on their own. These are the patterns that mean it has stopped being a home-care problem.</small></div>
+
+    <div class="flag">
+      <div class="fh">Call 9-1-1</div>
+      Struggling to breathe at rest, or lips turning blue or grey. <b>Chest pain or pressure.</b> Confusion, being hard to wake, or a seizure. A high fever with a stiff neck, or with a rash that doesn&rsquo;t fade when pressed under a glass.
+    </div>
+    <div class="flag" style="background:rgba(245,215,110,.10); border-left-color:var(--gold);">
+      <div class="fh" style="color:var(--gold);">Call 8-1-1 or see a doctor the same day</div>
+      <b style="color:var(--gold);">Better, then worse</b> &mdash; improving for a few days, then fever returns or symptoms jump; the classic sign of a secondary bacterial infection. A fever lasting more than three days. A severe sore throat with fever but <b style="color:var(--gold);">no</b> cough or runny nose (a strep pattern). Facial pain and thick discharge beyond ten days. Ear pain. Can&rsquo;t keep fluids down, or very little urine. Shortness of breath when you move that you didn&rsquo;t have before. And any flu or COVID if you are in a higher-risk group, early, because of the antiviral windows.
+    </div>
+    <div class="note" style="margin:-2px 0 6px;">A cough that lingers for up to three weeks after a cold is common and usually not a red flag on its own. Past three weeks, get it checked.</div>
+    <a class="top-link" href="#read">&uarr; top</a>
+
+    <!-- ===================== COMING BACK ===================== -->
+    <div class="part-h" id="back">Coming back<small>The most common way to lose a second week is to return at full speed on day three.</small></div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">Back to the classroom</span><span class="ev b">B</span></div>
+      <div class="move"><b>The rule</b> &mdash; 24 hours without fever, without fever reducers, and symptoms improving overall.</div>
+      <div class="move"><b>The next five days</b> &mdash; you can still be shedding virus. Current guidance suggests extra care: a mask if coughing, hands after every cough, a little more distance from students&rsquo; desks, windows open.</div>
+      <div class="move"><b>Pace the first day</b> &mdash; teach the plan the sub left off, don&rsquo;t try to recover lost ground in one lesson.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">Back to training</span><span class="ev d">D</span></div>
+      <div class="p-ess">Expert practice rather than trials, but consistent across sports medicine.</div>
+      <div class="move"><b>Above-the-neck cold</b> &mdash; light sessions are fine if you feel up to them. Stop if you feel worse.</div>
+      <div class="move"><b>After a fever or flu</b> &mdash; wait until you are fever-free and the aches are gone, then come back at about half volume and intensity for the first session and build over a week.</div>
+      <div class="move"><b>Contact and sparring last</b> &mdash; Krav is close-contact and breath-heavy, which makes it both the hardest session to do sick and the easiest place to pass it on. Drills before sparring.</div>
+      <div class="move"><b>Stop signs</b> &mdash; chest pain, palpitations, unusual breathlessness, or feeling faint during a comeback session. Stop and get checked; after a viral illness these are not &ldquo;push through&rdquo; symptoms.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">Repay the debt</span><span class="ev c">C</span></div>
+      <div class="move"><b>Sleep</b> &mdash; the week after an illness is not the week to go short. The recovery and the next exposure are both waiting.</div>
+      <div class="move"><b>Restock the kit</b> &mdash; replace what you used while you still remember what ran out.</div>
+    </div>
+    <a class="top-link" href="#read">&uarr; top</a>
+
+    <!-- ===================== KIT ===================== -->
+    <div class="part-h" id="kit">The kit<small>Assembled while well. On day one you will not want to go to a pharmacy, and the zinc window will close while you think about it.</small></div>
+    <div class="card teal kit">
+      <div><b>Zinc acetate or gluconate lozenges</b> &mdash; check the label for elemental zinc per lozenge and no citric acid.</div>
+      <div><b>Honey</b> &mdash; a jar kept for this.</div>
+      <div><b>Saline rinse bottle and sachets, plus distilled water</b> &mdash; or boil and cool.</div>
+      <div><b>Rapid COVID tests</b> &mdash; within their expiry date.</div>
+      <div><b>A thermometer</b> &mdash; the stay-home rule depends on a number.</div>
+      <div><b>Ibuprofen and acetaminophen</b> &mdash; plain, single-ingredient, so you know what you took.</div>
+      <div><b>A decongestant that works</b> &mdash; pseudoephedrine from the pharmacist, or a short-course spray. Not a PE product.</div>
+      <div><b>The sub folder</b> &mdash; one emergency plan per course, somewhere a stranger can find it.</div>
+    </div>
+    <a class="top-link" href="#read">&uarr; top</a>
+
+    <!-- ===================== ONE THING ===================== -->
+    <div class="part-h" id="one">The one thing</div>
+    <div class="band">
+      <b>Treat the first tickle as a deadline.</b><br>
+      Zinc and salt water the same day, the hard session cancelled, an early night. Almost everything that shortens an illness works only in the first 24 hours, and the most common mistake is spending those hours deciding whether you are really getting sick. Upstream of that, the one prevention move that outranks the rest is the one you already track: seven hours, especially in the weeks the building fills up.
+    </div>
+
+    <div class="section-k">Failure modes</div>
+    <div class="card red">
+      <div class="move"><b>Waiting to see</b> &mdash; by the time it is clearly a cold, the zinc window is gone.</div>
+      <div class="move"><b>Teaching through a fever on ibuprofen</b> &mdash; you are contagious and the drug is hiding the stay-home signal.</div>
+      <div class="move"><b>Stacking combination products</b> &mdash; two sources of acetaminophen, one of which you forgot was in the cold medicine.</div>
+      <div class="move"><b>Buying the aisle instead of the sleep</b> &mdash; five supplements and a 5.5-hour night is the wrong trade.</div>
+      <div class="move"><b>Full intensity on day three</b> &mdash; the relapse that turns one week into two.</div>
+      <div class="move"><b>Paying for oral phenylephrine</b> &mdash; the most common decongestant on the shelf, and the one that doesn&rsquo;t work.</div>
+    </div>
+
+    <div class="section-k">Sources</div>
+    <div class="card src">
+      <div>Prather AA et al. Behaviorally assessed sleep and susceptibility to the common cold. <i>Sleep</i>, 2015.</div>
+      <div>Cohen S et al. Psychological stress and susceptibility to the common cold. <i>New England Journal of Medicine</i>, 1991.</div>
+      <div>Huang D et al. Cold exposure impairs extracellular vesicle swarm&ndash;mediated nasal antiviral immunity. <i>Journal of Allergy and Clinical Immunology</i>, 2022.</div>
+      <div>Jefferson T et al. Physical interventions to interrupt or reduce the spread of respiratory viruses. <i>Cochrane</i>, 2023.</div>
+      <div>Nieman DC et al. Upper respiratory tract infection is reduced in physically fit and active adults. <i>British Journal of Sports Medicine</i>, 2011.</div>
+      <div>Satomura K et al. Prevention of upper respiratory tract infections by gargling. <i>American Journal of Preventive Medicine</i>, 2005.</div>
+      <div>Nault D et al. Zinc for prevention and treatment of the common cold. <i>Cochrane</i>, 2024; Hemil&auml; H, Chalker E. Shortcomings in the Cochrane review on zinc for the common cold. <i>Frontiers in Medicine</i>, 2024.</div>
+      <div>Hemil&auml; H, Chalker E. Vitamin C for preventing and treating the common cold. <i>Cochrane</i>, 2013.</div>
+      <div>Jolliffe DA et al. Vitamin D supplementation to prevent acute respiratory infections. <i>Lancet Diabetes &amp; Endocrinology</i>, 2021, and updated 2025.</div>
+      <div>Zhao Y et al. Probiotics for preventing acute upper respiratory tract infections. <i>Cochrane</i>, 2022.</div>
+      <div>Karsch-V&ouml;lk M et al. Echinacea for preventing and treating the common cold. <i>Cochrane</i>, 2014.</div>
+      <div>Wieland LS et al. Elderberry for prevention and treatment of viral respiratory illnesses. <i>BMC Complementary Medicine and Therapies</i>, 2021.</div>
+      <div>Abuelgasim H et al. Effectiveness of honey for symptomatic relief in upper respiratory tract infections. <i>BMJ Evidence-Based Medicine</i>, 2021.</div>
+      <div>Ramalingam S et al. Hypertonic saline nasal irrigation and gargling in the common cold (ELVIS pilot). <i>Scientific Reports</i>, 2019; ELVIS-Kids, European Respiratory Society Congress, 2024.</div>
+      <div>US FDA. Proposed order removing oral phenylephrine as a nasal decongestant, November 2024.</div>
+      <div>Wang A et al. Opposing effects of fasting metabolism on tissue tolerance in bacterial and viral inflammation. <i>Cell</i>, 2016.</div>
+      <div>Johnson C, Eccles R. Acute cooling of the feet and the onset of common cold symptoms. <i>Family Practice</i>, 2005.</div>
+      <div>Pinnock CB et al. Relationship between milk intake and mucus production in adult volunteers challenged with rhinovirus-2. <i>American Review of Respiratory Disease</i>, 1990.</div>
+      <div>Rennard BO et al. Chicken soup inhibits neutrophil chemotaxis in vitro. <i>Chest</i>, 2000.</div>
+      <div>Sanu A, Eccles R. The effects of a hot drink on nasal airflow and symptoms of common cold and flu. <i>Rhinology</i>, 2008.</div>
+      <div>Return-to-work rule: CDC respiratory virus guidance (2024), mirrored by Canadian provincial guidance. Antiviral windows: BC Ministry of Health and BCCDC.</div>
+    </div>
+    <div class="foot" style="margin-top:22px;">General information &middot; not medical advice &middot; HealthLink BC 8-1-1</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h1 style="font-size:20px;">What's the move?</h1>
+    <div class="sub">Two kinds of prompt, mixed. A situation: name what you would do. A piece of folklore: call it supported, partly true, myth or harmful. Answer before revealing.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Done</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn ghost" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  var read = m === 'read';
+  document.getElementById('read').style.display  = read ? 'block' : 'none';
+  document.getElementById('drill').style.display = read ? 'none' : 'block';
+  document.getElementById('tab-read').className  = read ? 'on' : '';
+  document.getElementById('tab-drill').className = read ? '' : 'on';
+  if(!read){ idx=0; document.getElementById('done').className='done-view'; document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity=''; renderStep(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-sick';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+/* long-press to remove */
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- drill ---------------- */
+var MOVE='Name the move &middot; then reveal', CALL='Supported, partly, myth or harmful? &middot; then reveal';
+var STEPS = [
+  { hint:MOVE, prompt:'Sunday night. Your throat is <b>a little scratchy</b> and you feel basically fine.',
+    lines:['<b>It is a deadline, not a maybe.</b> Zinc lozenges tonight, dissolved slowly, over 75 mg a day in total.','Salt-water rinse and gargle, the hard session cancelled, bed early.'] },
+  { hint:CALL, prompt:'&ldquo;Feed a cold, starve a fever.&rdquo;',
+    lines:['<b>Partly true.</b> In mice, feeding helped them survive flu and killed them with a bacterial infection.','In people: eat through a viral illness, don&rsquo;t force food. Mouse evidence only.'] },
+  { hint:MOVE, prompt:'You have <b>38.4&deg;C</b> at 6 a.m. Ibuprofen would get you through the day.',
+    lines:['<b>Home.</b> Stay out until 24 hours fever-free without fever reducers, and improving.','The ibuprofen would hide the signal, not the virus. This is what the sub folder is for.'] },
+  { hint:CALL, prompt:'&ldquo;Dairy makes you produce more mucus.&rdquo;',
+    lines:['<b>Myth.</b> In volunteers infected with a cold virus, milk intake was not linked to how much mucus they produced.','The coating milk leaves in the mouth feels like phlegm. That is all it is.'] },
+  { hint:MOVE, prompt:'You are standing in the pharmacy aisle. The cold box says <b>&ldquo;PE&rdquo;</b>.',
+    lines:['<b>Put it back.</b> Oral phenylephrine performed no better than placebo; the FDA has proposed removing it.','Ask the pharmacist for pseudoephedrine, or use a spray for three days at most.'] },
+  { hint:CALL, prompt:'&ldquo;The flu shot gave me the flu.&rdquo;',
+    lines:['<b>Myth.</b> The injected vaccine has no live virus and cannot cause flu.','A sore arm or a day of feeling off is the immune response. Illness in the next two weeks is a different virus or bad timing.'] },
+  { hint:MOVE, prompt:'Day two. <b>Hacking cough</b> keeping you up at night.',
+    lines:['<b>Honey.</b> A spoonful or two before bed, straight or in a warm drink.','It beat usual care in the trials and matched dextromethorphan.'] },
+  { hint:CALL, prompt:'&ldquo;Go outside with wet hair and you&rsquo;ll catch a cold.&rdquo;',
+    lines:['<b>Partly true.</b> Cold doesn&rsquo;t create a virus, but chilling may tip one you already carry into symptoms.','Chilled-feet trial: 13 of 90 got colds versus 5 of 90. A cold nose also weakens its own defences. Wrap up.'] },
+  { hint:MOVE, prompt:'Hit by <b>fever, chills and aches within a few hours</b>. You are in a higher-risk group.',
+    lines:['<b>That speed is the flu pattern.</b> Call a pharmacist or 8-1-1 today.','Antivirals like oseltamivir work best inside about 48 hours. The window is the reason not to wait.'] },
+  { hint:CALL, prompt:'&ldquo;Green snot means it&rsquo;s bacterial and I need antibiotics.&rdquo;',
+    lines:['<b>Myth.</b> The colour comes from white-cell enzymes, which show up for viruses too.','The pattern matters, not the colour. Better-then-worse is the signal to get checked.'] },
+  { hint:MOVE, prompt:'Four days in, you were <b>clearly improving</b>. Today the fever is back and you feel worse.',
+    lines:['<b>Red flag: better, then worse.</b> Classic sign of a secondary bacterial infection.','Same-day call to 8-1-1 or a doctor. This is when antibiotics can actually matter.'] },
+  { hint:CALL, prompt:'&ldquo;Take a big dose of vitamin C the moment you feel it coming.&rdquo;',
+    lines:['<b>Myth.</b> Trials that started vitamin C after symptoms showed no consistent effect.','Daily vitamin C shaved about 8% off cold length in adults. Rescue doses did not.'] },
+  { hint:MOVE, prompt:'Filling the <b>neti pot</b> at the kitchen tap.',
+    lines:['<b>Stop.</b> Distilled or sterile water, or tap water boiled for a minute and cooled.','Tap water up the nose carries a rare but fatal amoeba risk. Clean and dry the bottle after.'] },
+  { hint:CALL, prompt:'&ldquo;Chicken soup cures a cold.&rdquo;',
+    lines:['<b>Partly true.</b> Not a cure. A lab study found a mild anti-inflammatory effect in a dish.','Warm fluid, salt and calories are genuinely useful. Eat it.'] },
+  { hint:MOVE, prompt:'Runny nose, no fever, feeling okay. <b>Krav tonight.</b>',
+    lines:['<b>Neck check:</b> above-the-neck only, so light training is allowed if you feel up to it.','But Krav is close-contact and breath-heavy &mdash; drills over sparring, and consider the partners. Fever or aches would mean no.'] },
+  { hint:CALL, prompt:'&ldquo;Colloidal silver kills any virus.&rdquo;',
+    lines:['<b>Harmful.</b> No evidence of benefit taken by mouth.','Long-term use can turn skin permanently blue-grey, and it interferes with some medications.'] },
+  { hint:MOVE, prompt:'Fever-free for two days and back at school. <b>Still coughing.</b>',
+    lines:['<b>Normal.</b> Post-cold cough often lasts up to three weeks.','Five days of extra care: hands after coughing, windows open, a mask if it&rsquo;s frequent. Past three weeks, get it checked.'] },
+  { hint:MOVE, prompt:'Name the <b>one thing</b>.',
+    lines:['<b>Treat the first tickle as a deadline.</b>','Upstream of it: seven hours, especially when the building fills up.'] }
+];
+var idx=0, revealed=false;
+
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">'+st.hint+'</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  idx=0; document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-sick-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+</script>
+</body>
+</html>
