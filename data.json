@@ -1,7 +1,7 @@
 {
   "welltory": {
-    "stress": 50,
-    "energy": 46,
+    "stress": 30,
+    "energy": 64,
     "health": 100
   },
   "body_comp": {
@@ -33,7 +33,7 @@
     "stage_source_date": "2026-09-02"
   },
   "notes": "",
-  "updated": "2026-09-21T14:06:25.767Z",
+  "updated": "2026-09-22T14:16:08.672Z",
   "calendar": [
     {
       "date": "Tue Sep 15",
