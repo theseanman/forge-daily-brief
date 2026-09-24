@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Honest Stop</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+  a.inl{ color:var(--accent-hi); }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* read cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.phys{ border-left-color:var(--teal); background:rgba(63,208,192,.08); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .trig{ font-size:13px; line-height:1.5; margin:4px 0 8px; color:var(--ink-dim); }
+  .trig b{ color:var(--gold); font-weight:800; letter-spacing:.04em; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .ex{ margin-top:11px; padding-top:10px; border-top:1px solid var(--line); }
+  .ex-row{ font-size:13.5px; line-height:1.55; margin:6px 0; }
+  .ex-row .tag{ display:inline-block; min-width:74px; font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .para{ font-size:14px; line-height:1.6; margin:7px 0; }
+  .para b{ color:var(--accent-hi); }
+  .card.phys .para b{ color:#8ff0e4; }
+
+  /* tools */
+  .tool{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:14px 16px; margin-bottom:11px; }
+  .t-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:5px; flex-wrap:wrap; }
+  .t-name{ font-size:16.5px; font-weight:700; }
+  .t-dose{ font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; }
+  .t-rule{ font-size:14px; line-height:1.55; margin:6px 0; }
+  .t-rule b{ color:var(--accent-hi); }
+  .q{ font-size:14px; line-height:1.55; margin:6px 0 6px 4px; padding-left:12px; border-left:2px solid var(--gold); }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+
+  /* drill */
+  #drill{ display:none; }
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(19px,5vw,26px); font-weight:300; line-height:1.4; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .btn:focus-visible, .toggle button:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>The Honest Stop</h1>
+    <div class="sub">Done, or covered? Set the line by what the result needs. Stop at it on the things that don&rsquo;t matter. Go one step past it on the things that do.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="section-k">The trap</div>
+
+    <div class="card phys">
+      <div class="p-head"><span class="p-name">Two kinds of effort</span><span class="ev b">B</span></div>
+      <div class="para"><b>Effort aimed at the outcome</b> asks what would make this actually work for the person it&rsquo;s for. <b>Effort aimed at the alibi</b> asks what would let you say you did everything, if it goes wrong. From the outside they often look the same, which is why they are hard to tell apart from the inside.</div>
+      <div class="para"><b>The tell is where the effort stops.</b> Outcome effort stops when the job does what it is for. Alibi effort stops when the uneasy feeling goes quiet &mdash; when you feel covered. Those two stopping points are often in different places.</div>
+      <div class="para"><b>The mismatch runs both ways.</b> Sometimes the feeling quiets before the job is done, so you stop short while feeling you tried. Sometimes it keeps nagging after the job is done, so you pile on effort that helps no one. Covered can look like less effort or like more.</div>
+    </div>
+
+    <div class="band"><b>Not more effort. Better-aimed effort.</b> &ldquo;Beyond good enough&rdquo; applied to everything turns into polishing, and polishing is where your time already leaks. This protocol goes past the line in a few chosen places, on purpose, and stops sooner everywhere else. The step past the line is paid for by the cut.</div>
+
+    <div class="section-k">The five moves, in order</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">1</span><span class="p-name">Set the line first</span><span class="ev a">A</span></div>
+      <div class="p-ess">Decide what finished looks like before you start, in terms of the result &mdash; not your effort.</div>
+      <div class="trig"><b>Use when</b> you begin anything that matters: a task, a conversation you have been putting off, a piece of help someone needs.</div>
+      <div class="move"><b>Write it as a result for them</b> &mdash; &ldquo;she can do tonight&rsquo;s questions on her own,&rdquo; not &ldquo;I spend an hour on her homework.&rdquo;</div>
+      <div class="move"><b>Make it checkable</b> &mdash; someone else could walk in and say whether it has been met. This is your done-when, aimed outward.</div>
+      <div class="move"><b>If you can&rsquo;t write the line, stop there</b> &mdash; you don&rsquo;t yet know what the effort is for, and effort with no line always stops at covered.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Home</span> Not &ldquo;talk to her about it,&rdquo; but &ldquo;she knows she can come to me about it again.&rdquo;</div>
+        <div class="ex-row"><span class="tag">Room 148</span> Not &ldquo;mark the essays,&rdquo; but &ldquo;each student knows the one thing to fix next.&rdquo;</div>
+        <div class="ex-row"><span class="tag">Income</span> Not &ldquo;work on the course,&rdquo; but &ldquo;module two is ready for a pilot user to try.&rdquo;</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">2</span><span class="p-name">The stop check</span><span class="ev a">A</span><span class="ev c">C</span></div>
+      <div class="p-ess">At the moment you stop, or notice you can&rsquo;t, ask one question: done, or covered?</div>
+      <div class="trig"><b>Use when</b> you are about to put something down &mdash; or you have finished and cannot seem to put it down.</div>
+      <div class="move"><b>Done</b> &mdash; the line is met. Stop. Any unease left over is noise, not information.</div>
+      <div class="move"><b>Covered</b> &mdash; you feel you have done enough, but the line is not met. Take <b>one</b> concrete move toward it, not a pile of effort to quiet the feeling.</div>
+      <div class="move"><b>Still going past done</b> &mdash; that is polishing. Stop, and spend the time somewhere on your past-the-line list.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Home</span> You explained the fractions once, she nodded, you are heading back to the laptop. Covered. One move: watch her do one question alone.</div>
+        <div class="ex-row"><span class="tag">Room 148</span> The deck meets the plan. You are now adjusting a shade of navy. Polishing. Close it.</div>
+      </div>
+      <div class="note">The if-then form is the tested part. The question itself is this protocol&rsquo;s reasoning, not a studied intervention.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">3</span><span class="p-name">One step past the line</span><span class="ev d">D</span></div>
+      <div class="p-ess">In a few chosen places, once the line is met, take one more step that nobody would check or notice was missing.</div>
+      <div class="trig"><b>Use when</b> the line is met on something on your past-the-line list: the girls first, then the one primary project. Nowhere else.</div>
+      <div class="move"><b>One step, named</b> &mdash; decide what it is before you take it. One, not a second project.</div>
+      <div class="move"><b>The test is invisibility</b> &mdash; if anyone would notice it missing, it was part of the line. The step past it is the one only you would know about.</div>
+      <div class="move"><b>It closes tonight</b> &mdash; a step past the line never opens a loop that survives the night. If it would, it is a new project and it waits for Sunday.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Home</span> Dinner done, everyone fed, nothing left on any list. You ask about the thing she mentioned yesterday, the one she assumed you had forgotten.</div>
+        <div class="ex-row"><span class="tag">Home</span> Homework finished. You stay two minutes longer and ask which part felt easy.</div>
+        <div class="ex-row"><span class="tag">Income</span> The module is ready. You send it to one real person and ask a single question about it.</div>
+      </div>
+      <div class="note">This is why an alibi can never be the motive: an alibi only needs what others can see. A step no one will see is done for them.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">4</span><span class="p-name">The cut</span><span class="ev b">B</span></div>
+      <div class="p-ess">On everything else, stop at the line or before it. Covering yourself on the unimportant is paid for out of the important.</div>
+      <div class="trig"><b>Use when</b> the task is not on your past-the-line list &mdash; which is most tasks.</div>
+      <div class="move"><b>Stop at the line</b> &mdash; met is finished. No second pass for peace of mind.</div>
+      <div class="move"><b>Name the list once</b> &mdash; decide which few things get the step past the line, and write them down, so the cut is never renegotiated in the moment.</div>
+      <div class="move"><b>Count what the cut buys</b> &mdash; the minutes saved here are the ones that pay for move 3.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Fantasy</span> Lineup set. Three more waiver articles will not change it.</div>
+        <div class="ex-row"><span class="tag">Email</span> The reply is clear and correct. Send it; no second draft &ldquo;just in case.&rdquo;</div>
+        <div class="ex-row"><span class="tag">Forge OS</span> It works and it is readable. The next refinement waits until something is actually wrong.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">5</span><span class="p-name">The weekly look back</span><span class="ev d">D</span></div>
+      <div class="p-ess">Once a week, two questions, asked in the Sunday review you already run. Nothing new to track.</div>
+      <div class="q">Where did I stop at covered instead of done?</div>
+      <div class="q">Where did I polish past done on something that didn&rsquo;t matter?</div>
+      <div class="t-rule">The first shows where the line was missed. The second shows where the time for <b>move 3</b> went instead.</div>
+    </div>
+
+    <div class="section-k">The one thing</div>
+    <div class="band" style="margin-bottom:0;">
+      <b>Done, or covered?</b><br>
+      Ask it at the moment you stop. Stop when the result is there, not when the feeling goes quiet &mdash; and where it counts most, take one step past the line that only you would know about.
+    </div>
+
+    <div class="section-k">Failure modes</div>
+    <div class="card">
+      <div class="move"><b>Running it live</b> &mdash; the question belongs at stopping points. Asked in the middle of an hour with the girls, it becomes the auditor with a clipboard, and attention on your own performance takes attention off them.</div>
+      <div class="move"><b>Past the line everywhere</b> &mdash; the step spreads to every task and becomes polishing with a better name. Keep the list short.</div>
+      <div class="move"><b>The step as a project</b> &mdash; &ldquo;one step past the line&rdquo; turns into a new build. If it opens a loop that survives the night, it is not a step.</div>
+      <div class="move"><b>The verdict spiral</b> &mdash; &ldquo;covered&rdquo; is a reading, not a judgement of you. One honest answer, one move, then drop it.</div>
+      <div class="move"><b>Treating real consequences as alibi</b> &mdash; going to work because the mortgage needs it, or driving the limit because tickets are real, is outcome effort. The question is about where you stop, not why you started.</div>
+      <div class="move"><b>This page as the alibi</b> &mdash; reading about the honest stop feels like making one. The page is worth something only if it changes where you stop this week.</div>
+    </div>
+
+    <div class="section-k">Evidence</div>
+    <div class="key">
+      <span class="ev a">A</span> <b>Strong.</b> Implementation intentions &mdash; the &ldquo;when X, I will Y&rdquo; form of the stop check roughly doubles follow-through (Gollwitzer &amp; Sheeran 2006 meta-analysis). Specific goals outperform vague &ldquo;do your best&rdquo; goals (Locke &amp; Latham 2002), which is the case for writing the line first.<br><br>
+      <span class="ev b">B</span> <b>Good, with variance.</b> People adjust effort to protect how they will see themselves if things go badly: self-handicapping (Berglas &amp; Jones 1978) and self-worth theory (Covington 1992). A close cousin of the covered pattern, not an exact match. People who try to optimize every choice report lower well-being than those who stop at good enough (Schwartz et al. 2002; correlational) &mdash; the case for the cut. Regrets of inaction last longer than regrets of action (Gilovich &amp; Medvec 1995). Attention to the steps of a practised skill disrupts it (Beilock &amp; Carr 2001) &mdash; the case against running this live.<br><br>
+      <span class="ev c">C</span> <b>Extrapolated.</b> The done-or-covered distinction &mdash; that the stopping point reveals the motive &mdash; is reasoning built on the work above. It fits the evidence and has not been tested as such.<br><br>
+      <span class="ev d">D</span> <b>Arbitrary.</b> One step past the line, the short list, the invisibility test and the two weekly questions. No evidence sets these. They are fixed in advance so they can&rsquo;t be renegotiated in the moment.<br><br>
+      <b>Deliberately excluded:</b> &ldquo;always give 110%&rdquo; and &ldquo;exceed expectations in everything&rdquo; &mdash; they feed the polishing leak. Also excluded: the test &ldquo;would you still do this if no one judged you?&rdquo; It confuses real consequences with judgement and misfires on ordinary obligations.<br><br>
+      <b>Verify before quoting.</b> Citations are from recall, not looked up. Check any of them before they go anywhere public.
+    </div>
+
+    <div class="foot">The Honest Stop &middot; Forge OS</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h1 style="font-size:20px;">Done, or covered?</h1>
+    <div class="sub">Recognition, not recall. Each prompt is a moment. Name it &mdash; done, covered, polishing, past the line or cut &mdash; before revealing. A few are none of these.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Done</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn ghost" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  var read = m === 'read';
+  document.getElementById('read').style.display  = read ? 'block' : 'none';
+  document.getElementById('drill').style.display = read ? 'none' : 'block';
+  document.getElementById('tab-read').className  = read ? 'on' : '';
+  document.getElementById('tab-drill').className = read ? '' : 'on';
+  if(!read){ idx=0; document.getElementById('done').className='done-view'; document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity=''; renderStep(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-honest-stop';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+/* long-press to remove */
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- drill ---------------- */
+var STEPS = [
+  { prompt:'You explained the fractions once. She <b>nodded</b>. You are heading back to the laptop.',
+    lines:['<b>Covered.</b> The line was &ldquo;she can do it on her own&rdquo;. A nod is not that.','One move: watch her do one question alone. Then you are done.'] },
+  { prompt:'The deck meets the lesson plan. You are now <b>adjusting a shade of navy</b>.',
+    lines:['<b>Polishing.</b> The line is met and the extra time helps no one in Room 148.','Close it. Spend the minutes somewhere on your past-the-line list.'] },
+  { prompt:'Dinner done, everyone fed. You ask about <b>the thing she mentioned yesterday</b>.',
+    lines:['<b>Past the line.</b> Nobody would have noticed if you had not asked.','That invisibility is the point: an alibi only needs what others can see.'] },
+  { prompt:'Your lineup is set. You open <b>a third waiver article</b>.',
+    lines:['<b>Cut.</b> Not on the past-the-line list, and the line is already met.','Stop there. The time saved pays for move 3.'] },
+  { prompt:'Something is bothering her. You read <b>two articles about it</b> and haven&rsquo;t spoken to her yet.',
+    lines:['<b>Covered.</b> Reading feels like acting, and it would let you say you looked into it.','The line is the conversation. One move: find ten minutes and ask her.'] },
+  { prompt:'You marked <b>every error</b> in a student&rsquo;s essay, so no one can say you missed one.',
+    lines:['<b>Covered &mdash; wearing the costume of more effort.</b>','The line was &ldquo;she knows the one thing to fix next&rdquo;. Circle the one that matters most and say so.'] },
+  { prompt:'You drive <b>the speed limit</b>, though left to yourself you wouldn&rsquo;t.',
+    lines:['<b>None of these.</b> Tickets and crashes are real consequences. Effort aimed at them is outcome effort.','The question is about where you stop, not why you started.'] },
+  { prompt:'Halfway through <b>an hour with the girls</b>, you catch yourself asking &ldquo;done or covered?&rdquo;',
+    lines:['<b>Wrong moment.</b> This question belongs at stopping points, not during the thing itself.','Put your attention back on them. Ask it afterwards, if at all.'] },
+  { prompt:'The parent email is clear and correct. You start <b>a second draft, just in case</b>.',
+    lines:['<b>Polishing</b> &mdash; or the cut, depending on how you look at it. Either way the answer is the same.','Send the first one.'] },
+  { prompt:'The line is met on a lesson plan, but you still feel <b>uneasy</b>, so you keep going.',
+    lines:['<b>Done.</b> The line is met; the unease is noise, not information.','Stopping when the result is there, not when the feeling goes quiet, is the whole protocol.'] },
+  { prompt:'The course module is ready. You send it to <b>one pilot user</b> with one question.',
+    lines:['<b>Past the line</b>, on the primary project, and it closes tonight.','One step, named, no new loop. That is the size it should stay.'] },
+  { prompt:'Name <b>the one thing</b>.',
+    lines:['<b>Done, or covered?</b>','Stop when the result is there, not when the feeling goes quiet. Where it counts most, take one step past the line that only you would know about.'] }
+];
+var idx=0, revealed=false;
+
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Name it &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  idx=0; document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-honest-stop-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+</script>
+</body>
+</html>
