@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Shaping and Adapting</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* read cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.phys{ border-left-color:var(--teal); background:rgba(63,208,192,.08); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .trig{ font-size:13px; line-height:1.5; margin:4px 0 8px; color:var(--ink-dim); }
+  .trig b{ color:var(--gold); font-weight:800; letter-spacing:.04em; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .ex{ margin-top:12px; padding-top:10px; border-top:1px solid var(--line); }
+  .ex-k{ font-size:12px; color:var(--ink-quiet); margin-bottom:4px; font-weight:700; }
+  .ex-row{ font-size:13.5px; line-height:1.55; margin:9px 0; }
+  .ex-row .tag{ display:block; font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); margin-bottom:1px; }
+  .ex-row .act{ color:var(--ink); font-weight:600; }
+  .ex-row .eg{ display:block; color:var(--ink-dim); font-style:italic; }
+  .sub-k{ font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); font-weight:800; margin:14px 0 2px; }
+  .fail{ margin-top:11px; font-size:13px; line-height:1.5; color:var(--ink-dim); background:rgba(245,215,110,.07); border-radius:10px; padding:9px 11px; }
+  .fail b{ color:var(--gold); }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .para{ font-size:14px; line-height:1.6; margin:7px 0; }
+  .para b{ color:var(--accent-hi); }
+  .card.phys .para b{ color:#8ff0e4; }
+
+  /* diagram */
+  .diagram{ margin:10px 0 6px; background:rgba(6,28,64,.45); border:1px solid var(--line); border-radius:12px; padding:8px 4px; }
+  .diagram svg{ display:block; width:100%; height:auto; max-width:420px; margin:0 auto; }
+  .cap{ font-size:11.5px; color:var(--ink-quiet); text-align:center; margin-top:4px; line-height:1.4; }
+
+  /* tools */
+  .tool{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:14px 16px; margin-bottom:11px; }
+  .t-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:5px; flex-wrap:wrap; }
+  .t-name{ font-size:16.5px; font-weight:700; }
+  .t-dose{ font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; }
+  .t-rule{ font-size:14px; line-height:1.55; margin:6px 0; }
+  .t-rule b{ color:var(--accent-hi); }
+  .q{ font-size:14px; line-height:1.55; margin:6px 0 6px 4px; padding-left:12px; border-left:2px solid var(--gold); }
+  .step{ font-size:14px; line-height:1.55; margin:8px 0; display:flex; gap:10px; }
+  .step .n{ flex:0 0 22px; height:22px; border-radius:50%; background:rgba(74,157,232,.25); color:var(--accent-hi); font-size:12px; font-weight:800;
+    display:flex; align-items:center; justify-content:center; margin-top:1px; }
+  .step b{ color:var(--accent-hi); }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+
+  /* drill */
+  #drill{ display:none; }
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(19px,5vw,26px); font-weight:300; line-height:1.4; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .btn:focus-visible, .toggle button:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>Shaping and Adapting</h1>
+    <div class="sub">After Maj. Paul Tremblay Jr, <i>Shaping and Adapting: Unlocking the Power of Colonel John Boyd&rsquo;s OODA Loop</i> (USMC Command and Staff College, 2015). Stay matched to reality. Speed only counts when the picture is right.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="section-k">The idea</div>
+
+    <div class="card phys">
+      <div class="p-head"><span class="p-name">The loop you were taught is wrong</span><span class="ev c">C</span></div>
+      <div class="para">The familiar picture is four arrows in a circle: observe, orient, decide, act, and whoever cycles fastest wins. Boyd never drew it that way. His final 1993 diagram is a web, and the hub is <b>Orientation</b>: your heritage, your culture, your experience, new information, and the constant breaking-down and rebuilding of your mental models.</div>
+      <div class="diagram" role="img" aria-label="Boyd's 1993 OODA diagram redrawn vertically: Observations feed forward into Orientation, which feeds Decision, which feeds Action. Feedback returns from Decision and Action to Observations. Implicit guidance and control runs directly from Orientation to Observations and to Action.">
+        <svg viewBox="0 0 360 566" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif">
+          <defs>
+            <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7fbfff"/></marker>
+            <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f5d76e"/></marker>
+            <marker id="at" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fd0c0"/></marker>
+          </defs>
+
+          <!-- stage labels -->
+          <text x="180" y="18" text-anchor="middle" fill="#eaf4ff" font-size="13" font-weight="800" letter-spacing="1.5">OBSERVE</text>
+
+          <!-- outside inputs -->
+          <text x="8" y="34" fill="rgba(234,244,255,.6)" font-size="10">Unfolding</text>
+          <text x="8" y="46" fill="rgba(234,244,255,.6)" font-size="10">circumstances</text>
+          <line x1="78" y1="44" x2="126" y2="58" stroke="#3fd0c0" stroke-width="1.5" marker-end="url(#at)"/>
+          <text x="352" y="34" text-anchor="end" fill="rgba(234,244,255,.6)" font-size="10">Outside</text>
+          <text x="352" y="46" text-anchor="end" fill="rgba(234,244,255,.6)" font-size="10">information</text>
+          <line x1="292" y1="44" x2="232" y2="56" stroke="#3fd0c0" stroke-width="1.5" marker-end="url(#at)"/>
+
+          <!-- observations -->
+          <ellipse cx="180" cy="70" rx="60" ry="22" fill="rgba(74,157,232,.22)" stroke="#7fbfff" stroke-width="1.5"/>
+          <text x="180" y="74" text-anchor="middle" fill="#eaf4ff" font-size="12.5" font-weight="700">Observations</text>
+
+          <!-- feed forward 1 -->
+          <line x1="180" y1="92" x2="180" y2="128" stroke="#7fbfff" stroke-width="1.8" marker-end="url(#ah)"/>
+          <text x="186" y="114" fill="rgba(234,244,255,.55)" font-size="9.5">feed forward</text>
+
+          <text x="180" y="146" text-anchor="middle" fill="#eaf4ff" font-size="13" font-weight="800" letter-spacing="1.5">ORIENT</text>
+          <!-- orientation box -->
+          <rect x="70" y="154" width="220" height="176" rx="22" fill="rgba(245,215,110,.08)" stroke="#f5d76e" stroke-width="2"/>
+          <g font-size="10.5" fill="#eaf4ff" text-anchor="middle">
+            <rect x="122" y="166" width="116" height="26" rx="13" fill="rgba(74,157,232,.25)" stroke="rgba(122,175,255,.6)"/>
+            <text x="180" y="183">Cultural traditions</text>
+            <rect x="80" y="214" width="96" height="26" rx="13" fill="rgba(74,157,232,.25)" stroke="rgba(122,175,255,.6)"/>
+            <text x="128" y="231">Genetic heritage</text>
+            <rect x="186" y="208" width="96" height="38" rx="8" fill="rgba(63,208,192,.18)" stroke="#3fd0c0"/>
+            <text x="234" y="224">Analysis &amp;</text>
+            <text x="234" y="237">synthesis</text>
+            <rect x="80" y="288" width="96" height="26" rx="13" fill="rgba(74,157,232,.25)" stroke="rgba(122,175,255,.6)"/>
+            <text x="128" y="305">New information</text>
+            <rect x="186" y="288" width="96" height="26" rx="13" fill="rgba(74,157,232,.25)" stroke="rgba(122,175,255,.6)"/>
+            <text x="234" y="305" font-size="9.5">Previous experience</text>
+          </g>
+          <g stroke="rgba(234,244,255,.35)" stroke-width="1">
+            <line x1="160" y1="192" x2="134" y2="214"/><line x1="200" y1="192" x2="224" y2="208"/>
+            <line x1="176" y1="227" x2="186" y2="227"/><line x1="128" y1="240" x2="128" y2="288"/>
+            <line x1="234" y1="246" x2="234" y2="288"/><line x1="170" y1="288" x2="210" y2="246"/>
+            <line x1="192" y1="288" x2="150" y2="240"/><line x1="176" y1="301" x2="186" y2="301"/>
+          </g>
+
+          <!-- feed forward 2 -->
+          <line x1="180" y1="330" x2="180" y2="370" stroke="#7fbfff" stroke-width="1.8" marker-end="url(#ah)"/>
+          <text x="186" y="354" fill="rgba(234,244,255,.55)" font-size="9.5">feed forward</text>
+
+          <!-- decision -->
+          <text x="180" y="365" text-anchor="end" dx="-66" fill="#eaf4ff" font-size="13" font-weight="800" letter-spacing="1.5">DECIDE</text>
+          <polygon points="180,372 250,404 180,436 110,404" fill="rgba(74,157,232,.22)" stroke="#7fbfff" stroke-width="1.5"/>
+          <text x="180" y="401" text-anchor="middle" fill="#eaf4ff" font-size="12" font-weight="700">Decision</text>
+          <text x="180" y="415" text-anchor="middle" fill="rgba(234,244,255,.75)" font-size="10.5">(hypothesis)</text>
+
+          <!-- feed forward 3 -->
+          <line x1="180" y1="436" x2="180" y2="466" stroke="#7fbfff" stroke-width="1.8" marker-end="url(#ah)"/>
+
+          <!-- action -->
+          <text x="180" y="483" text-anchor="end" dx="-58" fill="#eaf4ff" font-size="13" font-weight="800" letter-spacing="1.5">ACT</text>
+          <rect x="130" y="468" width="100" height="42" rx="6" fill="rgba(74,157,232,.22)" stroke="#7fbfff" stroke-width="1.5"/>
+          <text x="180" y="487" text-anchor="middle" fill="#eaf4ff" font-size="12" font-weight="700">Action</text>
+          <text x="180" y="501" text-anchor="middle" fill="rgba(234,244,255,.75)" font-size="10.5">(test)</text>
+
+          <!-- feedback from decision (left) -->
+          <polyline points="110,404 44,404 44,124 150,90" fill="none" stroke="#3fd0c0" stroke-width="1.5" marker-end="url(#at)"/>
+          <!-- feedback from action (left, outer) -->
+          <polyline points="130,500 24,500 24,114 136,86" fill="none" stroke="#3fd0c0" stroke-width="1.5" marker-end="url(#at)"/>
+          <text x="50" y="398" fill="rgba(63,208,192,.9)" font-size="9.5">feedback</text>
+          <text x="30" y="494" fill="rgba(63,208,192,.9)" font-size="9.5">feedback</text>
+
+          <!-- unfolding interaction with environment -->
+          <polyline points="180,510 180,540 8,540 8,104 124,78" fill="none" stroke="rgba(234,244,255,.45)" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#ah)"/>
+          <text x="20" y="558" fill="rgba(234,244,255,.6)" font-size="9.5">unfolding interaction with the environment</text>
+
+          <!-- implicit guidance and control (right, gold) -->
+          <polyline points="290,190 330,190 330,70 242,70" fill="none" stroke="#f5d76e" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#ag)"/>
+          <polyline points="290,300 330,300 330,489 232,489" fill="none" stroke="#f5d76e" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#ag)"/>
+          <text x="352" y="250" text-anchor="middle" fill="#f5d76e" font-size="9.5" transform="rotate(90 352 250)">implicit guidance &amp; control</text>
+        </svg>
+      </div>
+      <div class="cap">Boyd&rsquo;s 1993 diagram, redrawn top to bottom for a phone. Teal: feedback. Gold: implicit guidance and control.</div>
+      <div class="para"><b>Orientation decides what you notice.</b> It is not just the lens you interpret with; it filters what reaches you in the first place. A flawed orientation doesn&rsquo;t feel flawed. It feels like seeing.</div>
+      <div class="para"><b>A decision is a hypothesis. An action is a test.</b> Boyd wrote those words on the diagram. You act partly to find out whether your picture was right.</div>
+      <div class="para"><b>The gold lines are intuition.</b> A trained orientation drives action directly, skipping the decision step. That is the expert&rsquo;s speed. With a thin orientation the same shortcut produces fast, scripted action on cues that aren&rsquo;t there.</div>
+      <div class="para"><b>Relative speed, not absolute.</b> The advantage goes to whoever stays matched to reality while the situation moves. Fast action on a wrong picture is just falling into the trap sooner.</div>
+    </div>
+
+    <div class="band"><b>The failure to watch for: incestuous amplification.</b> Your expectations shape what you observe, the distorted observations confirm the expectations, and the loop closes on itself. Chuck Spinney compared it to a microphone held next to its own speaker. Early on the errors are small and hidden by luck, which is why it feels fine from inside. <b>The tell:</b> nothing surprises you, every signal agrees with you, and disagreement gets explained away. <b>The cure is structural:</b> open the loop to the world. Three of the six moves below exist to do exactly that.</div>
+
+    <div class="section-k">The seven moves</div>
+
+    <!-- 1 -->
+    <div class="card">
+      <div class="p-head"><span class="p-name">The relevance gate</span><span class="ev c">C</span></div>
+      <div class="p-ess">Before you start something new, name the outside observation that says it&rsquo;s needed now. No observation, no start.</div>
+      <div class="trig"><b>Use when</b> an idea arrives for a new build, task, project, purchase or routine, especially one that feels urgent and exciting. Not for three-second decisions, and never for time with the girls.</div>
+      <div class="move"><b>Name the signal in one sentence</b> &mdash; something you saw, were told, or measured. Something you thought is not a signal.</div>
+      <div class="move"><b>No signal: park it.</b> It goes to the parked list and waits for Sunday. That is the three-tier rule with a sharper test attached.</div>
+      <div class="move"><b>Weak signal: test before you build.</b> Take the cheapest action that would produce a real signal, not the full version.</div>
+      <div class="ex">
+        <div class="ex-k">In practice</div>
+        <div class="ex-row"><span class="tag">Room 148</span><span class="act">Before building a new worksheet variant, point to the student work that shows the current one isn&rsquo;t working.</span><span class="eg">&ldquo;Three students left Part C blank on two sheets&rdquo; passes. &ldquo;It could be better&rdquo; doesn&rsquo;t.</span></div>
+        <div class="ex-row"><span class="tag">Forge OS</span><span class="act">Before any new install, name the thing that broke or the number that stalled.</span><span class="eg">A card you&rsquo;ve stopped reading is a signal to remove one, not add one. &ldquo;It would be neat&rdquo; goes to the parked list.</span></div>
+        <div class="ex-row"><span class="tag">Income</span><span class="act">Before a new income idea, name one person who said they&rsquo;d pay or one number that moved.</span><span class="eg">Without that, it queues behind the Forge course, which already has a signal to chase: pilot users.</span></div>
+        <div class="ex-row"><span class="tag">Health</span><span class="act">Before adding a supplement, protocol or tracker, name the reading that says the current one isn&rsquo;t working.</span><span class="eg">&ldquo;My sleep average has dropped three weeks running&rdquo; passes. A podcast recommendation is outside information worth noting, not yet a reason.</span></div>
+        <div class="ex-row"><span class="tag">Home</span><span class="act">When a plan for the girls occurs to you mid-evening, check whether it came from something she said or did.</span><span class="eg">If it came from your head, the relevant action is usually to spend the evening with her rather than design for her.</span></div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> every idea finds a signal. Ask whether you&rsquo;d have noticed that signal before you had the idea. If not, you went looking for permission.</div>
+    </div>
+
+    <!-- 2 -->
+    <div class="card">
+      <div class="p-head"><span class="p-name">The outside judge</span><span class="ev a">A</span><span class="ev b">B</span></div>
+      <div class="p-ess">Everything you&rsquo;re building gets a judge that isn&rsquo;t you. Where you&rsquo;re the only evaluator, you&rsquo;re grading your own picture of the world.</div>
+      <div class="trig"><b>Use when</b> once now for every live project, then whenever something new becomes live.</div>
+      <div class="move"><b>The one-time sort (15 minutes).</b> List each live project. Beside it, write its external signal and when you&rsquo;ll next see it.</div>
+      <div class="move"><b>No judge: add one this week</b>, or accept the project is private practice rather than a bet, and stop evaluating it as one.</div>
+      <div class="move"><b>When the judge speaks, it outranks the feeling</b> &mdash; until another outside signal says otherwise.</div>
+      <div class="ex">
+        <div class="ex-k">In practice</div>
+        <div class="ex-row"><span class="tag">Room 148</span><span class="act">The judge is exit tickets and student work, not how the lesson felt.</span><span class="eg">After each unit, write your gut read of how it went, then look at the tickets. Note where the two disagree; that gap is your orientation error.</span></div>
+        <div class="ex-row"><span class="tag">FLA 6/7</span><span class="act">Adults will tell you directly if asked. Mid-term, ask two questions on paper: what helped most, and what wasted your time.</span><span class="eg">Anonymous, so the answers aren&rsquo;t shaped by who&rsquo;s asking.</span></div>
+        <div class="ex-row"><span class="tag">Income</span><span class="act">Forge course: pilot users before another rewrite. POF book: one reader who will push back. Stock system: the forward test, never the backtest.</span><span class="eg">A backtest is the model grading itself on data it was built from. It is the purest example of a closed loop.</span></div>
+        <div class="ex-row"><span class="tag">Health</span><span class="act">The judge is the data: sleep score, a lift or pace number, your Krav partner&rsquo;s read of your sparring.</span><span class="eg">Not how disciplined you felt this week.</span></div>
+        <div class="ex-row"><span class="tag">Home</span><span class="act">The girls are the judge of your fathering, not your checklist.</span><span class="eg">Every so often ask what the best part of their week was. If you never feature, that&rsquo;s data too.</span></div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> a judge that has never surprised you. Either you picked one who agrees with you, or you aren&rsquo;t hearing it. Find another.</div>
+    </div>
+
+    <!-- 3 -->
+    <div class="card">
+      <div class="p-head"><span class="p-name">Write the prediction</span><span class="ev b">B</span></div>
+      <div class="p-ess">A decision is a hypothesis. Write down the result you expect before you act, so the action becomes a test that teaches you something.</div>
+      <div class="trig"><b>Use when</b> an action is consequential: a new unit, a routine change, a system rule, a hard conversation. Not on three-second decisions.</div>
+      <div class="move"><b>One line: &ldquo;I expect X by Y.&rdquo;</b> Specific enough to be wrong. &ldquo;They&rsquo;ll improve&rdquo; can&rsquo;t miss, so it can&rsquo;t teach.</div>
+      <div class="move"><b>Add a confidence word if you like</b> &mdash; likely, coin flip, or long shot.</div>
+      <div class="move"><b>On Sunday, mark each one:</b> hit, miss, or can&rsquo;t tell. Look for what the misses have in common, not at the score.</div>
+      <div class="ex">
+        <div class="ex-k">In practice</div>
+        <div class="ex-row"><span class="tag">Room 148</span><span class="act">Predict each unit&rsquo;s outcome on its first day.</span><span class="eg">&ldquo;By Friday, most of ELL 3 will use the target structure unprompted on the exit ticket.&rdquo;</span></div>
+        <div class="ex-row"><span class="tag">Income</span><span class="act">Predict before each launch or send.</span><span class="eg">&ldquo;Two of five pilot users will finish module one within a week.&rdquo; If it&rsquo;s zero, the misses tell you where the course loses people.</span></div>
+        <div class="ex-row"><span class="tag">Stock system</span><span class="act">Before overriding a system signal by hand, write what you expect and why.</span><span class="eg">Your overrides then become a record of whether your judgement beats the model. Right now you don&rsquo;t know.</span></div>
+        <div class="ex-row"><span class="tag">Health</span><span class="act">Predict the effect of any change before you make it.</span><span class="eg">&ldquo;Moving bedtime 30 minutes earlier lifts my weekly sleep average within two weeks.&rdquo;</span></div>
+        <div class="ex-row"><span class="tag">Home</span><span class="act">Predict how a change of approach will land.</span><span class="eg">&ldquo;If I ask about her day at dinner instead of in the car, I&rsquo;ll get more than one-word answers.&rdquo;</span></div>
+        <div class="ex-row"><span class="tag">Fantasy</span><span class="act">Use lineup and waiver calls as free calibration reps.</span><span class="eg">Low stakes, weekly feedback, clear outcomes: an ideal practice ground for judging your own confidence.</span></div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> the score becomes a verdict on you. A miss is information about your picture, not your worth. One honest mark, then move on.</div>
+    </div>
+
+    <!-- 4 -->
+    <div class="card">
+      <div class="p-head"><span class="p-name">Re-orient on new ground</span><span class="ev b">B</span></div>
+      <div class="p-ess">When the ground changes, your old picture still feels like perception, but it&rsquo;s memory. Look for what surprises you.</div>
+      <div class="trig"><b>Use when</b> anything is new: Richmond High this year, a new class or cohort, a new group, a new role, or someone close entering a new stage.</div>
+      <div class="move"><b>The weekly surprise note, for six weeks.</b> One line: what didn&rsquo;t match what you expected.</div>
+      <div class="move"><b>A week with no surprise is the warning.</b> You&rsquo;re seeing your model, not the room. Look harder or ask someone.</div>
+      <div class="move"><b>Ask the insider:</b> &ldquo;What do newcomers here usually get wrong?&rdquo;</div>
+      <div class="move"><b>Update on two signals, not one.</b> One surprise is an anecdote; the same surprise twice is a change in the ground.</div>
+      <div class="ex">
+        <div class="ex-k">In practice</div>
+        <div class="ex-row"><span class="tag">Richmond High</span><span class="act">Fifteen years away from high school means your model of teenagers was built somewhere else. Keep the surprise note through October.</span><span class="eg">Watch what students do in the first five minutes of class before you correct anything. Ask a teacher who has been there for years what newcomers get wrong.</span></div>
+        <div class="ex-row"><span class="tag">Block B</span><span class="act">Each host teacher&rsquo;s room is their ground, not yours.</span><span class="eg">Before offering support, ask each one what kind of help actually helps in their room, and watch one lesson before changing anything.</span></div>
+        <div class="ex-row"><span class="tag">FLA 6/7</span><span class="act">Every new term is a new cohort. Treat the first night as observation.</span><span class="eg">Last term&rsquo;s first-night plan was built for last term&rsquo;s people.</span></div>
+        <div class="ex-row"><span class="tag">Home</span><span class="act">Your daughters keep moving to new ground.</span><span class="eg">What your older daughter wanted two years ago may not be what she wants now. Ask rather than rerun the old plan.</span></div>
+        <div class="ex-row"><span class="tag">Travel</span><span class="act">Somewhere new, run the surprise note daily for the first few days.</span><span class="eg">It turns being disoriented into something useful.</span></div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> explaining every surprise away as an exception. If they all turn out to be exceptions, the rule you&rsquo;re protecting is the thing that&rsquo;s out of date.</div>
+    </div>
+
+    <!-- 5 -->
+    <div class="card">
+      <div class="p-head"><span class="p-name">Find the contradictions</span><span class="ev a">A</span><span class="ev b">B</span><span class="ev c">C</span></div>
+      <div class="p-ess">Boyd&rsquo;s moral design starts at home: avoid mismatches between &ldquo;what we say we are, what we are, and the world we have to deal with.&rdquo; Find the gaps on purpose, then close them one at a time.</div>
+      <div class="trig"><b>Use when</b> Sunday, for the audit; any time a reaction is sharper than the moment deserved; or when someone who doesn&rsquo;t share your assumptions throws you. Never in the middle of a lesson or an evening.</div>
+      <div class="sub-k">Find them</div>
+      <div class="move"><b>Start from claims you already hold.</b> The list is your Fixed Core: the values and hard lines from the Orientation protocol. Not new claims invented for the occasion.</div>
+      <div class="move"><b>The records audit.</b> Check each claim against something you didn&rsquo;t write in the moment: the planner, the calendar, the Forge logs, spending, screen time. Where the record and the claim disagree, you have a candidate.</div>
+      <div class="move"><b>The defensiveness log.</b> A sharp reaction to a mild comment marks a claim that is carrying weight on thin support. Afterwards, note the trigger and the claim it threatened.</div>
+      <div class="move"><b>Where the script broke.</b> Boyd, citing Edward Hall: you only see your own hidden program when someone doesn&rsquo;t follow it. When a colleague, a student or a new setting throws you, ask which assumption it exposed.</div>
+      <div class="move"><b>Other people are the fourth detector</b> &mdash; that&rsquo;s the outside judge. Ask someone who sees you often: &ldquo;What do I say about myself that you don&rsquo;t see me do?&rdquo; Don&rsquo;t argue with the answer.</div>
+      <div class="sub-k">Then close them</div>
+      <div class="move"><b>Decide which of the three is wrong.</b> <i>The behaviour:</i> the claim stands, so what you do changes. Hard lines always go here; a hard line is never relaxed to fit the record. <i>The claim:</i> it was aspirational and the record is honest, so restate it as a goal (&ldquo;I&rsquo;m working on&hellip;&rdquo;) or drop it. <i>The world:</i> it was true on old ground, so go to Re-orient on new ground, and often on to Destroy to create.</div>
+      <div class="move"><b>Fix it as a behaviour, not a better-worded claim.</b> Write it as &ldquo;When X, I will Y,&rdquo; and name the record that will show whether it held.</div>
+      <div class="move"><b>One at a time.</b> The Fixed Core claim with the widest gap goes first. The rest wait for Sunday.</div>
+      <div class="move"><b>Data, not a verdict.</b> A contradiction is information about your picture. Judging yourself for it starts another evaluating loop, the kind &ldquo;not relevant&rdquo; exists to cut.</div>
+      <div class="ex">
+        <div class="ex-k">In practice</div>
+        <div class="ex-row"><span class="tag">Home</span><span class="act">Claim: family comes first. Record: a week of the planner and calendar &mdash; where the free evening hours actually went.</span><span class="eg">If project time beat the girls most nights, the behaviour changes, not the claim. &ldquo;On a night I&rsquo;m home by six, the laptop stays in the bag until they&rsquo;re in bed.&rdquo; The record: the planner next Sunday.</span></div>
+        <div class="ex-row"><span class="tag">Income</span><span class="act">Claim: I&rsquo;m building income to leave teaching. Record: planner hours on income work against hours on the OS.</span><span class="eg">If the OS wins every week, either the behaviour changes (&ldquo;When a work block starts, the first 45 minutes go to the course&rdquo;) or the claim is honestly restated. Keeping the claim and ignoring the hours is the contradiction.</span></div>
+        <div class="ex-row"><span class="tag">Room 148</span><span class="act">Claim: every student gets a fair shot. Record: whose names show up in your exit-ticket comments over two weeks.</span><span class="eg">If the same quiet four never appear: &ldquo;When I open the exit-ticket pile, I start with those four.&rdquo;</span></div>
+        <div class="ex-row"><span class="tag">Block B</span><span class="act">A host teacher&rsquo;s mild comment stings for the rest of the day.</span><span class="eg">Log it that evening. Which claim did it threaten &mdash; &ldquo;I know how to support ELL students&rdquo;? Then check that claim against what her students actually produce with your support.</span></div>
+        <div class="ex-row"><span class="tag">FLA 6/7</span><span class="act">An adult learner flatly refuses an activity you&rsquo;ve run for years.</span><span class="eg">That&rsquo;s the script breaking. Ask which assumption it exposed &mdash; perhaps that adults want what teenagers want &mdash; before deciding who was wrong.</span></div>
+        <div class="ex-row"><span class="tag">Training</span><span class="act">Claim: I train five days a week. Record: the last month&rsquo;s log shows three.</span><span class="eg">Pick one: a trigger that gets you to five, or the honest claim at three. Either closes the gap. The claim plus a quiet log doesn&rsquo;t.</span></div>
+        <div class="ex-row"><span class="tag">Forge OS</span><span class="act">Claim: the system serves the family. Record: builds this month against the evenings they took.</span><span class="eg">If the count runs the wrong way, that&rsquo;s a finding for this move, not a reason for another build.</span></div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> the audit only finds contradictions you&rsquo;re already comfortable admitting, or every one gets resolved by rewording the claim. If the behaviour never changes, you&rsquo;re editing the record, not closing the gap.</div>
+    </div>
+
+    <!-- 6 -->
+    <div class="card">
+      <div class="p-head"><span class="p-name">Destroy to create</span><span class="ev b">B</span><span class="ev c">C</span></div>
+      <div class="p-ess">Adapting means breaking old structures down and building new ones from the parts. A system that never ends anything isn&rsquo;t adapting; it&rsquo;s accumulating.</div>
+      <div class="trig"><b>Use when</b> the quarterly triage comes round; a project has been paused for months; or a belief keeps producing the same bad result.</div>
+      <div class="move"><b>Commit in advance.</b> Before the quarterly review, write that you will kill at least one project or one working assumption. Your first triage kept all sixteen projects alive.</div>
+      <div class="move"><b>Kill it for parts.</b> Mark it dead (it stays visible, as you decided), then name the one piece worth carrying into something live.</div>
+      <div class="move"><b>Use the clean-slate question:</b> &ldquo;Would I start this today, knowing what I know now?&rdquo; What you&rsquo;ve already spent is not an answer.</div>
+      <div class="move"><b>Hunt one assumption.</b> Name one belief you act on that you haven&rsquo;t tested in a year, and turn it into a prediction.</div>
+      <div class="move"><b>Hunt the anomaly, don&rsquo;t explain it away.</b> When something doesn&rsquo;t fit what you believe, that friction is the material &mdash; sit with it instead of finding the reading that makes it fit after all.</div>
+      <div class="move"><b>Import from outside your own field.</b> A new combination rarely comes from going deeper into what you already know. Pull a frame from somewhere unrelated and force it against the problem.</div>
+      <div class="move"><b>Write the belief down, then argue against it.</b> You can&rsquo;t destroy an idea you haven&rsquo;t made explicit. State it plainly, then attack it as your smartest critic would &mdash; if it doesn&rsquo;t cost you something, you steelmanned instead of attacking.</div>
+      <div class="move"><b>Expect the dip.</b> The first rebuilt version is usually worse than the one you tore down. That&rsquo;s the cost of the method, not a sign you got it wrong.</div>
+      <div class="move"><b>Find someone who disagrees on the fundamentals, not the details.</b> Someone quibbling inside your frame won&rsquo;t show you what you can&rsquo;t see from inside it.</div>
+      <div class="ex">
+        <div class="ex-k">In practice</div>
+        <div class="ex-row"><span class="tag">Projects</span><span class="act">Take the paused list into the next quarterly review with the clean-slate question already written beside each item.</span><span class="eg">You choose which ones die. The protocol only insists that something does.</span></div>
+        <div class="ex-row"><span class="tag">Room 148</span><span class="act">Each unit, retire one activity you keep mainly because it&rsquo;s familiar.</span><span class="eg">Keep the part that worked and fold it into its replacement.</span></div>
+        <div class="ex-row"><span class="tag">Forge OS</span><span class="act">Each quarter, remove one card, key or tracker you no longer read.</span><span class="eg">Every card is upkeep, and upkeep on something you ignore is pure cost.</span></div>
+        <div class="ex-row"><span class="tag">Health</span><span class="act">Drop one routine you do out of habit that has no measured effect.</span><span class="eg">Or turn it into a prediction and give it four weeks to earn its place.</span></div>
+        <div class="ex-row"><span class="tag">Beliefs</span><span class="act">Test one belief about what your students can handle, what the girls want from you, or what earns money.</span><span class="eg">Beliefs in these three areas quietly steer the most decisions and get checked the least.</span></div>
+        <div class="ex-row"><span class="tag">Room 148</span><span class="act">A lesson keeps landing flat and you keep tweaking the same activity.</span><span class="eg">Stop patching it. Name the belief about what engages them that the activity was built on, and test a different one.</span></div>
+        <div class="ex-row"><span class="tag">Stock system</span><span class="act">A rule you wrote a year ago keeps costing you the same way.</span><span class="eg">Pull a frame from outside trading &mdash; how another field handles the same kind of recurring error &mdash; before patching the rule again.</span></div>
+        <div class="ex-row"><span class="tag">Beliefs</span><span class="act">Something a colleague, your daughter, or the market does keeps surprising you.</span><span class="eg">That&rsquo;s the anomaly. Write down what you actually believe there, then argue the other side before revising it.</span></div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> killing something you rebuild a month later, the kill list turning into its own project, or every rebuild landing back at your first draft because nothing outside your own head ever pushed on it. One kill, cleanly, then back to work.</div>
+    </div>
+
+    <!-- 7 -->
+    <div class="card">
+      <div class="p-head"><span class="p-name">Engineer the endings</span><span class="ev a">A</span></div>
+      <div class="p-ess">Memory is weighted by the high point and the ending, and memory is what orientation is built from. Choose how things end.</div>
+      <div class="trig"><b>Use when</b> something is closing: the last minutes of a lesson, an evening, a conversation, a week, a term, a workout.</div>
+      <div class="move"><b>Plan the last five minutes, not just the first.</b></div>
+      <div class="move"><b>End on something that worked</b>, not on what&rsquo;s left over.</div>
+      <div class="move"><b>When you review, correct for your own memory.</b> Judge the whole stretch, not how it finished.</div>
+      <div class="ex">
+        <div class="ex-k">In practice</div>
+        <div class="ex-row"><span class="tag">Room 148</span><span class="act">Protect the exit ticket and a closing line naming what students can now do that they couldn&rsquo;t at the start.</span><span class="eg">Never let the bell land mid-instruction; that becomes the lesson they remember.</span></div>
+        <div class="ex-row"><span class="tag">FLA 6/7</span><span class="act">Close on the night&rsquo;s success first, then outstanding assignments.</span><span class="eg">Adults who come after a working day decide whether to come back partly on how the last class ended.</span></div>
+        <div class="ex-row"><span class="tag">Home</span><span class="act">Make the last words at drop-off and bedtime warm, never logistics or a correction.</span><span class="eg">&ldquo;Clean your room&rdquo; can be said at 6 p.m. It shouldn&rsquo;t be what she falls asleep on.</span></div>
+        <div class="ex-row"><span class="tag">Hard talks</span><span class="act">End on one concrete next step and a sign that the relationship is fine.</span><span class="eg">The ending decides whether she brings the next problem to you.</span></div>
+        <div class="ex-row"><span class="tag">Training</span><span class="act">End sessions on a clean rep or a round you won.</span><span class="eg">You&rsquo;ll remember the session as better and turn up for the next one more readily.</span></div>
+        <div class="ex-row"><span class="tag">Sunday</span><span class="act">Before judging the week, name one good thing from Monday or Tuesday.</span><span class="eg">It counters the pull to grade the week on Friday.</span></div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> using a good ending to cover a real problem. Engineer the ending; don&rsquo;t edit the record.</div>
+    </div>
+
+    <div class="section-k">Start this week</div>
+    <div class="tool">
+      <div class="step"><span class="n">1</span><div><b>Today, 15 minutes:</b> the outside-judge sort for every live project.</div></div>
+      <div class="step"><span class="n">2</span><div><b>Monday:</b> start the Richmond High surprise note. One line a week through October.</div></div>
+      <div class="step"><span class="n">3</span><div><b>This week:</b> write three predictions, at least one at school and one at home.</div></div>
+      <div class="step"><span class="n">4</span><div><b>Next new idea:</b> run the relevance gate before touching it.</div></div>
+      <div class="step"><span class="n">5</span><div><b>Every day:</b> plan the last five minutes of one lesson and one evening.</div></div>
+      <div class="step"><span class="n">6</span><div><b>This Sunday:</b> the records audit on your Fixed Core. Close one contradiction only.</div></div>
+      <div class="step"><span class="n">7</span><div><b>Next quarterly review:</b> the kill commitment goes in writing beforehand.</div></div>
+    </div>
+
+    <div class="section-k">The Sunday block</div>
+    <div class="tool">
+      <div class="t-head"><span class="t-name">Four questions</span><span class="t-dose">in the review you already run</span></div>
+      <div class="q">Which predictions missed, and what do the misses have in common?</div>
+      <div class="q">Did any outside judge disagree with me this week, and what did I do about it?</div>
+      <div class="q">What surprised me? If nothing did, where wasn&rsquo;t I looking?</div>
+      <div class="q">Which claim did the record disagree with this week, and does last week&rsquo;s fix show up in the record?</div>
+      <div class="t-rule">Together they check that the loop is still open. <b>Nothing new to track.</b></div>
+    </div>
+
+    <div class="section-k">The one thing</div>
+    <div class="band" style="margin-bottom:0;">
+      <b>Who, other than me, says this is working?</b><br>
+      Give everything that matters an outside judge, and believe the judge over the feeling. It is the one move that keeps the loop open when every other part of you would rather it stayed closed.
+    </div>
+
+    <div class="section-k">Failure modes</div>
+    <div class="card">
+      <div class="move"><b>Building machinery instead of acting</b> &mdash; turning this page into new trackers is orientation work used to avoid action, which is the exact failure the paper warns about. The Sunday block lives in the review you already run.</div>
+      <div class="move"><b>Gating everything</b> &mdash; the relevance gate is for new loops and optimizing. Three-second decisions just get made, and time with the girls never needs a reason.</div>
+      <div class="move"><b>Running it live</b> &mdash; predictions, surprise notes and judges belong before and after. In the middle of a lesson or an evening, attention goes on the room.</div>
+      <div class="move"><b>Chasing speed</b> &mdash; reading Boyd as &ldquo;decide faster&rdquo; is the misreading this paper was written to correct.</div>
+      <div class="move"><b>The audit as a weapon</b> &mdash; finding contradictions to prove you&rsquo;re a fraud rather than to fix one. One gap, one behaviour, then back to work.</div>
+      <div class="move"><b>Friendly judges</b> &mdash; picking evaluators who will agree with you, then calling the loop open.</div>
+      <div class="move"><b>This page as the alibi</b> &mdash; reading about shaping and adapting feels like doing it. It&rsquo;s worth something only if a judge, a prediction or a kill exists by next Sunday.</div>
+    </div>
+
+    <div class="section-k">Evidence</div>
+    <div class="key">
+      <span class="ev a">A</span> <b>Strong.</b> Peak-end effect: remembered experience is dominated by its high point and its ending (Kahneman et al. 1993; Redelmeier &amp; Kahneman 1996). Confirmation bias: people seek and weight evidence that fits what they already believe (Nickerson 1998 review). The mechanism behind incestuous amplification and the case for outside judges. Implementation intentions: &ldquo;when X, I will Y&rdquo; plans substantially raise follow-through (Gollwitzer &amp; Sheeran 2006 meta-analysis) &mdash; why a contradiction is fixed as a trigger, not a better claim.<br><br>
+      <span class="ev b">B</span> <b>Good, with variance.</b> Intuition is only trustworthy in regular environments with fast, clear feedback (Kahneman &amp; Klein 2009) &mdash; the case for supplying feedback where it&rsquo;s missing, and for distrusting old intuitions on new ground. Recognition-primed decisions: experts match patterns and test the first workable option (Klein, <i>Sources of Power</i>). Writing and scoring predictions improves forecasting accuracy (Tetlock&rsquo;s Good Judgment research; Mellers et al. 2014). Sunk-cost effect: past investment keeps failing projects alive (Arkes &amp; Blumer 1985). Intentions predict behaviour only loosely (Webb &amp; Sheeran 2006), and self-reports drift from measured records &mdash; for example, self-reported exercise versus measured activity (Prince et al. 2008). The case for auditing claims against records rather than memory.<br><br>
+      <span class="ev c">C</span> <b>Theory.</b> Boyd&rsquo;s OODA loop, &ldquo;Destruction and Creation&rdquo; and incestuous amplification, as argued by Tremblay (2015), Osinga and Spinney. Coherent and influential, not experimentally tested. The relevance gate is this protocol&rsquo;s reasoning built on that theory. The contradictions move rests on Boyd&rsquo;s <i>Strategic Game of ? and ?</i> (1987, p.49), whose words are quoted as cited in Angerman&rsquo;s 2004 AFIT thesis, and on Edward Hall&rsquo;s hidden program as Boyd used it. The defensiveness log and the script-break note are this protocol&rsquo;s reasoning, not tested methods.<br><br>
+      <span class="ev d">D</span> <b>Arbitrary.</b> Six weeks of surprise notes, three predictions a week, one kill a quarter, the 15-minute sort, one contradiction at a time. No evidence sets these numbers. They are fixed in advance so they can&rsquo;t be renegotiated in the moment.<br><br>
+      <b>Verify before quoting.</b> Citations are from recall, not looked up, except Boyd&rsquo;s p.49 line, which was checked against the Angerman thesis. Check any of them before they go anywhere public.
+    </div>
+
+    <div class="foot">Shaping and Adapting &middot; Forge OS</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h1 style="font-size:20px;">Which move?</h1>
+    <div class="sub">Recognition, not recall. Each prompt is a moment. Name the move it calls for, or spot the closed loop, before revealing. Some call for no move at all. Ten per round, drawn from twenty-five.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Done</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn ghost" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  var read = m === 'read';
+  document.getElementById('read').style.display  = read ? 'block' : 'none';
+  document.getElementById('drill').style.display = read ? 'none' : 'block';
+  document.getElementById('tab-read').className  = read ? 'on' : '';
+  document.getElementById('tab-drill').className = read ? '' : 'on';
+  if(!read){ startRound(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-shaping-adapting';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+/* long-press to remove */
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- drill ---------------- */
+var POOL = [
+  { prompt:'9 p.m. An idea for <b>a new card on the brief</b>. Nothing is broken and no number has stalled.',
+    lines:['<b>The relevance gate.</b> No outside signal &mdash; only an idea.','Park it for Sunday and close the laptop.'] },
+  { prompt:'Three students left <b>Part C blank</b> on two separate worksheets. You want to redesign Part C.',
+    lines:['<b>The relevance gate &mdash; and it passes.</b> That is a real signal from outside you.','Make the cheapest fix that would show whether it worked, not a whole new sheet.'] },
+  { prompt:'The stock model looks excellent <b>on the backtest</b>. You&rsquo;re ready to put real money behind it.',
+    lines:['<b>The outside judge.</b> A backtest is the model grading itself on data it was built from.','The forward test is the judge. Wait for it.'] },
+  { prompt:'Every lesson this month <b>felt like it went well</b>. You haven&rsquo;t looked at the exit tickets.',
+    lines:['<b>The outside judge</b> &mdash; and an early sign of a closed loop.','The tickets are the judge. Compare them with your gut read and note the gaps.'] },
+  { prompt:'Two pilot users say module one is <b>confusing</b>. You think they didn&rsquo;t read it carefully.',
+    lines:['<b>Incestuous amplification.</b> The judge spoke, and your orientation is explaining it away.','Believe the judge over the feeling. Find what confused them.'] },
+  { prompt:'Every signal you found this month <b>confirmed your plans</b>. Nothing surprised you.',
+    lines:['<b>Incestuous amplification.</b> A judge that never surprises you isn&rsquo;t judging.','Open the loop: find a source likely to disagree with you.'] },
+  { prompt:'You&rsquo;re about to <b>move bedtime</b> 30 minutes earlier.',
+    lines:['<b>Write the prediction.</b> &ldquo;My weekly sleep average rises within two weeks.&rdquo;','Then check it on Sunday. Without the line, you won&rsquo;t know whether it worked.'] },
+  { prompt:'Your prediction for the unit reads <b>&ldquo;they&rsquo;ll improve.&rdquo;</b>',
+    lines:['<b>Write the prediction &mdash; properly.</b> This one can&rsquo;t miss, so it can&rsquo;t teach you anything.','Make it specific enough to be wrong: what, how many, by when.'] },
+  { prompt:'Your predictions have <b>missed in the same direction</b> three weeks running.',
+    lines:['<b>Write the prediction</b> is working. The pattern in the misses is the lesson.','Your picture is systematically off there. Update the model, not the score.'] },
+  { prompt:'First week at Richmond High. <b>Everything matched your expectations.</b>',
+    lines:['<b>Re-orient on new ground.</b> No surprises on new ground means you&rsquo;re seeing your model, not the room.','Look harder, and ask a long-time colleague what newcomers get wrong.'] },
+  { prompt:'Your older daughter doesn&rsquo;t want <b>the Saturday outing</b> she loved two years ago.',
+    lines:['<b>Re-orient on new ground.</b> She has moved; your plan is from her old ground.','Ask what she&rsquo;d choose now, rather than rerunning the old one.'] },
+  { prompt:'New FLA term. You&rsquo;re about to reuse <b>last term&rsquo;s first-night plan</b> unchanged.',
+    lines:['<b>Re-orient on new ground.</b> The plan was built for last term&rsquo;s people.','Treat the first night as observation, then adjust.'] },
+  { prompt:'A project has been <b>paused since July</b>. You wouldn&rsquo;t start it today.',
+    lines:['<b>Destroy to create.</b> The clean-slate question has answered it.','Mark it dead, keep it visible, and carry the one useful part into something live.'] },
+  { prompt:'Quarterly review next week. Your plan is to <b>&ldquo;see what comes up.&rdquo;</b>',
+    lines:['<b>Destroy to create.</b> Without a commitment in advance, the review keeps everything alive again.','Write the kill commitment before you sit down.'] },
+  { prompt:'You&rsquo;ve kept an activity for three years <b>mainly because it&rsquo;s familiar</b>.',
+    lines:['<b>Destroy to create.</b> Familiar is not the same as effective.','Retire it, keep the part that worked, fold that into its replacement.'] },
+  { prompt:'A pattern keeps repeating in <b>your stock losses</b> and you&rsquo;ve started skipping past it in the weekly review.',
+    lines:['<b>Destroy to create &mdash; hunt the anomaly.</b> Skipping past what doesn&rsquo;t fit is explaining it away.','Sit with it. Name the belief it&rsquo;s testing before you patch the rule again.'] },
+  { prompt:'You rebuilt a unit from scratch and the first run <b>went worse</b> than the old version.',
+    lines:['<b>Destroy to create &mdash; expect the dip.</b> A rebuilt version starting worse is the cost of the method, not proof it failed.','Give it a real run before judging it against the old one.'] },
+  { prompt:'The bell will ring in two minutes and you&rsquo;re <b>mid-explanation</b>.',
+    lines:['<b>Engineer the endings.</b> Whatever is happening when the bell rings is what they&rsquo;ll remember.','Stop, name what they can now do, and take the exit ticket.'] },
+  { prompt:'Your last words at drop-off were <b>a reminder about her room</b>.',
+    lines:['<b>Engineer the endings.</b> Logistics can happen any time. The last words are what she carries.','Next time: the reminder earlier, something warm last.'] },
+  { prompt:'Friday was bad. You&rsquo;re about to call <b>the whole week a write-off</b>.',
+    lines:['<b>Engineer the endings</b> &mdash; the reviewing half. That&rsquo;s the ending grading the whole week.','Name one good thing from Monday or Tuesday before you judge it.'] },
+  { prompt:'Which room to use, what to say next, whether to put the phone down.',
+    lines:['<b>No move. Just act.</b> Three-second decisions don&rsquo;t need a gate or a prediction.','Running a protocol here is the auditor with a clipboard.'] },
+  { prompt:'An evening with the girls. You wonder whether a board game <b>passes the relevance gate</b>.',
+    lines:['<b>No move.</b> The gate is for new loops and optimizing. Time with them never needs a reason.','Put the question down and play.'] },
+  { prompt:'You say family comes first. The planner shows <b>project time beat the girls</b> four evenings out of five.',
+    lines:['<b>Find the contradictions</b> &mdash; the records audit caught one.','A Fixed Core claim, so the behaviour changes. Write the when&ndash;then and check the planner next Sunday.'] },
+  { prompt:'A colleague&rsquo;s offhand comment about your worksheets <b>stings for the rest of the day</b>.',
+    lines:['<b>Find the contradictions</b> &mdash; the defensiveness log.','Tonight, name the claim it threatened and check it against the record. Not in the moment.'] },
+  { prompt:'For a year you&rsquo;ve said you <b>train five days a week</b>. The log says three.',
+    lines:['<b>Find the contradictions &mdash; decide which of the three is wrong.</b>','Either a trigger that gets you to five, or the honest claim at three. The old claim plus a quiet log is the one option that&rsquo;s out.'] },
+  { prompt:'&ldquo;I know what makes teenagers laugh&rdquo; was true at your last school. <b>It keeps misfiring</b> at Richmond High.',
+    lines:['<b>Find the contradictions</b> &mdash; and it&rsquo;s the world that moved, not you.','Hand it to Re-orient on new ground: watch what does land before rebuilding the claim.'] },
+  { prompt:'You found a contradiction. Your fix reads <b>&ldquo;I will be more present.&rdquo;</b>',
+    lines:['<b>Find the contradictions &mdash; closed badly.</b> That&rsquo;s a better-worded claim, not a fix.','Make it a behaviour: &ldquo;When X, I will Y,&rdquo; plus the record that will show it held.'] }
+];
+var ONE = { prompt:'Name <b>the one thing</b>.',
+  lines:['<b>Who, other than me, says this is working?</b>','Give everything that matters an outside judge, and believe the judge over the feeling.'] };
+var ROUND=9;
+var STEPS=[], idx=0, revealed=false;
+
+function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function buildRound(){ var p=shuffle(POOL.slice()).slice(0,ROUND); p.push(ONE); return p; }
+function startRound(){
+  STEPS=buildRound(); idx=0;
+  document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display='';
+  document.getElementById('progress').style.opacity='';
+  renderStep();
+}
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Name the move &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){ startRound(); window.scrollTo(0,0); }
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-shaping-adapting-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+</script>
+</body>
+</html>
