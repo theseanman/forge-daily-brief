@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Self-Help Audit</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0; --red:#ff8a8a;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.gold{ border-left-color:var(--gold); background:rgba(245,215,110,.08); }
+  .card.teal{ border-left-color:var(--teal); background:rgba(63,208,192,.08); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:17.5px; font-weight:700; }
+  .src{ font-size:12.5px; color:var(--ink-quiet); font-style:italic; line-height:1.5; margin-bottom:8px; }
+  .para{ font-size:14px; line-height:1.6; margin:7px 0; }
+  .para b{ color:var(--accent-hi); }
+  .move{ font-size:14px; line-height:1.55; margin:8px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .cost{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:8px; padding-top:8px; border-top:1px solid var(--line); }
+  .cost b{ color:var(--gold); letter-spacing:.04em; }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:24px 0 10px; }
+  .group-k{ font-size:12.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--teal); font-weight:800; margin:14px 0 6px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .band.warn{ background:rgba(255,138,138,.10); border-left-color:var(--red); }
+  .band.warn b{ color:var(--red); }
+
+  /* verdict rows */
+  .vrow{ font-size:13.5px; line-height:1.5; margin:8px 0; padding-bottom:8px; border-bottom:1px solid rgba(122,175,255,.12); }
+  .vrow:last-child{ border-bottom:0; padding-bottom:0; }
+  .vrow .bk{ font-weight:700; color:var(--ink); }
+  .vrow .au{ color:var(--ink-quiet); }
+  .vrow .vd{ color:var(--ink-dim); }
+
+  .step{ display:flex; gap:11px; font-size:14px; line-height:1.55; margin:9px 0; }
+  .step .n{ flex:0 0 22px; height:22px; border-radius:50%; background:rgba(74,157,232,.22); border:1px solid var(--line);
+    color:var(--accent-hi); font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; }
+  .step b{ color:var(--accent-hi); }
+
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,138,138,.12); color:#ffbcbc; border-color:rgba(255,138,138,.32); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+
+  /* drill */
+  #drill{ display:none; }
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(19px,5vw,26px); font-weight:300; line-height:1.4; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .btn:focus-visible, .toggle button:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>The Self-Help Audit</h1>
+    <div class="sub">Thirty best-sellers on trial, and the twenty-five things worth keeping. Ranked by evidence &times; effect &times; cheapness &mdash; which is why the order will surprise you.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="section-k">How to read this</div>
+
+    <div class="card">
+      <div class="para"><span class="ev a">A</span> Multiple meta-analyses or large pre-registered replications agree, and the effect is real in ordinary people &mdash; not just undergraduates for one afternoon.</div>
+      <div class="para"><span class="ev b">B</span> Good randomised trials exist and mostly point the same way, but the effect is small, or conditional, or the field has not been through a replication stress test.</div>
+      <div class="para"><span class="ev c">C</span> The mechanism is plausible and there is correlational or partial support, but nobody has shown the intervention causes the outcome.</div>
+      <div class="para"><span class="ev d">D</span> Tested and failed, or never tested and built on stories.</div>
+      <div class="note">Return on investment here is three things multiplied: how strong the evidence is, how big the effect is, and how cheap it is for you in time, money and willpower. A Grade A tactic costing an hour a day can lose to a Grade B tactic costing thirty seconds.</div>
+    </div>
+
+    <div class="band">
+      <b>The single most important pattern in the whole audit: the practice often works even when the theory is wrong.</b> Napoleon Hill&rsquo;s theory of the universe is nonsense, but a man who writes down a specific goal is doing something the goal-setting literature supports. One-percent compounding is a metaphor, but habit stacking is an implementation intention. <b>A low grade below is a grade on the book&rsquo;s theory. The tactics are graded separately.</b>
+    </div>
+
+    <div class="section-k">The thirty, and the verdicts</div>
+    <div class="sub" style="margin-top:-2px;">A reconstruction from publisher-reported sales, which are marketing numbers. Swap a few titles and the twenty-five tactics barely change, because the same handful of ideas recur across the genre.</div>
+
+    <div class="card">
+      <div class="group-k">The five that come out well</div>
+      <div class="vrow"><span class="bk">Atomic Habits</span> <span class="au">(Clear)</span> <span class="ev b">B</span><br><span class="vd">Compounding is a metaphor; the tactics are real. Habit stacking is an implementation intention. Grade A parts inside a Grade B book.</span></div>
+      <div class="vrow"><span class="bk">Thinking, Fast and Slow</span> <span class="au">(Kahneman)</span> <span class="ev a">A</span> <span class="ev d">D</span><br><span class="vd">Anchoring, loss aversion, framing, base-rate neglect, the planning fallacy all replicate. The priming chapter did not, and Kahneman said so publicly in 2017.</span></div>
+      <div class="vrow"><span class="bk">Influence</span> <span class="au">(Cialdini)</span> <span class="ev a">A</span><br><span class="vd">The six principles hold up in field experiments, some enormous. The later behavioural-priming flourishes are the weak part.</span></div>
+      <div class="vrow"><span class="bk">Man&rsquo;s Search for Meaning</span> <span class="au">(Frankl)</span> <span class="ev b">B</span> <span class="ev c">C</span><br><span class="vd">The memoir is the value. Meaning correlates strongly with wellbeing and with survival in older adults; logotherapy as a therapy has thin trial evidence.</span></div>
+      <div class="vrow"><span class="bk">Deep Work</span> <span class="au">(Newport)</span> <span class="ev b">B</span><br><span class="vd">Task-switching costs and attention residue are real and replicated. That deep work is the decisive skill of the century is an opinion.</span></div>
+    </div>
+
+    <div class="card">
+      <div class="group-k">The seven that are half right</div>
+      <div class="vrow"><span class="bk">The Power of Habit</span> <span class="au">(Duhigg)</span> <span class="ev b">B</span> <span class="ev d">D</span><br><span class="vd">Cue, routine, reward is a fair summary. The willpower-as-a-muscle chapter rests on ego depletion, which failed a twenty-three-lab replication in 2016.</span></div>
+      <div class="vrow"><span class="bk">Mindset</span> <span class="au">(Dweck)</span> <span class="ev c">C</span><br><span class="vd">The largest meta-analyses find effects on achievement around a tenth of a standard deviation, mostly in students already behind. Nothing like the book&rsquo;s claims.</span></div>
+      <div class="vrow"><span class="bk">Grit</span> <span class="au">(Duckworth)</span> <span class="ev c">C</span><br><span class="vd">The 2017 meta-analysis found grit correlates around point eight with conscientiousness. The perseverance half predicts; the passion half does not.</span></div>
+      <div class="vrow"><span class="bk">Outliers</span> <span class="au">(Gladwell)</span> <span class="ev c">C</span><br><span class="vd">Ericsson said Gladwell misread him. Deliberate practice explains about a quarter of the variance in games and music, almost none in professions.</span></div>
+      <div class="vrow"><span class="bk">Emotional Intelligence</span> <span class="au">(Goleman)</span> <span class="ev c">C</span><br><span class="vd">EI predicts job performance modestly and adds little once personality and IQ are controlled. That it matters more than IQ is unsupported.</span></div>
+      <div class="vrow"><span class="bk">The 7 Habits</span> <span class="au">(Covey)</span> <span class="ev c">C</span><br><span class="vd">Almost none of it tested as written, but &ldquo;begin with the end in mind&rdquo; is goal-setting and &ldquo;seek first to understand&rdquo; is active listening. Grade B tactics buried in it.</span></div>
+      <div class="vrow"><span class="bk">How to Win Friends and Influence People</span> <span class="au">(Carnegie)</span> <span class="ev b">B</span><br><span class="vd">Never tested directly, but person-perception research supports the core: warmth is judged before competence, and criticism triggers defensiveness.</span></div>
+    </div>
+
+    <div class="card">
+      <div class="group-k">The six that are mostly framing</div>
+      <div class="vrow"><span class="bk">The Subtle Art of Not Giving a F*ck</span> <span class="au">(Manson)</span> <span class="ev c">C</span><br><span class="vd">Repackaged Stoicism and acceptance therapy. Values clarification has some support; the rest is attitude.</span></div>
+      <div class="vrow"><span class="bk">Daring Greatly</span> <span class="au">(Brown)</span> <span class="ev c">C</span><br><span class="vd">Her own work is qualitative. The adjacent self-compassion research is decent, with moderate effects on wellbeing.</span></div>
+      <div class="vrow"><span class="bk">Start With Why</span> <span class="au">(Sinek)</span> <span class="ev d">D</span> <span class="ev c">C</span><br><span class="vd">The golden-circle neuroscience is invented. But a clear purpose does predict engagement in organisations.</span></div>
+      <div class="vrow"><span class="bk">The 4-Hour Workweek</span> <span class="au">(Ferriss)</span> <span class="ev c">C</span> <span class="ev d">D</span><br><span class="vd">Batching and Pareto are engineering heuristics, not findings. The lifestyle claims are one man&rsquo;s anecdote.</span></div>
+      <div class="vrow"><span class="bk">The Life-Changing Magic of Tidying Up</span> <span class="au">(Kondo)</span> <span class="ev c">C</span><br><span class="vd">Almost no direct research. Clutter correlates with cortisol in women, and a tidy environment reduces the number of decisions.</span></div>
+      <div class="vrow"><span class="bk">The Power of Now</span> <span class="au">(Tolle)</span> <span class="ev c">C</span> <span class="ev b">B</span><br><span class="vd">The book is metaphysics. The practice it points at, present-moment attention, has meta-analytic support at small-to-moderate effect sizes.</span></div>
+    </div>
+
+    <div class="card">
+      <div class="group-k">The twelve that fail</div>
+      <div class="vrow"><span class="bk">Think and Grow Rich</span> <span class="au">(Hill)</span> <span class="ev d">D</span><br><span class="vd">No evidence for any of it, and the claimed meetings with Carnegie and Edison have been investigated and found to be fabrications.</span></div>
+      <div class="vrow"><span class="bk">The Secret</span> <span class="au">(Byrne)</span> <span class="ev d">D</span><br><span class="vd">Worse than useless. Vividly imagining a result as already achieved <i>reduces</i> effort and outcomes &mdash; weight loss, dating, surgery recovery, job hunting.</span></div>
+      <div class="vrow"><span class="bk">The Power of Positive Thinking</span> <span class="au">(Peale)</span> <span class="ev d">D</span><br><span class="vd">Same problem. Optimism as a trait correlates with health; positive fantasising as a practice does harm.</span></div>
+      <div class="vrow"><span class="bk">Awaken the Giant Within</span> <span class="au">(Robbins)</span> <span class="ev d">D</span><br><span class="vd">Built on neuro-linguistic programming, which has been tested and does not work. The state-change tricks are stagecraft.</span></div>
+      <div class="vrow"><span class="bk">Rich Dad Poor Dad</span> <span class="au">(Kiyosaki)</span> <span class="ev d">D</span><br><span class="vd">Rich Dad appears not to have existed, and the leveraged-real-estate advice is the opposite of the evidence. One salvage: the asset-liability lens.</span></div>
+      <div class="vrow"><span class="bk">The Magic of Thinking Big</span> <span class="au">(Schwartz)</span> <span class="ev d">D</span><br><span class="vd">Untested motivational prose.</span></div>
+      <div class="vrow"><span class="bk">The Power of Your Subconscious Mind</span> <span class="au">(Murphy)</span> <span class="ev d">D</span><br><span class="vd">Untested and unfalsifiable.</span></div>
+      <div class="vrow"><span class="bk">See You at the Top</span> <span class="au">(Ziglar)</span> <span class="ev d">D</span><br><span class="vd">The same.</span></div>
+      <div class="vrow"><span class="bk">The 5 Love Languages</span> <span class="au">(Chapman)</span> <span class="ev d">D</span><br><span class="vd">A 2024 review found no support: no primary language, the five are not distinct, matching does not predict quality. Keep only the reflex of asking.</span></div>
+      <div class="vrow"><span class="bk">Getting Things Done</span> <span class="au">(Allen)</span> <span class="ev c">C</span><br><span class="vd">Never tested and heavy. One piece has support: writing down an unfinished task stops it intruding. The salvage is one tactic, not the system.</span></div>
+      <div class="vrow"><span class="bk">12 Rules for Life</span> <span class="au">(Peterson)</span> <span class="ev d">D</span><br><span class="vd">Aphorism and argument. Standing up straight is not one of the supported ones &mdash; the power-posing research collapsed. Not harmful.</span></div>
+      <div class="vrow"><span class="bk">The 21 Irrefutable Laws of Leadership</span> <span class="au">(Maxwell)</span> <span class="ev d">D</span><br><span class="vd">Twenty-one untested assertions.</span></div>
+    </div>
+
+    <div class="section-k">The twenty-five, ranked by return</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">1</span><span class="p-name">If-then plans</span><span class="ev a">A</span></div>
+      <div class="src">From Atomic Habits as habit stacking, and the mechanism inside most of the books that work.</div>
+      <div class="para">The best-supported tactic in the genre and nearly free. <i>If situation X happens, then I will do Y.</i> The 2006 meta-analysis of ninety-four experiments found a medium-to-large effect on goal attainment, around two-thirds of a standard deviation; a 2024 update across six hundred and forty-two tests confirmed it holds. It works because it hands the decision to the situation instead of to your willpower in the moment.</div>
+      <div class="move"><b>Run it:</b> write the trigger before the action. &ldquo;When I sit down at my desk in 148 after lunch, I open the marking pile before I open email.&rdquo; A real recurring moment, never a mood. One plan per behaviour.</div>
+      <div class="cost"><b>Cost</b> &mdash; two minutes to write, zero to run.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">2</span><span class="p-name">Mental contrasting: the wish, then the obstacle</span><span class="ev b">B</span></div>
+      <div class="src">From nowhere in the thirty, because it is the corrective to The Secret and Peale.</div>
+      <div class="para">Oettingen&rsquo;s lab spent twenty years showing pure positive visualisation lowers effort and results. The fix is to imagine the wish, then the single biggest thing <i>inside you</i> in the way, in that order. Meta-analysis of the combined package finds a small-to-medium effect across health, academic and personal goals.</div>
+      <div class="move"><b>Run it:</b> four lines. Wish. Best outcome, felt vividly. The main inner obstacle, named honestly. Then the if-then for that obstacle. Use it on anything you catch yourself daydreaming about.</div>
+      <div class="cost"><b>Cost</b> &mdash; five minutes, and it may tell you the goal is not feasible. That is the point.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">3</span><span class="p-name">Design the environment, do not fight it</span><span class="ev a">A</span></div>
+      <div class="src">From Atomic Habits, The Power of Habit and Kondo &mdash; and it is the whole of your Entropy protocol.</div>
+      <div class="para">Since Wendy Wood&rsquo;s work the habit literature is unanimous: habits are cued by context, not intention, and changing the context is more reliable than changing the person. People who moved house changed their exercise habits without trying. Removing one click of friction changes consumption measurably.</div>
+      <div class="move"><b>Run it:</b> add one step of friction to the competitor and remove one from the target. Phone charges in another room; the book is on the pillow; the marking pile is on the chair you sit in.</div>
+      <div class="cost"><b>Cost</b> &mdash; one rearrangement, then zero.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">4</span><span class="p-name">Make the first step trivially small</span><span class="ev b">B</span></div>
+      <div class="src">From Atomic Habits, the two-minute rule.</div>
+      <div class="para">No meta-analysis of the rule as such, but it rides on two supported findings: starting costs dominate persistence, and the intention-behaviour gap is mostly a failure to start. The 2010 habit study everyone quotes found a median of sixty-six days to automaticity, range eighteen to two hundred and fifty-four, and missing one day did not reset it.</div>
+      <div class="move"><b>Run it:</b> define the habit as its smallest complete version. &ldquo;Open the file and write one sentence.&rdquo; Scale up only once the small version is boring &mdash; your own Second Nature rule.</div>
+      <div class="cost"><b>Cost</b> &mdash; nothing.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">5</span><span class="p-name">Write the goal down, specifically</span><span class="ev b">B</span></div>
+      <div class="src">From Think and Grow Rich and Covey &mdash; Hill&rsquo;s one salvageable practice.</div>
+      <div class="para">Locke and Latham&rsquo;s goal-setting theory rests on hundreds of studies: specific, difficult goals beat vague or easy ones, given commitment and feedback. The &ldquo;three percent of Yale students&rdquo; study is a myth and never happened. A real experiment by Gail Matthews found people who wrote goals and sent weekly progress to a friend achieved substantially more.</div>
+      <div class="move"><b>Run it:</b> specific, dated, written, and told to one person who will ask. Hill&rsquo;s daily reading ritual is theatre; the writing and the accountability are the active ingredients.</div>
+      <div class="cost"><b>Cost</b> &mdash; ten minutes once, one message a week.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">6</span><span class="p-name">Protect blocks of undivided attention</span><span class="ev b">B</span></div>
+      <div class="src">From Deep Work.</div>
+      <div class="para">Task-switching carries a measurable penalty, in the range of twenty to forty percent in lab tasks, and attention residue means part of your mind stays on the previous task. What has not been shown is that four hours a day makes you the elite performer Newport promises.</div>
+      <div class="move"><b>Run it:</b> one block, sixty to ninety minutes, phone in another room, one task. During term your two spare hours should be one such block, not two hours of fragments.</div>
+      <div class="cost"><b>Cost</b> &mdash; the discipline to close things, which is why it ranks below the tactics needing none.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">7</span><span class="p-name">Warmth before competence, and use their name</span><span class="ev b">B</span></div>
+      <div class="src">From Carnegie &mdash; the base layer of your Charisma page.</div>
+      <div class="para">Person-perception research, especially Fiske and Cuddy&rsquo;s warmth-competence model, finds warmth is judged first and carries more weight in whether you are trusted. Genuine interest and remembered details raise liking study after study.</div>
+      <div class="move"><b>Run it:</b> in a first exchange, ask one real question and use the name once in reply. With students, learn the names in week one.</div>
+      <div class="cost"><b>Cost</b> &mdash; attention.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">8</span><span class="p-name">Loss framing to move yourself</span><span class="ev a">A</span></div>
+      <div class="src">From Thinking, Fast and Slow.</div>
+      <div class="para">Loss aversion replicates at scale: losses hurt roughly twice as much as equivalent gains please. The self-help application is commitment devices, and those have trial evidence &mdash; people who put money on the line, forfeited on failure, succeed at higher rates.</div>
+      <div class="move"><b>Run it:</b> for a goal that keeps slipping, stake something. A sum you would hate to lose, held by a friend, returned on proof. Or a public deadline.</div>
+      <div class="cost"><b>Cost</b> &mdash; whatever you stake, and only if you fail.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">9</span><span class="p-name">Reciprocity and small requests, deliberately</span><span class="ev a">A</span></div>
+      <div class="src">From Influence.</div>
+      <div class="para">Cialdini&rsquo;s principles have field experiments behind them, including studies with millions of participants on giving and tax compliance. A small unrequested favour raises compliance with a later request substantially. This is the mechanism under most of Carnegie.</div>
+      <div class="move"><b>Run it:</b> when you need something from a colleague, an admin or a parent, give first, cheaply and unasked. Then ask.</div>
+      <div class="cost"><b>Cost</b> &mdash; five minutes, and the willingness to be slightly strategic about kindness.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">10</span><span class="p-name">Active listening, reflected back</span><span class="ev b">B</span></div>
+      <div class="src">From Covey&rsquo;s &ldquo;seek first to understand&rdquo;, and Carnegie.</div>
+      <div class="para">Reflective listening is among the best-tested pieces of counselling practice, sitting inside motivational interviewing, which has meta-analytic support for changing health behaviours. People who feel heard rate the listener more highly and are more persuadable.</div>
+      <div class="move"><b>Run it:</b> before you answer, say the other person&rsquo;s point back in one sentence and ask if you have it right. With a defensive student or an anxious parent this changes the temperature of the room.</div>
+      <div class="cost"><b>Cost</b> &mdash; one sentence, and the patience not to jump in.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">11</span><span class="p-name">Externalise the open loops</span><span class="ev b">B</span></div>
+      <div class="src">From Getting Things Done &mdash; the one piece worth keeping.</div>
+      <div class="para">Unfinished tasks intrude on attention, the Zeigarnik effect, and a 2011 experiment found that simply writing a plan for the task &mdash; not doing it &mdash; stopped the intrusion. You do not need Allen&rsquo;s apparatus of contexts and weekly reviews.</div>
+      <div class="move"><b>Run it:</b> one list, on one device, and the rule that anything nagging gets written down with its next action before you return to what you were doing.</div>
+      <div class="cost"><b>Cost</b> &mdash; thirty seconds each time.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">12</span><span class="p-name">Present-moment attention, ten minutes</span><span class="ev b">B</span></div>
+      <div class="src">From The Power of Now, and Frankl by implication.</div>
+      <div class="para">A 2014 meta-analysis in a major medical journal found mindfulness programs produce small-to-moderate improvements in anxiety, depression and pain, and no evidence for the grander claims. Tolle&rsquo;s cosmology adds nothing to the practice.</div>
+      <div class="move"><b>Run it:</b> ten minutes, attention on breath, return when it wanders. The Breathing Room already does this. The evidence is for regular practice over weeks, not one long session.</div>
+      <div class="cost"><b>Cost</b> &mdash; ten minutes a day, a real cost, which is why it sits mid-table.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">13</span><span class="p-name">Self-compassion after failure, not self-criticism</span><span class="ev b">B</span></div>
+      <div class="src">From Daring Greatly, by proximity.</div>
+      <div class="para">Brown&rsquo;s own work is qualitative, but Neff&rsquo;s self-compassion research has meta-analyses showing moderate effects on wellbeing and, more usefully, that people who meet failure with self-compassion are more likely to try again than those who meet it with harshness. This contradicts the tough-guy framing in half the books on the list.</div>
+      <div class="move"><b>Run it:</b> after a failure the sentence is &ldquo;that went badly, and I will do the next one better&rdquo; &mdash; not &ldquo;I am hopeless&rdquo;. Talk to yourself as you would to a student who tried.</div>
+      <div class="cost"><b>Cost</b> &mdash; a change of wording.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">14</span><span class="p-name">Perseverance, not passion</span><span class="ev b">B</span></div>
+      <div class="src">From Grit &mdash; the half that survives.</div>
+      <div class="para">The meta-analysis that took grit apart found perseverance-of-effort still predicts academic performance after controlling for conscientiousness, while consistency-of-interest adds nothing. The usable finding is smaller than the book: keep going through difficulty, and forget the injunction to find one lifelong passion.</div>
+      <div class="move"><b>Run it:</b> define persistence per task, not per life. Finish the thing in front of you. Your Mental Strength page already covers this.</div>
+      <div class="cost"><b>Cost</b> &mdash; nothing new.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">15</span><span class="p-name">Pick the process goal, not the outcome goal</span><span class="ev b">B</span></div>
+      <div class="src">From Atomic Habits &mdash; systems not goals &mdash; and Covey.</div>
+      <div class="para">Goal-setting research finds process goals produce better performance and less anxiety when the task is complex or the outcome is partly out of your control. Clear overstates it &mdash; you still need the outcome to aim at &mdash; but the daily target should be the behaviour.</div>
+      <div class="move"><b>Run it:</b> for anything longer than a month, track &ldquo;did I do the behaviour&rdquo;, not &ldquo;am I closer&rdquo;. The behaviour is under your control; the outcome is noisy.</div>
+      <div class="cost"><b>Cost</b> &mdash; nothing.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">16</span><span class="p-name">Ask what the other person wants, instead of assuming</span><span class="ev c">C</span></div>
+      <div class="src">From The 5 Love Languages &mdash; the only thing worth taking from it.</div>
+      <div class="para">The five languages are not real categories, but the reflex the book installs &mdash; checking what your partner or child actually values rather than giving what you would want &mdash; is supported by the responsiveness literature. The evidence is correlational, hence the grade.</div>
+      <div class="move"><b>Run it:</b> ask directly, once, what would make them feel cared for this week. Then do that.</div>
+      <div class="cost"><b>Cost</b> &mdash; one question.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">17</span><span class="p-name">Batch the shallow work</span><span class="ev c">C</span></div>
+      <div class="src">From The 4-Hour Workweek.</div>
+      <div class="para">No study of batching as such; it inherits its support from the task-switching findings. Ferriss&rsquo;s specific claim has one relevant trial, which found people limited to three email checks a day reported lower stress.</div>
+      <div class="move"><b>Run it:</b> email and messages at two fixed times. Marking in one block, not dribbled across evenings.</div>
+      <div class="cost"><b>Cost</b> &mdash; tolerating the discomfort of an unchecked inbox.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">18</span><span class="p-name">Question the base rate before deciding</span><span class="ev a">A</span> <span class="ev c">C</span></div>
+      <div class="src">From Thinking, Fast and Slow.</div>
+      <div class="para">Base-rate neglect and the planning fallacy replicate reliably &mdash; that part is Grade A. The bad news is that debiasing training has mixed results; knowing about a bias does not reliably stop you committing it. The good news is that one move does improve estimates: asking how long similar projects took other people.</div>
+      <div class="move"><b>Run it:</b> before committing to a timeline, a build or a money decision, ask what happened to the last five people who tried this. Your Shaping and Adapting outside judge is the same move.</div>
+      <div class="cost"><b>Cost</b> &mdash; one question.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">19</span><span class="p-name">Meaning as a resource, not a mood</span><span class="ev b">B</span> <span class="ev c">C</span></div>
+      <div class="src">From Man&rsquo;s Search for Meaning.</div>
+      <div class="para">Meaning in life is one of the strongest correlates of wellbeing and resilience, and in older adults it predicts survival. Interventions to increase it have small effects in trials. Frankl&rsquo;s practical point survives: you cannot choose your circumstances, you can choose what they are for.</div>
+      <div class="move"><b>Run it:</b> for a hard stretch, write one sentence naming who it is for. Your Honest Stop asks &ldquo;done or covered&rdquo;; this is the companion question &mdash; for whom.</div>
+      <div class="cost"><b>Cost</b> &mdash; one sentence.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">20</span><span class="p-name">Track it</span><span class="ev b">B</span></div>
+      <div class="src">From Atomic Habits &mdash; and it is the whole logic of the Forge.</div>
+      <div class="para">Self-monitoring is among the most consistently effective behaviour-change techniques in the health literature; a large taxonomy review found it one of the few that reliably improved outcomes across diets and exercise. It works even when the tracking is crude.</div>
+      <div class="move"><b>Run it:</b> you already run the daily log and the boxing scorecard. The evidence says the act of recording matters more than the analysis.</div>
+      <div class="cost"><b>Cost</b> &mdash; already paid.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">21</span><span class="p-name">Standing on the shoulders of conscientiousness</span><span class="ev a">A</span> <span class="ev c">C</span></div>
+      <div class="src">From Grit, Mindset and Outliers together, by subtraction.</div>
+      <div class="para">Strip those three down and the trait that actually predicts outcomes is conscientiousness, the most robust personality predictor of job performance and health across a century of data. The catch: adult personality moves slowly and there is no book-length trick for it.</div>
+      <div class="move"><b>Run it:</b> borrow the behaviours instead of waiting for the trait. If-then plans, environment design and tracking are what a conscientious person does by default.</div>
+      <div class="cost"><b>Cost</b> &mdash; nothing extra. This is the summary of one through twenty.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">22</span><span class="p-name">Practice on the hard part with feedback</span><span class="ev b">B</span></div>
+      <div class="src">From Outliers, corrected.</div>
+      <div class="para">Deliberate practice, the real concept, is targeted work on the specific weakness with immediate feedback and full attention. The 2014 meta-analysis found it explains a real share of variance in music and games, much less in education and professions. Ten thousand hours is not a finding; the structure is the transferable part, not the volume.</div>
+      <div class="move"><b>Run it:</b> name the sub-skill you are worst at, do that one on its own, get feedback the same day. For teaching that means recording one lesson segment and watching it, not teaching another hundred lessons.</div>
+      <div class="cost"><b>Cost</b> &mdash; the discomfort of watching yourself.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">23</span><span class="p-name">Clear the surfaces you work at</span><span class="ev c">C</span></div>
+      <div class="src">From Kondo.</div>
+      <div class="para">A small correlational study found women describing their homes as cluttered had flatter cortisol curves, and a handful of experiments found tidier environments reduce decision fatigue and improve persistence. None of it is strong, and there is no trial of the method. But it is cheap and it overlaps with environment design.</div>
+      <div class="move"><b>Run it:</b> the desk and the counter, not the whole house. The evidence, such as it is, concerns the surfaces you look at while working.</div>
+      <div class="cost"><b>Cost</b> &mdash; fifteen minutes a week.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">24</span><span class="p-name">Say why, once</span><span class="ev c">C</span></div>
+      <div class="src">From Start With Why.</div>
+      <div class="para">Sinek&rsquo;s neuroscience is fiction, but the organisational literature does find a clearly stated purpose predicts engagement, and people comply more with a request that includes a reason, even a weak one &mdash; the photocopier study, which did replicate for small requests.</div>
+      <div class="move"><b>Run it:</b> when you set a task for a class, an assignment, or a rule for your daughters, attach the reason in one sentence. Not a speech.</div>
+      <div class="cost"><b>Cost</b> &mdash; one sentence.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">25</span><span class="p-name">A written asset-and-liability lens</span><span class="ev c">C</span></div>
+      <div class="src">From Rich Dad Poor Dad &mdash; the salvage.</div>
+      <div class="para">Nothing else in Kiyosaki survives and his leverage advice is dangerous. But asking whether a purchase puts money in your pocket or takes it out is a decent lens, and the household-finance literature is unambiguous that low-cost index funds, automated contributions and avoiding consumer debt beat everything the book recommends. Your Capital page has the real version.</div>
+      <div class="move"><b>Run it:</b> before any purchase over a threshold you set, ask which side of the line it sits on.</div>
+      <div class="cost"><b>Cost</b> &mdash; one question, and it saves money rather than costing it.</div>
+    </div>
+
+    <div class="section-k">What to leave in the books</div>
+    <div class="sub" style="margin-top:-2px;">Three things to actively refuse, because they are not merely useless but tested and harmful or false.</div>
+
+    <div class="band warn">
+      <b>Positive visualisation of the outcome as already achieved.</b> The whole of The Secret and most of Peale, Hill, Murphy and Schwartz. It lowers effort. If you catch yourself doing it, add the obstacle and the plan &mdash; you have just turned it into tactic two.
+    </div>
+    <div class="band warn">
+      <b>Willpower as a muscle you drain.</b> Ego depletion did not survive a twenty-three-laboratory replication. Do not plan your day around conserving willpower. Plan it around not needing any, which is tactics one, three and four.
+    </div>
+    <div class="band warn">
+      <b>The primary love language, ten thousand hours, and NLP state changes.</b> All three tested directly and failed. The books are still readable; the claims are dead.
+    </div>
+
+    <div class="section-k">Order of operations</div>
+    <div class="card gold">
+      <div class="para">If you did only five of the twenty-five, in this order, you would have most of the value of the entire genre.</div>
+      <div class="step"><span class="n">1</span><div><b>If-then plans</b> for the three behaviours that matter most this term.</div></div>
+      <div class="step"><span class="n">2</span><div><b>One environment change</b> per behaviour.</div></div>
+      <div class="step"><span class="n">3</span><div><b>Mental contrasting</b> on the one goal you keep daydreaming about &mdash; and be ready for it to tell you no.</div></div>
+      <div class="step"><span class="n">4</span><div><b>One protected block a week</b> during term: the whole of your spare two hours.</div></div>
+      <div class="step"><span class="n">5</span><div><b>Self-compassion</b> as the default response to a bad day, because it is what keeps the first four running after the first failure.</div></div>
+      <div class="note">Everything else is refinement. Most of it is already on protocols.html.</div>
+    </div>
+
+    <div class="section-k">Verified or vibe: the ledger</div>
+    <div class="key">
+      <b>Verified by search when this was written:</b> the implementation-intentions effect size and its 2024 update; the growth-mindset meta-analyses and the dispute between the two camps; the grit meta-analysis and its point-eight correlation with conscientiousness; the mental-contrasting meta-analysis and the positive-fantasy finding; the gratitude-intervention meta-analyses &mdash; which is why gratitude journals are <i>not</i> in the twenty-five, the effect against an active control being close to zero.<br><br>
+      <b>From reasoning and recalled literature, not re-checked:</b> the ego-depletion replication failure; the deliberate-practice meta-analysis figures; the sixty-six-day habit study; the 2024 love-languages review; the Cialdini field experiments; the mindfulness meta-analysis; the Hill and Kiyosaki biography findings; the clutter-cortisol study. The direction of each is confident; treat exact numbers as approximate.<br><br>
+      <b>The list of thirty and its sales ranking:</b> a reconstruction from publisher claims. Guess, labelled as such.
+    </div>
+    <div class="foot">The Self-Help Audit &middot; Forge OS</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h1 style="font-size:20px;">Which tactic, or which trap?</h1>
+    <div class="sub">Recognition, not recall. A situation, a claim or a habit of yours. Name the tactic it calls for &mdash; or the thing to refuse &mdash; before revealing. Ten per round, shuffled.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Done</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn ghost" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  var read = m === 'read';
+  document.getElementById('read').style.display  = read ? 'block' : 'none';
+  document.getElementById('drill').style.display = read ? 'none' : 'block';
+  document.getElementById('tab-read').className  = read ? 'on' : '';
+  document.getElementById('tab-drill').className = read ? '' : 'on';
+  if(!read){ restart(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-self-help';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- drill: 24-situation pool, 10 per round, one-thing last ---------------- */
+var POOL = [
+  { prompt:'You keep meaning to open the marking pile first and keep opening email instead.',
+    lines:['<b>If-then plan.</b> Grade A, two minutes to write, the best-supported tactic here.','&ldquo;When I sit down at my desk in 148 after lunch, I open the marking pile before email.&rdquo; A real recurring moment, not a mood.'] },
+  { prompt:'You catch yourself <b>picturing the exit from teaching as already done</b>, and it feels great.',
+    lines:['<b>That is the trap, not a tactic.</b> Positive fantasising lowers effort and outcomes, across weight loss, dating, surgery recovery and job hunting.','Add the obstacle and the plan. That converts it into mental contrasting.'] },
+  { prompt:'You want to read more and keep reaching for the phone in bed.',
+    lines:['<b>Design the environment.</b> Grade A. Habits are cued by context, not intention.','One step of friction onto the phone &mdash; charging in another room &mdash; and one off the book, which goes on the pillow.'] },
+  { prompt:'A build has stalled for three weeks and you cannot make yourself open the file.',
+    lines:['<b>Make the first step trivially small.</b> The gap is a failure to start, not to continue.','&ldquo;Open the file and write one sentence.&rdquo; Scale up only when that is boring.'] },
+  { prompt:'You are about to plan your week around <b>saving willpower for the hard thing</b>.',
+    lines:['<b>Refuse it.</b> Ego depletion did not survive a twenty-three-lab replication.','Plan the day so it needs no willpower: if-then plans, environment, small first step.'] },
+  { prompt:'You want a goal to actually happen this term.',
+    lines:['<b>Write it down specifically, and tell one person.</b> Specific and difficult beats vague, given commitment and feedback.','The Yale-students story is a myth. The writing and the weekly accountability are the active ingredients.'] },
+  { prompt:'Your two spare hours a week are going in ten-minute fragments.',
+    lines:['<b>One protected block.</b> Sixty to ninety minutes, phone in another room, one task.','Task-switching carries a real penalty and attention residue is real; four hours a day making you elite is not.'] },
+  { prompt:'A new parent emails, anxious and a bit combative.',
+    lines:['<b>Active listening, reflected back.</b> Say their point back in one sentence and ask if you have it right.','Then warmth before competence. People judge warmth first and it carries more weight in whether they trust you.'] },
+  { prompt:'You need a favour from an admin you rarely speak to.',
+    lines:['<b>Reciprocity.</b> Give first, cheaply and unasked &mdash; then ask.','Field experiments with very large samples back this. It is the mechanism under most of Carnegie.'] },
+  { prompt:'Three unfinished tasks keep surfacing while you are trying to work.',
+    lines:['<b>Externalise the open loops.</b> Writing a plan for the task &mdash; not doing it &mdash; stops the intrusion.','One list, one device, next action written. You do not need the rest of the GTD apparatus.'] },
+  { prompt:'A lesson you rebuilt went badly and you are calling yourself useless.',
+    lines:['<b>Self-compassion, not self-criticism.</b> People who meet failure with self-compassion are more likely to try again.','&ldquo;That went badly and I will do the next one better.&rdquo; Talk to yourself as you would to a student who tried.'] },
+  { prompt:'You are estimating how long a build will take, and you feel confident.',
+    lines:['<b>Question the base rate.</b> The planning fallacy replicates reliably.','Ask what happened to the last five people who tried this. Knowing about the bias does not protect you; the outside question does.'] },
+  { prompt:'You are deciding whether to buy something moderately expensive.',
+    lines:['<b>The asset-and-liability lens.</b> Does it put money in your pocket or take it out?','Everything else in that book fails, and the leverage advice is dangerous. Your Capital page has the real version.'] },
+  { prompt:'Your daughter has been off for days and you are about to do what <b>you</b> would want done.',
+    lines:['<b>Ask what she actually wants.</b> The five languages are not real categories; the reflex is the salvage.','One question: what would make you feel looked after this week? Then do that.'] },
+  { prompt:'You are setting a new rule at home and expect an argument.',
+    lines:['<b>Say why, once.</b> A reason attached to a request raises compliance, even a fairly weak reason.','One sentence, not a speech. The golden-circle neuroscience is fiction; the practice is not.'] },
+  { prompt:'You want to get better at teaching, so you plan to <b>teach more lessons</b>.',
+    lines:['<b>Practice on the hard part with feedback.</b> Volume is not the mechanism.','Name the sub-skill you are worst at, work that alone, and get feedback the same day. Record one segment and watch it.'] },
+  { prompt:'A colleague insists that <b>grit is what separates the students who make it</b>.',
+    lines:['<b>Perseverance, not passion.</b> Grit correlates around point eight with conscientiousness.','The perseverance half predicts; the passion half adds nothing. Keep the smaller, true version.'] },
+  { prompt:'You are tracking a three-month project and checking daily whether you are closer.',
+    lines:['<b>Pick the process goal.</b> Track &ldquo;did I do the behaviour&rdquo;, not &ldquo;am I closer&rdquo;.','The behaviour is under your control; the outcome is noisy, and noise read daily is discouraging.'] },
+  { prompt:'A goal keeps slipping and nothing has made it stick.',
+    lines:['<b>Loss framing.</b> Stake something you would hate to lose, held by a friend, returned on proof.','Losses hurt roughly twice as much as equivalent gains please, and commitment devices have real trial evidence.'] },
+  { prompt:'You are wondering whether to add a <b>gratitude journal</b> to the morning stack.',
+    lines:['<b>Deliberately not in the twenty-five.</b> Against an active control the effect is close to zero.','That one was checked twice. The morning slot is better spent on tactics one through four.'] },
+  { prompt:'You are in a hard stretch and the effort feels pointless.',
+    lines:['<b>Meaning as a resource.</b> Write one sentence naming who it is for.','Honest Stop asks &ldquo;done or covered&rdquo;. This is the companion question: for whom.'] },
+  { prompt:'Your desk is buried and you are about to reorganise the entire house.',
+    lines:['<b>Clear the surfaces you work at</b> &mdash; the desk and the counter, not the house.','The evidence is thin and correlational. Fifteen minutes a week, and stop there.'] },
+  { prompt:'Email and messages are landing all day and you answer as they arrive.',
+    lines:['<b>Batch the shallow work.</b> Two fixed times, marking in one block.','It inherits its support from task-switching, not from Ferriss. One trial found three checks a day lowered stress.'] },
+  { prompt:'Name <b>the one thing</b>.',
+    lines:['<b>The practice often works even when the theory is wrong.</b>','Grade the book&rsquo;s theory and the tactic separately &mdash; then run the five in the order of operations, starting with if-then plans.'] }
+];
+var ROUND=10, STEPS=[], idx=0, revealed=false;
+var ONE = POOL[POOL.length-1];
+
+function startRound(){
+  var a=POOL.slice(0,POOL.length-1);
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+  STEPS=a.slice(0,ROUND-1); STEPS.push(ONE); idx=0;
+}
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Name it &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  startRound();
+  document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display='';
+  document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+/* streak: count-up only, no fail state */
+var DKEY='forge-self-help-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+</script>
+</body>
+</html>
