@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Daily Challenge</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* read cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.phys{ border-left-color:var(--teal); background:rgba(63,208,192,.08); }
+  .card.gold{ border-left-color:var(--gold); background:rgba(245,215,110,.08); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .para{ font-size:14px; line-height:1.6; margin:7px 0; }
+  .para b{ color:var(--accent-hi); }
+  .card.phys .para b{ color:#8ff0e4; }
+
+  /* rungs */
+  .rung{ font-size:13.5px; line-height:1.5; margin:6px 0; padding-left:26px; position:relative; }
+  .rung .rn{ position:absolute; left:0; top:0; width:19px; height:19px; border-radius:50%; background:rgba(74,157,232,.22);
+    border:1px solid var(--line); color:var(--accent-hi); font-size:10.5px; font-weight:800; display:flex; align-items:center; justify-content:center; }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+
+  /* draw */
+  #drill{ display:none; }
+  .draw-head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+  .tname{ font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--teal); font-weight:800; }
+  .rdose{ font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; }
+  .challenge{ font-size:clamp(18px,4.6vw,23px); font-weight:300; line-height:1.4; margin:4px 0 14px; }
+  .ifthen label{ display:block; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); font-weight:800; margin-bottom:6px; }
+  .ifthen textarea{ width:100%; min-height:74px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:12px;
+    color:var(--ink); font-size:14.5px; line-height:1.5; padding:11px 13px; font-family:inherit; resize:vertical; }
+  .ifthen textarea::placeholder{ color:rgba(234,244,255,.34); }
+  .bar{ display:flex; gap:10px; justify-content:center; margin-top:16px; flex-wrap:wrap; }
+  .btn{ border:0; border-radius:999px; padding:13px 24px; font-size:13.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:118px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn.small{ padding:9px 15px; min-width:0; font-size:11.5px; box-shadow:none; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .btn:focus-visible, .toggle button:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .logged{ text-align:center; padding:26px 0 8px; }
+  .logged .big{ font-size:30px; font-weight:200; letter-spacing:.05em; }
+  .logged .streak{ margin-top:16px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  .counts{ display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+  .chip{ font-size:11px; letter-spacing:.06em; padding:5px 10px; border-radius:999px; background:rgba(9,36,80,.5);
+    border:1px solid var(--line); color:var(--ink-dim); font-weight:700; }
+  .chip b{ color:var(--accent-hi); }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-drill" onclick="setMode('drill')">Draw</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>The Daily Challenge</h1>
+    <div class="sub">One dosed exposure a day, in a domain you chose, each rep logged as evidence. Not one hard thing a day &mdash; one specific thing, in the place you want to be harder.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="section-k">Start with what is not true</div>
+
+    <div class="card phys">
+      <div class="p-head"><span class="p-name">Willpower is not a muscle</span><span class="ev d">D</span></div>
+      <div class="para">The popular version says toughness is general: do hard things, any hard things, and a reserve grows that you can spend anywhere. Cold shower at six, therefore better at the difficult conversation at three.</div>
+      <div class="para">That model came out of the ego-depletion literature, and that literature has largely failed to replicate. The big pre-registered multi-lab attempts &mdash; twenty-four labs, around two thousand participants in the first &mdash; found an effect indistinguishable from zero. The self-control training studies people cite are mostly small and pre-replication-crisis.</div>
+      <div class="para"><b>So take the general claim off the table.</b> A cold shower every morning makes you reliably better at cold showers. It does not make you better at holding a position when someone senior pushes back. Anyone promising the transfer is selling something.</div>
+      <div class="note">This matters practically. If toughness were general, the design would be simple: do the hardest available thing daily. Because it is not, the design has to be specific &mdash; choose the domains, take your doses there.</div>
+    </div>
+
+    <div class="section-k">What does hold up</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">1</span><span class="p-name">Graded exposure, within its domain</span><span class="ev a">A</span></div>
+      <div class="p-ess">The best-evidenced behaviour change we have.</div>
+      <div class="para">Repeated, deliberate contact with a stressor at a dose you can tolerate reduces the threat response to that stressor, and the effect is large. The clinical version, exposure therapy for anxiety disorders, is among the most robust findings in psychology. The performance version &mdash; running the skill inside the stressor so the skill survives it &mdash; is stress inoculation training, where the evidence is moderate rather than strong <span class="ev b">B</span> but consistent in direction.</div>
+      <div class="para"><b>Notice what it actually says.</b> Not that you become tougher. That this particular thing stops being an emergency to your nervous system, because you met it repeatedly and nothing catastrophic happened. Real and durable &mdash; just narrower than the marketing.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">2</span><span class="p-name">If-then plans</span><span class="ev a">A</span></div>
+      <div class="p-ess">The strongest item here, and nearly free.</div>
+      <div class="para">Deciding in advance what you will do when a specific trigger appears &mdash; &ldquo;if my grip fails, I rack it&rdquo; &mdash; outperforms holding a general intention. The meta-analysis runs to ninety-four studies and over eight thousand participants, at an effect size around 0.65. It is already on your roster. This is the same technique at a smaller unit.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">3</span><span class="p-name">Completed reps are evidence</span><span class="ev b">B</span></div>
+      <div class="p-ess">And evidence is what moves the dial.</div>
+      <div class="para">Your Mental Strength page names the real driver: what deepens a crisis is low attainability, not low desirability. You do not talk yourself out of a trough by remembering why the goal matters. You get out by producing proof that you can. This is Bandura&rsquo;s oldest and best-supported finding &mdash; enactive mastery, actually doing the thing, is the strongest source of self-efficacy, far stronger than encouragement.</div>
+      <div class="para"><b>So this is not a workout for a muscle that does not exist.</b> It is a manufacturing process for evidence. Every completed rep is a line in a record you can read cold when your own judgement is compromised.</div>
+    </div>
+
+    <div class="section-k">The rules</div>
+
+    <div class="card">
+      <div class="move"><b>One challenge a day. Ten to fifteen minutes.</b> If it becomes a second job it will be abandoned, and an abandoned protocol puts a failure in the record &mdash; the opposite of what this is for.</div>
+      <div class="move"><b>Nothing already in your week counts.</b> The sauna is in your week. The fast is in your week. The heavy sets are in your week. Count them here and you will feel productive and learn nothing.</div>
+      <div class="move"><b>Write the if-then before you start.</b> An observable trigger and a specific response &mdash; <i>if the other person gets defensive, I stay on the point and lower my volume</i>. Not &ldquo;if it gets hard, push through.&rdquo;</div>
+      <div class="move"><b>Log it.</b> The log is not admin, it is the output. A protocol like this with no record is a series of forgotten afternoons.</div>
+      <div class="move"><b>Tuesday and Thursday take the shortest rungs.</b> Fourteen-hour days with a class at the end are already the dose. Take rung one and take it honestly.</div>
+    </div>
+
+    <div class="section-k">The five tracks</div>
+    <div class="sub" style="margin-top:-2px;">Five rungs each, obviously doable to genuinely uncomfortable. You are not meant to be at the same rung across tracks &mdash; rung four in one and rung one in another is the correct picture.</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">1</span><span class="p-name">Sustained effort</span></div>
+      <div class="p-ess">Staying with physical work past the point where stopping becomes articulate.</div>
+      <div class="rung"><span class="rn">1</span>Hold a plank or a hang thirty seconds past where you wanted to stop.</div>
+      <div class="rung"><span class="rn">2</span>Finish a set you pre-committed to, when the last two reps are genuinely in doubt.</div>
+      <div class="rung"><span class="rn">3</span>Complete a timed effort &mdash; a distance, a duration &mdash; set before you start and not renegotiated during.</div>
+      <div class="rung"><span class="rn">4</span>Do a session you do not feel like doing, at full prescribed effort, no quiet reduction.</div>
+      <div class="rung"><span class="rn">5</span>Complete a long effort where the second half is worse than the first and you knew that going in.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">2</span><span class="p-name">Social exposure</span></div>
+      <div class="p-ess">The one that transfers least from the others, which is exactly why it needs its own ladder.</div>
+      <div class="rung"><span class="rn">1</span>Ask a stranger one unnecessary question.</div>
+      <div class="rung"><span class="rn">2</span>Say the thing you were going to leave unsaid in a staff conversation.</div>
+      <div class="rung"><span class="rn">3</span>Disagree out loud in a meeting, on the record, and hold the point.</div>
+      <div class="rung"><span class="rn">4</span>Have the conversation you have been deferring, at the time you said you would.</div>
+      <div class="rung"><span class="rn">5</span>Hold a position under sustained pushback from someone whose opinion you value, without conceding for comfort and without escalating.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">3</span><span class="p-name">Boredom and attention</span></div>
+      <div class="p-ess">The one that looks trivial written down and is not.</div>
+      <div class="rung"><span class="rn">1</span>Ten minutes doing nothing. No phone, no audio, no input.</div>
+      <div class="rung"><span class="rn">2</span>One task to its actual finish line with the phone in another room.</div>
+      <div class="rung"><span class="rn">3</span>Sit through a dull, necessary thing without reaching for a second stream of stimulation.</div>
+      <div class="rung"><span class="rn">4</span>Thirty minutes of undivided single-task work on the piece you have been avoiding.</div>
+      <div class="rung"><span class="rn">5</span>A full work block, uninterrupted, on the hardest item in front of you rather than the most tractable one.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">4</span><span class="p-name">Delay and appetite</span></div>
+      <div class="p-ess">You already fast, so these are not about duration. They are about the gap between wanting and acting.</div>
+      <div class="rung"><span class="rn">1</span>Wait ten minutes between wanting something and having it.</div>
+      <div class="rung"><span class="rn">2</span>Decide the portion or the quantity in advance and hold to it with the thing in front of you.</div>
+      <div class="rung"><span class="rn">3</span>Decline something you wanted, once, when it was freely available and nobody would have known.</div>
+      <div class="rung"><span class="rn">4</span>Hold a pre-set limit in a situation designed to push past it &mdash; a social meal, a celebration.</div>
+      <div class="rung"><span class="rn">5</span>Go a full day where every consumption decision was made the night before.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">5</span><span class="p-name">Uncertainty</span></div>
+      <div class="p-ess">Tolerating not knowing. The least glamorous and, at a new school in a new role, probably the most useful.</div>
+      <div class="rung"><span class="rn">1</span>Ask a question that reveals you do not know something.</div>
+      <div class="rung"><span class="rn">2</span>Send the piece of work before it is finished to your satisfaction.</div>
+      <div class="rung"><span class="rn">3</span>Start something where you cannot see the second step from the first.</div>
+      <div class="rung"><span class="rn">4</span>Say &ldquo;I don&rsquo;t know&rdquo; in a situation where you could plausibly have bluffed.</div>
+      <div class="rung"><span class="rn">5</span>Commit to a decision on incomplete information, on a deadline, and do not reopen it.</div>
+    </div>
+
+    <div class="section-k">The daily loop</div>
+    <div class="card">
+      <div class="para">Draw one track. <b>Rotate rather than choosing by mood</b> &mdash; mood will send you to the track you are already good at. Read the rung. Write the if-then. Do it. Log one line.</div>
+      <div class="para">Ten minutes on most days. On the good days you will want to do more. <b>Do not.</b> The rung you can repeat is worth more than the rung you did once.</div>
+      <div class="note">The Draw tab runs this loop for you: it rotates the track, holds your rung in each, takes the if-then before you start, and keeps the log.</div>
+    </div>
+
+    <div class="section-k">When to climb</div>
+    <div class="card">
+      <div class="move"><b>When the current rung has gone boring.</b> Not when it has gone easy &mdash; when it has stopped registering. Three consecutive completions with no anticipatory tension is the marker.</div>
+      <div class="move"><b>One rung at a time.</b> Same rule as the Second Nature ladder, same reason. Climbing early produces a failed rep, and a failed rep goes in the same record as a completed one.</div>
+      <div class="move"><b>If you fail a rung twice, drop back one.</b> No commentary, no story about what it means &mdash; the dose was wrong. Exposure that overwhelms does not inoculate, it sensitises. Shrink the unit until it is obviously doable, then complete it.</div>
+    </div>
+
+    <div class="section-k">Failure modes</div>
+    <div class="card">
+      <div class="move"><b>Substrate first.</b> Sleep debt, low fuel, heat and illness all produce quit-shaped thinking indistinguishable from a mindset problem. Before recording a rung as failed, establish that it survives a meal and a night&rsquo;s sleep. Most false alarms live here.</div>
+      <div class="move"><b>Difficulty theatre.</b> Choosing challenges that look hard rather than ones that are hard for you. Cold water is photogenic. Saying the uncomfortable thing in a meeting is not. The second one is the dose.</div>
+      <div class="move"><b>Counting what you already do.</b> This is how the protocol dies quietly while appearing to run.</div>
+      <div class="move"><b>Treating the log as optional.</b> The record is the mechanism. Without it you have anecdotes, and anecdotes are exactly what the trough distorts.</div>
+    </div>
+
+    <div class="section-k">What to measure</div>
+    <div class="card">
+      <div class="para">Not how you feel. <b>Completed reps per track per month</b>, and <b>which rung you are on in each</b>. Those two numbers tell you whether it is running, and the Draw tab keeps both.</div>
+      <div class="para">The real outcome measure is slower and shows up outside the protocol: the conversation you would once have deferred and now simply have. That is what transfer looks like when it is real &mdash; inside the domain you trained, not across all of them.</div>
+    </div>
+
+    <div class="section-k">The one thing</div>
+    <div class="band">
+      <b>Write the if-then before you start, and log the result after.</b><br>
+      The best-evidenced move and the cheapest, and the one that converts an afternoon of effort into a line of evidence you can read when you need it most. Everything else here is scaffolding for those two sentences.
+    </div>
+
+    <div class="section-k">Evidence</div>
+    <div class="key">
+      <span class="ev a">A</span> <b>Strong and replicated.</b> Graded exposure within its domain; implementation intentions (ninety-four studies, 8,000+ participants, d&thinsp;&asymp;&thinsp;0.65).<br><br>
+      <span class="ev b">B</span> <b>Good, some dispute.</b> Stress inoculation training; enactive mastery as the strongest source of self-efficacy.<br><br>
+      <span class="ev d">D</span> <b>Tested and failed.</b> Willpower as a depletable muscle; general transfer of toughness across domains.<br><br>
+      <b>Verify before quoting.</b> The ego-depletion figures &mdash; twenty-four labs, around two thousand participants &mdash; are from recall and were not re-checked, though the failure-to-replicate finding itself is solid. The claim that within-domain exposure does not transfer across domains is reasoning from the specificity literature rather than a study testing exactly that; it is the honest read and the weakest load-bearing claim here.
+    </div>
+    <div class="foot">The Daily Challenge &middot; Forge OS</div>
+  </div>
+
+  <!-- ===================== DRAW ===================== -->
+  <div id="drill">
+    <h1 style="font-size:20px;">Today&rsquo;s draw</h1>
+    <div class="sub" id="draw-sub">Rotated, not chosen. Write the if-then before you start.</div>
+    <div class="stage" id="stage"></div>
+    <div class="logged" id="done" style="display:none;">
+      <div class="big">Logged</div>
+      <div class="streak" id="streak"></div>
+      <div class="counts" id="counts"></div>
+      <div class="bar"><button class="btn ghost" onclick="restart()">Draw again</button></div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  var read = m === 'read';
+  document.getElementById('read').style.display  = read ? 'block' : 'none';
+  document.getElementById('drill').style.display = read ? 'none' : 'block';
+  document.getElementById('tab-read').className  = read ? 'on' : '';
+  document.getElementById('tab-drill').className = read ? '' : 'on';
+  if(!read){ restart(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-daily-challenge';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- tracks ---------------- */
+var TRACKS = [
+  { name:'Sustained effort', rungs:[
+    'Hold a plank or a hang thirty seconds past where you wanted to stop.',
+    'Finish a set you pre-committed to, when the last two reps are genuinely in doubt.',
+    'Complete a timed effort &mdash; a distance, a duration &mdash; set before you start and not renegotiated during.',
+    'Do a session you do not feel like doing, at full prescribed effort, no quiet reduction.',
+    'Complete a long effort where the second half is worse than the first and you knew that going in.'] },
+  { name:'Social exposure', rungs:[
+    'Ask a stranger one unnecessary question.',
+    'Say the thing you were going to leave unsaid in a staff conversation.',
+    'Disagree out loud in a meeting, on the record, and hold the point.',
+    'Have the conversation you have been deferring, at the time you said you would.',
+    'Hold a position under sustained pushback from someone whose opinion you value, without conceding for comfort and without escalating.'] },
+  { name:'Boredom and attention', rungs:[
+    'Ten minutes doing nothing. No phone, no audio, no input.',
+    'One task to its actual finish line with the phone in another room.',
+    'Sit through a dull, necessary thing without reaching for a second stream of stimulation.',
+    'Thirty minutes of undivided single-task work on the piece you have been avoiding.',
+    'A full work block, uninterrupted, on the hardest item in front of you rather than the most tractable one.'] },
+  { name:'Delay and appetite', rungs:[
+    'Wait ten minutes between wanting something and having it.',
+    'Decide the portion or the quantity in advance and hold to it with the thing in front of you.',
+    'Decline something you wanted, once, when it was freely available and nobody would have known.',
+    'Hold a pre-set limit in a situation designed to push past it &mdash; a social meal, a celebration.',
+    'Go a full day where every consumption decision was made the night before.'] },
+  { name:'Uncertainty', rungs:[
+    'Ask a question that reveals you do not know something.',
+    'Send the piece of work before it is finished to your satisfaction.',
+    'Start something where you cannot see the second step from the first.',
+    'Say &ldquo;I don&rsquo;t know&rdquo; in a situation where you could plausibly have bluffed.',
+    'Commit to a decision on incomplete information, on a deadline, and do not reopen it.'] }
+];
+
+/* ---------------- state ---------------- */
+var DKEY='forge-daily-challenge';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function blank(){ return { rungs:[1,1,1,1,1], fails:[0,0,0,0,0], last:'', lastTrack:-1, streak:0, done:[0,0,0,0,0], log:[] }; }
+function rd(){
+  var s;
+  try{ s=JSON.parse(localStorage.getItem(DKEY)||'null'); }catch(e){ s=null; }
+  if(!s || typeof s!=='object' || Array.isArray(s)) return blank();
+  var b=blank();
+  for(var k in b){ if(!(k in s)) s[k]=b[k]; }
+  if(!Array.isArray(s.rungs) || s.rungs.length!==5) s.rungs=b.rungs;
+  if(!Array.isArray(s.fails) || s.fails.length!==5) s.fails=b.fails;
+  if(!Array.isArray(s.done)  || s.done.length!==5)  s.done=b.done;
+  if(!Array.isArray(s.log)) s.log=[];
+  return s;
+}
+function wr(s){ try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){} }
+
+var cur=-1;
+function isShortDay(){ var d=new Date().getDay(); return d===2 || d===4; }
+
+function restart(){
+  var s=rd();
+  cur=(s.lastTrack+1)%TRACKS.length;
+  document.getElementById('done').style.display='none';
+  document.getElementById('stage').style.display='';
+  render();
+  window.scrollTo(0,0);
+}
+
+function render(){
+  var s=rd(), t=TRACKS[cur], rung=s.rungs[cur], short=isShortDay();
+  var shown=short?1:rung;
+  var b='';
+  b+='<div class="draw-head"><span class="tname">'+t.name+'</span><span class="rdose">Rung '+shown+' of 5</span></div>';
+  b+='<div class="challenge">'+t.rungs[shown-1]+'</div>';
+  if(short && rung>1){
+    b+='<div class="band" style="margin-bottom:14px;"><b>Tuesday or Thursday.</b> A fourteen-hour day is already the dose, so the draw drops you to rung one. Your rung on this track stays at '+rung+'.</div>';
+  }
+  b+='<div class="ifthen"><label for="ifthen">Write the if-then before you start</label>'
+   + '<textarea id="ifthen" placeholder="If &hellip; then I will &hellip;"></textarea></div>';
+  b+='<div class="bar">'
+   + '<button class="btn" id="doneBtn" onclick="markDone()">Did it</button>'
+   + '<button class="btn ghost" onclick="markFail()">Didn&rsquo;t</button>'
+   + '</div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost small" onclick="climb()">Gone boring &mdash; climb</button>'
+   + '<button class="btn ghost small" onclick="drop()">Drop back one</button>'
+   + '<button class="btn ghost small" onclick="skip()">Different track</button>'
+   + '</div>';
+  b+='<div class="note" style="text-align:center;">Climb only after three completions with no anticipatory tension. Two failures on a rung and you drop back.</div>';
+  document.getElementById('stage').innerHTML=b;
+}
+
+function getIfThen(){
+  var el=document.getElementById('ifthen');
+  return el ? String(el.value||'').slice(0,400) : '';
+}
+
+function markDone(){
+  var s=rd(), t=today();
+  s.done[cur]=(s.done[cur]||0)+1;
+  s.fails[cur]=0;
+  s.log.unshift({ d:t, track:cur, rung:isShortDay()?1:s.rungs[cur], ok:true, plan:getIfThen() });
+  s.log=s.log.slice(0,120);
+  if(s.last!==t){ s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t; }
+  s.lastTrack=cur;
+  wr(s);
+  showLogged(s);
+}
+
+function markFail(){
+  var s=rd(), t=today();
+  s.fails[cur]=(s.fails[cur]||0)+1;
+  s.log.unshift({ d:t, track:cur, rung:isShortDay()?1:s.rungs[cur], ok:false, plan:getIfThen() });
+  s.log=s.log.slice(0,120);
+  s.lastTrack=cur;
+  if(s.fails[cur]>=2 && s.rungs[cur]>1){ s.rungs[cur]-=1; s.fails[cur]=0; }
+  wr(s);
+  showLogged(s);
+}
+
+function climb(){
+  var s=rd();
+  if(s.rungs[cur]<5){ s.rungs[cur]+=1; s.fails[cur]=0; wr(s); }
+  render();
+}
+function drop(){
+  var s=rd();
+  if(s.rungs[cur]>1){ s.rungs[cur]-=1; s.fails[cur]=0; wr(s); }
+  render();
+}
+function skip(){
+  cur=(cur+1)%TRACKS.length;
+  render();
+  window.scrollTo(0,0);
+}
+
+function showLogged(s){
+  document.getElementById('stage').style.display='none';
+  document.getElementById('streak').textContent='Day streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  var c='';
+  for(var i=0;i<TRACKS.length;i++){
+    c+='<span class="chip">'+TRACKS[i].name+' &middot; rung <b>'+s.rungs[i]+'</b> &middot; <b>'+(s.done[i]||0)+'</b> reps</span>';
+  }
+  document.getElementById('counts').innerHTML=c;
+  document.getElementById('done').style.display='block';
+  window.scrollTo(0,0);
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+</script>
+</body>
+</html>
