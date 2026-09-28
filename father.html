@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Father Protocol</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* read cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; }
+  .band b{ color:var(--gold); }
+  .seq{ font-size:14px; line-height:1.6; }
+  .seq div{ padding:8px 0; border-bottom:1px solid var(--line); }
+  .seq div:last-child{ border-bottom:none; }
+  .seq b{ color:var(--accent-hi); }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+
+  /* ladder */
+  .rung{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px;
+    padding:14px 16px; margin-bottom:11px; }
+  .r-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:5px; flex-wrap:wrap; }
+  .r-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .r-name{ font-size:16.5px; font-weight:700; }
+  .r-dose{ font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; }
+  .r-rule{ font-size:14px; line-height:1.55; margin:6px 0; }
+  .r-rule b{ color:var(--accent-hi); }
+  .r-fail{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:7px; }
+  .r-fail b{ color:var(--ink-dim); }
+
+  /* drill */
+  #drill{ display:none; }
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(19px,5vw,26px); font-weight:300; line-height:1.4; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+
+  .card.gold{ border-left-color:var(--gold); }
+  .card.gold .p-num{ color:var(--gold); }
+  .say{ font-size:14px; line-height:1.55; margin:8px 0; padding:9px 12px; background:rgba(9,36,80,.45); border-radius:10px; border:1px solid var(--line); }
+  .say b{ color:var(--gold); font-weight:700; }
+  .say .not{ display:block; color:var(--ink-quiet); font-size:12.5px; margin-top:4px; }
+  .girl{ font-size:13px; letter-spacing:.2em; text-transform:uppercase; font-weight:800; color:var(--gold); margin:26px 0 4px; }
+  .rung.gold{ border-left-color:var(--gold); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>The Father Protocol</h1>
+    <div class="sub">The exit is being built for this. Two daughters, 10 and 14, on opposite sides of a real line in the research, and a week with narrow windows. This is what to do and say inside those windows &mdash; and what the evidence actually supports.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="band">
+      <b>Read this first.</b> Almost everything here is <b>correlational</b>: families that do X tend to have kids who do better, and part of that is who those families already are. None of it is a guarantee, and nothing on this page makes a child successful on command. What it does is put the odds on the right side &mdash; and the moves cost minutes, not money. Each item carries its grade so you know which ones are load-bearing.
+    </div>
+
+    <div class="section-k">The Base Layer &middot; both girls</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">1</span><span class="p-name">Warmth plus structure</span><span class="ev b">B</span></div>
+      <div class="p-ess">The most replicated finding in parenting research: high warmth together with clear, explained limits. Not strict, not soft &mdash; both at once.</div>
+      <div class="move"><b>Say the warmth out loud</b> &mdash; kids do not infer it from effort on their behalf. The exit you are building is invisible to them; the sentence is not.</div>
+      <div class="move"><b>Explain the limit</b> &mdash; a reason given once beats a rule repeated. The rule still holds.</div>
+      <div class="move"><b>Never use love as leverage</b> &mdash; guilt, silent treatment, withdrawn affection. This is &ldquo;psychological control&rdquo;, and it is consistently linked to worse outcomes, especially in teenagers.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">2</span><span class="p-name">The phone out of the room</span><span class="ev b">B</span></div>
+      <div class="p-ess">When a parent is on the phone mid-conversation, kids read it as the phone winning. The research calls it phubbing and links it to teen anxiety and low mood.</div>
+      <div class="move"><b>Two protected windows</b> &mdash; the goodbye and the dinner table. Not on the table face-down: out of the room.</div>
+      <div class="move"><b>When she starts talking, the phone goes down first</b> &mdash; before you answer. The gesture is the message.</div>
+      <div class="note">Consistent association across many studies, but mostly cross-sectional &mdash; the direction is not proven. It is cheap enough to act on anyway.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">3</span><span class="p-name">Rituals that repeat</span><span class="ev b">B</span></div>
+      <div class="p-ess">Predictable small things carry more than rare big ones. A child who knows it is coming can lean on it.</div>
+      <div class="move"><b>Three dinners a week, together</b> &mdash; the threshold the family-meal research uses. More is better; three is the floor.</div>
+      <div class="move"><b>Same shape every time</b> &mdash; the goodbye, the door check-in, the weekend one-on-one. Do not redesign them. This is Second Nature&rsquo;s Stable Structure, pointed at home.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">4</span><span class="p-name">Repair after a rupture</span><span class="ev c">C</span></div>
+      <div class="p-ess">Every parent snaps, misses things, gets it wrong. What predicts the relationship is not the absence of ruptures but whether they get repaired.</div>
+      <div class="move"><b>Go back first</b> &mdash; you, not her, and same day where you can. Short: what you did, that it was not okay, what you will do instead.</div>
+      <div class="move"><b>No &ldquo;but&rdquo;</b> &mdash; &ldquo;I&rsquo;m sorry I yelled, but you&hellip;&rdquo; is a second rupture.</div>
+      <div class="note">The strongest repair research is on infants; carrying it to 10 and 14 is reasonable extrapolation, not a tested finding.</div>
+    </div>
+
+    <div class="section-k">What to do and say &middot; the evidence-backed moves</div>
+    <div class="sub" style="margin-top:-2px;">The things you asked for: what you can do or say that is linked to them being healthier, happier and more successful. Each has the words to use and the words to avoid.</div>
+
+    <div class="card gold">
+      <div class="p-head"><span class="p-num">1</span><span class="p-name">Eat together, three-plus times a week</span><span class="ev b">B</span></div>
+      <div class="p-ess">Healthier: linked to better nutrition across tens of thousands of children. Happier: linked to higher wellbeing, lower depression and fewer risk behaviours in teens, even after accounting for how close the family already is.</div>
+      <div class="say"><b>Say:</b> &ldquo;What was the best part of today, and the worst?&rdquo; &mdash; then answer it yourself too.<span class="not">Not: a debrief of marks, chores and what went wrong. The table is not the office.</span></div>
+    </div>
+
+    <div class="card gold">
+      <div class="p-head"><span class="p-num">2</span><span class="p-name">Praise the process, not the person</span><span class="ev b">B</span></div>
+      <div class="p-ess">Successful: praise for effort and strategy is linked to kids believing ability grows with work &mdash; and choosing harder things.</div>
+      <div class="say"><b>Say:</b> &ldquo;You kept going when that got hard.&rdquo; &ldquo;How did you figure that out?&rdquo;<span class="not">Not: &ldquo;You&rsquo;re so smart.&rdquo; And not inflated praise &mdash; &ldquo;that&rsquo;s the best drawing ever&rdquo; can backfire on a child who already doubts herself.</span></div>
+      <div class="note">The famous mindset effects are smaller in large replications than the popular version suggests. Real, modest, and free.</div>
+    </div>
+
+    <div class="card gold">
+      <div class="p-head"><span class="p-num">3</span><span class="p-name">Make it safe to tell you things</span><span class="ev b">B</span></div>
+      <div class="p-ess">Safer: what parents actually know about a teen&rsquo;s life comes mostly from what she chooses to tell them, not from asking. Your reaction today decides whether she tells you next time.</div>
+      <div class="say"><b>Say, first, every time:</b> &ldquo;Thanks for telling me.&rdquo; Then ask before advising: &ldquo;Do you want help with it, or do you just want me to know?&rdquo;<span class="not">Not: an instant lecture, alarm, or consequences in the first sentence. Deal with the problem later; protect the channel now.</span></div>
+    </div>
+
+    <div class="card gold">
+      <div class="p-head"><span class="p-num">4</span><span class="p-name">Hand over choices</span><span class="ev b">B</span></div>
+      <div class="p-ess">Happier and more motivated: autonomy-supportive parenting &mdash; choices, reasons, her view taken seriously &mdash; is linked to better self-motivation and wellbeing.</div>
+      <div class="say"><b>Say:</b> &ldquo;What do you think you should do?&rdquo; &ldquo;Here&rsquo;s why I&rsquo;m asking this.&rdquo; &ldquo;You pick: this or that.&rdquo;<span class="not">Not: &ldquo;Because I said so&rdquo; as the default. Limits stay; the reasons come with them.</span></div>
+    </div>
+
+    <div class="card gold">
+      <div class="p-head"><span class="p-num">5</span><span class="p-name">Talk about the future, not the homework</span><span class="ev b">B</span></div>
+      <div class="p-ess">Successful: in the research on middle-schoolers, linking school to their own goals is associated with achievement more strongly than helping with homework.</div>
+      <div class="say"><b>Say:</b> &ldquo;What would you want to be doing at 25? What would help get you there?&rdquo;<span class="not">Not: checking every assignment. Stay interested in where she is going; let the homework be hers.</span></div>
+    </div>
+
+    <div class="card gold">
+      <div class="p-head"><span class="p-num">6</span><span class="p-name">Protect their sleep</span><span class="ev b">B</span></div>
+      <div class="p-ess">Healthier and happier: short sleep in teens is tied to low mood and worse school performance, and phones in the bedroom at night cut sleep.</div>
+      <div class="move"><b>Phones charge outside bedrooms overnight</b> &mdash; a house rule, explained, and one you follow too. Your evening protocol already models it.</div>
+    </div>
+
+    <div class="card gold">
+      <div class="p-head"><span class="p-num">7</span><span class="p-name">Say the specific thing you love</span><span class="ev c">C</span></div>
+      <div class="p-ess">General warmth is well supported; the specific phrasing is judgement, not a finding. Specific lands better than general because it proves you were watching.</div>
+      <div class="say"><b>Say:</b> &ldquo;I love how you look out for your sister.&rdquo; &ldquo;I noticed you stuck up for that kid.&rdquo;<span class="not">Not: only saying it after a win. Warmth tied to performance becomes a price.</span></div>
+    </div>
+
+    <div class="girl">Your 10-year-old</div>
+    <div class="sub">She is still in the window where she will take one-on-one time and ask for more. It closes; this is the time it is cheapest.</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">A</span><span class="p-name">Her time</span><span class="ev c">C</span></div>
+      <div class="p-ess">Ten to fifteen minutes, just her, and she leads. You follow, describe what she is doing, and enjoy it. No teaching, no questions quiz, no correcting.</div>
+      <div class="move"><b>Describe, don&rsquo;t direct</b> &mdash; &ldquo;You&rsquo;re building the wall higher.&rdquo; Narrating tells her you are watching her, not the task.</div>
+      <div class="move"><b>Label the good thing</b> &mdash; &ldquo;Thanks for showing me how that works.&rdquo;</div>
+      <div class="note">This is the core of parent-child interaction therapy, which has strong trial support &mdash; but for ages 2 to 7. At 10 it is extrapolation, backed by the broader evidence on warm responsiveness.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">B</span><span class="p-name">Serve and return</span><span class="ev b">B</span></div>
+      <div class="p-ess">When she brings you something &mdash; a fact, a joke, a drawing &mdash; answer the thing she brought, not the thing you were doing.</div>
+      <div class="move"><b>Turn toward</b> &mdash; eyes up, one real response. Ten seconds. The small bids are where the relationship is built.</div>
+    </div>
+
+    <div class="girl">Your 14-year-old</div>
+    <div class="sub">Child-led play is the wrong model now and would feel patronising. The research here is about autonomy, disclosure and warmth that does not depend on being returned.</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">A</span><span class="p-name">Side by side, not face to face</span><span class="ev c">C</span></div>
+      <div class="p-ess">Teenagers talk when nobody is looking at them. Drives, cooking, errands, walking somewhere. The activity is cover for the conversation.</div>
+      <div class="move"><b>One side-by-side a week, just the two of you</b> &mdash; a drive she needs anyway counts.</div>
+      <div class="move"><b>Don&rsquo;t fill the silence</b> &mdash; the good stuff usually arrives in minute twelve, not minute one.</div>
+      <div class="note">Shared one-on-one time with fathers in adolescence has been linked to better social skills. From recall &mdash; verify before quoting.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">B</span><span class="p-name">Warmth that doesn&rsquo;t need a reply</span><span class="ev b">B</span></div>
+      <div class="p-ess">At 14, pulling away from parents is normal development, not rejection. The teens who do best still have the warmth coming, whether or not they send it back.</div>
+      <div class="move"><b>Keep offering</b> &mdash; the eye-roll is not a verdict on you. Say the thing anyway and don&rsquo;t ask for anything in return.</div>
+      <div class="move"><b>Respect the door</b> &mdash; knock, and let her privacy be real. It is part of why she tells you things.</div>
+    </div>
+
+    <div class="section-k">The Week Map</div>
+    <div class="seq">
+      <div><b>Every weekday, 07:37&ndash;07:45 &middot; the goodbye.</b> Phone away. Eye contact, one line, and something specific about her day: &ldquo;Good luck on the quiz &mdash; you prepped for it.&rdquo; Thirty seconds each.</div>
+      <div><b>Mon / Wed / Fri evenings &middot; the dinner anchor.</b> Protect three dinners a week together, phone out of the room. Training fits around them where it can.</div>
+      <div><b>Tue / Thu after 21:30 &middot; the door check-in.</b> Your 14-year-old is likely still up: five minutes at her door, knock first, no question quota. &ldquo;How was today?&rdquo; and then listen.</div>
+      <div><b>Tue / Thu &middot; the note.</b> Your 10-year-old may be asleep when you get home, so she gets hers the night before: a short note where she will find it in the morning. Two lines, specific.</div>
+      <div><b>Weekends &middot; one-on-one, separately.</b> Her time with your 10-year-old; a side-by-side with your 14-year-old. Separate is the point &mdash; each gets you without the other.</div>
+    </div>
+
+    <div class="section-k">The Ladder</div>
+    <div class="sub" style="margin-top:-2px;">Home ground only, cheapest first. <b>One rung at a time. Don&rsquo;t climb until the current one is boring.</b></div>
+
+    <div class="rung">
+      <div class="r-head"><span class="r-num">1</span><span class="r-name">Phone out of the room</span><span class="r-dose">goodbye + dinner</span></div>
+      <div class="r-rule">The two protected windows. <b>Out of the room, not face-down.</b></div>
+      <div class="r-fail"><b>Failure signal:</b> you reached for it &ldquo;just to check&rdquo;.</div>
+    </div>
+    <div class="rung">
+      <div class="r-head"><span class="r-num">2</span><span class="r-name">&ldquo;Thanks for telling me&rdquo;</span><span class="r-dose">every disclosure</span></div>
+      <div class="r-rule">Your default first sentence to either girl. <b>Nothing else comes first.</b></div>
+      <div class="r-fail"><b>Failure signal:</b> the lesson came out before the thank-you.</div>
+    </div>
+    <div class="rung">
+      <div class="r-head"><span class="r-num">3</span><span class="r-name">Three dinners</span><span class="r-dose">3&times; weekly</span></div>
+      <div class="r-rule">Protected, together, <b>best part and worst part</b>.</div>
+      <div class="r-fail"><b>Failure signal:</b> dinner became the marks review.</div>
+    </div>
+    <div class="rung">
+      <div class="r-head"><span class="r-num">4</span><span class="r-name">Her time &middot; the 10-year-old</span><span class="r-dose">10&ndash;15 min &middot; 3&times; weekly</span></div>
+      <div class="r-rule">She leads, you follow and describe. <b>No teaching.</b></div>
+      <div class="r-fail"><b>Failure signal:</b> you turned it into a lesson.</div>
+    </div>
+    <div class="rung">
+      <div class="r-head"><span class="r-num">5</span><span class="r-name">Side by side &middot; the 14-year-old</span><span class="r-dose">1&times; weekly</span></div>
+      <div class="r-rule">A drive, a meal to cook, an errand. <b>Let the silence run.</b></div>
+      <div class="r-fail"><b>Failure signal:</b> you asked five questions in the first two minutes.</div>
+    </div>
+    <div class="rung">
+      <div class="r-head"><span class="r-num">6</span><span class="r-name">Process praise</span><span class="r-dose">once a day each</span></div>
+      <div class="r-rule">Name the effort or the strategy. <b>Not the trait.</b></div>
+      <div class="r-fail"><b>Failure signal:</b> &ldquo;you&rsquo;re so smart&rdquo; came out on autopilot.</div>
+    </div>
+    <div class="rung">
+      <div class="r-head"><span class="r-num">7</span><span class="r-name">Tue / Thu ritual</span><span class="r-dose">2&times; weekly</span></div>
+      <div class="r-rule">The door check-in and the note. <b>Same shape every time.</b></div>
+      <div class="r-fail"><b>Failure signal:</b> skipped because you were tired. It is five minutes; that is why it is sized that way.</div>
+    </div>
+    <div class="rung">
+      <div class="r-head"><span class="r-num">8</span><span class="r-name">The future talk</span><span class="r-dose">monthly each</span></div>
+      <div class="r-rule">&ldquo;What would you want at 25?&rdquo; <b>Curiosity, not a plan for her.</b></div>
+      <div class="r-fail"><b>Failure signal:</b> you answered the question for her.</div>
+    </div>
+
+    <div class="section-k">The One Thing</div>
+    <div class="band">
+      <b>Phone out of the room &mdash; and when she tells you something, &ldquo;Thanks for telling me&rdquo; comes first.</b><br>
+      If only one thing happens, it is this. It costs nothing, it works for both ages, and it keeps the channel open for everything else on this page. A 14-year-old who still tells you things is the best early-warning system you will ever have.
+    </div>
+
+    <div class="section-k">Failure Modes</div>
+    <div class="card">
+      <div class="move"><b>Turning your kids into a project</b> &mdash; the most likely one for you. Scoring the hour, optimising the conversation, logging it. That is Second Nature&rsquo;s improving thought, and it displaces the hour it is trying to improve. <b>Nothing on this page gets tracked.</b></div>
+      <div class="move"><b>Interrogation at dinner</b> &mdash; questions in a row feel like an audit. One question, then your own answer.</div>
+      <div class="move"><b>Teaching during her time</b> &mdash; the 10-year-old&rsquo;s time stops being hers the moment it has a lesson in it.</div>
+      <div class="move"><b>Forcing face-to-face on a 14-year-old</b> &mdash; &ldquo;sit down, we need to talk&rdquo; closes more than it opens.</div>
+      <div class="move"><b>Warmth only after wins</b> &mdash; she learns the price.</div>
+      <div class="move"><b>Running the drill mid-moment</b> &mdash; the Drill tab is review-only. Never during.</div>
+    </div>
+
+    <div class="section-k">Evidence</div>
+    <div class="key">
+      <span class="ev b">B</span> <b>Good, consistent, mostly correlational.</b> Family meals: a 2011 <i>Pediatrics</i> meta-analysis of 17 studies (~183,000 children), and a 2013 New Zealand study linking frequent meals to teen wellbeing after controlling for family connectedness. Disclosure: Stattin &amp; Kerr (2000) and replications &mdash; parental knowledge tracks what teens tell, more than what parents ask. Process praise: Gunderson et al. (2013), a naturalistic follow-up over five years; Mueller &amp; Dweck (1998) in the lab. Phubbing: a 2024 systematic review found every included study linked it to teen anxiety or depression, mostly cross-sectional. Authoritative parenting, psychological control, autonomy support, academic socialisation (Hill &amp; Tyson 2009) and teen sleep: large literatures, from recall.<br><br>
+      <span class="ev c">C</span> <b>Extrapolated or judgement.</b> PCIT-style child-led time at 10 (trialled at 2&ndash;7); repair research carried from infancy; side-by-side talk; specific over general warmth.<br><br>
+      <span class="ev d">D</span> <b>Arbitrary.</b> Every dose and minute count on the ladder. Set in advance so they don&rsquo;t get renegotiated.<br><br>
+      <b>Deliberately excluded:</b> anything promising a smarter or more successful child from a single technique &mdash; brain-training, &ldquo;Mozart&rdquo;, rigid screen-minute targets. None of them hold up.<br><br>
+      <b>Verify before quoting.</b> The meals, disclosure, praise and phubbing sources were checked this session; the rest are from recall.
+    </div>
+    <div class="foot">The Father Protocol &middot; Forge OS</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h1 style="font-size:20px;">What does this call for?</h1>
+    <div class="sub">Recognition, not recall. Each prompt is a moment with one of your daughters. Name the move before revealing. Ten per round, shuffled. Review only &mdash; never during the moment itself.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Done</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn ghost" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+</div>
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  var read = m === 'read';
+  document.getElementById('read').style.display  = read ? 'block' : 'none';
+  document.getElementById('drill').style.display = read ? 'none' : 'block';
+  document.getElementById('tab-read').className  = read ? 'on' : '';
+  document.getElementById('tab-drill').className = read ? '' : 'on';
+  if(!read){ restart(); }
+  window.scrollTo(0,0);
+}
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-father';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+/* ---------------- drill: 20-situation pool, 10 shuffled per round ---------------- */
+var POOL = [
+  { prompt:'Your 14-year-old mentions a party last weekend <b>where there was drinking</b>.',
+    lines:['<b>Protect the channel.</b> &ldquo;Thanks for telling me.&rdquo; First, before anything else.','Then: &ldquo;Do you want help with it, or do you just want me to know?&rdquo; The conversation about limits can come later &mdash; calmly.'] },
+  { prompt:'Your 10-year-old <b>shows you a drawing</b> while you are halfway through a message.',
+    lines:['<b>Serve and return.</b> Phone down, eyes up, answer the thing she brought.','Describe it: &ldquo;You gave the dog a hat.&rdquo; Ten seconds is the whole move.'] },
+  { prompt:'Your 10-year-old gets a hard maths question right after <b>three wrong tries</b>.',
+    lines:['<b>Process praise.</b> &ldquo;You kept going after three misses &mdash; that&rsquo;s what did it.&rdquo;','Not &ldquo;you&rsquo;re so smart&rdquo;. Name what she did, not what she is.'] },
+  { prompt:'Dinner. You want to know how <b>the science test</b> went.',
+    lines:['<b>Not the marks review.</b> &ldquo;Best part of today, and the worst?&rdquo; &mdash; and answer it yourself too.','If the test matters to her, it will come up. The table is not the office.'] },
+  { prompt:'Your 14-year-old <b>shrugs and says &ldquo;fine&rdquo;</b> at the Thursday door check-in.',
+    lines:['<b>Warmth that doesn&rsquo;t need a reply.</b> &ldquo;Okay. Glad you&rsquo;re here. Night.&rdquo; Leave it there.','The check-in worked. It is the ritual, not the yield, that counts.'] },
+  { prompt:'You <b>snapped at your 10-year-old</b> this morning over nothing.',
+    lines:['<b>Repair.</b> You go first, same day: what you did, that it wasn&rsquo;t okay, what you&rsquo;ll do instead.','No &ldquo;but&rdquo;. An apology with a &ldquo;but&rdquo; is a second rupture.'] },
+  { prompt:'Your 14-year-old <b>won&rsquo;t sit down to talk</b> about something that is clearly bothering her.',
+    lines:['<b>Side by side.</b> Offer a drive, an errand, cooking something. Don&rsquo;t call a meeting.','Let the silence run. Minute twelve, not minute one.'] },
+  { prompt:'During her time, your 10-year-old <b>builds something the &ldquo;wrong&rdquo; way</b>.',
+    lines:['<b>Her time &mdash; she leads.</b> Describe it, don&rsquo;t correct it: &ldquo;You made the tower lean.&rdquo;','The moment it has a lesson in it, it stops being hers.'] },
+  { prompt:'Your 14-year-old asks to <b>stay out an hour later</b> than usual.',
+    lines:['<b>Hand over the reasoning.</b> &ldquo;What do you think is fair, and why?&rdquo;','Your limit can still hold &mdash; with the reason attached, not &ldquo;because I said so&rdquo;.'] },
+  { prompt:'It is 07:40. The goodbye. <b>Your phone buzzes.</b>',
+    lines:['<b>Phone out of the room.</b> This is a protected window. It waits.','Eye contact, one line, something specific about her day.'] },
+  { prompt:'Your 10-year-old <b>looks out for her sister</b> without being asked.',
+    lines:['<b>Say the specific thing.</b> &ldquo;I loved how you looked out for your sister today.&rdquo;','Specific proves you were watching. Not only after wins.'] },
+  { prompt:'Your 14-year-old is <b>stressed about grades</b> and you want to check her assignments.',
+    lines:['<b>Future talk, not homework policing.</b> &ldquo;What are you aiming for? What would help?&rdquo;','Linking school to her own goals beats checking every assignment.'] },
+  { prompt:'It is Tuesday. You will be home <b>after 21:30</b> and your 10-year-old will be asleep.',
+    lines:['<b>The note.</b> Leave it the night before, where she will find it in the morning.','Two lines, specific. Same shape every time.'] },
+  { prompt:'You notice your 14-year-old&rsquo;s <b>phone glowing at midnight</b>.',
+    lines:['<b>Protect her sleep.</b> Phones charge outside bedrooms overnight &mdash; a house rule, explained, that you follow too.','Raise it in daylight, calmly, with the reason. Not at the door at midnight.'] },
+  { prompt:'Your 14-year-old confesses she <b>failed a quiz and hid it</b>.',
+    lines:['<b>&ldquo;Thanks for telling me&rdquo;</b> first. The hiding is less important than the fact that she told you now.','Then process: &ldquo;What do you think went wrong? What would you try next time?&rdquo;'] },
+  { prompt:'Your 10-year-old <b>wins her game</b> and runs over.',
+    lines:['<b>Process praise.</b> &ldquo;You kept running hard in the last half &mdash; that showed.&rdquo;','Enjoy it with her. Warmth tied only to winning becomes a price.'] },
+  { prompt:'You are tempted to <b>log the hour</b> with your daughters or rate how it went.',
+    lines:['<b>Not relevant.</b> Nothing on this page gets tracked.','The improving thought displaces the hour it is trying to improve.'] },
+  { prompt:'Your 14-year-old <b>rolls her eyes</b> when you say you&rsquo;re proud of her.',
+    lines:['<b>Keep offering.</b> The eye-roll is normal development, not a verdict on you.','Say it anyway. Don&rsquo;t ask for anything back.'] },
+  { prompt:'You are angry and about to say <b>&ldquo;after everything I do for you&hellip;&rdquo;</b>',
+    lines:['<b>Never use love as leverage.</b> Guilt is psychological control, and it predicts worse outcomes in teens.','State the limit and the reason. Leave the relationship out of it.'] },
+  { prompt:'Name the <b>one thing</b>.',
+    lines:['<b>Phone out of the room &mdash; and &ldquo;Thanks for telling me&rdquo; comes first.</b>','It keeps the channel open for everything else.'] }
+];
+var ROUND=10, STEPS=[], idx=0, revealed=false;
+function shuffleRound(){
+  var a=POOL.slice();
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+  STEPS=a.slice(0,ROUND);
+}
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Name it &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  shuffleRound(); idx=0; document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display='block'; document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+/* streak: count-up only, no fail state */
+var DKEY='forge-father-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+/* ---------------- boot ---------------- */
+loadPhoto();
+</script>
+</body>
+</html>
