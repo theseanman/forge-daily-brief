@@ -298,6 +298,11 @@ def fetch_events_structured(calendars, start, end):
 
 CALENDAR_ERRORS = []
 
+# Every sports feed failure lands here and is rendered as a loud banner on the
+# Sports Intel card. Nothing in this module may fail silently: a feed that dies
+# must say so on the brief, never fall through to a hardcoded sentence.
+SPORTS_ERRORS = []
+
 SUBSCRIBED_ICS_URLS = [
     ("Physio Steveston", "https://physiosteveston.janeapp.com/ical/kl9n5cYxfi2zzYub3Mw7/appointments.ics"),
     ("Doctor", "https://p147-caldav.icloud.com/published/2/MjA4NzgzMDU5MjA4NzgzMKp8OzvkKcO0VBjXnAPWsZ3_SOkZblhgb63Ap9fXTp8mTVpP7f2Zhhi6oPiqkT8_u9GgW7cNm2tkWygB88NaKao"),
@@ -961,12 +966,20 @@ def get_sports_updates():
     import zoneinfo
     PT = zoneinfo.ZoneInfo("America/Vancouver")
 
-    def espn_get(url):
+    def espn_get(url, label=None, errors=None):
+        """Fetch JSON. On ANY failure record it so the brief shows it. Returns
+        None on failure — callers must treat None as 'no data', never as
+        'offseason'. Pass `errors` to collect into a local list instead of
+        SPORTS_ERRORS, so a multi-probe feed reports one line, not one per try."""
+        tag = label or url
         try:
             req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
             with urllib.request.urlopen(req, timeout=10) as r:
-                return json.loads(r.read().decode())
+                raw = r.read().decode()
+            return json.loads(raw)
         except Exception as e:
+            msg = f"{tag}: {type(e).__name__} {e}"
+            (errors if errors is not None else SPORTS_ERRORS).append(msg)
             print(f"ESPN fetch failed ({url}): {e}")
             return None
 
@@ -1097,7 +1110,11 @@ def get_sports_updates():
 
     # ── Blue Jays ─────────────────────────────────────────────────────────────
     try:
-        data = espn_get("https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/teams/14/schedule?season=2026")
+        data = espn_get(
+            "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/"
+            f"teams/14/schedule?season={today.year}",
+            label="MLB Blue Jays schedule",
+        )
         if data:
             events = data.get("events", [])
             recent = next((e for e in reversed(events) if e.get("competitions") and
@@ -1125,6 +1142,7 @@ def get_sports_updates():
                 else:
                     lines.append(f"⚾ Blue Jays next: {home_away} {opp.get('team',{}).get('displayName','?')} — {dt_pt.strftime('%a %b %d %-I:%M %p PT')}")
     except Exception as e:
+        SPORTS_ERRORS.append(f"MLB Blue Jays block: {type(e).__name__} {e}")
         print(f"Jays error: {e}")
 
     # ── Vancouver Canadians (MiLB) ────────────────────────────────────────────
@@ -1137,8 +1155,10 @@ def get_sports_updates():
             )
             with urllib.request.urlopen(req, timeout=10) as r:
                 data = json.loads(r.read().decode())
-        except Exception:
+        except Exception as _ce:
+            SPORTS_ERRORS.append(f"Vancouver Canadians (MiLB) fetch: {type(_ce).__name__} {_ce}")
             data = None
+        _cs_lines_before = len(lines)
         if data:
             dates = data.get("dates", [])
             for game_date_obj in dates:
@@ -1171,7 +1191,11 @@ def get_sports_updates():
                             except:
                                 lines.append(f"⚾ C's next: {away} @ {home} — {game_date_str}")
                     break
+        if len(lines) == _cs_lines_before:
+            lines.append("⚾ Vancouver Canadians — no games in the queried window "
+                         "(window is hardcoded Jun–Aug 2026 — needs a season rollover)")
     except Exception as e:
+        SPORTS_ERRORS.append(f"Vancouver Canadians (MiLB): {type(e).__name__} {e}")
         print(f"Canadians error: {e}")
         lines.append("⚾ Vancouver Canadians — schedule unavailable")
 
@@ -1218,21 +1242,102 @@ def get_sports_updates():
             lines.append(f"🏉 Canada Rugby next: vs {opp} — {dt.strftime('%a %b %d')} {t}")
 
     # ── Canucks ───────────────────────────────────────────────────────────────
+    # Rebuilt Sep 30 2026. The old block asked ESPN for season=2027 regular
+    # season only, reported ONLY the next game (never a result), and on any
+    # failure printed a hardcoded "Offseason (next season Oct 2026)" — which is
+    # what it did, falsely, every day from early August. Three rules now:
+    #   1. no hardcoded season year — derive candidates from today's date
+    #   2. probe seasontype 1 (pre) and 2 (regular), since a September game is
+    #      preseason and never appears in the default regular-season response
+    #   3. a dead feed says so out loud; it never claims an offseason
     try:
-        data = espn_get("https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/teams/23/schedule?season=2027")
-        if data:
-            events = data.get("events", [])
-            upcoming = next((e for e in events if to_pt(e["date"]).date() >= today), None)
-            if upcoming:
-                comp = upcoming["competitions"][0]
-                opp = next((t for t in comp["competitors"] if t["team"]["abbreviation"] != "VAN"), {})
-                lines.append(f"🏒 Canucks next: vs {opp.get('team',{}).get('displayName','?')} — {to_pt(upcoming['date']).strftime('%a %b %d')}")
-            else:
-                lines.append("🏒 Canucks — Offseason (next season Oct 2026)")
+        _yr = today.year
+        _season_years = [_yr + 1, _yr] if today.month >= 7 else [_yr, _yr - 1]
+        _nhl_events = {}
+        _nhl_any_response = False
+        _nhl_errs = []
+        for _sy in _season_years:
+            for _st in (2, 1):           # regular season first, then preseason
+                _d = espn_get(
+                    "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/"
+                    f"teams/23/schedule?season={_sy}&seasontype={_st}",
+                    label=f"NHL Canucks schedule (season={_sy}, seasontype={_st})",
+                    errors=_nhl_errs,
+                )
+                if _d is None:
+                    continue
+                _nhl_any_response = True
+                for _e in _d.get("events", []) or []:
+                    if _e.get("id") and _e.get("date") and _e["id"] not in _nhl_events:
+                        _e["_forge_seasontype"] = _st
+                        _nhl_events[_e["id"]] = _e
+
+        def _nhl_opponent(ev):
+            comp = (ev.get("competitions") or [{}])[0]
+            for t in comp.get("competitors", []) or []:
+                if (t.get("team") or {}).get("abbreviation") != "VAN":
+                    return t
+            return {}
+
+        def _nhl_is_final(ev):
+            comp = (ev.get("competitions") or [{}])[0]
+            return bool((((comp.get("status") or {}).get("type")) or {}).get("completed"))
+
+        if _nhl_events:
+            _evs = sorted(_nhl_events.values(), key=lambda e: to_pt(e["date"]))
+            _played = [e for e in _evs if _nhl_is_final(e)]
+            _ahead = [e for e in _evs if to_pt(e["date"]).date() >= today and not _nhl_is_final(e)]
+
+            if _played:
+                _last = _played[-1]
+                _comp = (_last.get("competitions") or [{}])[0]
+                _van = next((t for t in _comp.get("competitors", []) or []
+                             if (t.get("team") or {}).get("abbreviation") == "VAN"), {})
+                _opp = _nhl_opponent(_last)
+                _vs = extract_score(_van.get("score"))
+                _os = extract_score(_opp.get("score"))
+                _res = "✅ W" if _van.get("winner") else "❌ L"
+                _ha = "vs" if _van.get("homeAway") == "home" else "@"
+                _when = to_pt(_last["date"]).strftime("%b %d")
+                _pre = " (preseason)" if _last.get("_forge_seasontype") == 1 else ""
+                lines.append(
+                    f"🏒 Canucks {_res} {_vs}–{_os} {_ha} "
+                    f"{(_opp.get('team') or {}).get('abbreviation','?')} ({_when}){_pre}"
+                )
+
+            if _ahead:
+                _nx = _ahead[0]
+                _comp = (_nx.get("competitions") or [{}])[0]
+                _van = next((t for t in _comp.get("competitors", []) or []
+                             if (t.get("team") or {}).get("abbreviation") == "VAN"), {})
+                _opp = _nhl_opponent(_nx)
+                _ha = "vs" if _van.get("homeAway") == "home" else "@"
+                _dt = to_pt(_nx["date"])
+                if _dt.date() == today:
+                    lines.append(f"🏒 CANUCKS TODAY: {_ha} "
+                                 f"{(_opp.get('team') or {}).get('displayName','?')} "
+                                 f"— {_dt.strftime('%-I:%M %p PT')}")
+                else:
+                    lines.append(f"🏒 Canucks next: {_ha} "
+                                 f"{(_opp.get('team') or {}).get('displayName','?')} "
+                                 f"— {_dt.strftime('%a %b %d %-I:%M %p PT')}")
+            elif not _played:
+                lines.append("🏒 Canucks — no games found in the NHL feed")
+        elif _nhl_any_response:
+            lines.append("🏒 Canucks — NHL feed returned no games (see feed errors above)")
+            SPORTS_ERRORS.append(
+                "NHL Canucks: feed answered but contained zero events for "
+                f"seasons {_season_years}, seasontypes 1 and 2"
+            )
         else:
-            lines.append("🏒 Canucks — Offseason (next season Oct 2026)")
+            lines.append("🏒 Canucks — NHL FEED DOWN (see feed errors above)")
+            SPORTS_ERRORS.append(
+                f"NHL Canucks: all {len(_nhl_errs)} schedule queries failed — "
+                + (_nhl_errs[0].split(": ", 1)[-1] if _nhl_errs else "no response")
+            )
     except Exception as e:
-        lines.append("🏒 Canucks — Offseason (next season Oct 2026)")
+        SPORTS_ERRORS.append(f"NHL Canucks block: {type(e).__name__} {e}")
+        lines.append("🏒 Canucks — NHL feed error (see feed errors above)")
 
     # ── Manually-maintained facts, with visible staleness ─────────────────────
     _meta = SPORTS_FACTS.get("_meta", {})
@@ -1252,7 +1357,10 @@ def get_sports_updates():
 
     # ── UFC ───────────────────────────────────────────────────────────────────
     try:
-        data = espn_get("https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard")
+        data = espn_get(
+            "https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard",
+            label="UFC scoreboard",
+        )
         if data:
             events = data.get("events", [])
             future_events = [e for e in events if to_pt(e["date"]).date() >= today_pt()]
@@ -1264,6 +1372,7 @@ def get_sports_updates():
                 else:
                     lines.append(f"🥊 UFC next: {e.get('name','Event')} — {dt_pt.strftime('%a %b %d')}")
     except Exception as e:
+        SPORTS_ERRORS.append(f"UFC scoreboard block: {type(e).__name__} {e}")
         print(f"UFC error: {e}")
 
     if not lines:
@@ -1619,6 +1728,17 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     wisdom_longevity = wisdom["longevity"]
     wisdom_life_hack = wisdom["life_hack"]
     sports_section = sports_text
+    # Loud banner for any sports feed that failed. Same pattern and styling as
+    # POOL_ERRORS / CALENDAR_ERRORS — a dead feed must be visible on the brief,
+    # not buried in the Actions log.
+    if SPORTS_ERRORS:
+        _srows = "".join(f"<div>&#9888; {e}</div>" for e in dict.fromkeys(SPORTS_ERRORS))
+        sports_error_html = (
+            '<div class="pool-error">SPORTS FEED PROBLEM &mdash; lines below may be '
+            f'missing or out of date{_srows}</div>'
+        )
+    else:
+        sports_error_html = ""
     sitrep_text = sitrep_text  # passed to HTML template
     # Fetch betting intel
     betting_signals, betting_generated = fetch_betting_intel()
@@ -2086,6 +2206,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
 
   <div class="card">
     <div class="card-header"><span class="card-icon">🏆🌴</span><span>Sports Intel</span></div>
+    {sports_error_html}
     <div class="mini-card"><div class="mini-detail" style="white-space:pre-wrap; font-size:14px; line-height:1.8;">{sports_section}</div></div>
   </div>
 
