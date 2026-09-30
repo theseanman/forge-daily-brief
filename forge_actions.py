@@ -961,8 +961,8 @@ def render_summer_protocol():
 
 def get_sports_updates():
     """Comprehensive sports intel: API for MLB/NHL/NFL, hardcoded for CFL/Soccer/Rugby/NLL."""
-    import urllib.request, json
-    from datetime import date, datetime, timedelta
+    import urllib.request, json, re
+    from datetime import date, datetime, timedelta, timezone as _timezone
     import zoneinfo
     PT = zoneinfo.ZoneInfo("America/Vancouver")
 
@@ -1355,10 +1355,6 @@ def get_sports_updates():
             SPORTS_ERRORS.append(
                 "NHL Canucks: " + (_nhl_errs[0].split(": ", 1)[-1] if _nhl_errs else "no response")
             )
-            SPORTS_ERRORS.append(
-                f"NHL Canucks: all {len(_nhl_errs)} schedule queries failed — "
-                + (_nhl_errs[0].split(": ", 1)[-1] if _nhl_errs else "no response")
-            )
     except Exception as e:
         SPORTS_ERRORS.append(f"NHL Canucks block: {type(e).__name__} {e}")
         lines.append("🏒 Canucks — NHL feed error (see feed errors above)")
@@ -1379,25 +1375,149 @@ def get_sports_updates():
         lines.append(f'  {f.get("name","")}: {f.get("last","")} | Next: {f.get("next","")} '
                      f'<span class="fact-age {cls}">{label}</span>')
 
-    # ── UFC ───────────────────────────────────────────────────────────────────
-    try:
-        data = espn_get(
-            "https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard",
-            label="UFC scoreboard",
-        )
-        if data:
-            events = data.get("events", [])
-            future_events = [e for e in events if to_pt(e["date"]).date() >= today_pt()]
-            if future_events:
-                e = future_events[0]
-                dt_pt = to_pt(e["date"])
-                if dt_pt.date() == today_pt():
-                    lines.append(f"🥊 UFC TODAY: {e.get('name','Event')}")
+    # ── Fight cards: UFC + BKFC ───────────────────────────────────────────────
+    # Rebuilt Sep 30 2026. The ESPN MMA scoreboard is gone: it 403s the Actions
+    # runner like every other ESPN endpoint, and it only ever printed an event
+    # NAME anyway. UFC now comes from the ICS feed the brief already subscribes
+    # to and already fetches successfully. BKFC has no feed at all, so it is
+    # parsed from Wikipedia wikitext — a SCRAPE, and flagged as one: if the table
+    # shape changes this reports loudly instead of silently dropping BKFC.
+    def _ics_events(url, label):
+        """Return [(datetime_pt, title)] from one ICS feed. Never raises."""
+        out = []
+        try:
+            _rq = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(_rq, timeout=10) as _r:
+                raw = _r.read().decode("utf-8", errors="ignore")
+        except Exception as e:
+            SPORTS_ERRORS.append(f"{label}: {type(e).__name__} {e}")
+            return out
+        raw = raw.replace("\r\n", "\n").replace("\n ", "").replace("\n\t", "")
+        for blk in raw.split("BEGIN:VEVENT")[1:]:
+            title, ds = "", ""
+            for ln in blk.splitlines():
+                if ln.startswith("SUMMARY"):
+                    title = ln.split(":", 1)[-1].strip()
+                elif ln.startswith("DTSTART") and not ds:
+                    ds = ln.split(":", 1)[-1].strip()
+            if not (title and ds):
+                continue
+            try:
+                if re.match(r"^\d{8}$", ds):
+                    _d = datetime.strptime(ds, "%Y%m%d").date()
+                    dt = datetime.combine(_d, datetime.min.time()).replace(tzinfo=PT)
+                elif ds.endswith("Z"):
+                    dt = datetime.strptime(ds, "%Y%m%dT%H%M%SZ").replace(
+                        tzinfo=_timezone.utc).astimezone(PT)
+                elif "T" in ds and len(ds) >= 15:
+                    dt = datetime.strptime(ds[:15], "%Y%m%dT%H%M%S").replace(tzinfo=PT)
                 else:
-                    lines.append(f"🥊 UFC next: {e.get('name','Event')} — {dt_pt.strftime('%a %b %d')}")
-    except Exception as e:
-        SPORTS_ERRORS.append(f"UFC scoreboard block: {type(e).__name__} {e}")
-        print(f"UFC error: {e}")
+                    continue
+            except Exception:
+                continue
+            out.append((dt, title))
+        return out
+
+    def _wiki_clean(txt):
+        txt = re.sub(r"\{\{\s*flagicon[^}]*\}\}", "", txt)
+        txt = re.sub(r"\[\[[^\]|]*\|([^\]]*)\]\]", r"\1", txt)
+        txt = re.sub(r"\[\[([^\]]*)\]\]", r"\1", txt)
+        txt = re.sub(r"\{\{[^}]*\}\}", "", txt)
+        txt = txt.replace(chr(39) * 3, "").replace(chr(39) * 2, "")
+        return txt.strip(" |#")
+
+    def _wiki_date(cell):
+        """Parse {{dts|2026|January|17}}, {{dts|2026|10|03}} or plain 'October 3, 2026'."""
+        m = re.search(r"\{\{\s*dts\s*\|([^}]*)\}\}", cell, re.I)
+        if m:
+            parts = [x.strip() for x in m.group(1).split("|") if x.strip() and "=" not in x]
+            if len(parts) >= 3:
+                try:
+                    _y = int(parts[0])
+                    _dd = int(parts[2])
+                    _mo = int(parts[1]) if parts[1].isdigit() else \
+                        datetime.strptime(parts[1][:3], "%b").month
+                    return date(_y, _mo, _dd)
+                except Exception:
+                    return None
+        plain = _wiki_clean(cell)
+        for fmt in ("%B %d, %Y", "%d %B %Y", "%b %d, %Y"):
+            try:
+                return datetime.strptime(plain, fmt).date()
+            except Exception:
+                continue
+        return None
+
+    def _bkfc_events(year):
+        """Parse the 'List of events' table from Wikipedia wikitext. None = failed."""
+        out = []
+        label = f"BKFC schedule (Wikipedia {year})"
+        url = ("https://en.wikipedia.org/w/index.php?title="
+               f"{year}_in_Bare_Knuckle_Fighting_Championship&action=raw")
+        try:
+            _rq = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(_rq, timeout=10) as _r:
+                wt = _r.read().decode("utf-8", errors="ignore")
+        except Exception as e:
+            SPORTS_ERRORS.append(f"{label}: {type(e).__name__} {e}")
+            return None
+        anchor = re.search(r"==\s*List of events\s*==", wt, re.I)
+        if not anchor:
+            SPORTS_ERRORS.append(f"{label}: no 'List of events' section — page structure changed")
+            return None
+        body = wt[anchor.end():]
+        tbl = re.search(r"\{\|.*?\n\|\}", body, re.S)
+        if not tbl:
+            SPORTS_ERRORS.append(f"{label}: no wikitable after 'List of events'")
+            return None
+        for row in tbl.group(0).split("\n|-")[1:]:
+            cells = [c for c in re.split(r"\n\|(?!\})", row) if c.strip()]
+            if len(cells) < 3:
+                continue
+            when = _wiki_date(cells[2])
+            name = _wiki_clean(cells[1])
+            if when and name:
+                out.append((when, name))
+        if not out:
+            SPORTS_ERRORS.append(f"{label}: table found but no rows parsed — format changed")
+            return None
+        return out
+
+    # UFC — from the ICS feed the brief already subscribes to
+    _ufc_url = next((u for n, u in SUBSCRIBED_ICS_URLS if n == "UFC Events"), None)
+    if not _ufc_url:
+        SPORTS_ERRORS.append("UFC: the 'UFC Events' ICS feed is no longer in SUBSCRIBED_ICS_URLS")
+    else:
+        _ufc = sorted(_ics_events(_ufc_url, "UFC schedule (ICS)"), key=lambda x: x[0])
+        _u_today = [e for e in _ufc if e[0].date() == today]
+        _u_next = [e for e in _ufc if e[0].date() > today]
+        for _dt, _t in _u_today:
+            lines.append(f"🥊 UFC TODAY: {_t} — {_dt.strftime('%-I:%M %p PT')}")
+        for _i, (_dt, _t) in enumerate(_u_next[:2]):
+            lines.append(f"🥊 UFC {'next' if _i == 0 else 'then'}: {_t} "
+                         f"— {_dt.strftime('%a %b %d %-I:%M %p PT')}")
+        if not _u_today and not _u_next and not any("UFC schedule" in e for e in SPORTS_ERRORS):
+            lines.append("🥊 UFC — no upcoming events in the feed")
+
+    # BKFC — scraped from Wikipedia; rolls to next year's page late in the year
+    _bk = _bkfc_events(today.year)
+    if _bk is not None:
+        _b_ahead = [e for e in _bk if e[0] >= today]
+        if not _b_ahead:
+            _nxt = _bkfc_events(today.year + 1)
+            if _nxt:
+                _b_ahead = [e for e in _nxt if e[0] >= today]
+        _b_ahead.sort(key=lambda x: x[0])
+        for _d, _t in [e for e in _b_ahead if e[0] == today]:
+            lines.append(f"👊 BKFC TODAY: {_t}")
+        _future = [e for e in _b_ahead if e[0] > today]
+        for _i, (_d, _t) in enumerate(_future[:2]):
+            lines.append(f"👊 BKFC {'next' if _i == 0 else 'then'}: {_t} "
+                         f"— {_d.strftime('%a %b %d')}")
+        if not _b_ahead:
+            lines.append("👊 BKFC — no upcoming events listed")
+    else:
+        lines.append("👊 BKFC — schedule source unavailable (see feed errors above)")
 
     if not lines:
         return "No sports data available."
