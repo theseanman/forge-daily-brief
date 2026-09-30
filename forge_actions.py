@@ -1242,95 +1242,84 @@ def get_sports_updates():
             lines.append(f"🏉 Canada Rugby next: vs {opp} — {dt.strftime('%a %b %d')} {t}")
 
     # ── Canucks ───────────────────────────────────────────────────────────────
-    # Rebuilt Sep 30 2026. The old block asked ESPN for season=2027 regular
-    # season only, reported ONLY the next game (never a result), and on any
-    # failure printed a hardcoded "Offseason (next season Oct 2026)" — which is
-    # what it did, falsely, every day from early August. Three rules now:
-    #   1. no hardcoded season year — derive candidates from today's date
-    #   2. probe seasontype 1 (pre) and 2 (regular), since a September game is
-    #      preseason and never appears in the default regular-season response
-    #   3. a dead feed says so out loud; it never claims an offseason
+    # Rebuilt Sep 30 2026 (v2). v1 used ESPN, which returns HTTP 403 to
+    # datacenter IPs — the GitHub Actions runner can never reach it, which is why
+    # every ESPN line silently vanished from the brief in early August. Source is
+    # now the NHL's own public API: no key, and ONE call returns preseason and
+    # regular season together with scores and game state.
+    #   - completed  : gameState OFF / FINAL
+    #   - in progress: gameState LIVE / CRIT
+    #   - upcoming   : gameState FUT / PRE
+    #   - gameType 1 = preseason, 2 = regular season, 3 = playoffs
+    # A dead feed says so out loud; it never claims an offseason.
     try:
-        _yr = today.year
-        _season_years = [_yr + 1, _yr] if today.month >= 7 else [_yr, _yr - 1]
-        _nhl_events = {}
-        _nhl_any_response = False
+        def _nm(v, default="?"):
+            """NHL fields arrive either as a plain string or {'default': 'Oilers'}."""
+            if isinstance(v, dict):
+                return v.get("default") or v.get("en") or default
+            return v if v else default
+
         _nhl_errs = []
-        for _sy in _season_years:
-            for _st in (2, 1):           # regular season first, then preseason
-                _d = espn_get(
-                    "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/"
-                    f"teams/23/schedule?season={_sy}&seasontype={_st}",
-                    label=f"NHL Canucks schedule (season={_sy}, seasontype={_st})",
-                    errors=_nhl_errs,
-                )
-                if _d is None:
-                    continue
-                _nhl_any_response = True
-                for _e in _d.get("events", []) or []:
-                    if _e.get("id") and _e.get("date") and _e["id"] not in _nhl_events:
-                        _e["_forge_seasontype"] = _st
-                        _nhl_events[_e["id"]] = _e
+        _d = espn_get(
+            "https://api-web.nhle.com/v1/club-schedule-season/VAN/now",
+            label="NHL Canucks schedule (api-web.nhle.com)",
+            errors=_nhl_errs,
+        )
+        _games = [g for g in ((_d or {}).get("games") or []) if g.get("startTimeUTC")]
 
-        def _nhl_opponent(ev):
-            comp = (ev.get("competitions") or [{}])[0]
-            for t in comp.get("competitors", []) or []:
-                if (t.get("team") or {}).get("abbreviation") != "VAN":
-                    return t
-            return {}
+        def _side(g):
+            """Return (canucks_side, opponent_side)."""
+            a, h = g.get("awayTeam") or {}, g.get("homeTeam") or {}
+            return (a, h) if a.get("abbrev") == "VAN" else (h, a)
 
-        def _nhl_is_final(ev):
-            comp = (ev.get("competitions") or [{}])[0]
-            return bool((((comp.get("status") or {}).get("type")) or {}).get("completed"))
+        if _games:
+            _games.sort(key=lambda g: to_pt(g["startTimeUTC"]))
+            _done = [g for g in _games if str(g.get("gameState", "")).upper() in ("OFF", "FINAL")]
+            _live = [g for g in _games if str(g.get("gameState", "")).upper() in ("LIVE", "CRIT")]
+            _next = [g for g in _games if str(g.get("gameState", "")).upper() in ("FUT", "PRE")
+                     and to_pt(g["startTimeUTC"]).date() >= today]
 
-        if _nhl_events:
-            _evs = sorted(_nhl_events.values(), key=lambda e: to_pt(e["date"]))
-            _played = [e for e in _evs if _nhl_is_final(e)]
-            _ahead = [e for e in _evs if to_pt(e["date"]).date() >= today and not _nhl_is_final(e)]
-
-            if _played:
-                _last = _played[-1]
-                _comp = (_last.get("competitions") or [{}])[0]
-                _van = next((t for t in _comp.get("competitors", []) or []
-                             if (t.get("team") or {}).get("abbreviation") == "VAN"), {})
-                _opp = _nhl_opponent(_last)
-                _vs = extract_score(_van.get("score"))
-                _os = extract_score(_opp.get("score"))
-                _res = "✅ W" if _van.get("winner") else "❌ L"
-                _ha = "vs" if _van.get("homeAway") == "home" else "@"
-                _when = to_pt(_last["date"]).strftime("%b %d")
-                _pre = " (preseason)" if _last.get("_forge_seasontype") == 1 else ""
+            if _done:
+                _g = _done[-1]
+                _van, _opp = _side(_g)
+                _vs, _os = _van.get("score"), _opp.get("score")
+                _res = "✅ W" if (isinstance(_vs, int) and isinstance(_os, int) and _vs > _os) else "❌ L"
+                _ha = "vs" if (_g.get("homeTeam") or {}).get("abbrev") == "VAN" else "@"
+                _tag = {1: " (preseason)", 3: " (playoffs)"}.get(_g.get("gameType"), "")
                 lines.append(
-                    f"🏒 Canucks {_res} {_vs}–{_os} {_ha} "
-                    f"{(_opp.get('team') or {}).get('abbreviation','?')} ({_when}){_pre}"
+                    f"🏒 Canucks {_res} {_vs}–{_os} {_ha} {_opp.get('abbrev','?')} "
+                    f"({to_pt(_g['startTimeUTC']).strftime('%b %d')}){_tag}"
                 )
 
-            if _ahead:
-                _nx = _ahead[0]
-                _comp = (_nx.get("competitions") or [{}])[0]
-                _van = next((t for t in _comp.get("competitors", []) or []
-                             if (t.get("team") or {}).get("abbreviation") == "VAN"), {})
-                _opp = _nhl_opponent(_nx)
-                _ha = "vs" if _van.get("homeAway") == "home" else "@"
-                _dt = to_pt(_nx["date"])
+            if _live:
+                _g = _live[0]
+                _van, _opp = _side(_g)
+                _ha = "vs" if (_g.get("homeTeam") or {}).get("abbrev") == "VAN" else "@"
+                lines.append(f"🏒 CANUCKS LIVE NOW: {_ha} {_nm(_opp.get('commonName'))} "
+                             f"— {_van.get('score','?')}–{_opp.get('score','?')}")
+
+            if _next:
+                _g = _next[0]
+                _van, _opp = _side(_g)
+                _ha = "vs" if (_g.get("homeTeam") or {}).get("abbrev") == "VAN" else "@"
+                _dt = to_pt(_g["startTimeUTC"])
+                _tag = {1: " (preseason)", 3: " (playoffs)"}.get(_g.get("gameType"), "")
                 if _dt.date() == today:
-                    lines.append(f"🏒 CANUCKS TODAY: {_ha} "
-                                 f"{(_opp.get('team') or {}).get('displayName','?')} "
-                                 f"— {_dt.strftime('%-I:%M %p PT')}")
+                    lines.append(f"🏒 CANUCKS TODAY: {_ha} {_nm(_opp.get('commonName'))} "
+                                 f"— {_dt.strftime('%-I:%M %p PT')}{_tag}")
                 else:
-                    lines.append(f"🏒 Canucks next: {_ha} "
-                                 f"{(_opp.get('team') or {}).get('displayName','?')} "
-                                 f"— {_dt.strftime('%a %b %d %-I:%M %p PT')}")
-            elif not _played:
+                    lines.append(f"🏒 Canucks next: {_ha} {_nm(_opp.get('commonName'))} "
+                                 f"— {_dt.strftime('%a %b %d %-I:%M %p PT')}{_tag}")
+            elif not _done and not _live:
                 lines.append("🏒 Canucks — no games found in the NHL feed")
-        elif _nhl_any_response:
+        elif _d is not None:
             lines.append("🏒 Canucks — NHL feed returned no games (see feed errors above)")
-            SPORTS_ERRORS.append(
-                "NHL Canucks: feed answered but contained zero events for "
-                f"seasons {_season_years}, seasontypes 1 and 2"
-            )
+            SPORTS_ERRORS.append("NHL Canucks: api-web.nhle.com answered but returned zero games")
         else:
             lines.append("🏒 Canucks — NHL FEED DOWN (see feed errors above)")
+            SPORTS_ERRORS.append(
+                "NHL Canucks: " + (_nhl_errs[0].split(": ", 1)[-1] if _nhl_errs else "no response")
+            )
             SPORTS_ERRORS.append(
                 f"NHL Canucks: all {len(_nhl_errs)} schedule queries failed — "
                 + (_nhl_errs[0].split(": ", 1)[-1] if _nhl_errs else "no response")
