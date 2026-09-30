@@ -1109,38 +1109,73 @@ def get_sports_updates():
         lines.append("🦁 BC Lions — Season complete")
 
     # ── Blue Jays ─────────────────────────────────────────────────────────────
+    # Rebuilt Sep 30 2026. Was ESPN, which returns HTTP 403 to datacenter IPs and
+    # so never answered the Actions runner. Source is now MLB's own statsapi:
+    # no key, and gameTypes covers regular season AND the postseason rounds
+    # (R regular, F wild card, D division, L league championship, W World Series)
+    # so October does not silently look like an empty schedule.
     try:
-        data = espn_get(
-            "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/"
-            f"teams/14/schedule?season={today.year}",
-            label="MLB Blue Jays schedule",
+        _mlb_from = (today - timedelta(days=5)).isoformat()
+        _mlb_to   = (today + timedelta(days=10)).isoformat()
+        _mlb = espn_get(
+            "https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=141"
+            f"&startDate={_mlb_from}&endDate={_mlb_to}&gameTypes=R,F,D,L,W",
+            label="MLB Blue Jays schedule (statsapi.mlb.com)",
         )
-        if data:
-            events = data.get("events", [])
-            recent = next((e for e in reversed(events) if e.get("competitions") and
-                           to_pt(e["date"]).date() < today), None)
-            upcoming = next((e for e in events if e.get("competitions") and
-                             to_pt(e["date"]).date() >= today), None)
-            if recent:
-                comp = recent["competitions"][0]
-                teams = {t["team"]["abbreviation"]: t for t in comp["competitors"]}
-                jays = teams.get("TOR", {})
-                opp_abbr = [k for k in teams if k != "TOR"]
-                opp = teams.get(opp_abbr[0], {}) if opp_abbr else {}
-                jays_score = extract_score(jays.get("score"))
-                opp_score = extract_score(opp.get("score"))
-                result_str = "✅ W" if jays.get("winner") else "❌ L"
-                game_date = to_pt(recent["date"]).strftime("%b %d")
-                lines.append(f"⚾ Blue Jays {result_str} {jays_score}–{opp_score} vs {opp.get('team',{}).get('abbreviation','?')} ({game_date})")
-            if upcoming:
-                comp = upcoming["competitions"][0]
-                opp = next((t for t in comp["competitors"] if t["team"]["abbreviation"] != "TOR"), {})
-                home_away = "vs" if next((t for t in comp["competitors"] if t["team"]["abbreviation"]=="TOR"),{}).get("homeAway")=="home" else "@"
-                dt_pt = to_pt(upcoming["date"])
-                if dt_pt.date() == today:
-                    lines.append(f"⚾ Blue Jays TODAY: {home_away} {opp.get('team',{}).get('displayName','?')} — {dt_pt.strftime('%-I:%M %p PT')}")
+        _mlb_games = []
+        for _day in ((_mlb or {}).get("dates") or []):
+            for _g in (_day.get("games") or []):
+                if _g.get("gameDate"):
+                    _mlb_games.append(_g)
+        if _mlb_games:
+            _mlb_games.sort(key=lambda g: to_pt(g["gameDate"]))
+
+            def _tor(g):
+                """Return (jays_side, opponent_side)."""
+                a = (g.get("teams") or {}).get("away") or {}
+                h = (g.get("teams") or {}).get("home") or {}
+                return (a, h) if (a.get("team") or {}).get("id") == 141 else (h, a)
+
+            _state = lambda g: str(((g.get("status") or {}).get("abstractGameState") or "")).lower()
+            _final = [g for g in _mlb_games if _state(g) == "final"]
+            _live  = [g for g in _mlb_games if _state(g) == "live"]
+            _ahead = [g for g in _mlb_games if _state(g) == "preview"
+                      and to_pt(g["gameDate"]).date() >= today]
+
+            if _final:
+                _g = _final[-1]
+                _j, _o = _tor(_g)
+                _js, _osc = _j.get("score"), _o.get("score")
+                _res = "✅ W" if (isinstance(_js, int) and isinstance(_osc, int) and _js > _osc) else "❌ L"
+                _ha = "vs" if (((_g.get("teams") or {}).get("home") or {}).get("team") or {}).get("id") == 141 else "@"
+                lines.append(f"⚾ Blue Jays {_res} {_js}–{_osc} {_ha} "
+                             f"{((_o.get('team') or {}).get('name','?'))} "
+                             f"({to_pt(_g['gameDate']).strftime('%b %d')})")
+
+            if _live:
+                _g = _live[0]
+                _j, _o = _tor(_g)
+                _ha = "vs" if (((_g.get("teams") or {}).get("home") or {}).get("team") or {}).get("id") == 141 else "@"
+                lines.append(f"⚾ BLUE JAYS LIVE NOW: {_ha} {((_o.get('team') or {}).get('name','?'))} "
+                             f"— {_j.get('score','?')}–{_o.get('score','?')}")
+
+            if _ahead:
+                _g = _ahead[0]
+                _j, _o = _tor(_g)
+                _ha = "vs" if (((_g.get("teams") or {}).get("home") or {}).get("team") or {}).get("id") == 141 else "@"
+                _dt = to_pt(_g["gameDate"])
+                if _dt.date() == today:
+                    lines.append(f"⚾ BLUE JAYS TODAY: {_ha} {((_o.get('team') or {}).get('name','?'))} "
+                                 f"— {_dt.strftime('%-I:%M %p PT')}")
                 else:
-                    lines.append(f"⚾ Blue Jays next: {home_away} {opp.get('team',{}).get('displayName','?')} — {dt_pt.strftime('%a %b %d %-I:%M %p PT')}")
+                    lines.append(f"⚾ Blue Jays next: {_ha} {((_o.get('team') or {}).get('name','?'))} "
+                                 f"— {_dt.strftime('%a %b %d %-I:%M %p PT')}")
+            elif not _live:
+                lines.append("⚾ Blue Jays — no game scheduled in the next 10 days")
+        elif _mlb is not None:
+            lines.append("⚾ Blue Jays — no games in the queried window")
+        else:
+            lines.append("⚾ Blue Jays — MLB FEED DOWN (see feed errors above)")
     except Exception as e:
         SPORTS_ERRORS.append(f"MLB Blue Jays block: {type(e).__name__} {e}")
         print(f"Jays error: {e}")
