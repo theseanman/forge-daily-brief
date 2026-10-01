@@ -303,6 +303,32 @@ CALENDAR_ERRORS = []
 # must say so on the brief, never fall through to a hardcoded sentence.
 SPORTS_ERRORS = []
 
+# Team fixture feeds read ONLY by Sports Intel — deliberately NOT in
+# SUBSCRIBED_ICS_URLS, so club fixtures do not flood the Calendar card.
+# Every URL below was fetched and confirmed to return real iCalendar data on
+# 2026-10-01. ICS carries fixtures only, never scores.
+#   filter: substring that must appear in a VEVENT SUMMARY (for league-wide feeds)
+#   show:   how many upcoming fixtures to list (default 2)
+SPORTS_ICS_FEEDS = [
+    {"key": "rangers", "icon": "\U0001F3F4", "label": "Rangers",
+     "url": "https://www.footballwebpages.co.uk/rangers/calendar.ics"},
+    {"key": "scotrugby", "icon": "\U0001F3C9", "label": "Scotland rugby",
+     "url": "https://data.rugbyfixture.io/ical/v1/teams/scotland.ics"},
+    # ! SINGLE-MAINTAINER personal GitHub Pages repo, not an institutional feed.
+    #   Verified accurate against the official NFL schedule on 2026-10-01, but it
+    #   could be abandoned without notice. The no-future-fixtures check in the
+    #   loop below is what turns that into a loud banner instead of silence.
+    {"key": "raiders", "icon": "\U0001F3C8", "label": "Raiders",
+     "url": "https://cadem4.github.io/nfl-calendar/las-vegas-raiders.ics"},
+    # ! PWHL league-wide mirror, filtered to Vancouver. season-11 = the 2026-27
+    #   regular season. As of 2026-10-01 the PWHL had published only opening
+    #   weekend, so a single December fixture here is upstream, not a bug.
+    #   The season id is HARDCODED and will need bumping for 2027-28.
+    {"key": "goldeneyes", "icon": "\U0001F3D2", "label": "Goldeneyes",
+     "url": "https://raw.githubusercontent.com/ellieayla/pwhl-ical/refs/heads/main/season-11.ical",
+     "filter": "Vancouver Goldeneyes"},
+]
+
 SUBSCRIBED_ICS_URLS = [
     ("Physio Steveston", "https://physiosteveston.janeapp.com/ical/kl9n5cYxfi2zzYub3Mw7/appointments.ics"),
     ("Doctor", "https://p147-caldav.icloud.com/published/2/MjA4NzgzMDU5MjA4NzgzMKp8OzvkKcO0VBjXnAPWsZ3_SOkZblhgb63Ap9fXTp8mTVpP7f2Zhhi6oPiqkT8_u9GgW7cNm2tkWygB88NaKao"),
@@ -1005,6 +1031,56 @@ def get_sports_updates():
     today = datetime.now(PT).date()
     lines = []
 
+    def _ics_events(url, label):
+        """Return [(datetime_pt, title)] from one ICS feed. Never raises."""
+        out = []
+        try:
+            _rq = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(_rq, timeout=10) as _r:
+                raw = _r.read().decode("utf-8", errors="ignore")
+        except Exception as e:
+            SPORTS_ERRORS.append(f"{label}: {type(e).__name__} {e}")
+            return out
+        raw = raw.replace("\r\n", "\n").replace("\n ", "").replace("\n\t", "")
+        for blk in raw.split("BEGIN:VEVENT")[1:]:
+            title, ds, ds_line = "", "", ""
+            for ln in blk.splitlines():
+                if ln.startswith("SUMMARY"):
+                    title = ln.split(":", 1)[-1].strip()
+                elif ln.startswith("DTSTART") and not ds:
+                    ds_line = ln
+                    ds = ln.split(":", 1)[-1].strip()
+            if not (title and ds):
+                continue
+            try:
+                if re.match(r"^\d{8}$", ds):
+                    _d = datetime.strptime(ds, "%Y%m%d").date()
+                    dt = datetime.combine(_d, datetime.min.time()).replace(tzinfo=PT)
+                elif ds.endswith("Z"):
+                    dt = datetime.strptime(ds, "%Y%m%dT%H%M%SZ").replace(
+                        tzinfo=_timezone.utc).astimezone(PT)
+                elif "T" in ds and len(ds) >= 15:
+                    # A floating DTSTART carries its zone in the TZID parameter,
+                    # NOT in the value. Rangers publishes Europe/London times this
+                    # way — assuming Pacific put a 3pm Glasgow kickoff on the brief
+                    # as 3pm PT, eight hours out. Honour TZID; fall back to PT.
+                    _evtz = PT
+                    _m = re.search(r"TZID=([^;:]+)", ds_line)
+                    if _m:
+                        try:
+                            _evtz = zoneinfo.ZoneInfo(_m.group(1).strip())
+                        except Exception:
+                            _evtz = PT
+                    dt = datetime.strptime(ds[:15], "%Y%m%dT%H%M%S").replace(
+                        tzinfo=_evtz).astimezone(PT)
+                else:
+                    continue
+            except Exception:
+                continue
+            out.append((dt, title))
+        return out
+
+
     # ══════════════════════════════════════════════════════════════════════════
     # BC LIONS 2026 SCHEDULE (hardcoded — ESPN CFL API broken for 2026)
     # All times PT. Source: CFL.ca / sportshistori.com
@@ -1052,36 +1128,8 @@ def get_sports_updates():
         ("2026-07-11", "4:30 PM", "Winnipeg Blue Bombers", "Edmonton Elks"),
     ]
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # CANADA SOCCER — FIFA WORLD CUP 2026
-    # Source: FIFA / Canada Soccer official. All times PT.
-    # ══════════════════════════════════════════════════════════════════════════
-    CANADA_SOCCER = [
-        ("2026-06-12", "12:00 PM", "Canada", "Bosnia and Herzegovina", "BMO Field, Toronto"),
-        ("2026-06-18", "3:00 PM", "Canada", "Qatar", "BC Place, Vancouver"),
-        ("2026-06-24", "TBD", "Canada", "Switzerland", "TBD"),
-        # Round of 32 onwards — TBD based on group results
-    ]
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # CANADA RUGBY — WORLD RUGBY NATIONS CUP 2026
-    # Source: Rugby Canada. All times PT.
-    # ══════════════════════════════════════════════════════════════════════════
-    CANADA_RUGBY = [
-        ("2026-07-04", "4:00 PM", "Canada", "Spain", "Clarke Stadium, Edmonton"),
-        ("2026-07-11", "1:45 PM", "Canada", "Portugal", "Clarke Stadium, Edmonton"),
-        ("2026-07-18", "1:45 PM", "Canada", "Zimbabwe", "Princess Auto Stadium, Winnipeg"),
-    ]
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # SCOTLAND — FIFA WORLD CUP 2026
-    # Source: FIFA / Scotland FA. All times PT.
-    # ══════════════════════════════════════════════════════════════════════════
-    SCOTLAND_WC = [
-        ("2026-06-13", "6:00 PM", "Scotland", "Haiti", "Gillette Stadium, Boston (Foxborough)"),
-        ("2026-06-19", "3:00 PM", "Scotland", "Morocco", "Gillette Stadium, Boston (Foxborough)"),
-        ("2026-06-24", "3:00 PM", "Scotland", "Brazil", "Miami Stadium, Miami Gardens"),
-    ]
 
     # ══════════════════════════════════════════════════════════════════════════
     # BUILD OUTPUT
@@ -1234,47 +1282,34 @@ def get_sports_updates():
         print(f"Canadians error: {e}")
         lines.append("⚾ Vancouver Canadians — schedule unavailable")
 
-    # ── Canada Soccer World Cup ───────────────────────────────────────────────
-    soccer_today = [(t, opp, venue) for d, t, _, opp, venue in CANADA_SOCCER if d == str(today)]
-    soccer_next = next(((d, t, _, opp, venue) for d, t, _, opp, venue in CANADA_SOCCER
-                        if datetime.strptime(d, "%Y-%m-%d").date() >= today), None)
-    if soccer_today:
-        for t, opp, venue in soccer_today:
-            lines.append(f"⚽ CANADA SOCCER TODAY (World Cup): vs {opp} — {t} | {venue}")
-    elif soccer_next:
-        d, t, _, opp, venue = soccer_next
-        dt = datetime.strptime(d, "%Y-%m-%d")
-        days_away = (dt.date() - today).days
-        if days_away <= 7:
-            lines.append(f"⚽ Canada Soccer (WC): vs {opp} — {dt.strftime('%a %b %d')} {t} | {venue}")
-
-    # ── Scotland World Cup ───────────────────────────────────────────────────
-    scotland_today = [(t, opp, venue) for d, t, _, opp, venue in SCOTLAND_WC if d == str(today)]
-    scotland_next = next(((d, t, opp, venue) for d, t, _, opp, venue in SCOTLAND_WC
-                          if datetime.strptime(d, "%Y-%m-%d").date() >= today), None)
-    if scotland_today:
-        for t, opp, venue in scotland_today:
-            lines.append(f"[SCO] SCOTLAND TODAY (World Cup): vs {opp} -- {t} | {venue}")
-    elif scotland_next:
-        d, t, opp, venue = scotland_next
-        dt = datetime.strptime(d, "%Y-%m-%d")
-        days_away = (dt.date() - today).days
-        if days_away <= 10:
-            lines.append(f"[SCO] Scotland (WC): vs {opp} -- {dt.strftime('%a %b %d')} {t} | {venue}")
-
-    # ── Canada Rugby ─────────────────────────────────────────────────────────
-    rugby_today = [(t, opp, venue) for d, t, _, opp, venue in CANADA_RUGBY if d == str(today)]
-    rugby_next = next(((d, t, opp, venue) for d, t, _, opp, venue in CANADA_RUGBY
-                       if datetime.strptime(d, "%Y-%m-%d").date() >= today), None)
-    if rugby_today:
-        for t, opp, venue in rugby_today:
-            lines.append(f"🏉 CANADA RUGBY TODAY: vs {opp} — {t} | {venue}")
-    elif rugby_next:
-        d, t, opp, venue = rugby_next
-        dt = datetime.strptime(d, "%Y-%m-%d")
-        days_away = (dt.date() - today).days
-        if days_away <= 14:
-            lines.append(f"🏉 Canada Rugby next: vs {opp} — {dt.strftime('%a %b %d')} {t}")
+    # ── Team fixture feeds (ICS) ──────────────────────────────────────────────
+    # Added Oct 1 2026, replacing hand-maintained sports_facts.json entries that
+    # had rotted to 70+ days old. IMPORTANT: ICS carries FIXTURES ONLY, no scores,
+    # so these lines show upcoming games and never results — unlike the Canucks
+    # and Jays, which have real APIs. A feed that dies, or that quietly stops
+    # carrying future fixtures, says so in the banner rather than going silent.
+    for _f in SPORTS_ICS_FEEDS:
+        _label = _f["label"]
+        _evs = sorted(_ics_events(_f["url"], f"{_label} schedule (ICS)"), key=lambda x: x[0])
+        _needle = _f.get("filter")
+        if _needle:
+            _evs = [e for e in _evs if _needle.lower() in e[1].lower()]
+        _ft = [e for e in _evs if e[0].date() == today]
+        _fa = [e for e in _evs if e[0].date() > today]
+        for _dt, _t in _ft:
+            lines.append(f"{_f['icon']} {_label.upper()} TODAY: {_t} "
+                         f"— {_dt.strftime('%-I:%M %p PT')}")
+        for _i, (_dt, _t) in enumerate(_fa[: _f.get("show", 2)]):
+            lines.append(f"{_f['icon']} {_label} {'next' if _i == 0 else 'then'}: {_t} "
+                         f"— {_dt.strftime('%a %b %d %-I:%M %p PT')}")
+        if not _ft and not _fa:
+            if any(_label in _e for _e in SPORTS_ERRORS):
+                lines.append(f"{_f['icon']} {_label} — FEED DOWN (see feed errors above)")
+            else:
+                lines.append(f"{_f['icon']} {_label} — no upcoming fixtures in the feed")
+                SPORTS_ERRORS.append(
+                    f"{_label}: feed fetched but carries no future fixtures — "
+                    "check the source is still being maintained")
 
     # ── Canucks ───────────────────────────────────────────────────────────────
     # Rebuilt Sep 30 2026 (v2). v1 used ESPN, which returns HTTP 403 to
@@ -1367,6 +1402,13 @@ def get_sports_updates():
         age, cls, label = fact_age_badge(t.get("verified_on", ""), _meta)
         lines.append(f'{t.get("icon","")} {t.get("label","")} — {t.get("status","")} '
                      f'<span class="fact-age {cls}">{label}</span>')
+        # Escalation added Oct 1 2026: a badge is easy to stop seeing. Anything
+        # past stale_days also shouts in the banner, so a rotten hand-kept fact
+        # is as visible as a dead feed.
+        if age >= _meta.get("stale_days", 45):
+            SPORTS_ERRORS.append(
+                f'STALE FACT, {age}d old: {t.get("label","")} — hand-maintained, '
+                'no feed behind it, needs checking')
 
     # ── UFC Fighter Tracking ──────────────────────────────────────────────────
     lines.append("\n🥊 UFC Fighter Watch:")
@@ -1374,6 +1416,10 @@ def get_sports_updates():
         age, cls, label = fact_age_badge(f.get("verified_on", ""), _meta)
         lines.append(f'  {f.get("name","")}: {f.get("last","")} | Next: {f.get("next","")} '
                      f'<span class="fact-age {cls}">{label}</span>')
+        if age >= _meta.get("stale_days", 45):
+            SPORTS_ERRORS.append(
+                f'STALE FACT, {age}d old: {f.get("name","")} — hand-maintained, '
+                'no fighter feed exists, needs checking')
 
     # ── Fight cards: UFC + BKFC ───────────────────────────────────────────────
     # Rebuilt Sep 30 2026. The ESPN MMA scoreboard is gone: it 403s the Actions
@@ -1382,42 +1428,6 @@ def get_sports_updates():
     # to and already fetches successfully. BKFC has no feed at all, so it is
     # parsed from Wikipedia wikitext — a SCRAPE, and flagged as one: if the table
     # shape changes this reports loudly instead of silently dropping BKFC.
-    def _ics_events(url, label):
-        """Return [(datetime_pt, title)] from one ICS feed. Never raises."""
-        out = []
-        try:
-            _rq = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-            with urllib.request.urlopen(_rq, timeout=10) as _r:
-                raw = _r.read().decode("utf-8", errors="ignore")
-        except Exception as e:
-            SPORTS_ERRORS.append(f"{label}: {type(e).__name__} {e}")
-            return out
-        raw = raw.replace("\r\n", "\n").replace("\n ", "").replace("\n\t", "")
-        for blk in raw.split("BEGIN:VEVENT")[1:]:
-            title, ds = "", ""
-            for ln in blk.splitlines():
-                if ln.startswith("SUMMARY"):
-                    title = ln.split(":", 1)[-1].strip()
-                elif ln.startswith("DTSTART") and not ds:
-                    ds = ln.split(":", 1)[-1].strip()
-            if not (title and ds):
-                continue
-            try:
-                if re.match(r"^\d{8}$", ds):
-                    _d = datetime.strptime(ds, "%Y%m%d").date()
-                    dt = datetime.combine(_d, datetime.min.time()).replace(tzinfo=PT)
-                elif ds.endswith("Z"):
-                    dt = datetime.strptime(ds, "%Y%m%dT%H%M%SZ").replace(
-                        tzinfo=_timezone.utc).astimezone(PT)
-                elif "T" in ds and len(ds) >= 15:
-                    dt = datetime.strptime(ds[:15], "%Y%m%dT%H%M%S").replace(tzinfo=PT)
-                else:
-                    continue
-            except Exception:
-                continue
-            out.append((dt, title))
-        return out
-
     def _wiki_clean(txt):
         txt = re.sub(r"\{\{\s*flagicon[^}]*\}\}", "", txt)
         txt = re.sub(r"\[\[[^\]|]*\|([^\]]*)\]\]", r"\1", txt)
