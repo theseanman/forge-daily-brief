@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Organic Design for Command and Control</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* read cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.phys{ border-left-color:var(--teal); background:rgba(63,208,192,.08); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .trig{ font-size:13px; line-height:1.5; margin:4px 0 8px; color:var(--ink-dim); }
+  .trig b{ color:var(--gold); font-weight:800; letter-spacing:.04em; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .ex{ margin-top:12px; padding-top:10px; border-top:1px solid var(--line); }
+  .ex-k{ font-size:12px; color:var(--ink-quiet); margin-bottom:4px; font-weight:700; }
+  .ex-row{ font-size:13.5px; line-height:1.55; margin:9px 0; }
+  .ex-row .tag{ display:block; font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); margin-bottom:1px; }
+  .ex-row .act{ color:var(--ink); font-weight:600; }
+  .ex-row .eg{ display:block; color:var(--ink-dim); font-style:italic; }
+  .sub-k{ font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); font-weight:800; margin:14px 0 2px; }
+  .fail{ margin-top:11px; font-size:13px; line-height:1.5; color:var(--ink-dim); background:rgba(245,215,110,.07); border-radius:10px; padding:9px 11px; }
+  .fail b{ color:var(--gold); }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .band.stop{ background:rgba(63,208,192,.10); border-left-color:var(--teal); }
+  .band.stop b{ color:#8ff0e4; }
+  .para{ font-size:14px; line-height:1.6; margin:7px 0; }
+  .para b{ color:var(--accent-hi); }
+  .card.phys .para b{ color:#8ff0e4; }
+
+  /* diagram */
+  .diagram{ margin:10px 0 6px; background:rgba(6,28,64,.45); border:1px solid var(--line); border-radius:12px; padding:8px 4px; }
+  .diagram svg{ display:block; width:100%; height:auto; max-width:420px; margin:0 auto; }
+  .cap{ font-size:11.5px; color:var(--ink-quiet); text-align:center; margin-top:4px; line-height:1.4; }
+
+  /* tools */
+  .tool{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:14px 16px; margin-bottom:11px; }
+  .t-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:5px; flex-wrap:wrap; }
+  .t-name{ font-size:16.5px; font-weight:700; }
+  .t-dose{ font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; }
+  .t-rule{ font-size:14px; line-height:1.55; margin:6px 0; }
+  .t-rule b{ color:var(--accent-hi); }
+  .q{ font-size:14px; line-height:1.55; margin:6px 0 6px 4px; padding-left:12px; border-left:2px solid var(--gold); }
+  .step{ font-size:14px; line-height:1.55; margin:8px 0; display:flex; gap:10px; }
+  .step .n{ flex:0 0 22px; height:22px; border-radius:50%; background:rgba(74,157,232,.25); color:var(--accent-hi); font-size:12px; font-weight:800;
+    display:flex; align-items:center; justify-content:center; margin-top:1px; }
+  .step b{ color:var(--accent-hi); }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+  .ev.doc{ background:rgba(63,208,192,.16); color:#8ff0e4; border-color:rgba(63,208,192,.45); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+
+  /* drill */
+  #drill{ display:none; }
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(19px,5vw,26px); font-weight:300; line-height:1.4; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .btn:focus-visible, .toggle button:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>Organic Design for Command and Control</h1>
+    <div class="sub">After Col. John Boyd, <i>Organic Design for Command and Control</i> (1987), from <i>A Discourse on Winning and Losing</i>. Why watching more closely gets you worse information, and what to do instead.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="section-k">The idea</div>
+
+    <div class="card phys">
+      <div class="p-head"><span class="p-name">Command and control is the wrong frame</span><span class="ev doc">DOCTRINE</span></div>
+      <div class="para">Boyd&rsquo;s argument is that the words themselves cause the damage. <b>Command</b> implies directing people who are further from the situation than they are, and <b>control</b> implies that a central point can hold an accurate picture of what everyone is doing. Neither survives contact with anything fast-moving.</div>
+      <div class="para">His replacement pair is <b>appreciation and leadership</b>. Appreciation is getting a true picture from the people who actually have it. Leadership is giving them enough of the intent that they can act without asking. Neither requires you to know what everyone is doing, which is fortunate, because you can&rsquo;t.</div>
+      <div class="para">The mechanism underneath is that a centralised node is a bottleneck on tempo. Every decision routed through one person adds that person&rsquo;s cycle time to everyone else&rsquo;s.</div>
+      <div class="diagram" role="img" aria-label="Two network pictures side by side. On the left, a hub and spoke: five nodes all connected only to a central node, labelled everything routes through you. On the right, a mesh: the same five nodes connected to each other and to a small shared intent marker, labelled shared intent, direct connections.">
+        <svg viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif">
+          <g stroke="rgba(122,175,255,.5)" stroke-width="1.4">
+            <line x1="85" y1="90" x2="85" y2="45"/><line x1="85" y1="90" x2="128" y2="72"/>
+            <line x1="85" y1="90" x2="128" y2="112"/><line x1="85" y1="90" x2="85" y2="135"/>
+            <line x1="85" y1="90" x2="42" y2="112"/><line x1="85" y1="90" x2="42" y2="72"/>
+          </g>
+          <circle cx="85" cy="90" r="13" fill="#f5d76e"/>
+          <text x="85" y="94" font-size="10" font-weight="800" fill="#06264f" text-anchor="middle">YOU</text>
+          <g fill="#4a9de8">
+            <circle cx="85" cy="45" r="7"/><circle cx="128" cy="72" r="7"/><circle cx="128" cy="112" r="7"/>
+            <circle cx="85" cy="135" r="7"/><circle cx="42" cy="112" r="7"/><circle cx="42" cy="72" r="7"/>
+          </g>
+          <text x="85" y="170" fill="rgba(234,244,255,.6)" font-size="10.5" text-anchor="middle">everything routes</text>
+          <text x="85" y="184" fill="rgba(234,244,255,.6)" font-size="10.5" text-anchor="middle">through you</text>
+
+          <line x1="180" y1="35" x2="180" y2="165" stroke="rgba(122,175,255,.22)" stroke-width="1" stroke-dasharray="3 4"/>
+
+          <g stroke="rgba(63,208,192,.55)" stroke-width="1.4">
+            <line x1="275" y1="45" x2="318" y2="72"/><line x1="318" y1="72" x2="318" y2="112"/>
+            <line x1="318" y1="112" x2="275" y2="135"/><line x1="275" y1="135" x2="232" y2="112"/>
+            <line x1="232" y1="112" x2="232" y2="72"/><line x1="232" y1="72" x2="275" y2="45"/>
+            <line x1="275" y1="45" x2="275" y2="135"/><line x1="232" y1="72" x2="318" y2="112"/>
+          </g>
+          <circle cx="275" cy="90" r="10" fill="none" stroke="#f5d76e" stroke-width="1.6" stroke-dasharray="3 3"/>
+          <text x="275" y="93" font-size="8" font-weight="800" fill="#f5d76e" text-anchor="middle">INTENT</text>
+          <g fill="#3fd0c0">
+            <circle cx="275" cy="45" r="7"/><circle cx="318" cy="72" r="7"/><circle cx="318" cy="112" r="7"/>
+            <circle cx="275" cy="135" r="7"/><circle cx="232" cy="112" r="7"/><circle cx="232" cy="72" r="7"/>
+          </g>
+          <text x="275" y="170" fill="rgba(234,244,255,.6)" font-size="10.5" text-anchor="middle">shared intent,</text>
+          <text x="275" y="184" fill="rgba(234,244,255,.6)" font-size="10.5" text-anchor="middle">direct connections</text>
+        </svg>
+      </div>
+      <div class="cap">The left picture is slower, and it is also where the information is worst.</div>
+    </div>
+
+    <div class="band stop"><b>Where this sits next to the other pages.</b> Patterns of Conflict&rsquo;s seventh move, <b>intent not instructions</b>, is the one-line version of this and stays there. This page owns the two halves that move doesn&rsquo;t touch: what monitoring does to the information you get, and the receiving side &mdash; how your reaction to a report decides what you are told next. Second Nature is about your own automaticity; this is about everyone else&rsquo;s. Nothing here is adversarial, so it is safe in every room you are in.</div>
+
+    <div class="section-k">The five moves</div>
+
+    <!-- 1 -->
+    <div class="card">
+      <div class="p-head"><span class="p-name">The monitoring paradox</span><span class="ev b">B</span></div>
+      <div class="p-ess">Watching a thing changes what gets reported about it. Past a point, closer monitoring buys you worse information, not better.</div>
+      <div class="trig"><b>Use when</b> you want more visibility into how something is going, and your instinct is to add a check, a report or a tracker.</div>
+      <div class="move"><b>Assume the measure will be optimised, not the outcome.</b> Any number used to judge people stops measuring what it measured. This is one of the better-supported effects in organisational research. <span class="ev b">B</span></div>
+      <div class="move"><b>Ask what the check costs the person being checked.</b> Time, yes, but mostly it tells them which parts of their work you are watching, and that is where their effort will go.</div>
+      <div class="move"><b>Prefer the artefact to the report.</b> Look at the work itself, which is hard to distort, rather than at an account of the work, which is easy to.</div>
+      <div class="move"><b>Turn it on yourself.</b> Your own trackers are subject to this. A number you grade yourself against gets gamed by the same mechanism, quietly.</div>
+      <div class="ex">
+        <div class="ex-k">In practice</div>
+        <div class="ex-row"><span class="tag">Room 148</span><span class="act">Marks awarded for visible compliance produce visible compliance.</span><span class="eg">Look at the writing rather than at whether the steps were followed. The work is the artefact; the process check is the report.</span></div>
+        <div class="ex-row"><span class="tag">Forge OS</span><span class="act">A tick box you set for yourself becomes a thing to tick.</span><span class="eg">This is why mushin sits outside the enough count &mdash; a practice about not evaluating yourself can&rsquo;t come with a way to fail.</span></div>
+        <div class="ex-row"><span class="tag">Block B</span><span class="act">Asking host teachers for a status summary gets you a summary.</span><span class="eg">Being in the room for twenty minutes gets you the situation.</span></div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> the reports are consistently good and the results aren&rsquo;t moving. The reporting has detached from the thing it was meant to describe.</div>
+    </div>
+
+    <!-- 2 -->
+    <div class="card">
+      <div class="p-head"><span class="p-name">Appreciation before instruction</span><span class="ev doc">DOCTRINE</span></div>
+      <div class="p-ess">Get the real picture from the people holding it before you decide anything. They are closer to the situation than you are, always.</div>
+      <div class="trig"><b>Use when</b> you are about to set direction on something other people are actually doing.</div>
+      <div class="move"><b>Ask what you are missing, not whether the plan is good.</b> The second question gets agreement; the first gets information.</div>
+      <div class="move"><b>Go to where the work is.</b> A picture assembled from reports is assembled from things people chose to tell you.</div>
+      <div class="move"><b>Take the awkward answer seriously in front of them.</b> What you do with the first uncomfortable thing you hear sets the price of telling you the second.</div>
+      <div class="ex">
+        <div class="ex-k">In practice</div>
+        <div class="ex-row"><span class="tag">Room 148</span><span class="act">Ask a class what part of the task was unclear before redesigning it.</span><span class="eg">&ldquo;Did that make sense?&rdquo; gets nods. &ldquo;Which part would you explain differently?&rdquo; gets the answer.</span></div>
+        <div class="ex-row"><span class="tag">Block B</span><span class="act">The three host teachers have a picture of those students you cannot get any other way.</span><span class="eg">Appreciation first; the support model follows from it rather than being designed and then fitted.</span></div>
+        <div class="ex-row"><span class="tag">Home</span><span class="act">Before planning something for one of the girls, find out where she actually is now.</span><span class="eg">A plan built from your picture of her is built from a picture that is some months old.</span></div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> nobody has told you anything surprising in a long time. That means either nothing is happening or nothing is reaching you, and the second is far more likely.</div>
+    </div>
+
+    <!-- 3 -->
+    <div class="card">
+      <div class="p-head"><span class="p-name">Build the connection in advance</span><span class="ev doc">DOCTRINE</span></div>
+      <div class="p-ess">What lets dispersed people act coherently is a shared picture built beforehand, not messages sent during.</div>
+      <div class="trig"><b>Use when</b> things are calm. That is the only time this can be built; in the moment it is too late.</div>
+      <div class="move"><b>Say what matters most, repeatedly, before it is needed.</b> People can only make your call in your absence if they know what you are optimising for.</div>
+      <div class="move"><b>Be predictable.</b> Shared orientation requires that people can model you. Inconsistency forces everyone back to asking.</div>
+      <div class="move"><b>Spend the calm time on the relationship, not the system.</b> The connection is what carries load later; the process document is not.</div>
+      <div class="ex">
+        <div class="ex-k">In practice</div>
+        <div class="ex-row"><span class="tag">Room 148</span><span class="act">Criteria taught early and repeated are what let students work when you are with someone else.</span><span class="eg">A class that knows what good work looks like doesn&rsquo;t queue at your desk.</span></div>
+        <div class="ex-row"><span class="tag">FLA 6/7</span><span class="act">Adults manage themselves once they know what the work is for and what the run of dates is.</span><span class="eg">The presentation schedule in front of them all term is exactly this move &mdash; the picture held in advance, not chased.</span></div>
+        <div class="ex-row"><span class="tag">Home</span><span class="act">The household version is agreeing what the evening is for before it starts.</span><span class="eg">Most domestic friction is parts working against each other without a shared picture, not disagreement.</span></div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> things work when you are present and fall apart when you are not. The connection was never built; you were the connection.</div>
+    </div>
+
+    <!-- 4 -->
+    <div class="card">
+      <div class="p-head"><span class="p-name">Stop being the node</span><span class="ev c">C</span></div>
+      <div class="p-ess">Anything that routes back to you for a decision is an intent that was never stated clearly enough for someone else to act on.</div>
+      <div class="trig"><b>Use when</b> you feel like the bottleneck, or when you notice you are the only one who knows something.</div>
+      <div class="move"><b>Treat each question as a diagnostic.</b> Don&rsquo;t just answer it &mdash; note what the person would have needed in order not to ask.</div>
+      <div class="move"><b>Give the boundaries rather than the answer.</b> What outcome, by when, what must not happen. Then the next twenty questions answer themselves.</div>
+      <div class="move"><b>Connect people to each other, not to you.</b> A hub is slower than a mesh, and it is also fragile in exactly the way you are: it fails when you are tired.</div>
+      <div class="move"><b>Notice where this serves you.</b> Being the necessary node is quietly satisfying, and that is worth being honest about, because it is a reason to keep the design that way.</div>
+      <div class="ex">
+        <div class="ex-k">In practice</div>
+        <div class="ex-row"><span class="tag">Room 148</span><span class="act">A queue at your desk is a criteria problem, not a behaviour problem.</span><span class="eg">Post what finished looks like and the queue shortens without a single instruction.</span></div>
+        <div class="ex-row"><span class="tag">Block B</span><span class="act">If every arrangement runs through you, the three teachers cannot coordinate without you.</span><span class="eg">Put them in contact with each other about the shared students.</span></div>
+        <div class="ex-row"><span class="tag">Home</span><span class="act">Being the only one who knows the schedule is a bottleneck you built.</span><span class="eg">Visible and shared beats remembered and relayed.</span></div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> you are tired and things are waiting on you. That combination is a design outcome, not bad luck.</div>
+    </div>
+
+    <!-- 5 -->
+    <div class="card">
+      <div class="p-head"><span class="p-name">Make true reports survivable</span><span class="ev b">B</span></div>
+      <div class="p-ess">The receiving half. How you react to bad news determines the quality of everything you are told afterwards.</div>
+      <div class="trig"><b>Use when</b> someone tells you something you don&rsquo;t want to hear &mdash; and that is the whole trigger, because the reaction is the move.</div>
+      <div class="move"><b>Respond to the message, not the messenger.</b> Teams where people can raise problems without cost perform measurably better, and the mechanism is simply that the problems arrive early enough to fix. <span class="ev b">B</span></div>
+      <div class="move"><b>Thank the person who brought it before doing anything about it.</b> Cheap, and it is the whole price signal.</div>
+      <div class="move"><b>Say your own misses out loud.</b> People calibrate what is sayable from what you say about yourself.</div>
+      <div class="move"><b>Watch the delay, not the content.</b> How long it took someone to tell you is the honest measure of how safe telling you is.</div>
+      <div class="ex">
+        <div class="ex-k">In practice</div>
+        <div class="ex-row"><span class="tag">Room 148</span><span class="act">A student saying the instructions were confusing is doing you a favour.</span><span class="eg">If that costs them anything, the next thirty students stay quiet and you teach the unit blind.</span></div>
+        <div class="ex-row"><span class="tag">Income</span><span class="act">Pilot users telling you a module is confusing are the most valuable input you have.</span><span class="eg">Explaining why they misread it converts a signal into a reassurance.</span></div>
+        <div class="ex-row"><span class="tag">Home</span><span class="act">The version that matters most and is hardest: what happens when one of the girls tells you something awkward.</span><span class="eg">The reaction to the first one sets the price of the next ten years of them.</span></div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> you find things out late. Not because nobody knew &mdash; because telling you had a price.</div>
+    </div>
+
+    <div class="section-k">Start this week</div>
+    <div class="tool">
+      <div class="step"><div class="n">1</div><div>Pick one check or tracker you run and ask <b>what it costs the person being checked</b>. Yourself counts.</div></div>
+      <div class="step"><div class="n">2</div><div>Ask one class or one colleague <b>&ldquo;what am I missing?&rdquo;</b> rather than &ldquo;does this make sense?&rdquo;</div></div>
+      <div class="step"><div class="n">3</div><div>The next time someone asks you a question, <b>note what they&rsquo;d have needed not to ask it</b> &mdash; then supply that instead of only the answer.</div></div>
+      <div class="step"><div class="n">4</div><div>Find one thing only you know and <b>make it visible</b> rather than relayed.</div></div>
+      <div class="step"><div class="n">5</div><div>Next time you hear something you don&rsquo;t want to hear, <b>thank them first</b>, before responding to the substance.</div></div>
+    </div>
+
+    <div class="section-k">The Sunday block</div>
+    <div class="tool">
+      <div class="t-head"><span class="t-name">Four questions</span><span class="t-dose">weekly &middot; 5 min</span></div>
+      <div class="q">What did someone tell me this week that I didn&rsquo;t want to hear &mdash; and how did I take it?</div>
+      <div class="q">What did I find out later than I could have?</div>
+      <div class="q">What waited on me this week, and what would have let it not wait?</div>
+      <div class="q">Has anyone surprised me recently? If not, why not?</div>
+      <div class="note">Not wired into the debrief. Read them in the existing Sunday review.</div>
+    </div>
+
+    <div class="section-k">The one thing</div>
+    <div class="band"><b>What would they have needed in order not to ask me?</b> Supply that, and stop being the node.</div>
+
+    <div class="section-k">Failure modes</div>
+    <div class="card">
+      <div class="move"><b>Delegating without the intent.</b> Handing over tasks while keeping the picture produces people who ask more, not fewer, questions.</div>
+      <div class="move"><b>Mistaking silence for safety.</b> A quiet room is evidence of nothing. The measure is whether awkward things reach you early, not whether complaints reach you at all.</div>
+      <div class="move"><b>Replacing monitoring with a better tracker.</b> The paradox applies to the replacement too. The answer is looking at the work, not a smarter instrument.</div>
+      <div class="move"><b>Building the process instead of the connection.</b> Documents don&rsquo;t carry load in a difficult moment; the relationship does, and it has to exist beforehand.</div>
+      <div class="move"><b>Liking being needed.</b> The hub design has a payoff, which is why it persists. Worth naming when you catch yourself defending it on other grounds.</div>
+    </div>
+
+    <div class="section-k">Evidence</div>
+    <div class="card">
+      <div class="key">
+        <b><span class="ev doc">DOCTRINE</span></b> &mdash; Boyd&rsquo;s own synthesis, drawn from his reading of German practice and his study of organisations under pressure. Influential and widely taught, but interpretation rather than an empirical finding.<br>
+        <b><span class="ev a">A</span></b> &mdash; strong, replicated experimental support. Nothing on this page is graded A.<br>
+        <b><span class="ev b">B</span></b> &mdash; good supporting research, narrower in scope: measurement distortion, where any measure used for judgement stops measuring what it did (Campbell; Goodhart), and psychological safety, where teams that can surface problems without cost perform better (Edmondson). Autonomy over method sits here too.<br>
+        <b><span class="ev c">C</span></b> &mdash; reasoned from your own records and this system&rsquo;s history rather than from research. Stop being the node is in this class.<br>
+        <b><span class="ev d">D</span></b> &mdash; weak or contested. Nothing on this page is graded D.
+      </div>
+      <div class="note">Boyd delivered this briefing in 1987 as the section directly after Patterns of Conflict. He never published; the slides are terse because he talked over them.</div>
+    </div>
+
+    <div class="foot">Organic Design for Command and Control</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h1 style="font-size:20px;">Which move?</h1>
+    <div class="sub">Recognition, not recall. Each prompt is a moment. Name the move it calls for &mdash; several are about what you do on the receiving end rather than what you instruct. Ten per round, drawn from twenty.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Done</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn ghost" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  var read = m === 'read';
+  document.getElementById('read').style.display  = read ? 'block' : 'none';
+  document.getElementById('drill').style.display = read ? 'none' : 'block';
+  document.getElementById('tab-read').className  = read ? 'on' : '';
+  document.getElementById('tab-drill').className = read ? '' : 'on';
+  if(!read){ startRound(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-organic-design';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+/* long-press to remove */
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- drill ---------------- */
+var POOL = [
+  { prompt:'You want better visibility on a project, so you&rsquo;re adding <b>a weekly status check</b>.',
+    lines:['<b>The monitoring paradox.</b> The check tells people which part you&rsquo;re watching, and that&rsquo;s where the effort goes.','Look at the work itself instead of an account of the work.'] },
+  { prompt:'The status reports have been <b>consistently positive</b> for two months. Results are flat.',
+    lines:['<b>The monitoring paradox.</b> The reporting has detached from the thing it described.','Go and look at the artefact.'] },
+  { prompt:'You gave marks for <b>following the steps</b> and got beautifully followed steps.',
+    lines:['<b>The monitoring paradox.</b> Any measure used for judgement stops measuring what it measured.','Mark the writing, not the compliance.'] },
+  { prompt:'You&rsquo;re about to add <b>a tick box for yourself</b> on a practice you find hard.',
+    lines:['<b>The monitoring paradox &mdash; turned on yourself.</b> It becomes a thing to tick.','This is why mushin sits outside the enough count.'] },
+  { prompt:'You&rsquo;ve designed the Block B support model and are about to <b>tell the three host teachers</b>.',
+    lines:['<b>Appreciation before instruction.</b> They hold a picture of those students you can&rsquo;t get another way.','Ask first; the model follows from what they say.'] },
+  { prompt:'You ask the class <b>&ldquo;does that make sense?&rdquo;</b> and get nods.',
+    lines:['<b>Appreciation before instruction &mdash; wrong question.</b> That one gets agreement.','&ldquo;Which part would you explain differently?&rdquo; gets information.'] },
+  { prompt:'Nobody has told you anything <b>surprising</b> in about a month.',
+    lines:['<b>Appreciation &mdash; and a warning sign.</b> Either nothing is happening or nothing is reaching you.','The second is far more likely.'] },
+  { prompt:'Things run well when you&rsquo;re in the room and <b>fall apart when you&rsquo;re not</b>.',
+    lines:['<b>Build the connection in advance.</b> It was never built &mdash; you were the connection.','Say what matters most, repeatedly, while things are calm.'] },
+  { prompt:'It&rsquo;s a quiet week and you&rsquo;re using it to <b>write a process document</b>.',
+    lines:['<b>Build the connection in advance &mdash; spend it on the relationship instead.</b>','Documents don&rsquo;t carry load in a difficult moment.'] },
+  { prompt:'Your FLA class keeps asking <b>when they present</b>.',
+    lines:['<b>Build the connection in advance.</b> The whole run of dates in front of them, all term.','The picture held in advance, not chased.'] },
+  { prompt:'Same question, <b>third time this week</b>, from three different people.',
+    lines:['<b>Stop being the node.</b> The question is the diagnostic, not the problem.','Supply what they&rsquo;d have needed not to ask, once, to everyone.'] },
+  { prompt:'There&rsquo;s <b>a queue at your desk</b> and you&rsquo;re answering it one student at a time.',
+    lines:['<b>Stop being the node.</b> A queue is a criteria problem, not a behaviour problem.','Post what finished looks like.'] },
+  { prompt:'Every arrangement between the three host teachers <b>goes through you</b>.',
+    lines:['<b>Stop being the node.</b> A hub is slower than a mesh and fails when you&rsquo;re tired.','Connect them to each other.'] },
+  { prompt:'You&rsquo;re tired and <b>three things are waiting</b> on your decision.',
+    lines:['<b>Stop being the node.</b> That combination is a design outcome, not bad luck.','Give boundaries rather than answers.'] },
+  { prompt:'You notice you <b>quite like</b> being the one who has to be asked.',
+    lines:['<b>Stop being the node &mdash; the honest half.</b> The hub design has a payoff, which is why it persists.','Worth naming, especially when you&rsquo;re defending it on other grounds.'] },
+  { prompt:'A pilot user says module one is <b>confusing</b>. You think they skimmed it.',
+    lines:['<b>Make true reports survivable.</b> Explaining why they misread it converts a signal into a reassurance.','Thank them, then find what confused them.'] },
+  { prompt:'A student says your instructions <b>didn&rsquo;t make sense</b>, in front of the class.',
+    lines:['<b>Make true reports survivable.</b> What you do here sets the price for the next thirty students.','Respond to the message, not the messenger.'] },
+  { prompt:'You found out about a problem <b>two weeks after</b> it started. People knew.',
+    lines:['<b>Make true reports survivable &mdash; watch the delay.</b> The lag is the honest measure of how safe telling you is.','Not that nobody knew. That telling you had a price.'] },
+  { prompt:'Nobody complains, ever, and you take that as <b>a sign things are fine</b>.',
+    lines:['<b>Mistaking silence for safety.</b> A quiet room is evidence of nothing.','The measure is whether awkward things reach you early.'] },
+  { prompt:'One of your daughters tells you something <b>awkward</b> and your first instinct is to correct her.',
+    lines:['<b>Make true reports survivable &mdash; the version that matters most.</b>','The reaction to this one sets the price of the next ten years of them.'] }
+];
+var ONE = { prompt:'Name <b>the one thing</b>.',
+  lines:['<b>What would they have needed in order not to ask me?</b>','Supply that, and stop being the node.'] };
+var ROUND=9;
+var STEPS=[], idx=0, revealed=false;
+
+function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function buildRound(){ var p=shuffle(POOL.slice()).slice(0,ROUND); p.push(ONE); return p; }
+function startRound(){
+  STEPS=buildRound(); idx=0;
+  document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display='';
+  document.getElementById('progress').style.opacity='';
+  renderStep();
+}
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Name the move &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){ startRound(); window.scrollTo(0,0); }
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-organic-design-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+</script>
+</body>
+</html>

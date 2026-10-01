@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Conceptual Spiral</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* read cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.phys{ border-left-color:var(--teal); background:rgba(63,208,192,.08); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .trig{ font-size:13px; line-height:1.5; margin:4px 0 8px; color:var(--ink-dim); }
+  .trig b{ color:var(--gold); font-weight:800; letter-spacing:.04em; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .ex{ margin-top:12px; padding-top:10px; border-top:1px solid var(--line); }
+  .ex-k{ font-size:12px; color:var(--ink-quiet); margin-bottom:4px; font-weight:700; }
+  .ex-row{ font-size:13.5px; line-height:1.55; margin:9px 0; }
+  .ex-row .tag{ display:block; font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); margin-bottom:1px; }
+  .ex-row .act{ color:var(--ink); font-weight:600; }
+  .ex-row .eg{ display:block; color:var(--ink-dim); font-style:italic; }
+  .sub-k{ font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); font-weight:800; margin:14px 0 2px; }
+  .fail{ margin-top:11px; font-size:13px; line-height:1.5; color:var(--ink-dim); background:rgba(245,215,110,.07); border-radius:10px; padding:9px 11px; }
+  .fail b{ color:var(--gold); }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .band.stop{ background:rgba(63,208,192,.10); border-left-color:var(--teal); }
+  .band.stop b{ color:#8ff0e4; }
+  .para{ font-size:14px; line-height:1.6; margin:7px 0; }
+  .para b{ color:var(--accent-hi); }
+  .card.phys .para b{ color:#8ff0e4; }
+
+  /* diagram */
+  .diagram{ margin:10px 0 6px; background:rgba(6,28,64,.45); border:1px solid var(--line); border-radius:12px; padding:8px 4px; }
+  .diagram svg{ display:block; width:100%; height:auto; max-width:420px; margin:0 auto; }
+  .cap{ font-size:11.5px; color:var(--ink-quiet); text-align:center; margin-top:4px; line-height:1.4; }
+
+  /* tools */
+  .tool{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:14px 16px; margin-bottom:11px; }
+  .t-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:5px; flex-wrap:wrap; }
+  .t-name{ font-size:16.5px; font-weight:700; }
+  .t-dose{ font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; }
+  .t-rule{ font-size:14px; line-height:1.55; margin:6px 0; }
+  .t-rule b{ color:var(--accent-hi); }
+  .q{ font-size:14px; line-height:1.55; margin:6px 0 6px 4px; padding-left:12px; border-left:2px solid var(--gold); }
+  .step{ font-size:14px; line-height:1.55; margin:8px 0; display:flex; gap:10px; }
+  .step .n{ flex:0 0 22px; height:22px; border-radius:50%; background:rgba(74,157,232,.25); color:var(--accent-hi); font-size:12px; font-weight:800;
+    display:flex; align-items:center; justify-content:center; margin-top:1px; }
+  .step b{ color:var(--accent-hi); }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+  .ev.doc{ background:rgba(63,208,192,.16); color:#8ff0e4; border-color:rgba(63,208,192,.45); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+
+  /* drill */
+  #drill{ display:none; }
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(19px,5vw,26px); font-weight:300; line-height:1.4; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .btn:focus-visible, .toggle button:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>Conceptual Spiral</h1>
+    <div class="sub">After Col. John Boyd, <i>The Conceptual Spiral</i> (1992), from <i>A Discourse on Winning and Losing</i>. How new understanding gets made. Shaping and Adapting fixes a picture that has drifted; this one is about generating the next picture at all.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="section-k">The idea</div>
+
+    <div class="card phys">
+      <div class="p-head"><span class="p-name">The world keeps unfolding</span><span class="ev doc">DOCTRINE</span></div>
+      <div class="para">Boyd&rsquo;s claim is that novelty is not an occasional event but the permanent condition. The world keeps producing situations nobody has seen, which means <b>every picture you hold decays</b> whether or not anyone attacks it, and whether or not you are doing anything wrong.</div>
+      <div class="para">The consequence is uncomfortable: there is no state of being finished. A method that worked is not evidence that it will keep working &mdash; only that the world hasn&rsquo;t moved yet. Staying matched isn&rsquo;t maintenance, it&rsquo;s continuous production.</div>
+      <div class="para">The engine is a loop of pulling things apart and putting them back together differently, run over and over. Each turn widens what you can see, which is why Boyd drew it as a <b>spiral rather than a circle</b>: you don&rsquo;t return to where you started, you come back round at a wider radius.</div>
+      <div class="diagram" role="img" aria-label="An outward spiral, starting tight at the centre and widening with each turn. Three points along it are marked: test, test, test. The outer edge is labelled what you can see.">
+        <svg viewBox="0 0 360 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif">
+          <defs>
+            <marker id="cs-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7fbfff"/></marker>
+          </defs>
+          <path d="M180,125 a14,14 0 0 1 0,28 a22,22 0 0 1 0,-44 a30,30 0 0 1 0,60 a38,38 0 0 1 0,-76 a46,46 0 0 1 0,92 a54,54 0 0 1 0,-108"
+                fill="none" stroke="#4a9de8" stroke-width="2.2" marker-end="url(#cs-ah)"/>
+          <circle cx="180" cy="125" r="3.4" fill="#f5d76e"/>
+          <circle cx="180" cy="153" r="3.4" fill="#8ff0e4"/>
+          <circle cx="180" cy="169" r="3.4" fill="#8ff0e4"/>
+          <circle cx="180" cy="191" r="3.4" fill="#8ff0e4"/>
+          <text x="196" y="122" fill="#f5d76e" font-size="11" font-weight="700">start</text>
+          <text x="196" y="157" fill="#8ff0e4" font-size="11">test</text>
+          <text x="196" y="173" fill="#8ff0e4" font-size="11">test</text>
+          <text x="196" y="195" fill="#8ff0e4" font-size="11">test</text>
+          <text x="180" y="28" fill="rgba(234,244,255,.6)" font-size="11.5" text-anchor="middle">each turn widens what you can see</text>
+        </svg>
+      </div>
+      <div class="cap">A circle returns you to where you started. A spiral doesn&rsquo;t.</div>
+    </div>
+
+    <div class="band stop"><b>Where this sits next to Shaping and Adapting.</b> That page is corrective &mdash; it catches a picture that has drifted from reality and fixes it. This one is generative: it is about producing the next idea rather than repairing the current one. They touch at exactly one point, its <b>import frames from outside your domain</b> move, which is the same instinct read from the other side. Everything else here is new ground.</div>
+
+    <div class="section-k">The five moves</div>
+
+    <!-- 1 -->
+    <div class="card">
+      <div class="p-head"><span class="p-name">Produce, don&rsquo;t consume</span><span class="ev b">B</span></div>
+      <div class="p-ess">A conclusion you read is someone else&rsquo;s synthesis. Nothing of yours has been tested, so nothing has spiralled.</div>
+      <div class="trig"><b>Use when</b> you&rsquo;ve just finished a book, a paper, a protocol doc or a walk of listening and feel like you&rsquo;ve learned something.</div>
+      <div class="move"><b>Ask what you now do differently.</b> If the answer is nothing, you&rsquo;ve consumed. That isn&rsquo;t worthless &mdash; it&rsquo;s raw material &mdash; but it is not the thing itself.</div>
+      <div class="move"><b>Convert one idea into something testable before the next input.</b> One claim, one prediction, one attempt. Generating your own version of material beats re-reading it, by a wide and well-replicated margin. <span class="ev b">B</span></div>
+      <div class="move"><b>Notes are not the conversion.</b> A note records someone else&rsquo;s thought at a slightly lower fidelity. The conversion is an attempt that could fail.</div>
+      <div class="ex">
+        <div class="ex-k">In practice</div>
+        <div class="ex-row"><span class="tag">The walks</span><span class="act">Speechify listening is intake. End the walk with one thing to try this week, not a note.</span><span class="eg">Ten protocols listened to and none run is ten inputs and nought turns of the spiral.</span></div>
+        <div class="ex-row"><span class="tag">Self-Evidence</span><span class="act">This is the method the course sells, aimed at you.</span><span class="eg">Your own reading before the master&rsquo;s was no comparison to action research &mdash; that difference is exactly this move.</span></div>
+        <div class="ex-row"><span class="tag">Room 148</span><span class="act">A strategy you read about becomes real when one class has run it and you&rsquo;ve seen the work.</span><span class="eg">Until then it&rsquo;s a strategy you can describe, which is a different thing from one you can use.</span></div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> your input rate is high and your attempt rate is flat. Reading feels like progress because it produces the sensation of understanding without the risk of being wrong.</div>
+    </div>
+
+    <!-- 2 -->
+    <div class="card">
+      <div class="p-head"><span class="p-name">Name it: refining or generating</span><span class="ev c">C</span></div>
+      <div class="p-ess">Improving inside the current frame and building a new frame feel identical from the inside. Only one of them widens anything.</div>
+      <div class="trig"><b>Use when</b> you sit down to work on something that already exists.</div>
+      <div class="move"><b>Say which one this session is.</b> Refining the worksheet generator is not the same work as asking whether worksheets are the right vehicle.</div>
+      <div class="move"><b>Both are legitimate &mdash; the danger is drift.</b> Refinement is comfortable, endless, and always available, so it becomes the default without a decision ever being made.</div>
+      <div class="move"><b>Check the ratio, not the session.</b> A month of pure refinement is a signal. A single session of it is just a session.</div>
+      <div class="ex">
+        <div class="ex-k">In practice</div>
+        <div class="ex-row"><span class="tag">Forge OS</span><span class="act">Another card, another installer, another page &mdash; almost always refinement.</span><span class="eg">The generating question is whether the system is changing what you do, which no new card answers.</span></div>
+        <div class="ex-row"><span class="tag">Income</span><span class="act">Polishing the course is refinement; putting it in front of someone who might pay is generating.</span><span class="eg">The second produces information the first cannot.</span></div>
+        <div class="ex-row"><span class="tag">Stock system</span><span class="act">Tuning parameters is refinement inside the frame. Asking what the model assumes about the market is generating.</span><span class="eg">Frames expire quietly; parameters tuned inside an expired frame get better at the wrong thing.</span></div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> every recent session was refinement, and each was individually justified. They usually are.</div>
+    </div>
+
+    <!-- 3 -->
+    <div class="card">
+      <div class="p-head"><span class="p-name">Many small turns, not one leap</span><span class="ev doc">DOCTRINE</span></div>
+      <div class="p-ess">Novelty comes from the number of cycles, not the size of any one of them. It is a spiral, and spirals are made of turns.</div>
+      <div class="trig"><b>Use when</b> you&rsquo;re waiting to have a good enough idea before starting.</div>
+      <div class="move"><b>Shrink the cycle until it fits the time you actually have.</b> Two hours a week is enough for a turn. It is not enough for a leap, and waiting for one means no turns at all.</div>
+      <div class="move"><b>Let the turns be unimpressive.</b> A small test that returns a real result beats a large one that never runs.</div>
+      <div class="move"><b>Count turns, not hours.</b> Hours reward sitting with it; turns reward closing it.</div>
+      <div class="ex">
+        <div class="ex-k">In practice</div>
+        <div class="ex-row"><span class="tag">The two hours</span><span class="act">During term, design the week&rsquo;s work as one complete turn rather than a slice of a big build.</span><span class="eg">A slice produces nothing to learn from until the whole thing lands, which may be July.</span></div>
+        <div class="ex-row"><span class="tag">Room 148</span><span class="act">One activity changed in one block is a turn, and you get the result Monday.</span><span class="eg">A whole unit rebuilt over the break is one turn for the entire summer.</span></div>
+        <div class="ex-row"><span class="tag">The books</span><span class="act">A chapter section put in front of one reader is a turn.</span><span class="eg">A finished manuscript nobody has read is a single enormous bet on a frame you set months ago.</span></div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> you can&rsquo;t remember the last time something you made met a real reaction. Long gaps between turns mean the frame has been running untested.</div>
+    </div>
+
+    <!-- 4 -->
+    <div class="card">
+      <div class="p-head"><span class="p-name">Close the turn against reality</span><span class="ev a">A</span></div>
+      <div class="p-ess">A turn ends when something outside you responds. Thinking it through to a satisfying conclusion is not the end of a cycle.</div>
+      <div class="trig"><b>Use when</b> an idea feels finished.</div>
+      <div class="move"><b>Write what you expect before you look.</b> A written when&ndash;then makes the result informative instead of reinterpretable, and roughly doubles follow-through on the attempt itself. <span class="ev a">A</span></div>
+      <div class="move"><b>Put it somewhere it can fail.</b> One class, one reader, one week of live data. An idea that cannot be wrong cannot teach you anything.</div>
+      <div class="move"><b>Read the miss, not the score.</b> The direction and size of the error is the whole payload. A hit tells you much less.</div>
+      <div class="ex">
+        <div class="ex-k">In practice</div>
+        <div class="ex-row"><span class="tag">Room 148</span><span class="act">Before the activity, write what you expect to see in the work.</span><span class="eg">Then the exit tickets are a test rather than a mood reading.</span></div>
+        <div class="ex-row"><span class="tag">Stock system</span><span class="act">The forward test already is this. The discipline is writing the expectation first.</span><span class="eg">Without it, any outcome can be explained after the fact, and usually is.</span></div>
+        <div class="ex-row"><span class="tag">Income</span><span class="act">Name what a successful response looks like before you send anything.</span><span class="eg">&ldquo;Two replies asking about price&rdquo; is a test. &ldquo;See how it goes&rdquo; is not.</span></div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> the prediction gets written after the result is known, or it was vague enough to survive either outcome.</div>
+    </div>
+
+    <!-- 5 -->
+    <div class="card">
+      <div class="p-head"><span class="p-name">Give the frame an expiry</span><span class="ev c">C</span></div>
+      <div class="p-ess">Decide in advance when you will rebuild, rather than waiting for the frame to fail loudly enough to force it.</div>
+      <div class="trig"><b>Use when</b> something is working well. That is the moment, not when it breaks.</div>
+      <div class="move"><b>Put a date on it.</b> &ldquo;I rebuild this in January&rdquo; beats &ldquo;I rebuild it when it stops working,&rdquo; because a decaying frame does not announce itself.</div>
+      <div class="move"><b>Expect the new version to start worse.</b> A rebuild that begins below the old version is the ordinary cost of the method, not evidence it failed.</div>
+      <div class="move"><b>Keep what worked, deliberately.</b> Carry the pieces forward. Boyd&rsquo;s point was never to throw things away, it was to break them apart so they can be recombined.</div>
+      <div class="ex">
+        <div class="ex-k">In practice</div>
+        <div class="ex-row"><span class="tag">Courses</span><span class="act">A unit that has run three years unchanged is due, regardless of how well it goes.</span><span class="eg">Familiar and effective are different properties that feel the same from the front of a room.</span></div>
+        <div class="ex-row"><span class="tag">Forge OS</span><span class="act">The quarterly triage is the existing expiry mechanism. It killed nothing on its first pass.</span><span class="eg">An expiry you never enforce is a wish.</span></div>
+        <div class="ex-row"><span class="tag">Health</span><span class="act">A training block that has stopped producing change has expired even if you still like it.</span><span class="eg">Adaptation is the measure, not adherence.</span></div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> nothing has been rebuilt in a year, and everything feels fine. That combination is the ordinary appearance of a frame quietly going stale.</div>
+    </div>
+
+    <div class="section-k">Start this week</div>
+    <div class="tool">
+      <div class="step"><div class="n">1</div><div>Take the <b>last protocol doc you listened to</b> and convert one idea into something you will attempt this week. One attempt, not notes.</div></div>
+      <div class="step"><div class="n">2</div><div>Before your next work block, <b>write whether it is refinement or generation</b>. One word at the top of the session.</div></div>
+      <div class="step"><div class="n">3</div><div>Design this week&rsquo;s two hours as <b>one complete turn</b> &mdash; something that closes and returns a result &mdash; rather than a slice of a larger build.</div></div>
+      <div class="step"><div class="n">4</div><div><b>Write one prediction</b> before something you&rsquo;re about to run, specific enough to be wrong.</div></div>
+      <div class="step"><div class="n">5</div><div>Pick one thing that is working and <b>give it an expiry date</b>. Put it in the quarterly triage.</div></div>
+    </div>
+
+    <div class="section-k">The Sunday block</div>
+    <div class="tool">
+      <div class="t-head"><span class="t-name">Four questions</span><span class="t-dose">weekly &middot; 5 min</span></div>
+      <div class="q">How many turns closed this week &mdash; how many times did something I made meet a real reaction?</div>
+      <div class="q">Was this week refinement or generation, and was that a decision?</div>
+      <div class="q">What did I take in that I have not converted into an attempt?</div>
+      <div class="q">What is working well enough that I have stopped examining it?</div>
+      <div class="note">Not wired into the debrief. Read them in the existing Sunday review.</div>
+    </div>
+
+    <div class="section-k">The one thing</div>
+    <div class="band"><b>What did I make this week that could have been wrong?</b> If nothing, the spiral didn&rsquo;t turn, however much went in.</div>
+
+    <div class="section-k">Failure modes</div>
+    <div class="card">
+      <div class="move"><b>Consumption dressed as method.</b> More books, more protocols, more listening &mdash; all of it feels like the spiral and none of it turns it. This is the main risk of this page and of the walks.</div>
+      <div class="move"><b>Novelty for its own sake.</b> The point is staying matched to a moving world, not being interesting. A new frame that nothing tested is just a different untested frame.</div>
+      <div class="move"><b>Turning this into a build.</b> Nothing here needs a tracker. A tracker for spiral turns would be refinement of the OS, which is precisely the failure mode move two names.</div>
+      <div class="move"><b>Abandoning too early.</b> Give the frame an expiry &mdash; a date &mdash; rather than rebuilding whenever the current thing gets hard. Both extremes stop the spiral.</div>
+      <div class="move"><b>Counting hours.</b> Hours in the chair are input. Closed turns are the output, and they are the only number worth watching here.</div>
+    </div>
+
+    <div class="section-k">Evidence</div>
+    <div class="card">
+      <div class="key">
+        <b><span class="ev doc">DOCTRINE</span></b> &mdash; Boyd&rsquo;s own argument, built from his reading of science, engineering and history. Coherent and influential, but interpretation rather than an empirical finding. No study sits behind it and none is claimed.<br>
+        <b><span class="ev a">A</span></b> &mdash; strong, replicated experimental support. Used here for implementation intentions and written predictions (Gollwitzer).<br>
+        <b><span class="ev b">B</span></b> &mdash; good supporting research, narrower in scope: the generation effect and testing effect &mdash; producing and retrieving material yourself beats re-reading it, robustly, across many studies (Slamecka &amp; Graf; Roediger &amp; Karpicke).<br>
+        <b><span class="ev c">C</span></b> &mdash; reasoned from your own records and this system&rsquo;s history rather than from research. The refinement-drift and expiry moves are in this class.<br>
+        <b><span class="ev d">D</span></b> &mdash; weak or contested. Nothing on this page is graded D.
+      </div>
+      <div class="note">Boyd delivered <i>The Conceptual Spiral</i> in 1992, late in the sequence, and it is the most abstract of the briefings. He never published any of it; the slides are terse because he talked over them for hours.</div>
+    </div>
+
+    <div class="foot">Conceptual Spiral</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h1 style="font-size:20px;">Which move?</h1>
+    <div class="sub">Recognition, not recall. Each prompt is a moment. Name the move it calls for &mdash; sometimes the answer is that no turn has happened at all. Ten per round, drawn from twenty.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Done</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn ghost" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  var read = m === 'read';
+  document.getElementById('read').style.display  = read ? 'block' : 'none';
+  document.getElementById('drill').style.display = read ? 'none' : 'block';
+  document.getElementById('tab-read').className  = read ? 'on' : '';
+  document.getElementById('tab-drill').className = read ? '' : 'on';
+  if(!read){ startRound(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-conceptual-spiral';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+/* long-press to remove */
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- drill ---------------- */
+var POOL = [
+  { prompt:'You finish a protocol doc on the walk home and <b>take three pages of notes</b>.',
+    lines:['<b>Produce, don&rsquo;t consume.</b> Notes record someone else&rsquo;s thought. Nothing of yours has been tested.','Convert one idea into an attempt this week, before the next input.'] },
+  { prompt:'Four books this term, and you can <b>describe all four</b>. Your practice hasn&rsquo;t changed.',
+    lines:['<b>Produce, don&rsquo;t consume.</b> High input rate, flat attempt rate.','Pick the one idea you&rsquo;d defend and put it in front of a class.'] },
+  { prompt:'You read about a strategy, <b>ran it with Block B</b>, and looked at what came back.',
+    lines:['<b>Produce &mdash; and the turn closed.</b> That&rsquo;s the spiral working.','The result is now yours rather than the author&rsquo;s.'] },
+  { prompt:'Tonight&rsquo;s session: <b>a new card on the brief</b>.',
+    lines:['<b>Name it &mdash; refinement.</b> Improving inside the existing frame.','Legitimate, but check the ratio. A month of these is the signal.'] },
+  { prompt:'You&rsquo;re tuning stock model parameters and getting <b>slightly better backtest numbers</b>.',
+    lines:['<b>Name it &mdash; refinement inside a frame you haven&rsquo;t examined.</b>','The generating question is what the model assumes about the market.'] },
+  { prompt:'You&rsquo;re about to ask whether worksheets are <b>the right vehicle at all</b>.',
+    lines:['<b>Name it &mdash; generating.</b> That question changes the frame rather than the thing inside it.','Rarer, less comfortable, and the one that widens anything.'] },
+  { prompt:'Every session for the past month has been <b>individually justified refinement</b>.',
+    lines:['<b>Name it &mdash; and the ratio is the signal.</b> They usually are individually justified.','Book one generating session before the next refinement one.'] },
+  { prompt:'You&rsquo;re waiting until you have <b>a good enough idea</b> to start the income work.',
+    lines:['<b>Many small turns, not one leap.</b> Waiting for a leap produces no turns.','Shrink it until it fits the two hours you actually have.'] },
+  { prompt:'The plan is to rebuild the whole unit <b>over the summer</b>.',
+    lines:['<b>Many small turns.</b> That&rsquo;s one turn for an entire summer.','Change one activity in one block and read the result Monday.'] },
+  { prompt:'Three hours of good work on the book and <b>nothing anyone has seen</b>.',
+    lines:['<b>Count turns, not hours.</b> Hours reward sitting with it.','Put a section in front of one reader. That&rsquo;s the turn.'] },
+  { prompt:'An idea feels finished. It <b>resolved nicely</b> in your head.',
+    lines:['<b>Close the turn against reality.</b> Thinking it through is not the end of a cycle.','Put it somewhere it can fail: one class, one reader, one week of data.'] },
+  { prompt:'You&rsquo;re about to run a new activity. Your expectation is <b>&ldquo;it should go well.&rdquo;</b>',
+    lines:['<b>Close the turn &mdash; write it properly.</b> That survives any outcome, so it can&rsquo;t teach you.','Specific enough to be wrong: what, how many, by when.'] },
+  { prompt:'The result came in and you <b>explained why it happened</b> afterwards.',
+    lines:['<b>Close the turn &mdash; the prediction has to come first.</b>','Written after the fact, any outcome is explicable. Usually it gets explained.'] },
+  { prompt:'Your prediction missed, and missed <b>in the same direction</b> as the last two.',
+    lines:['<b>Close the turn &mdash; read the miss.</b> The direction is the payload.','Something in the frame is systematically off. That&rsquo;s worth more than a hit.'] },
+  { prompt:'A unit has run <b>three years unchanged</b> and goes well every time.',
+    lines:['<b>Give the frame an expiry.</b> Working well is exactly when to set the date.','Familiar and effective feel the same from the front of a room.'] },
+  { prompt:'You rebuilt something and the first run <b>came out worse</b> than the old version.',
+    lines:['<b>Give the frame an expiry &mdash; and expect the dip.</b> That&rsquo;s the ordinary cost of the method.','Carry the pieces that worked forward; don&rsquo;t revert on the first result.'] },
+  { prompt:'Nothing has been rebuilt in a year and <b>everything feels fine</b>.',
+    lines:['<b>Give the frame an expiry.</b> That combination is what a stale frame looks like from inside.','Decaying frames don&rsquo;t announce themselves.'] },
+  { prompt:'You&rsquo;re considering building <b>a tracker that counts spiral turns</b>.',
+    lines:['<b>No move &mdash; and this is the failure mode.</b> That&rsquo;s refinement of the OS wearing this page&rsquo;s clothes.','Nothing here needs a build. Run a turn instead.'] },
+  { prompt:'You&rsquo;ve changed the frame three times this month and <b>tested none of them</b>.',
+    lines:['<b>Novelty for its own sake.</b> A new untested frame is not better than an old untested frame.','Close one turn before generating another.'] },
+  { prompt:'Something you made this week <b>met a real reaction</b> you didn&rsquo;t control.',
+    lines:['<b>The turn closed.</b> That is the whole unit of progress on this page.','Read what came back before deciding what it means.'] }
+];
+var ONE = { prompt:'Name <b>the one thing</b>.',
+  lines:['<b>What did I make this week that could have been wrong?</b>','If nothing, the spiral didn&rsquo;t turn, however much went in.'] };
+var ROUND=9;
+var STEPS=[], idx=0, revealed=false;
+
+function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function buildRound(){ var p=shuffle(POOL.slice()).slice(0,ROUND); p.push(ONE); return p; }
+function startRound(){
+  STEPS=buildRound(); idx=0;
+  document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display='';
+  document.getElementById('progress').style.opacity='';
+  renderStep();
+}
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Name the move &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){ startRound(); window.scrollTo(0,0); }
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-conceptual-spiral-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+</script>
+</body>
+</html>
