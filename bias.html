@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bias</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0; --red:#ff8a8a; --violet:#b48cff;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+  a.inl{ color:var(--accent-hi); }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.teal{ border-left-color:var(--teal); background:rgba(63,208,192,.08); }
+  .card.gold{ border-left-color:var(--gold); background:rgba(245,215,110,.08); }
+  .card.red{ border-left-color:var(--red); background:rgba(255,138,138,.08); }
+  .card.violet{ border-left-color:var(--violet); background:rgba(180,140,255,.09); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .trig{ font-size:13px; line-height:1.5; margin:4px 0 8px; color:var(--ink-dim); }
+  .trig b{ color:var(--gold); font-weight:800; letter-spacing:.04em; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .card.teal .move b{ color:#8ff0e4; } .card.teal .move:before{ color:var(--teal); }
+  .card.red .move b{ color:#ffc0c0; } .card.red .move:before{ color:var(--red); }
+  .ex{ margin-top:11px; padding-top:10px; border-top:1px solid var(--line); }
+  .ex-row{ font-size:13.5px; line-height:1.55; margin:6px 0; }
+  .ex-row .tag{ display:inline-block; min-width:78px; font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .group-k{ font-size:12.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--teal); font-weight:800; margin:16px 0 6px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .band.warn{ background:rgba(255,138,138,.10); border-left-color:var(--red); }
+  .band.warn b{ color:var(--red); }
+  .band.vio{ background:rgba(180,140,255,.11); border-left-color:var(--violet); }
+  .band.vio b{ color:#d4bcff; }
+  .para{ font-size:14px; line-height:1.6; margin:7px 0; }
+  .para b{ color:var(--accent-hi); }
+  .card.teal .para b{ color:#8ff0e4; }
+  .card.red .para b{ color:#ffc0c0; }
+
+  /* catalogue rows */
+  .vrow{ font-size:13.5px; line-height:1.5; margin:8px 0; padding-bottom:8px; border-bottom:1px solid rgba(122,175,255,.12); }
+  .vrow:last-child{ border-bottom:0; padding-bottom:0; }
+  .vrow .bk{ font-weight:700; color:var(--ink); }
+  .vrow .au{ color:var(--ink-quiet); }
+  .vrow .vd{ color:var(--ink-dim); }
+  .cost{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:8px; padding-top:8px; border-top:1px solid var(--line); }
+  .cost b{ color:var(--gold); letter-spacing:.04em; }
+  .q{ font-size:14px; line-height:1.55; margin:6px 0 6px 4px; padding-left:12px; border-left:2px solid var(--gold); }
+  .step{ display:flex; gap:11px; font-size:14px; line-height:1.55; margin:9px 0; }
+  .step .n{ flex:0 0 22px; height:22px; border-radius:50%; background:rgba(74,157,232,.22); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:800; color:var(--accent-hi); margin-top:1px; }
+  .step b{ color:var(--accent-hi); }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+  .ev.x{ background:rgba(255,138,138,.16); color:#ffb3b3; border-color:rgba(255,138,138,.4); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+
+  /* drill */
+  #drill{ display:none; }
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(19px,5vw,26px); font-weight:300; line-height:1.4; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .btn:focus-visible, .toggle button:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>Bias</h1>
+    <div class="sub">Thirty biases graded on the evidence, the ten that actually cost you something, and the famous ones that did not survive replication. Recognition at the decision point &mdash; not a list to admire.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="section-k">What actually works</div>
+
+    <div class="card teal">
+      <div class="p-head"><span class="p-name">Knowing helps a little. Practice helps more.</span><span class="ev b">B</span></div>
+      <div class="para">The pessimistic line &mdash; that knowing about a bias does nothing to stop it &mdash; is overstated. Morewedge and colleagues gave people <b>one</b> training session against six biases. A single instructional video cut bias commission by at least 19%; a single interactive game with feedback cut it by at least 32%. Both were still holding two months later, and the effect generalised to biases the training had not covered.</div>
+      <div class="para"><b>But generic warnings fail.</b> In a study of selection neglect, subjects who were explicitly told that the sample they were seeing had been filtered <b>still</b> reasoned as though it hadn&rsquo;t. Only those given the actual filtering rule corrected. That is the design principle for this whole page: &ldquo;beware survivorship bias&rdquo; is demonstrated not to work. Naming the mechanism is what works.</div>
+      <div class="para"><b>So the page is built around triggers, not definitions.</b> A definition you read once. A trigger is something you can feel happening &mdash; and the counter is a move you make in that moment, not an attitude you hold.</div>
+    </div>
+
+    <div class="band"><b>Most biases are cheap to be wrong about.</b> Friction has a price and you have about two hours a week to spare in term time. The cost gate near the bottom of this page says which decisions are worth the checking and which you should simply make and move on from. A protocol that makes you audit every judgement has cost you more than the biases would have.</div>
+
+    <div class="section-k">The ten that cost you</div>
+    <div class="sub" style="margin-bottom:12px;">Ranked by evidence strength &times; what it costs when you&rsquo;re wrong &times; how often it hits the things you actually do.</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">1</span><span class="p-name">Overprecision</span><span class="ev a">A</span></div>
+      <div class="p-ess">Your confidence intervals are far too narrow. Not that you&rsquo;re wrong about the middle &mdash; that you&rsquo;re wrong about the width.</div>
+      <div class="trig"><b>Feels like</b> being able to name a single number without effort. &ldquo;About three weeks.&rdquo; &ldquo;Maybe forty students.&rdquo; The ease is the warning.</div>
+      <div class="move"><b>Give a range before a number</b> &mdash; and when you&rsquo;ve given one, widen it. Ask 90% intervals of people and the truth lands inside roughly 30&ndash;60% of the time.</div>
+      <div class="move"><b>Ask what would put it outside</b> &mdash; name one concrete way it could come in far above your high end. Considering alternatives is the countermeasure with the best support.</div>
+      <div class="move"><b>Decompose</b> &mdash; break the estimate into parts you can each bound, then recombine. This works better than trying to be humble about the whole.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Income</span> &ldquo;The course will take a summer&rdquo; is a point estimate wearing a duration costume. What&rsquo;s the version where it takes two?</div>
+        <div class="ex-row"><span class="tag">Stock system</span> A forward-test edge quoted without an interval is not a finding, it&rsquo;s a hope with a decimal point.</div>
+        <div class="ex-row"><span class="tag">Room 148</span> &ldquo;They&rsquo;ll need one class for this&rdquo; &mdash; give it a range, then plan the filler for the short end.</div>
+      </div>
+      <div class="note">Of the three overconfidences, this is the one that holds. Overestimating your performance and overplacing yourself against others both reverse on easy tasks &mdash; people routinely <i>under</i>rate themselves there. Overprecision has few if any documented reversals.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">2</span><span class="p-name">The planning fallacy</span><span class="ev a">A</span></div>
+      <div class="p-ess">You predict this project from the inside &mdash; the steps you can see &mdash; and the inside view has no room for what usually goes wrong.</div>
+      <div class="trig"><b>Feels like</b> visualising the sequence and it running clean. Also: a deadline that assumes nothing else lands that week.</div>
+      <div class="move"><b>Use the last five, not the plan</b> &mdash; how long did the last five comparable things actually take? That number, not your reasoning about this one.</div>
+      <div class="move"><b>Recalling isn&rsquo;t enough</b> &mdash; in the original studies, merely remembering past overruns didn&rsquo;t help. Only explicitly <b>linking</b> past cases to this prediction did, and it moved on-time completion from 29% to 60%.</div>
+      <div class="move"><b>Predict the interruptions separately</b> &mdash; marking, a sick kid, a PLT day. They are not noise; they are the reason the inside view is short.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Builds</span> Every protocol page that was &ldquo;an evening&rsquo;s work.&rdquo; You have a five-case reference class sitting in your own history.</div>
+        <div class="ex-row"><span class="tag">Room 148</span> Unit packages: count from the last completed unit, not from the outline of the next one.</div>
+        <div class="ex-row"><span class="tag">Home</span> &ldquo;I&rsquo;ll be done in twenty minutes&rdquo; said to a fourteen-year-old is a promise, and it is usually the inside view talking.</div>
+      </div>
+      <div class="note">Honest caveat: the fix is advocated harder than the evidence supports. Reference-class forecasting has encouraging but inconsistent results in the field, with named failures &mdash; and no meta-analysis of its accuracy. Use it because the inside view is demonstrably short, not because the remedy is proven.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">3</span><span class="p-name">Selection neglect</span><span class="ev b">B</span></div>
+      <div class="p-ess">You reason from the sample in front of you as though it arrived by chance. It almost never did.</div>
+      <div class="trig"><b>Feels like</b> a pattern emerging from examples. Especially examples someone else assembled &mdash; a list of winners, a set of testimonials, the strategies that made it into a book.</div>
+      <div class="move"><b>Ask what got filtered out</b> &mdash; not &ldquo;is this biased?&rdquo; but &ldquo;what would a case that <b>didn&rsquo;t</b> make it into this sample look like, and where would I find one?&rdquo;</div>
+      <div class="move"><b>Name the filter out loud</b> &mdash; the experimental finding is specific: a general warning that selection exists does <b>not</b> reduce the error. Stating the actual mechanism does.</div>
+      <div class="move"><b>Watch confidence rise with sample size</b> &mdash; in a filtered sample, more data makes you more certain and no more correct. That feeling of &ldquo;now I&rsquo;ve seen enough&rdquo; is the trap closing.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Stock system</span> Backtests survive because they were kept. The filter is you, choosing which to continue.</div>
+        <div class="ex-row"><span class="tag">Income</span> Every course that sold well is visible. The ones that didn&rsquo;t are not on anyone&rsquo;s shelf.</div>
+        <div class="ex-row"><span class="tag">Room 148</span> The strategy that worked for the class you remember. You remember it because it worked.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">4</span><span class="p-name">Myside bias</span><span class="ev b">B</span></div>
+      <div class="p-ess">You search, weigh and remember evidence in the direction of what you already hold. Not stupidity &mdash; the effect is essentially unrelated to intelligence.</div>
+      <div class="trig"><b>Feels like</b> reading something that agrees with you and feeling <i>informed</i>. Also: the search you run being phrased as the answer you want.</div>
+      <div class="move"><b>Consider the opposite, concretely</b> &mdash; not &ldquo;could I be wrong&rdquo; but &ldquo;write the strongest version of the case against, as someone who believes it would put it.&rdquo;</div>
+      <div class="move"><b>Set the disconfirmer in advance</b> &mdash; what result would make you drop this? Named before you look, or it moves when you do.</div>
+      <div class="move"><b>Check the motive</b> &mdash; the bias roughly triples when you&rsquo;re defending something you&rsquo;re committed to, and shrinks when the uncongenial information is actually useful to you. Notice which mode you&rsquo;re in.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Stock system</span> &ldquo;Is the edge real?&rdquo; searched by someone who has built it for a year is not a neutral query.</div>
+        <div class="ex-row"><span class="tag">Forge OS</span> &ldquo;Is this protocol working?&rdquo; asked of a page you wrote. The honest version has a named failure condition.</div>
+        <div class="ex-row"><span class="tag">Room 148</span> Evidence that a method is working, collected by the person who chose the method.</div>
+      </div>
+      <div class="note">The selective-exposure effect averages d = 0.38 &mdash; real but moderate. The moderators are bigger than the main effect, which is why the practical move is to check your motive rather than to assume a constant level of distortion.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">5</span><span class="p-name">Outcome bias</span><span class="ev a">A</span></div>
+      <div class="p-ess">You judge the quality of a decision by how it turned out, when the only information available at the time is what should count.</div>
+      <div class="trig"><b>Feels like</b> reviewing something that went badly and finding the mistake obvious. Also: a win making the process feel validated.</div>
+      <div class="move"><b>Judge the decision on what was knowable then</b> &mdash; write it down before the result arrives, or you will not be able to reconstruct it afterwards.</div>
+      <div class="move"><b>Separate the two verdicts</b> &mdash; &ldquo;bad outcome&rdquo; and &ldquo;bad decision&rdquo; are different findings. Say which one you mean.</div>
+      <div class="move"><b>Don&rsquo;t trust your own exemption</b> &mdash; in the replication, people who explicitly said outcomes shouldn&rsquo;t matter still showed the effect at d = 0.64. Knowing the rule does not buy you out of it.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Stock system</span> A losing trade taken on a correct signal is a correct trade. Changing the rule after it is how the system dies.</div>
+        <div class="ex-row"><span class="tag">Fantasy</span> Starting the right player who had a bad day is not an error to fix.</div>
+        <div class="ex-row"><span class="tag">Room 148</span> A lesson that fell flat with one class. Sometimes the plan was wrong; sometimes it was a Friday.</div>
+      </div>
+      <div class="note">The replication found the effect <i>larger</i> than the original &mdash; d = 0.77 to 1.10. It shows up in blame and punishment but not, interestingly, in judgements of whether an act was ethical.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">6</span><span class="p-name">Hindsight bias</span><span class="ev b">B</span></div>
+      <div class="p-ess">Once you know the outcome, your memory of what you expected quietly moves toward it. It is what makes outcome bias feel justified.</div>
+      <div class="trig"><b>Feels like</b> &ldquo;I knew that would happen&rdquo; &mdash; said with genuine sincerity, which is the problem.</div>
+      <div class="move"><b>Write the prediction down</b> &mdash; the only real defence. Memory cannot be audited; a file can.</div>
+      <div class="move"><b>Include your confidence</b> &mdash; &ldquo;I thought it would work&rdquo; drifts. &ldquo;I gave it 70%&rdquo; does not.</div>
+      <div class="move"><b>Extend the courtesy outward</b> &mdash; someone whose call went wrong may have made the right call. You will not feel that they did.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Stock system</span> Post-mortems written from memory are fiction with a spreadsheet attached.</div>
+        <div class="ex-row"><span class="tag">Builds</span> &ldquo;I always thought that approach was shaky&rdquo; &mdash; check whether you said so at the time.</div>
+      </div>
+      <div class="note">Meta-analytic r = .17 &mdash; smaller than the textbook impression, and the almanac-question lab task inflates it. Direct replications of the classic studies land at d = 0.40&ndash;0.60. Real, moderate, and cheaply defeated by writing things down. <b>Shaping and Adapting</b> already carries the prediction-writing discipline.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">7</span><span class="p-name">Base-rate neglect</span><span class="ev a">A</span></div>
+      <div class="p-ess">Given a vivid specific case and a boring background rate, you weight the case and drop the rate.</div>
+      <div class="trig"><b>Feels like</b> a description that fits. The better the fit, the more completely the base rate disappears.</div>
+      <div class="move"><b>Ask &ldquo;out of how many?&rdquo;</b> &mdash; before asking how likely this one is. The denominator first, then the case.</div>
+      <div class="move"><b>Convert to counts</b> &mdash; &ldquo;8 out of 1,000&rdquo; rather than &ldquo;0.8%&rdquo;. Natural frequencies raise correct solutions from about 4% to about 24%: a real gain, and still three quarters getting it wrong.</div>
+      <div class="move"><b>The rate is the starting point, not a tiebreaker</b> &mdash; you update <i>from</i> it. Most people treat it as a footnote to the story.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Stock system</span> A signal with a great hit rate on a rare setup. How often does the setup occur?</div>
+        <div class="ex-row"><span class="tag">Health</span> A screening result means nothing without the prevalence of the thing screened for.</div>
+        <div class="ex-row"><span class="tag">Income</span> &ldquo;This person built exactly this and it worked&rdquo; &mdash; out of how many who tried?</div>
+      </div>
+      <div class="note">Worth knowing: the population is bimodal, not uniformly bad. Roughly half of people reason correctly when the format is right. The heuristic account of <i>why</i> people fail is itself in some trouble &mdash; modelling finds little support for it.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">8</span><span class="p-name">Sunk cost</span><span class="ev b">B</span></div>
+      <div class="p-ess">What you have already spent pulls on a decision that should only be about what happens next.</div>
+      <div class="trig"><b>Feels like</b> &ldquo;after all this work.&rdquo; Also: reluctance to look at a project directly.</div>
+      <div class="move"><b>Ask the fresh-start question</b> &mdash; knowing what I know now, and starting from zero, would I begin this today?</div>
+      <div class="move"><b>Decide the kill condition when you start</b> &mdash; written in advance, it is a rule. Written afterwards, it is a negotiation you will win.</div>
+      <div class="move"><b>Separate the loss from the decision</b> &mdash; the time is gone either way. Continuing does not recover it; it only adds to it.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Triage</span> The quarterly live/paused/dead register exists because this bias is strongest on the projects you are proudest of.</div>
+        <div class="ex-row"><span class="tag">Builds</span> Three weeks into an approach that isn&rsquo;t working. The three weeks are not an argument.</div>
+      </div>
+      <div class="note">Pooled lab effect ES ≈ 0.50, and it survives with real money. But the field evidence is weaker &mdash; one large field experiment found no effect at all, while the online version of the same study did. Robust in controlled settings; real-world size uncertain.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">9</span><span class="p-name">Anchoring</span><span class="ev a">A</span></div>
+      <div class="p-ess">The first number on the table moves your estimate, even when you know where it came from and know it&rsquo;s arbitrary.</div>
+      <div class="trig"><b>Feels like</b> adjusting from a figure someone else said. The adjustment always feels sufficient. It isn&rsquo;t.</div>
+      <div class="move"><b>Estimate before you look</b> &mdash; your number first, written down, then the anchor. Reversing the order is the whole defence.</div>
+      <div class="move"><b>Name the anchor when you spot one</b> &mdash; a listed price, an opening offer, last year&rsquo;s figure, someone else&rsquo;s guess.</div>
+      <div class="move"><b>Don&rsquo;t rely on expertise</b> &mdash; 600-plus real trial judges were reliably moved by numeric anchors on sentences and damages.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Income</span> Any pricing conversation. Have your number before the call.</div>
+        <div class="ex-row"><span class="tag">Marking</span> The first essay in the pile sets the scale for the rest of it.</div>
+        <div class="ex-row"><span class="tag">Builds</span> &ldquo;Should take about two days&rdquo; said by anyone, including you, an hour ago.</div>
+      </div>
+      <div class="note">Classic numeric anchoring replicated at d = 1.27 to 2.60 in Many Labs 1 &mdash; among the largest effects in the whole project. But <i>incidental</i> anchoring, where a stray number in the environment supposedly shifts you, failed outright (d = 0.04). The version where a jersey number changes your estimate is not supported.</div>
+    </div>
+
+    <div class="card violet">
+      <div class="p-head"><span class="p-num">10</span><span class="p-name">The bias blind spot</span><span class="ev a">A</span></div>
+      <div class="p-ess">You can see all nine of the above operating in other people. From the inside, your own judgement just feels like looking at the facts.</div>
+      <div class="trig"><b>Feels like</b> having read this page and thought mainly of other people while doing it.</div>
+      <div class="move"><b>Treat introspection as the wrong instrument</b> &mdash; you cannot feel a bias working. You can only check the output against something external.</div>
+      <div class="move"><b>Outsource the check</b> &mdash; one named person who will say it plainly. This is the standing move in <b>Shaping and Adapting</b>: who, other than me, says this is working?</div>
+      <div class="move"><b>Use the record, not the feeling</b> &mdash; written predictions, actual completion times, the trade log. Instruments, not impressions.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">All of it</span> The reason this protocol&rsquo;s Drill tab is recognition-based: you are training to spot the shape in a situation, not to hold an opinion about yourself.</div>
+      </div>
+      <div class="note">Replicates larger than the original: mini-meta d = &minus;1.00 across three studies, plus an independent preregistered replication. One of the better-supported findings on the page &mdash; which is inconvenient, because it is the one you will most want to except yourself from.</div>
+    </div>
+
+    <div class="section-k">The catalogue &mdash; thirty, graded</div>
+    <div class="sub" style="margin-bottom:10px;">One line each: what it is, and where it bites you. Grade is evidence strength, not importance. The ten above are marked &starf;.</div>
+
+    <div class="card">
+      <div class="group-k">Estimating and forecasting</div>
+      <div class="vrow"><span class="bk">&starf; Overprecision</span> <span class="au">(the ease of naming one number)</span> <span class="ev a">A</span><br><span class="vd">Intervals far too narrow. 90% intervals capture the truth 30&ndash;60% of the time. The most robust item here.</span></div>
+      <div class="vrow"><span class="bk">&starf; Planning fallacy</span> <span class="au">(the clean sequence)</span> <span class="ev a">A</span><br><span class="vd">Inside-view time estimates run short. Only 30% finished by their own predicted date. Not universal &mdash; short tasks are often overestimated.</span></div>
+      <div class="vrow"><span class="bk">&starf; Anchoring</span> <span class="au">(adjusting from someone&rsquo;s number)</span> <span class="ev a">A</span><br><span class="vd">Huge for explicit numeric anchors, including among judges. Incidental environmental anchors did not replicate.</span></div>
+      <div class="vrow"><span class="bk">&starf; Base-rate neglect</span> <span class="au">(a description that fits)</span> <span class="ev a">A</span><br><span class="vd">Specific case beats background rate. Frequencies help a lot in relative terms and leave most people still wrong.</span></div>
+      <div class="vrow"><span class="bk">Present bias</span> <span class="au">(now is worth more)</span> <span class="ev b">B</span><br><span class="vd">Real, and stronger over effort and consumption (&beta; ≈ 0.66) than over money (&beta; ≈ 0.82) &mdash; the money experiments most textbooks use are the weakest measurement.</span></div>
+      <div class="vrow"><span class="bk">Duration neglect</span> <span class="au">(how long it went doesn&rsquo;t register)</span> <span class="ev b">B</span><br><span class="vd">Retrospective judgement of a bounded episode tracks the peak and the end, not the length. Holds for discrete episodes; fails for whole days and holidays.</span></div>
+    </div>
+
+    <div class="card">
+      <div class="group-k">Evidence and judgement</div>
+      <div class="vrow"><span class="bk">&starf; Myside bias</span> <span class="au">(agreement feels like information)</span> <span class="ev b">B</span><br><span class="vd">d = 0.38 for selective exposure, roughly tripled when defending a commitment. Essentially unrelated to intelligence.</span></div>
+      <div class="vrow"><span class="bk">&starf; Selection neglect</span> <span class="au">(a pattern in a curated set)</span> <span class="ev b">B</span><br><span class="vd">Survivorship, in its experimentally tested form. Over-inference of ~8&ndash;10 points; a general warning doesn&rsquo;t fix it, naming the filter does.</span></div>
+      <div class="vrow"><span class="bk">&starf; Outcome bias</span> <span class="au">(it went badly, so it was wrong)</span> <span class="ev a">A</span><br><span class="vd">d = 0.77&ndash;1.10 on replication, and d = 0.64 even among people who said outcomes shouldn&rsquo;t count.</span></div>
+      <div class="vrow"><span class="bk">&starf; Hindsight bias</span> <span class="au">(&ldquo;I knew it&rdquo;)</span> <span class="ev b">B</span><br><span class="vd">Memory of your own prediction drifts toward the result. Meta-analytic r = .17; direct replications d = 0.40&ndash;0.60.</span></div>
+      <div class="vrow"><span class="bk">Availability</span> <span class="au">(what comes to mind first)</span> <span class="ev b">B</span><br><span class="vd">Judging frequency by recalled instances holds up and beats the affect account for frequency judgements. The &ldquo;ease of retrieval&rdquo; version is a different claim &mdash; see the ledger.</span></div>
+      <div class="vrow"><span class="bk">Law of small numbers</span> <span class="au">(a run that means something)</span> <span class="ev b">B</span><br><span class="vd">Expecting short samples to look like the population. Three good weeks of forward-test results is a short sample.</span></div>
+      <div class="vrow"><span class="bk">Regression to the mean, misread</span> <span class="au">(the intervention that &ldquo;worked&rdquo;)</span> <span class="ev a">A</span><br><span class="vd">Extreme results drift back toward average on their own. Whatever you did after the worst week gets the credit.</span></div>
+      <div class="vrow"><span class="bk">Illusory pattern detection</span> <span class="au">(structure in noise)</span> <span class="ev c">C</span><br><span class="vd">Individual differences in seeing patterns are real and measurable. The famous claim that losing control <i>causes</i> it did not replicate &mdash; see the ledger.</span></div>
+    </div>
+
+    <div class="card">
+      <div class="group-k">Sticking and quitting</div>
+      <div class="vrow"><span class="bk">&starf; Sunk cost</span> <span class="au">(&ldquo;after all this work&rdquo;)</span> <span class="ev b">B</span><br><span class="vd">ES ≈ 0.50 in the lab and it survives incentives. Weaker and sometimes absent in the field.</span></div>
+      <div class="vrow"><span class="bk">Status quo / default</span> <span class="au">(the option already selected)</span> <span class="ev a">A</span><br><span class="vd">d = 0.68 on take-up, ~27 percentage points. But the <i>downstream</i> effects are far smaller than advertised &mdash; see the ledger.</span></div>
+      <div class="vrow"><span class="bk">Endowment effect</span> <span class="au">(yours is worth more)</span> <span class="ev a">A</span><br><span class="vd">WTA/WTP ≈ 2.5&times;, and it survived the procedural critique that was supposed to dissolve it. Vanishes with real market experience.</span></div>
+      <div class="vrow"><span class="bk">Loss aversion</span> <span class="au">(losses loom larger)</span> <span class="ev c">C</span><br><span class="vd">&lambda; ≈ 1.96 as a literature average. Genuinely contested whether it&rsquo;s a preference parameter at all &mdash; one 2025 reanalysis gets &lambda; ≈ 1.07 on symmetric, unordered presentations. Don&rsquo;t build on the 2&times; figure.</span></div>
+    </div>
+
+    <div class="card">
+      <div class="group-k">Reading people</div>
+      <div class="vrow"><span class="bk">&starf; Bias blind spot</span> <span class="au">(this page is about other people)</span> <span class="ev a">A</span><br><span class="vd">Mini-meta d = &minus;1.00, larger than the original. Replicates cross-culturally.</span></div>
+      <div class="vrow"><span class="bk">Correspondence bias</span> <span class="au">(they are like that)</span> <span class="ev a">A</span><br><span class="vd">Replicated at d = 1.82 in Many Labs 2. But whether it&rsquo;s an <i>error</i> is under live challenge &mdash; the pattern falls out of correct Bayesian inference once you drop the assumption that situations fully determine behaviour.</span></div>
+      <div class="vrow"><span class="bk">Halo effect</span> <span class="au">(good at one thing, good full stop)</span> <span class="ev b">B</span><br><span class="vd">Robust, but trait-specific: strong on dimensions near the cue, weak on integrity and concern for others. Attractive targets are also judged more <i>accurately</i>, which complicates the pure-bias reading.</span></div>
+      <div class="vrow"><span class="bk">Curse of knowledge</span> <span class="au">(this is obvious)</span> <span class="ev b">B</span><br><span class="vd">Real but about half the advertised size (d = 0.20 in a seven-experiment, N = 3,074 estimate). Still the central hazard of explaining anything to a beginner.</span></div>
+      <div class="vrow"><span class="bk">Illusion of transparency</span> <span class="au">(they can tell)</span> <span class="ev d">D</span><br><span class="vd">Widely taught; I could find no high-powered preregistered replication. Graded D for absence of evidence, not for evidence of absence.</span></div>
+      <div class="vrow"><span class="bk">Self-assessment error</span> <span class="au">(the Dunning-Kruger picture)</span> <span class="ev c">C</span><br><span class="vd">Low performers are less <i>accurate</i> self-assessors. They are not more confident in absolute terms &mdash; that part is wrong. See the ledger.</span></div>
+    </div>
+
+    <div class="card">
+      <div class="group-k">Framing and groups</div>
+      <div class="vrow"><span class="bk">Framing</span> <span class="au">(200 saved vs 400 die)</span> <span class="ev a">A</span><br><span class="vd">d = 0.62 in Many Labs 1, significant in 86% of 36 samples. Shrinks sharply when the complementary outcome is stated explicitly.</span></div>
+      <div class="vrow"><span class="bk">Group polarisation</span> <span class="au">(the meeting ends further out)</span> <span class="ev b">B</span><br><span class="vd">Discussion among like-minded people moves the group toward the extreme, not the middle. Robust and replicated. Not the same thing as groupthink, which isn&rsquo;t &mdash; see the ledger.</span></div>
+      <div class="vrow"><span class="bk">Peak-end rule</span> <span class="au">(how it ended is how it was)</span> <span class="ev b">B</span><br><span class="vd">Strong for discrete, bounded episodes (Bayes factors &gt;10,000 in odour sequences). Fails for multi-episode stretches &mdash; whole days track duration-weighted averages instead.</span></div>
+      <div class="vrow"><span class="bk">Affect heuristic</span> <span class="au">(risky, therefore useless)</span> <span class="ev b">B</span><br><span class="vd">Inverse risk-benefit correlation replicates at r ≈ &minus;.85. But the manipulation only works one way: raising risk lowers perceived benefit, and lowering benefit does not raise perceived risk.</span></div>
+      <div class="vrow"><span class="bk">Illusion of control</span> <span class="au">(choosing makes it likelier)</span> <span class="ev c">C</span><br><span class="vd">Skill-cue versions hold better than choice versions. The textbook lottery-ticket mechanism failed across 17 preregistered experiments, N = 10,825.</span></div>
+      <div class="vrow"><span class="bk">Optimism bias</span> <span class="au">(it won&rsquo;t happen to me)</span> <span class="ev d">D</span><br><span class="vd">The standard comparative paradigm generates the result from unbiased agents via scale artifacts. Don&rsquo;t cite the driver statistic. See the ledger.</span></div>
+    </div>
+
+    <div class="section-k">The ledger &mdash; taught, but not supported</div>
+    <div class="sub" style="margin-bottom:10px;">Every one of these is in wide circulation and several are in books on your shelf. A page about clear thinking that repeats dead findings has refuted itself.</div>
+
+    <div class="card red">
+      <div class="vrow"><span class="bk">Ego depletion</span> <span class="ev x">DEAD</span><br><span class="vd">Willpower as a depletable fuel. A 23-lab replication (N = 2,141) got d = 0.04; a 36-lab paradigmatic test (N = 3,531) got d = 0.06 with Bayes factor 4:1 <i>favouring the null</i>. One 12-lab study using a stronger manipulation found d = 0.10&ndash;0.16, so something small may survive &mdash; but the glucose account has no support at all. Plan days that need no willpower rather than budgeting it.</span></div>
+      <div class="vrow"><span class="bk">Social / behavioural priming</span> <span class="ev x">DEAD</span><br><span class="vd">Elderly words making you walk slower; &ldquo;professor&rdquo; priming making you smarter. The registered replication of professor priming across 40 labs found 0.14% against an original 13%. <b>Not</b> the same as semantic priming, which is among the most replicable effects in cognitive psychology &mdash; the two get conflated constantly.</span></div>
+      <div class="vrow"><span class="bk">Groupthink</span> <span class="ev x">DEAD</span><br><span class="vd">Janis&rsquo;s model is retrospective case narrative, not a tested theory. After 30+ years the evidence has failed to support its central predictions; one review found only nine independent studies of the core cohesion link. The symptoms show up in ordinary groups lacking every specified antecedent, which empties the model. Group polarisation is the real, replicated phenomenon &mdash; use that instead.</span></div>
+      <div class="vrow"><span class="bk">The hot hand fallacy</span> <span class="ev x">REVERSED</span><br><span class="vd">The most interesting one. Miller and Sanjurjo showed the original analysis contained a streak-selection bias: in a finite sequence, the hit rate after three makes is a <i>downward</i>-biased estimator, by about 8 percentage points in the original design. Correcting it turns a null (+3pp) into +13pp, p &lt; .01. Their line: the belief is not a cognitive illusion, and the &ldquo;fallacy&rdquo; can itself be viewed as a fallacy. Note carefully what this does and does not license &mdash; streakiness being real does not mean your <i>sense</i> of it is correctly sized.</span></div>
+      <div class="vrow"><span class="bk">Control threat &rarr; seeing patterns</span> <span class="ev x">FAILED</span><br><span class="vd">The <i>Science</i> finding that feeling out of control makes people see illusory patterns. Seven experiments (N ≈ 771) found no effect on any relevant measure, with Bayesian analysis supporting the null. The individual-difference version survives: people high in paranormal belief do show elevated false-alarm rates. Correlation real, causal induction not.</span></div>
+      <div class="vrow"><span class="bk">Choice &rarr; illusion of control</span> <span class="ev x">FAILED</span><br><span class="vd">Langer&rsquo;s lottery-ticket study is still the standard illustration. Seventeen preregistered experiments, N = 10,825: choosing rarely made people feel more likely to win unless choosing actually improved the odds. Where effects appeared they traced to pre-existing wrong beliefs about the options.</span></div>
+      <div class="vrow"><span class="bk">Ease of retrieval</span> <span class="ev x">CONTESTED</span><br><span class="vd">The claim that the <i>difficulty</i> of recalling examples is itself informational &mdash; recall twelve assertive acts and feel less assertive than recalling six. The meta-analysis shows substantial publication bias, and two large well-powered tests (N = 1,325 and a preregistered N = 659) both found nothing.</span></div>
+      <div class="vrow"><span class="bk">Comparative optimism</span> <span class="ev x">CONTESTED</span><br><span class="vd">&ldquo;Most drivers think they&rsquo;re above average, therefore self-enhancement.&rdquo; The inference is invalid: with a skewed distribution most drivers <i>are</i> above the mean, and scale attenuation plus base-rate regression generate the pattern from unbiased agents. The same work found a <i>severity</i> effect &mdash; negative outcomes overestimated, the opposite of optimism.</span></div>
+      <div class="vrow"><span class="bk">Dunning-Kruger, as usually told</span> <span class="ev x">CONTESTED</span><br><span class="vd">The pattern is real; the story is wrong. Low performers overestimate and high performers <i>under</i>estimate, which is largely regression to the mean plus a better-than-average effect. One analysis (N = 929) found the relation essentially linear and called it mostly a statistical artefact &mdash; though that critique has itself been attacked on coding grounds, and a design avoiding the double-dipping problem found the effect survives. Defensible: low performers self-assess less accurately. Not defensible: that they are more confident than high performers. They are not.</span></div>
+      <div class="vrow"><span class="bk">Defaults change outcomes</span> <span class="ev x">OVERSOLD</span><br><span class="vd">Not a bias but the most-repeated application of one. Five countries switching to opt-out organ donation: donation odds changed &minus;1.67%, with the Bayes factor running against the policy as a predictor. Auto-enrolment raises retirement savings by 0.6% of income, not the naive 2.6% &mdash; a 77% markdown once turnover and leakage are counted. The default reliably moves the <i>registration</i>. It does not reliably move the outcome.</span></div>
+    </div>
+
+    <div class="band warn"><b>The pattern worth carrying out of the ledger.</b> The survivors were tested with large multi-lab or randomised designs on the original paradigm: framing, anchoring, endowment, outcome bias, overprecision, the blind spot. The casualties were mostly single-study social-psychology effects with a mechanism story attached. And repeatedly &mdash; the phenomenon survives while the mechanism does not. That is worth knowing before you believe the next striking finding.</div>
+
+    <div class="section-k">The cost gate</div>
+
+    <div class="card gold">
+      <div class="p-ess" style="color:var(--ink-dim);">Checking is not free. Run the friction where being wrong is expensive, and nowhere else.</div>
+      <div class="move"><b>Spend the friction when the decision is hard to reverse</b> &mdash; money committed, a course direction, a rule change in the stock system, something said to one of your daughters.</div>
+      <div class="move"><b>Spend it when you&rsquo;ll be held to a number</b> &mdash; any estimate someone else will plan around.</div>
+      <div class="move"><b>Spend it when you notice you&rsquo;re defending</b> &mdash; myside bias roughly triples there, which is exactly where the check pays.</div>
+      <div class="move"><b>Skip it on anything cheap, fast or reversible</b> &mdash; which is most of a day. A wrong call you can undo in five minutes does not deserve a checklist.</div>
+      <div class="move"><b>Skip it mid-performance</b> &mdash; attending to the steps of a practised skill degrades it. Not while you are teaching, not during an hour with the girls.</div>
+      <div class="cost"><b>The gate in one line:</b> if you could not undo it by Friday, check it. Otherwise decide and move.</div>
+    </div>
+
+    <div class="section-k">Where this hands off</div>
+    <div class="band vio"><b>This page is the moment. Shaping and Adapting is the week.</b> It already carries writing the prediction down, the outside judge, and finding the contradictions &mdash; the standing disciplines that catch what recognition misses in the moment. They are not repeated here. Use this page to notice the shape while it is happening; use that one on Sundays to check whether you were right. <a class="inl" href="./shaping-adapting.html">Open Shaping and Adapting &rarr;</a></div>
+
+    <div class="section-k">The one thing</div>
+    <div class="band" style="margin-bottom:0;">
+      <b>Where did this sample come from?</b><br>
+      Asked of a set of examples, a run of results, a memory, a case that fits. It is the single question that covers selection, availability, base rates and small samples at once &mdash; and unlike &ldquo;am I being biased?&rdquo;, it has an answer you can go and find.
+    </div>
+
+    <div class="section-k">Failure modes</div>
+    <div class="card">
+      <div class="move"><b>Bias as a debating move</b> &mdash; naming someone&rsquo;s bias is not an argument against their claim. It is the cheapest possible rebuttal and it ends inquiry rather than advancing it.</div>
+      <div class="move"><b>The catalogue as an identity</b> &mdash; knowing thirty biases makes you feel like a clear thinker. The blind-spot evidence says that feeling is uncorrelated with being one.</div>
+      <div class="move"><b>Running it live</b> &mdash; auditing your own reasoning mid-lesson or mid-conversation costs more than the bias would have. This belongs at decision points.</div>
+      <div class="move"><b>Checking everything</b> &mdash; the friction budget is real and small. The cost gate exists because a protocol that makes you audit every judgement has already lost you more time than it saves.</div>
+      <div class="move"><b>Confidence in the grades</b> &mdash; these are current as of writing. Several items on this page moved in the last decade, and some will move again. A grade is a snapshot, not a fact.</div>
+      <div class="move"><b>This page as the work</b> &mdash; reading about clear thinking feels like doing it. The only test is whether one decision this week goes differently.</div>
+    </div>
+
+    <div class="section-k">Evidence</div>
+    <div class="key">
+      <span class="ev a">A</span> <b>Strong.</b> Large multi-lab, meta-analytic or preregistered support on the original paradigm. Anchoring (Many Labs 1; Rachlinski, Wistrich &amp; Guthrie 2015 on judges), framing (Many Labs 1, d = 0.62), outcome bias (Feldman et al. 2023), bias blind spot (Chandrashekar et al. 2021), endowment (Fehr, Hakimov &amp; K&uuml;bler 2015), overprecision (Moore, Tenney &amp; Haran), planning fallacy (Buehler, Griffin &amp; Ross 1994), base-rate format effects (McDowell &amp; Jacobs 2017), default take-up (Jachimowicz et al. 2019), correspondence bias (Many Labs 2, d = 1.82).<br><br>
+      <span class="ev b">B</span> <b>Good, with variance or boundary conditions.</b> Myside bias (Hart et al. 2009, d = 0.38), selection neglect (L&oacute;pez-P&eacute;rez, Pint&eacute;r &amp; S&aacute;nchez-Mangas 2022), hindsight (Christensen-Szalanski &amp; Willham 1991, r = .17; Chen &amp; Feldman 2021 replications), sunk cost (Roth, Robbert &amp; Straus 2015), peak-end (Scheibehenne &amp; Coppin 2019, and the day-level failures), curse of knowledge (Ryskin &amp; Brown-Schmidt 2014, d = 0.20), present bias (Cheung, Tymula &amp; Wang), affect heuristic (Efendi&cacute; et al. 2022), availability by recall (Pachur, Hertwig &amp; Steinmann 2012), debiasing training (Morewedge et al. 2015; Sellier, Scopelliti &amp; Morewedge on field transfer).<br><br>
+      <span class="ev c">C</span> <b>Contested or mechanism unresolved.</b> Loss aversion (Brown et al. 2024 vs Yechiam &amp; Zeif 2025), illusion of control, self-assessment error, illusory pattern detection, action bias, zero-risk bias. Real phenomena with disputed causes or disputed sizes. Don&rsquo;t build a decision rule on these.<br><br>
+      <span class="ev d">D</span> <b>Thin or artifactual.</b> Illusion of transparency (no adequate modern replication found), optimism bias (comparative paradigm confounded). Listed because they are widely believed, not because they are established.<br><br>
+      <span class="ev x">X</span> <b>Ledger.</b> Failed, reversed, or oversold. Detailed above with the specific study that settled it.<br><br>
+      <b>The ranking</b> &mdash; evidence &times; cost-when-wrong &times; frequency in your actual week &mdash; is this page&rsquo;s own reasoning. The grades are from the literature; the order is a judgement call.<br><br>
+      <b>Verification status.</b> Every grade and figure on this page was checked against primary sources or meta-analyses at build time, not quoted from memory. Three specific items were flagged as second-hand and should be re-checked before being quoted anywhere public: the ease-of-retrieval replication test statistics, the Halkjelsvik &amp; J&oslash;rgensen planning-fallacy caveat, and Eagly et al.&rsquo;s halo effect sizes.
+    </div>
+
+    <div class="foot">Bias &middot; Forge OS</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h1 style="font-size:20px;">Name the shape</h1>
+    <div class="sub">Recognition, not recall. A situation from your week. Name the bias &mdash; or say it&rsquo;s clean &mdash; before revealing. Ten per round, shuffled.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Done</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn ghost" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  var read = m === 'read';
+  document.getElementById('read').style.display  = read ? 'block' : 'none';
+  document.getElementById('drill').style.display = read ? 'none' : 'block';
+  document.getElementById('tab-read').className  = read ? 'on' : '';
+  document.getElementById('tab-drill').className = read ? '' : 'on';
+  if(!read){ restart(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-bias';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+/* long-press to remove */
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- drill: 25-situation pool, 10 per round, one-thing last ---------------- */
+var POOL = [
+  { prompt:'A build is &ldquo;about two evenings.&rdquo; The number arrived <b>without effort</b>.',
+    lines:['<b>Overprecision</b>, and the planning fallacy behind it.','Give a range. Then widen it. Then ask what the version that takes two weeks looks like.'] },
+  { prompt:'You read three articles saying the approach you chose is the right one, and feel <b>better informed</b>.',
+    lines:['<b>Myside bias.</b> d = 0.38, and it roughly triples when you are defending a commitment.','Write the strongest case against, as its believer would put it. Name the disconfirmer before you search again.'] },
+  { prompt:'The trade lost. You start <b>adjusting the rule</b> that produced the signal.',
+    lines:['<b>Outcome bias.</b> A losing trade on a correct signal is a correct trade.','Judge it on what was knowable at entry. d = 0.64 even among people who say outcomes shouldn&rsquo;t count &mdash; knowing the rule doesn&rsquo;t exempt you.'] },
+  { prompt:'You are reading a list of the <b>strategies that made the most money</b> and looking for the common thread.',
+    lines:['<b>Selection neglect.</b> The list is the filter&rsquo;s output, not a sample.','Ask what a strategy that failed would look like and where you would find one. A general warning does not fix this; naming the filter does.'] },
+  { prompt:'Three weeks into an approach that isn&rsquo;t working. You think: <b>after all this work</b>.',
+    lines:['<b>Sunk cost.</b> The three weeks are gone whichever way you decide.','Fresh-start question: starting today, knowing what you know, would you begin this?'] },
+  { prompt:'You plan the week around <b>saving willpower</b> for the hard task.',
+    lines:['<b>Nothing to save.</b> Ego depletion: d = 0.04 across 23 labs, d = 0.06 across 36 with a Bayes factor favouring the null.','Design the day so it needs no willpower &mdash; if-then plans, environment, small first step.'] },
+  { prompt:'The forward test has had <b>three good weeks</b>. It feels like it is working.',
+    lines:['<b>Law of small numbers</b>, with selection neglect underneath it.','Three weeks is a short sample, and you kept this system rather than the others. What would three good weeks look like under the null?'] },
+  { prompt:'A student&rsquo;s description fits the profile <b>exactly</b>. You are confident about the placement.',
+    lines:['<b>Base-rate neglect.</b> The better the fit, the more completely the background rate disappears.','Out of how many? Ask the denominator before the case. Counts, not percentages.'] },
+  { prompt:'Someone quotes a price first. You <b>adjust down from it</b> and the adjustment feels about right.',
+    lines:['<b>Anchoring.</b> d = 1.27 to 2.60 in Many Labs 1, and 600+ real judges were moved the same way.','The adjustment always feels sufficient. Your own number goes on paper before the call, not after.'] },
+  { prompt:'It went wrong, and looking back <b>you can see it coming a mile off</b>.',
+    lines:['<b>Hindsight bias.</b> Your memory of what you expected has moved toward what happened.','Only a written prediction with a confidence attached survives this. Memory cannot be audited.'] },
+  { prompt:'You read this page and thought mainly of <b>people you know</b>.',
+    lines:['<b>The bias blind spot.</b> Mini-meta d = &minus;1.00, larger than the original finding.','You cannot feel a bias working. Check the output against a record or a person, not against your sense of yourself.'] },
+  { prompt:'A colleague was short with you in the hallway. You conclude <b>that is what he is like</b>.',
+    lines:['<b>Correspondence bias.</b> d = 1.82 on replication.','Worth a caveat: whether this is an <i>error</i> is contested &mdash; the pattern falls out of correct inference once you drop the assumption that situations fully determine behaviour.'] },
+  { prompt:'You want to explain the concept and think: <b>this part is obvious, I can skip it</b>.',
+    lines:['<b>Curse of knowledge.</b> Real, though about half the textbook size (d = 0.20).','The part that is obvious to you is the part that was hardest to learn. It is invisible from where you now stand.'] },
+  { prompt:'A protocol page you wrote seems to be helping. You look for <b>evidence that it is</b>.',
+    lines:['<b>Myside bias, on your own work</b> &mdash; where defence motivation is highest.','What result would make you drop it? Name it before you look. Then ask who, other than you, says it is working.'] },
+  { prompt:'After the worst week, you changed something. The next week was <b>much better</b>.',
+    lines:['<b>Regression to the mean, misread as cause.</b> Extremes drift back toward average unaided.','Whatever you did after the worst week gets credit it may not have earned. This is why the intervention after a bad patch always looks brilliant.'] },
+  { prompt:'You are about to change the default option on something, expecting <b>the behaviour to follow</b>.',
+    lines:['<b>Real, but oversold.</b> Defaults move take-up by ~27 points. They move outcomes far less.','Organ-donation switches: donation odds changed &minus;1.67%. Auto-enrolment: 0.6% of income, not 2.6%. Expect the registration to move and check whether the outcome did.'] },
+  { prompt:'You were asked how long something takes and gave <b>a single number</b>, confidently.',
+    lines:['<b>Overprecision.</b> The most robust bias on the page &mdash; few if any documented reversals.','90% intervals contain the truth 30&ndash;60% of the time. Decompose into parts you can bound, then recombine.'] },
+  { prompt:'A player has hit in <b>four straight games</b>. You want to start him.',
+    lines:['<b>Not automatically a fallacy</b> &mdash; this is the reversed one.','Miller &amp; Sanjurjo found a streak-selection bias in the original analysis; corrected, the hot hand is real (+13pp). But streakiness existing does not mean your <i>sense</i> of it is correctly sized.'] },
+  { prompt:'You are deciding what to have for lunch and catch yourself <b>running a bias check</b>.',
+    lines:['<b>Cost gate failure.</b> Cheap, fast, reversible &mdash; no friction earned.','If you could undo it by Friday, just decide. The budget is small and it belongs on the irreversible things.'] },
+  { prompt:'Mid-lesson, you start <b>auditing your own reasoning</b> in front of the class.',
+    lines:['<b>Wrong moment.</b> Attention to the steps of a practised skill degrades it.','This belongs at decision points, not during performance. Same rule as The Honest Stop.'] },
+  { prompt:'You feel out of control this week and notice you are <b>seeing patterns everywhere</b>.',
+    lines:['<b>Careful &mdash; that causal story failed.</b> Seven experiments, N ≈ 771, found no effect of control threat on illusory pattern perception, with Bayesian support for the null.','The individual-difference version holds. But don&rsquo;t explain this week&rsquo;s pattern-seeing by this week&rsquo;s stress; that link is not there.'] },
+  { prompt:'The unit was hard to write, so you assume <b>it will be hard for them</b>.',
+    lines:['<b>Ease of retrieval &mdash; and that one is in trouble.</b>','The claim that felt difficulty is itself informational has substantial publication bias and two large well-powered failures. Judge the unit on the unit.'] },
+  { prompt:'A meeting of people who broadly agree ends with a position <b>further out</b> than anyone started.',
+    lines:['<b>Group polarisation.</b> Robust and replicated.','Note this is <i>not</i> groupthink, whose central predictions have failed to find support across 30+ years. Polarisation is the real mechanism; use that name.'] },
+  { prompt:'You are weighing a loss against a gain and reach for the rule that <b>losses count double</b>.',
+    lines:['<b>Don&rsquo;t build on the 2&times; figure.</b> &lambda; ≈ 1.96 as a literature average, but genuinely contested.','A 2025 reanalysis gets &lambda; ≈ 1.07 once gains and losses are symmetric and unordered. Grade C. Use it as a direction, not a coefficient.'] },
+  { prompt:'Name <b>the one thing</b>.',
+    lines:['<b>Where did this sample come from?</b>','Asked of a set of examples, a run of results, a memory, a case that fits. Unlike &ldquo;am I being biased?&rdquo;, it has an answer you can go and find.'] }
+];
+var ROUND=10, STEPS=[], idx=0, revealed=false;
+var ONE = POOL[POOL.length-1];
+
+function startRound(){
+  var a=POOL.slice(0,POOL.length-1);
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+  STEPS=a.slice(0,ROUND-1); STEPS.push(ONE); idx=0;
+}
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Name it &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  startRound();
+  document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-bias-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+startRound();
+</script>
+</body>
+</html>
