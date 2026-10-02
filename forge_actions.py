@@ -234,6 +234,17 @@ def clean_title(s):
 # that cries wolf gets ignored, which is how the Ringette feed died unnoticed.
 ICS_ALWAYS_FUTURE = ("Ringette", "Richmond Secondary", "UFC Events", "ONE Championship")
 
+# Feeds where EMPTY is a legitimate state, so the no-events-at-all warning does
+# not apply to them. These are appointment calendars: a physio or doctor feed
+# with nothing booked returns a valid but empty calendar, which is
+# indistinguishable from a rotated link that also returns empty -- so there is
+# nothing to detect here, and warning anyway only trains the banner to be
+# ignored, which is the exact failure that let the Ringette feed die unnoticed.
+# Added Oct 2 2026: the first run of the new check fired three of these as false
+# positives and Sean confirmed he has no upcoming medical appointment. A feed on
+# this list that genuinely breaks still reports via the fetch-exception path.
+ICS_MAY_BE_EMPTY = ("Physio Steveston", "Doctor", "Doctor 2", "Richmond Blundell Physio")
+
 
 def ics_unfold(raw):
     """RFC5545 line unfolding. A long SUMMARY is split across lines with a
@@ -499,6 +510,18 @@ def fetch_ics_structured(start_dt, end_dt):
     _now_pt = datetime.now(PT)
     out = []
 
+    # A typo in either feed list would silently switch a warning off and never
+    # be noticed. Nothing in this system is allowed to fail quietly, so an
+    # entry naming a feed that does not exist reports itself.
+    _known = set(_n for _n, _u in SUBSCRIBED_ICS_URLS)
+    for _lst, _lbl in ((ICS_ALWAYS_FUTURE, "ICS_ALWAYS_FUTURE"),
+                       (ICS_MAY_BE_EMPTY, "ICS_MAY_BE_EMPTY")):
+        for _n in _lst:
+            if _n not in _known:
+                CALENDAR_ERRORS.append(
+                    f"{_lbl} names '{_n}', which is not a feed in "
+                    "SUBSCRIBED_ICS_URLS \u2014 that entry does nothing")
+
     for feed_name, url in SUBSCRIBED_ICS_URLS:
         try:
             req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
@@ -555,7 +578,7 @@ def fetch_ics_structured(start_dt, end_dt):
                     found += 1
             except Exception:
                 continue
-        if _vevents == 0:
+        if _vevents == 0 and feed_name not in ICS_MAY_BE_EMPTY:
             CALENDAR_ERRORS.append(
                 f"{feed_name}: feed answered but carries NO events at all \u2014 "
                 "the subscription link has most likely rotated")
