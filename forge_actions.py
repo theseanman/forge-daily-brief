@@ -227,6 +227,89 @@ def clean_title(s):
         s = s.replace(ch, "")
     return s.strip()
 
+# Feeds that must always carry at least one FUTURE event. A feed in this list
+# that fetches fine and parses fine but holds nothing ahead of today is either
+# abandoned upstream or pointing at a rotated link, and says so on the brief.
+# Deliberately NOT every feed: a quiet week is normal for some, and a warning
+# that cries wolf gets ignored, which is how the Ringette feed died unnoticed.
+ICS_ALWAYS_FUTURE = ("Ringette", "Richmond Secondary", "UFC Events", "ONE Championship")
+
+
+def ics_unfold(raw):
+    """RFC5545 line unfolding. A long SUMMARY is split across lines with a
+    leading space or tab on the continuation; without this, titles truncate
+    mid-word. fetch_ics_structured always did this and fetch_ics_events never
+    did, so the same event read correctly in the planner and truncated on the
+    brief (RAMP's 'Power Skating 75min. Share ice\\n  with U12B.')."""
+    if not raw:
+        return raw
+    return raw.replace("\r\n", "\n").replace("\n ", "").replace("\n\t", "")
+
+
+def ics_text_unescape(s):
+    """RFC5545 TEXT unescaping: \\n and \\N are newlines, and \\, \\; \\\\ are
+    literal characters. Walked one character at a time on purpose — chained
+    .replace() calls would re-process their own output and eat a literal
+    backslash-n that the feed meant to keep."""
+    if not s:
+        return s
+    s = str(s)
+    out = []
+    i = 0
+    n = len(s)
+    while i < n:
+        c = s[i]
+        if c == "\\" and i + 1 < n:
+            nxt = s[i + 1]
+            if nxt in ("n", "N"):
+                out.append("\n")
+                i += 2
+                continue
+            if nxt in (",", ";", "\\"):
+                out.append(nxt)
+                i += 2
+                continue
+        out.append(c)
+        i += 1
+    return "".join(out)
+
+
+def format_ics_summary(feed_name, summary):
+    """Turn a feed's raw SUMMARY into one readable calendar line.
+
+    Generic behaviour: unescape, then join the segments with a middot, so a
+    multi-line SUMMARY from any feed reads as one line instead of spilling
+    literal backslash-n onto the brief.
+
+    Ringette (RAMP) gets a tidier shape because its SUMMARY is a fixed stack:
+        Layna Reid / Riptide U12A / Practice / Updated: Share ice with U12B
+    becomes
+        Layna - U12A Practice . Updated: Share ice with U12B
+    Surname and club name are dropped (he knows whose kids they are); the
+    note is KEPT because it carries the real detail — shared ice, power
+    skating, a changed time. Fewer than three segments falls through to the
+    generic join rather than guessing at a shape that is not there."""
+    if not summary:
+        return summary
+    s = ics_text_unescape(summary)
+    segs = [clean_title(x) for x in s.split("\n")]
+    segs = [x for x in segs if x]
+    if not segs:
+        return clean_title(summary)
+    if feed_name == "Ringette" and len(segs) >= 3:
+        _w = segs[0].split()
+        who = _w[0] if _w else segs[0]
+        _d = segs[1].split()
+        div = _d[-1] if _d else segs[1]
+        title = u"%s \u2014 %s %s" % (who, div, segs[2])
+        note = u" \u00b7 ".join(segs[3:]).strip()
+        if note:
+            if note.lower().startswith("updated:"):
+                note = "Updated: " + note[8:].strip()
+            return u"%s \u00b7 %s" % (title, note)
+        return title
+    return u" \u00b7 ".join(segs)
+
 
 def fetch_events_for_range(calendars, start, end):
     """Fetch and format events for a given date range."""
@@ -334,7 +417,11 @@ SUBSCRIBED_ICS_URLS = [
     ("Doctor", "https://p147-caldav.icloud.com/published/2/MjA4NzgzMDU5MjA4NzgzMKp8OzvkKcO0VBjXnAPWsZ3_SOkZblhgb63Ap9fXTp8mTVpP7f2Zhhi6oPiqkT8_u9GgW7cNm2tkWygB88NaKao"),
     ("UFC Events", "https://raw.githubusercontent.com/clarencechaan/ufc-cal/ics/UFC.ics"),
     ("Austria Vancouver", "https://austriavancouverclub.ca/?post_type=tribe_events&ical=1&eventDisplay=list"),
-    ("Ringette", "https://api3.rampinteractive.com/teamapp/Calendar/GetCalendar/America-Vancouver/3178874,3178962/0"),
+    # Team ids rotate each season. Oct 2 2026: 3178874,3178962 (2025-26) were
+    # replaced by 5063785,5136202 — the combined family link from the RAMP Team
+    # App, covering both girls. The old link kept returning 200 with zero events,
+    # which is why this went silent for two months; see ICS_ALWAYS_FUTURE below.
+    ("Ringette", "https://api3.rampinteractive.com/teamapp/Calendar/GetCalendar/America-Vancouver/5063785,5136202/0"),
     ("Doctor 2", "https://p147-caldav.icloud.com/published/2/MjA4NzgzMDU5MjA4NzgzMKp8OzvkKcO0VBjXnAPWsZ3QfUpZTMmqDhS1RS2Q4Unql2HwH_zVrF_S7pswdX5EkPscxgI5CxoYg1ulgXc7ME0"),
     ("Richmond Blundell Physio", "https://richmondblundellphysio.janeapp.com/ical/yphai5OwEVtmTOppT6Fx/appointments.ics"),
     ("ONE Championship", "https://calendar.onefc.com/ONE-Championship-events.ics"),
@@ -355,13 +442,14 @@ def fetch_ics_events(start_dt, end_dt):
             with urllib.request.urlopen(req, timeout=10) as r:
                 raw = r.read().decode("utf-8", errors="ignore")
 
+            raw = ics_unfold(raw)
             blocks = raw.split("BEGIN:VEVENT")
             for block in blocks[1:]:
                 try:
                     summary = feed_name
                     for line in block.splitlines():
-                        if line.startswith("SUMMARY:"):
-                            summary = clean_title(line[8:])
+                        if line.startswith("SUMMARY"):
+                            summary = format_ics_summary(feed_name, line.split(":", 1)[-1])
                             break
 
                     dtstart_raw = ""
@@ -408,6 +496,7 @@ def fetch_ics_structured(start_dt, end_dt):
     import zoneinfo as _zi
     from datetime import datetime, timezone as _tz
     PT = _zi.ZoneInfo("America/Vancouver")
+    _now_pt = datetime.now(PT)
     out = []
 
     for feed_name, url in SUBSCRIBED_ICS_URLS:
@@ -421,9 +510,12 @@ def fetch_ics_structured(start_dt, end_dt):
             continue
 
         # unfold RFC5545 line continuations before parsing
-        raw = raw.replace("\r\n", "\n").replace("\n ", "").replace("\n\t", "")
+        raw = ics_unfold(raw)
+        _blocks = raw.split("BEGIN:VEVENT")[1:]
+        _vevents = len(_blocks)
+        _future = 0
         found = 0
-        for block in raw.split("BEGIN:VEVENT")[1:]:
+        for block in _blocks:
             try:
                 summary = feed_name
                 dtstart_raw = ""
@@ -431,7 +523,7 @@ def fetch_ics_structured(start_dt, end_dt):
                     if line.startswith("SUMMARY") and not summary_set(summary, feed_name):
                         pass
                     if line.startswith("SUMMARY"):
-                        summary = clean_title(line.split(":", 1)[-1])
+                        summary = format_ics_summary(feed_name, line.split(":", 1)[-1])
                     elif line.startswith("DTSTART") and not dtstart_raw:
                         dtstart_raw = line.split(":", 1)[-1].strip()
                 if not dtstart_raw:
@@ -450,6 +542,9 @@ def fetch_ics_structured(start_dt, end_dt):
                 else:
                     continue
 
+                if dt_sort >= _now_pt:
+                    _future += 1
+
                 if start_dt <= dt_sort < end_dt:
                     out.append({
                         "date": dt_sort.strftime("%a %b %d"),
@@ -460,7 +555,16 @@ def fetch_ics_structured(start_dt, end_dt):
                     found += 1
             except Exception:
                 continue
-        print(f"  ICS {feed_name}: {found} events in range")
+        if _vevents == 0:
+            CALENDAR_ERRORS.append(
+                f"{feed_name}: feed answered but carries NO events at all \u2014 "
+                "the subscription link has most likely rotated")
+        elif feed_name in ICS_ALWAYS_FUTURE and _future == 0:
+            CALENDAR_ERRORS.append(
+                f"{feed_name}: feed carries {_vevents} event(s) but NONE in the future \u2014 "
+                "check the source is still being maintained")
+        print(f"  ICS {feed_name}: {found} events in range, "
+              f"{_vevents} total, {_future} future")
 
     return out
 
