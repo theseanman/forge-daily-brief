@@ -1327,52 +1327,7 @@ def get_sports_updates():
         return out
 
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # BC LIONS 2026 SCHEDULE (hardcoded — ESPN CFL API broken for 2026)
-    # All times PT. Source: CFL.ca / sportshistori.com
-    # ══════════════════════════════════════════════════════════════════════════
-    BC_LIONS = [
-        # (date, time_pt, home_away, opponent, location)
-        ("2026-06-13", "2:00 PM", "@", "Saskatchewan Roughriders", "Mosaic Stadium"),
-        ("2026-06-19", "2:30 PM", "@", "Hamilton Tiger-Cats", "Tim Hortons Field"),
-        ("2026-06-27", "4:00 PM", "vs", "Calgary Stampeders", "Apple Bowl, Kelowna"),
-        ("2026-07-04", "4:00 PM", "vs", "Edmonton Elks", "Apple Bowl, Kelowna"),
-        ("2026-07-25", "4:00 PM", "vs", "Toronto Argonauts", "BC Place, Vancouver"),
-        ("2026-08-08", "4:00 PM", "vs", "Hamilton Tiger-Cats", "BC Place, Vancouver"),
-        ("2026-08-23", "4:00 PM", "vs", "Saskatchewan Roughriders", "BC Place, Vancouver"),
-        ("2026-09-12", "4:00 PM", "vs", "Montreal Alouettes", "BC Place, Vancouver"),
-        ("2026-09-25", "4:00 PM", "vs", "Saskatchewan Roughriders", "BC Place, Vancouver"),
-        ("2026-10-09", "4:00 PM", "vs", "Ottawa Redblacks", "BC Place, Vancouver"),
-        ("2026-10-23", "4:00 PM", "vs", "Winnipeg Blue Bombers", "BC Place, Vancouver"),
-    ]
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # ALL CFL WEEK 2 GAMES TODAY (hardcoded — ESPN API broken)
-    # Source: CFL.ca Week 2 schedule
-    # ══════════════════════════════════════════════════════════════════════════
-    CFL_SCHEDULE = [
-        # (date, time_pt, away, home)
-        ("2026-06-04", "4:00 PM", "Montreal Alouettes", "Hamilton Tiger-Cats"),
-        ("2026-06-05", "4:30 PM", "Winnipeg Blue Bombers", "Calgary Stampeders"),
-        ("2026-06-06", "4:00 PM", "Ottawa Redblacks", "Edmonton Elks"),
-        ("2026-06-11", "5:30 PM", "Hamilton Tiger-Cats", "Winnipeg Blue Bombers"),
-        ("2026-06-12", "2:00 PM", "Toronto Argonauts", "Montreal Alouettes"),
-        ("2026-06-13", "2:00 PM", "BC Lions", "Saskatchewan Roughriders"),
-        ("2026-06-19", "2:30 PM", "BC Lions", "Hamilton Tiger-Cats"),
-        ("2026-06-19", "4:00 PM", "Ottawa Redblacks", "Toronto Argonauts"),
-        ("2026-06-20", "4:00 PM", "Calgary Stampeders", "Edmonton Elks"),
-        ("2026-06-20", "5:30 PM", "Saskatchewan Roughriders", "Winnipeg Blue Bombers"),
-        ("2026-06-25", "4:00 PM", "Hamilton Tiger-Cats", "Ottawa Redblacks"),
-        ("2026-06-26", "2:00 PM", "Montreal Alouettes", "Toronto Argonauts"),
-        ("2026-06-27", "4:00 PM", "Calgary Stampeders", "BC Lions"),  # Kelowna
-        ("2026-06-27", "5:30 PM", "Edmonton Elks", "Saskatchewan Roughriders"),
-        ("2026-07-01", "1:00 PM", "Winnipeg Blue Bombers", "Ottawa Redblacks"),
-        ("2026-07-04", "4:00 PM", "Edmonton Elks", "BC Lions"),  # Kelowna
-        ("2026-07-04", "5:00 PM", "Saskatchewan Roughriders", "Calgary Stampeders"),
-        ("2026-07-10", "4:00 PM", "Toronto Argonauts", "Hamilton Tiger-Cats"),
-        ("2026-07-10", "5:30 PM", "Ottawa Redblacks", "Montreal Alouettes"),
-        ("2026-07-11", "4:30 PM", "Winnipeg Blue Bombers", "Edmonton Elks"),
-    ]
 
 
 
@@ -1381,26 +1336,135 @@ def get_sports_updates():
     # BUILD OUTPUT
     # ══════════════════════════════════════════════════════════════════════════
 
-    # ── CFL Games Today ───────────────────────────────────────────────────────
-    todays_cfl = [(a, h, t) for d, t, a, h in CFL_SCHEDULE if d == str(today)]
-    if todays_cfl:
-        lines.append("🏈 CFL TODAY:")
-        for away, home, time_pt in todays_cfl:
-            lines.append(f"  {away} @ {home} — {time_pt}")
+    # ── CFL: today's games, BC Lions, and the playoff bracket ─────────────────
+    # Rebuilt Oct 2 2026. Replaces TWO frozen arrays (BC_LIONS and CFL_SCHEDULE)
+    # that were hand-typed from CFL.ca, both of which ran out this month and
+    # neither of which could ever show a playoff game.
+    #
+    # Source: the CFL's own schedule endpoint. No key, just a browser UA.
+    # VERIFIED LIVE from Sean's Mac 2026-10-02: 95 fixtures for seasonId=75.
+    # Fields (there is NO game_status field — completion is tested by the
+    # presence of a score): ID, season_id, week, home_team_id, away_team_id,
+    # game_type_id, start_at (UTC), start_at_local, home_team_score,
+    # away_team_score, venue_id.
+    #
+    # ★ PLAYOFFS ARE CARRIED AS PLACEHOLDER ROWS from the start of the season,
+    #   with null team ids that populate as clubs qualify. Confirmed present:
+    #   Eastern + Western Semi-Finals Oct 31, both Finals Nov 7, Grey Cup Nov 15.
+    #   So BC's playoff games appear here automatically the moment the league
+    #   fills them in — which is the whole reason for this rewrite.
+    #
+    # ⚠ seasonId is NOT derivable from the year (75=2026, 34=2025, 33=2024), so
+    #   it is hardcoded and WILL need a new value for 2027. The year check below
+    #   turns that into a loud banner line rather than a silent empty card.
+    CFL_SEASON_ID = 75          # 2026. Re-discover by hand for 2027.
+    CFL_BC_TEAM_ID = 1
+    # Team ids carry no names in the payload and cfl.ca/api/v1/content/data/teams
+    # 404s, so this map is hardcoded. NOT guessed: ids 1/6/13/19/20 were pinned
+    # from BC's own October fixtures, and 8/11/17 from matching the Oct 2-3 rows
+    # against the published Week 18 schedule (Hamilton at Ottawa, Calgary at
+    # Saskatchewan, Winnipeg at Montreal), with kickoff times corroborating.
+    # 7 is Edmonton by elimination — sound because the league has exactly nine
+    # teams and the other eight are directly confirmed. Verified 2026-10-02.
+    CFL_TEAMS = {
+        1: "BC Lions", 6: "Calgary Stampeders", 7: "Edmonton Elks",
+        8: "Hamilton Tiger-Cats", 11: "Montreal Alouettes",
+        13: "Ottawa Redblacks", 17: "Saskatchewan Roughriders",
+        19: "Toronto Argonauts", 20: "Winnipeg Blue Bombers",
+    }
+    CFL_ROUNDS = {2: "Eastern Semi-Final", 3: "Western Semi-Final",
+                  4: "Eastern Final", 5: "Western Final", 6: "Grey Cup"}
+    try:
+        _cfl = espn_get(
+            "https://cfl.ca/api/v1/content/data/schedule"
+            f"?seasonId={CFL_SEASON_ID}",
+            label="CFL schedule (cfl.ca)",
+        )
+        _fx = [g for g in ((_cfl or {}).get("fixtures") or []) if g.get("start_at")]
+        if _fx:
+            _years = {to_pt(g["start_at"]).year for g in _fx}
+            if today.year not in _years:
+                SPORTS_ERRORS.append(
+                    f"CFL: seasonId={CFL_SEASON_ID} returned only {sorted(_years)} — "
+                    "the hardcoded season id is stale and needs a new value")
 
-    # ── BC Lions ──────────────────────────────────────────────────────────────
-    lions_today = [(ha, opp, loc, t) for d, t, ha, opp, loc in BC_LIONS if d == str(today)]
-    lions_next = next(((d, t, ha, opp, loc) for d, t, ha, opp, loc in BC_LIONS
-                       if datetime.strptime(d, "%Y-%m-%d").date() > today), None)
-    if lions_today:
-        for ha, opp, loc, t in lions_today:
-            lines.append(f"🦁 BC LIONS TODAY: {ha} {opp} — {t} | {loc}")
-    elif lions_next:
-        d, t, ha, opp, loc = lions_next
-        dt = datetime.strptime(d, "%Y-%m-%d")
-        lines.append(f"🦁 BC Lions next: {ha} {opp} — {dt.strftime('%a %b %d')} {t}")
-    else:
-        lines.append("🦁 BC Lions — Season complete")
+            def _tname(tid):
+                return CFL_TEAMS.get(tid) or (f"team {tid}" if tid else "TBD")
+
+            def _played(g):
+                return g.get("home_team_score") is not None and \
+                       g.get("away_team_score") is not None
+
+            _fx.sort(key=lambda g: to_pt(g["start_at"]))
+
+            # Today's CFL slate, derived rather than hand-typed
+            _ct = [g for g in _fx if to_pt(g["start_at"]).date() == today
+                   and g.get("home_team_id") and g.get("away_team_id")]
+            if _ct:
+                lines.append("🏈 CFL TODAY:")
+                for g in _ct:
+                    lines.append(f"  {_tname(g.get('away_team_id'))} @ "
+                                 f"{_tname(g.get('home_team_id'))} — "
+                                 f"{to_pt(g['start_at']).strftime('%-I:%M %p PT')}")
+
+            # BC Lions — regular season AND playoffs, since a playoff row starts
+            # naming BC as soon as they qualify
+            _bc = [g for g in _fx if CFL_BC_TEAM_ID in
+                   (g.get("home_team_id"), g.get("away_team_id"))]
+            _bc_done = [g for g in _bc if _played(g)]
+            _bc_ahead = [g for g in _bc if not _played(g)
+                         and to_pt(g["start_at"]).date() >= today]
+
+            if _bc_done:
+                g = _bc_done[-1]
+                _home = g.get("home_team_id") == CFL_BC_TEAM_ID
+                _bs = g.get("home_team_score") if _home else g.get("away_team_score")
+                _os = g.get("away_team_score") if _home else g.get("home_team_score")
+                _opp = _tname(g.get("away_team_id") if _home else g.get("home_team_id"))
+                _rd = CFL_ROUNDS.get(g.get("game_type_id"))
+                lines.append(
+                    f"🦁 BC Lions {'✅ W' if _bs > _os else '❌ L'} {_bs}–{_os} "
+                    f"{'vs' if _home else '@'} {_opp} "
+                    f"({to_pt(g['start_at']).strftime('%b %d')})"
+                    + (f" — {_rd}" if _rd else ""))
+
+            if _bc_ahead:
+                g = _bc_ahead[0]
+                _home = g.get("home_team_id") == CFL_BC_TEAM_ID
+                _opp = _tname(g.get("away_team_id") if _home else g.get("home_team_id"))
+                _rd = CFL_ROUNDS.get(g.get("game_type_id"))
+                _dt = to_pt(g["start_at"])
+                _tag = f" — {_rd}" if _rd else ""
+                if _dt.date() == today:
+                    lines.append(f"🦁 BC LIONS TODAY: {'vs' if _home else '@'} {_opp} "
+                                 f"— {_dt.strftime('%-I:%M %p PT')}{_tag}")
+                else:
+                    lines.append(f"🦁 BC Lions next: {'vs' if _home else '@'} {_opp} "
+                                 f"— {_dt.strftime('%a %b %d %-I:%M %p PT')}{_tag}")
+            elif _bc_done:
+                lines.append("🦁 BC Lions — no further games scheduled")
+
+            # Playoff bracket: show the upcoming rounds even while the teams are
+            # still TBD, so the dates are known before BC's place in them is.
+            _po = [g for g in _fx if (g.get("game_type_id") or 0) >= 2
+                   and to_pt(g["start_at"]).date() >= today and not _played(g)]
+            if _po and not _bc_ahead:
+                for g in _po[:2]:
+                    _rd = CFL_ROUNDS.get(g.get("game_type_id"), "Playoff")
+                    _teams = (f"{_tname(g.get('away_team_id'))} @ "
+                              f"{_tname(g.get('home_team_id'))}"
+                              if g.get("home_team_id") and g.get("away_team_id")
+                              else "teams TBD")
+                    lines.append(f"🏈 CFL {_rd}: {_teams} — "
+                                 f"{to_pt(g['start_at']).strftime('%a %b %d %-I:%M %p PT')}")
+        elif _cfl is not None:
+            lines.append("🦁 BC Lions — CFL feed returned no fixtures")
+            SPORTS_ERRORS.append("CFL: schedule endpoint answered but carried no fixtures")
+        else:
+            lines.append("🦁 BC Lions — CFL FEED DOWN (see feed errors above)")
+    except Exception as e:
+        SPORTS_ERRORS.append(f"CFL block: {type(e).__name__} {e}")
+        lines.append("🦁 BC Lions — CFL feed error (see feed errors above)")
 
     # ── Blue Jays ─────────────────────────────────────────────────────────────
     # Rebuilt Sep 30 2026. Was ESPN, which returns HTTP 403 to datacenter IPs and
