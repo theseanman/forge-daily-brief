@@ -1360,7 +1360,14 @@ def get_sports_updates():
         data = None
         try:
             req = urllib.request.Request(
-                "https://bdfed.stitch.mlbinfra.com/bdfed/transform-milb-schedule?stitch_env=prod&season=2026&teamId=578&sportId=12&gameType=R&startDate=2026-06-01&endDate=2026-08-31&hydrate=team,linescore",
+                # Window DERIVED from today (was frozen at Jun-Aug 2026, which
+                # made this call structurally incapable of ever returning a game
+                # again). Season year comes from the current date too.
+                "https://bdfed.stitch.mlbinfra.com/bdfed/transform-milb-schedule"
+                f"?stitch_env=prod&season={today.year}&teamId=578&sportId=12"
+                f"&gameType=R&startDate={(today - timedelta(days=3)).isoformat()}"
+                f"&endDate={(today + timedelta(days=45)).isoformat()}"
+                "&hydrate=team,linescore",
                 headers={"User-Agent": "Mozilla/5.0"}
             )
             with urllib.request.urlopen(req, timeout=10) as r:
@@ -1402,12 +1409,48 @@ def get_sports_updates():
                                 lines.append(f"⚾ C's next: {away} @ {home} — {game_date_str}")
                     break
         if len(lines) == _cs_lines_before:
-            lines.append("⚾ Vancouver Canadians — no games in the queried window "
-                         "(window is hardcoded Jun–Aug 2026 — needs a season rollover)")
+            lines.append("⚾ Vancouver Canadians — no games in the next 45 days "
+                         "(season runs Jun–Sep)")
     except Exception as e:
         SPORTS_ERRORS.append(f"Vancouver Canadians (MiLB): {type(e).__name__} {e}")
         print(f"Canadians error: {e}")
         lines.append("⚾ Vancouver Canadians — schedule unavailable")
+
+    # ── Vancouver Warriors (NLL) ──────────────────────────────────────────────
+    # Hardcoded from the team's own 2026-27 schedule poster, supplied by Sean
+    # Oct 1 2026. NO FEED EXISTS: the NLL left HockeyTech 8 days into 2024-25 and
+    # that feed is frozen in Dec 2024; nll.com is client-rendered; the ticket
+    # site's schedule asset sits behind a robots.txt disallow. Unprobed lead:
+    # nllmetaserver.aordev.com
+    # OPPONENTS DELIBERATELY ABSENT: the poster shows crests as images, and the
+    # one text source found contradicted it on the Dec 5 fixture, so naming
+    # opponents would have been a guess. Dates/times verified a different way —
+    # all 18 weekdays printed on the poster match the real 2026/27 calendar.
+    # All times PT. THIS LIST RUNS OUT after 2027-04-25 and says so when it does.
+    VANCOUVER_WARRIORS = [
+        ("2026-12-05", "6:00 PM"), ("2026-12-18", "7:00 PM"),
+        ("2027-01-02", "5:00 PM"), ("2027-01-03", "3:00 PM"),
+        ("2027-01-08", "7:00 PM"), ("2027-01-15", "7:00 PM"),
+        ("2027-01-22", "4:30 PM"), ("2027-02-06", "7:00 PM"),
+        ("2027-02-12", "7:00 PM"), ("2027-02-20", "9:00 PM"),
+        ("2027-03-05", "7:00 PM"), ("2027-03-19", "7:00 PM"),
+        ("2027-03-26", "6:00 PM"), ("2027-04-02", "7:00 PM"),
+        ("2027-04-03", "6:00 PM"), ("2027-04-09", "4:30 PM"),
+        ("2027-04-17", "7:00 PM"), ("2027-04-25", "3:00 PM"),
+    ]
+    _wr = [(datetime.strptime(d, "%Y-%m-%d").date(), t) for d, t in VANCOUVER_WARRIORS]
+    _wr_today = [(d, t) for d, t in _wr if d == today]
+    _wr_next = [(d, t) for d, t in _wr if d > today]
+    for _d, _t in _wr_today:
+        lines.append(f"\U0001F94D WARRIORS TODAY: {_t} PT (opponent not in the poster data)")
+    for _i, (_d, _t) in enumerate(_wr_next[:2]):
+        lines.append(f"\U0001F94D Warriors {'next' if _i == 0 else 'then'}: "
+                     f"{_d.strftime('%a %b %d')} {_t} PT")
+    if not _wr_today and not _wr_next:
+        lines.append("\U0001F94D Warriors — 2026-27 schedule exhausted, needs next season's dates")
+        SPORTS_ERRORS.append(
+            "Vancouver Warriors: the hardcoded 2026-27 schedule has run out — "
+            "no games remain in the list, so it needs replacing with next season's")
 
     # ── Team fixture feeds (ICS) ──────────────────────────────────────────────
     # Added Oct 1 2026, replacing hand-maintained sports_facts.json entries that

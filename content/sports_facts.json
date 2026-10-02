@@ -1,20 +1,11 @@
 {
   "_meta": {
     "name": "Manually-maintained sports facts",
-    "note": "These are NOT fetched live. Every entry carries verified_on. The brief shows the age, turns amber past warn_days and red past stale_days, AND as of Oct 1 2026 escalates anything past stale_days into the loud SPORTS FEED PROBLEM banner. When you update a line, update its date. Entries belong here ONLY when no feed exists — Rangers, Scotland rugby, Raiders, Goldeneyes and the Canucks all moved to live feeds on Oct 1 2026 and were removed from this file.",
+    "note": "These are NOT fetched live. Every entry carries verified_on. The brief shows the age, turns amber past warn_days and red past stale_days, AND as of Oct 1 2026 escalates anything past stale_days into the loud SPORTS FEED PROBLEM banner. When you update a line, update its date. Entries belong here ONLY when no feed exists. Oct 1 2026: Rangers, Scotland rugby, Raiders, Goldeneyes and the Canucks moved to live feeds. Oct 2 2026: the Warriors moved to a hardcoded schedule array in forge_actions.py (poster-sourced, no feed exists anywhere), so teams is now empty and only the fighters remain hand-kept — because no fighter-level feed exists.",
     "warn_days": 21,
     "stale_days": 45
   },
-  "teams": [
-    {
-      "key": "warriors",
-      "icon": "🥍",
-      "label": "Vancouver Warriors",
-      "status": "2026-27 NLL season opens Sat Dec 5, 6:00 PM PT. Opponent unconfirmed — the team poster shows crests as images and a web source disagreed, so it was not guessed.",
-      "verified_on": "2026-10-01",
-      "source": "Vancouver Warriors 2026-27 schedule poster supplied by Sean. NO FEED EXISTS: the NLL left HockeyTech 8 days into 2024-25 and that feed is frozen in Dec 2024; nll.com is client-rendered. Unprobed lead: nllmetaserver.aordev.com"
-    }
-  ],
+  "teams": [],
   "fighters": [
     {
       "name": "Sean Strickland",
