@@ -285,7 +285,7 @@ def ics_text_unescape(s):
     return "".join(out)
 
 
-def format_ics_summary(feed_name, summary):
+def format_ics_summary(feed_name, summary, location=""):
     """Turn a feed's raw SUMMARY into one readable calendar line.
 
     Generic behaviour: unescape, then join the segments with a middot, so a
@@ -313,6 +313,12 @@ def format_ics_summary(feed_name, summary):
         _d = segs[1].split()
         div = _d[-1] if _d else segs[1]
         title = u"%s \u2014 %s %s" % (who, div, segs[2])
+        # Venue BEFORE the note: which rink and which city is the part that
+        # decides what time he leaves the house. Ringette only -- no other
+        # feed's titles change.
+        _v = venue_label(location)
+        if _v:
+            title = u"%s \u00b7 %s" % (title, _v)
         note = u" \u00b7 ".join(segs[3:]).strip()
         if note:
             if note.lower().startswith("updated:"):
@@ -320,6 +326,110 @@ def format_ics_summary(feed_name, summary):
             return u"%s \u00b7 %s" % (title, note)
         return title
     return u" \u00b7 ".join(segs)
+
+
+# Arena -> city, for labelling the Ringette schedule. RAMP's LOCATION field
+# carries the venue and sheet name only: no address, no GEO property, nothing
+# that names the municipality. So the city has to be looked up here.
+#
+# VERIFIED Oct 2 2026 against municipal sites (richmond.ca, burnaby.ca,
+# vancouver.ca, surrey.ca, delta.ca, tol.ca, abbotsford.ca, coquitlam.ca,
+# portcoquitlam.ca, portmoody.ca, nvrc.ca, westvancouver.ca, pittmeadows.ca,
+# mapleridge.ca, chilliwack.com), plus nwmha.ca, canlansports.com and
+# arena-guide.com. DATED because arenas rename, close and open: Bill Copeland is
+# expected to be replaced by the new Burnaby Lake Recreation Complex, and Sardis
+# Sports Complex, Scotia Barn and Chilliwack Coliseum are all former names of
+# themselves.
+#
+# Matching is CONTAINS, case-insensitive, LONGEST NEEDLE WINS. Longest-wins is
+# load-bearing, not tidiness -- "Moody Park Arena" is in NEW WESTMINSTER, not
+# Port Moody, and "Port Coquitlam" must beat "Coquitlam".
+#
+# DELIBERATELY ABSENT, because a wrong city is worse than an unknown one:
+#   "Planet Ice"  - three buildings, in Coquitlam, Delta and Maple Ridge
+#   "Canlan"      - North Vancouver, Langley, and Burnaby's Scotia Barn
+#   "Winter Club" - Burnaby and North Vancouver
+#   "Twin Rinks"  - a former name of rinks in Chilliwack, Langley, Pitt Meadows
+#   "Centennial Arena" - White Rock's, but several BC towns have one
+# Each of those falls through to the unknown marker instead of being guessed.
+VENUE_CITY = (
+    # Richmond
+    ("richmond ice centre", "Richmond"), ("minoru arena", "Richmond"),
+    ("richmond olympic oval", "Richmond"), ("richmond", "Richmond"),
+    # Burnaby
+    ("bill copeland", "Burnaby"), ("kensington", "Burnaby"),
+    ("rosemary brown", "Burnaby"), ("scotia barn", "Burnaby"),
+    ("burnaby lake", "Burnaby"), ("burnaby", "Burnaby"),
+    # New Westminster -- note Moody Park is HERE, not Port Moody
+    ("queen's park arena", "New Westminster"), ("queens park arena", "New Westminster"),
+    ("moody park", "New Westminster"), ("new westminster", "New Westminster"),
+    # Vancouver
+    ("britannia", "Vancouver"), ("hillcrest", "Vancouver"),
+    ("kerrisdale", "Vancouver"), ("cyclone taylor", "Vancouver"),
+    ("killarney", "Vancouver"), ("kitsilano", "Vancouver"),
+    ("trout lake", "Vancouver"), ("sunset", "Vancouver"),
+    ("west end", "Vancouver"), ("doug mitchell", "Vancouver"),
+    ("thunderbird", "Vancouver"),
+    # North and West Vancouver -- both must beat a bare "vancouver" needle,
+    # which is why no bare "vancouver" entry exists at all
+    ("harry jerome", "North Vancouver"), ("karen magnussen", "North Vancouver"),
+    ("north shore", "North Vancouver"), ("north vancouver", "North Vancouver"),
+    ("west vancouver", "West Vancouver"),
+    # Tri-Cities
+    ("poirier", "Coquitlam"), ("planet ice coquitlam", "Coquitlam"),
+    ("port coquitlam", "Port Coquitlam"), ("jon baillie", "Port Coquitlam"),
+    ("port moody", "Port Moody"), ("coquitlam", "Coquitlam"),
+    # Surrey and White Rock
+    ("cloverdale", "Surrey"), ("newton arena", "Surrey"),
+    ("north surrey", "Surrey"), ("south surrey", "Surrey"),
+    ("surrey", "Surrey"), ("white rock", "White Rock"),
+    # Delta
+    ("ladner", "Delta"), ("sungod", "Delta"), ("tilbury", "Delta"),
+    ("north delta", "Delta"), ("south delta", "Delta"),
+    ("planet ice delta", "Delta"), ("delta", "Delta"),
+    # Langley
+    ("george preston", "Langley"), ("aldergrove", "Langley"),
+    ("langley", "Langley"),
+    # Fraser Valley
+    ("matsqui", "Abbotsford"), ("msa arena", "Abbotsford"),
+    ("abbotsford", "Abbotsford"), ("sardis", "Chilliwack"),
+    ("chilliwack", "Chilliwack"),
+    # Ridge Meadows
+    ("cam neely", "Maple Ridge"), ("planet ice maple ridge", "Maple Ridge"),
+    ("maple ridge", "Maple Ridge"), ("pitt meadows", "Pitt Meadows"),
+)
+
+
+def venue_city(location):
+    """City for a venue, by longest containing needle. '' when not in the table."""
+    if not location:
+        return ""
+    low = location.lower()
+    best = ""
+    best_len = 0
+    for needle, city in VENUE_CITY:
+        if needle in low and len(needle) > best_len:
+            best, best_len = city, len(needle)
+    return best
+
+
+def venue_label(location):
+    """The venue as it should read on the brief.
+
+    The city is appended only when the venue's own name does not already say it,
+    so 'Richmond Ice Centre Coliseum' is not labelled '(Richmond)'. A venue with
+    no table entry is MARKED rather than passed off as fine -- Sean's call, and
+    the right one: an unlabelled away game is the silent failure this system
+    exists to avoid, and the marker is what prompts adding the arena."""
+    loc = clean_title(ics_text_unescape(location))
+    if not loc:
+        return ""
+    city = venue_city(loc)
+    if not city:
+        return u"%s (city unknown)" % loc
+    if city.lower() in loc.lower():
+        return loc
+    return u"%s (%s)" % (loc, city)
 
 
 def fetch_events_for_range(calendars, start, end):
@@ -458,10 +568,15 @@ def fetch_ics_events(start_dt, end_dt):
             for block in blocks[1:]:
                 try:
                     summary = feed_name
+                    _summary_raw = ""
+                    _location = ""
                     for line in block.splitlines():
-                        if line.startswith("SUMMARY"):
-                            summary = format_ics_summary(feed_name, line.split(":", 1)[-1])
-                            break
+                        if line.startswith("SUMMARY") and not _summary_raw:
+                            _summary_raw = line.split(":", 1)[-1]
+                        elif line.startswith("LOCATION") and not _location:
+                            _location = line.split(":", 1)[-1]
+                    if _summary_raw:
+                        summary = format_ics_summary(feed_name, _summary_raw, _location)
 
                     dtstart_raw = ""
                     for line in block.splitlines():
@@ -542,13 +657,17 @@ def fetch_ics_structured(start_dt, end_dt):
             try:
                 summary = feed_name
                 dtstart_raw = ""
+                _summary_raw = ""
+                _location = ""
                 for line in block.splitlines():
-                    if line.startswith("SUMMARY") and not summary_set(summary, feed_name):
-                        pass
-                    if line.startswith("SUMMARY"):
-                        summary = format_ics_summary(feed_name, line.split(":", 1)[-1])
+                    if line.startswith("SUMMARY") and not _summary_raw:
+                        _summary_raw = line.split(":", 1)[-1]
+                    elif line.startswith("LOCATION") and not _location:
+                        _location = line.split(":", 1)[-1]
                     elif line.startswith("DTSTART") and not dtstart_raw:
                         dtstart_raw = line.split(":", 1)[-1].strip()
+                if _summary_raw:
+                    summary = format_ics_summary(feed_name, _summary_raw, _location)
                 if not dtstart_raw:
                     continue
 
