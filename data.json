@@ -1,6 +1,6 @@
 {
   "welltory": {
-    "stress": 40,
+    "stress": 31,
     "energy": 58,
     "health": 100
   },
@@ -33,7 +33,7 @@
     "stage_source_date": "2026-09-02"
   },
   "notes": "",
-  "updated": "2026-10-02T14:31:26.276Z",
+  "updated": "2026-10-03T15:07:47.704Z",
   "calendar": [
     {
       "date": "Fri Oct 02",
