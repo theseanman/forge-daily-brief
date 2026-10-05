@@ -1,1 +1,169 @@
-{"welltory": {"stress": 5, "energy": 95, "health": 100}, "body_comp": {"weight": 209, "body_fat": 27.7, "muscle_mass": null, "bmi": 29.9, "visceral_fat": null}, "sleep": {"score": null, "duration": null, "hr_range": null, "rem": 84, "core": 277, "deep": 65, "awake": 0, "duration_min": 426, "time_in_bed_min": 487, "computed_score": 91, "computed_score_parts": {"duration": 35.5, "deep": 20, "rem": 17.9, "efficiency": 17.5}, "capture_method": "health_auto_export_v1", "capture_method_since": "2026-08-13", "stage_source_date": "2026-09-02"}, "notes": "", "updated": "2026-10-05T14:33:49.162Z", "calendar": [{"date": "Mon Oct 05", "time": "All day", "title": "POF \u2014 Revise pre-registration and sort equipment"}, {"date": "Mon Oct 05", "time": "All day", "title": "Pick up a chair from the Janitor's room"}, {"date": "Mon Oct 05", "time": "01:39 PM", "title": "Mark: ELL 1/2 \u2014 DRAFT READ L9 \u2014 RUBRIC, both levels"}, {"date": "Wed Oct 07", "time": "All day", "title": "TD statement available online banking"}, {"date": "Wed Oct 07", "time": "All day", "title": "FileMaker interim spreadsheets open"}, {"date": "Wed Oct 07", "time": "01:54 PM", "title": "Mark: Interim \u2014 Draft interim entries \u2014 FileMaker opens Wed Oct 7"}, {"date": "Sat Oct 10", "time": "All day", "title": "Arthur\u2019s Birthday"}, {"date": "Sat Oct 10", "time": "07:00 PM", "title": "Arthur and Laura Birthday"}, {"date": "Sun Oct 11", "time": "All day", "title": "POF \u2014 HARD DEADLINE: OSF registration"}, {"date": "Mon Oct 05", "time": "All day", "title": "ABCD"}, {"date": "Mon Oct 05", "time": "All day", "title": "World Teacher's Day"}, {"date": "Mon Oct 05", "time": "All day", "title": "4-6pm Global Post Secondary Fair (Steveston London Secondary)"}, {"date": "Tue Oct 06", "time": "All day", "title": "Lunch: SFU Beedie Business School Visit"}, {"date": "Tue Oct 06", "time": "All day", "title": "EFGH"}, {"date": "Tue Oct 06", "time": "All day", "title": "6:30pm Grade 12 Parent Info Night"}, {"date": "Wed Oct 07", "time": "All day", "title": "CT-ABCD"}, {"date": "Wed Oct 07", "time": "06:15 PM", "title": "Layna \u2014 U12A Practice \u00b7 Richmond Ice Centre Garage \u00b7 Share ice with U12B"}, {"date": "Thu Oct 08", "time": "All day", "title": "E-PLT-FGH"}, {"date": "Thu Oct 08", "time": "06:30 PM", "title": "Layna \u2014 U12A Practice \u00b7 Richmond Ice Centre Coliseum \u00b7 Share ice with U12B"}, {"date": "Thu Oct 08", "time": "08:00 PM", "title": "Kayla \u2014 U16 Practice \u00b7 Richmond Ice Centre Forum \u00b7 Share ice with U19"}, {"date": "Fri Oct 09", "time": "12:00 AM", "title": "Family Night - closed"}, {"date": "Fri Oct 09", "time": "All day", "title": "Grade 9 Yearbook Photos"}, {"date": "Fri Oct 09", "time": "All day", "title": "ABCD"}, {"date": "Fri Oct 09", "time": "04:30 AM", "title": "ONE Friday Fights 174 & The Inner Circle 34"}, {"date": "Sat Oct 10", "time": "02:15 PM", "title": "Layna \u2014 U12A vs CRA U12 \u00b7 Minoru Arenas Silver (Richmond)"}, {"date": "Sat Oct 10", "time": "05:00 PM", "title": "UFC Fight Night: Allen vs Duncan"}]}
+{
+  "welltory": {
+    "stress": 5,
+    "energy": 95,
+    "health": 100
+  },
+  "body_comp": {
+    "weight": 209,
+    "body_fat": 27.7,
+    "muscle_mass": null,
+    "bmi": 29.9,
+    "visceral_fat": null
+  },
+  "sleep": {
+    "score": null,
+    "duration": null,
+    "hr_range": null,
+    "rem": 84,
+    "core": 277,
+    "deep": 65,
+    "awake": 0,
+    "duration_min": 426,
+    "time_in_bed_min": 487,
+    "computed_score": 91,
+    "computed_score_parts": {
+      "duration": 35.5,
+      "deep": 20,
+      "rem": 17.9,
+      "efficiency": 17.5
+    },
+    "capture_method": "health_auto_export_v1",
+    "capture_method_since": "2026-08-13",
+    "stage_source_date": "2026-09-02"
+  },
+  "notes": "",
+  "updated": "2026-10-05T14:33:49.162Z",
+  "calendar": [
+    {
+      "date": "Mon Oct 05",
+      "time": "All day",
+      "title": "POF — Revise pre-registration and sort equipment"
+    },
+    {
+      "date": "Mon Oct 05",
+      "time": "All day",
+      "title": "Pick up a chair from the Janitor's room"
+    },
+    {
+      "date": "Mon Oct 05",
+      "time": "01:39 PM",
+      "title": "Mark: ELL 1/2 — DRAFT READ L9 — RUBRIC, both levels"
+    },
+    {
+      "date": "Wed Oct 07",
+      "time": "All day",
+      "title": "TD statement available online banking"
+    },
+    {
+      "date": "Wed Oct 07",
+      "time": "All day",
+      "title": "FileMaker interim spreadsheets open"
+    },
+    {
+      "date": "Wed Oct 07",
+      "time": "01:54 PM",
+      "title": "Mark: Interim — Draft interim entries — FileMaker opens Wed Oct 7"
+    },
+    {
+      "date": "Sat Oct 10",
+      "time": "All day",
+      "title": "Arthur’s Birthday"
+    },
+    {
+      "date": "Sat Oct 10",
+      "time": "07:00 PM",
+      "title": "Arthur and Laura Birthday"
+    },
+    {
+      "date": "Sun Oct 11",
+      "time": "All day",
+      "title": "POF — HARD DEADLINE: OSF registration"
+    },
+    {
+      "date": "Mon Oct 05",
+      "time": "All day",
+      "title": "ABCD"
+    },
+    {
+      "date": "Mon Oct 05",
+      "time": "All day",
+      "title": "World Teacher's Day"
+    },
+    {
+      "date": "Mon Oct 05",
+      "time": "All day",
+      "title": "4-6pm Global Post Secondary Fair (Steveston London Secondary)"
+    },
+    {
+      "date": "Tue Oct 06",
+      "time": "All day",
+      "title": "Lunch: SFU Beedie Business School Visit"
+    },
+    {
+      "date": "Tue Oct 06",
+      "time": "All day",
+      "title": "EFGH"
+    },
+    {
+      "date": "Tue Oct 06",
+      "time": "All day",
+      "title": "6:30pm Grade 12 Parent Info Night"
+    },
+    {
+      "date": "Wed Oct 07",
+      "time": "All day",
+      "title": "CT-ABCD"
+    },
+    {
+      "date": "Wed Oct 07",
+      "time": "06:15 PM",
+      "title": "Layna — U12A Practice · Richmond Ice Centre Garage · Share ice with U12B"
+    },
+    {
+      "date": "Thu Oct 08",
+      "time": "All day",
+      "title": "E-PLT-FGH"
+    },
+    {
+      "date": "Thu Oct 08",
+      "time": "06:30 PM",
+      "title": "Layna — U12A Practice · Richmond Ice Centre Coliseum · Share ice with U12B"
+    },
+    {
+      "date": "Thu Oct 08",
+      "time": "08:00 PM",
+      "title": "Kayla — U16 Practice · Richmond Ice Centre Forum · Share ice with U19"
+    },
+    {
+      "date": "Fri Oct 09",
+      "time": "12:00 AM",
+      "title": "Family Night - closed"
+    },
+    {
+      "date": "Fri Oct 09",
+      "time": "All day",
+      "title": "Grade 9 Yearbook Photos"
+    },
+    {
+      "date": "Fri Oct 09",
+      "time": "All day",
+      "title": "ABCD"
+    },
+    {
+      "date": "Fri Oct 09",
+      "time": "04:30 AM",
+      "title": "ONE Friday Fights 174 & The Inner Circle 34"
+    },
+    {
+      "date": "Sat Oct 10",
+      "time": "02:15 PM",
+      "title": "Layna — U12A vs CRA U12 · Minoru Arenas Silver (Richmond)"
+    },
+    {
+      "date": "Sat Oct 10",
+      "time": "05:00 PM",
+      "title": "UFC Fight Night: Allen vs Duncan"
+    }
+  ]
+}
