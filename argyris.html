@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Argyris</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0; --red:#ff8a8a; --violet:#b48cff;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 13px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+  a.inl{ color:var(--accent-hi); }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.teal{ border-left-color:var(--teal); background:rgba(63,208,192,.08); }
+  .card.gold{ border-left-color:var(--gold); background:rgba(245,215,110,.08); }
+  .card.red{ border-left-color:var(--red); background:rgba(255,138,138,.08); }
+  .card.violet{ border-left-color:var(--violet); background:rgba(180,140,255,.09); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .trig{ font-size:13px; line-height:1.5; margin:4px 0 8px; color:var(--ink-dim); }
+  .trig b{ color:var(--gold); font-weight:800; letter-spacing:.04em; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .card.teal .move b{ color:#8ff0e4; } .card.teal .move:before{ color:var(--teal); }
+  .card.red .move b{ color:#ffc0c0; } .card.red .move:before{ color:var(--red); }
+  .card.violet .move b{ color:#d4bcff; } .card.violet .move:before{ color:var(--violet); }
+  .ex{ margin-top:11px; padding-top:10px; border-top:1px solid var(--line); }
+  .ex-row{ font-size:13.5px; line-height:1.55; margin:6px 0; }
+  .ex-row .tag{ display:inline-block; min-width:78px; font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .group-k{ font-size:12.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--teal); font-weight:800; margin:16px 0 6px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .band.warn{ background:rgba(255,138,138,.10); border-left-color:var(--red); }
+  .band.warn b{ color:var(--red); }
+  .band.vio{ background:rgba(180,140,255,.11); border-left-color:var(--violet); }
+  .band.vio b{ color:#d4bcff; }
+  .para{ font-size:14px; line-height:1.6; margin:7px 0; }
+  .para b{ color:var(--accent-hi); }
+  .card.teal .para b{ color:#8ff0e4; }
+  .card.red .para b{ color:#ffc0c0; }
+  .q{ font-size:14px; line-height:1.55; margin:6px 0 6px 4px; padding-left:12px; border-left:2px solid var(--gold); }
+  .step{ display:flex; gap:11px; font-size:14px; line-height:1.55; margin:9px 0; }
+  .step .n{ flex:0 0 22px; height:22px; border-radius:50%; background:rgba(74,157,232,.22); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:800; color:var(--accent-hi); margin-top:1px; }
+  .step b{ color:var(--accent-hi); }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+  .ev.x{ background:rgba(255,138,138,.16); color:#ffb3b3; border-color:rgba(255,138,138,.4); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+
+  /* ---------- WORK tab ---------- */
+  #work{ display:none; }
+  #drill{ display:none; }
+  .tool{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; margin-bottom:13px; overflow:hidden; }
+  .tool.teal{ border-left-color:var(--teal); background:rgba(63,208,192,.07); }
+  .tool.violet{ border-left-color:var(--violet); background:rgba(180,140,255,.08); }
+  .tool.gold{ border-left-color:var(--gold); background:rgba(245,215,110,.07); }
+  .tool-head{ display:flex; align-items:center; gap:10px; padding:14px 16px; cursor:pointer; }
+  .tool-head .tn{ flex:0 0 24px; height:24px; border-radius:50%; background:rgba(74,157,232,.22); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:800; color:var(--accent-hi); }
+  .tool-head .tt{ flex:1; font-size:16px; font-weight:700; line-height:1.3; }
+  .tool-head .cnt{ font-size:10.5px; font-weight:800; letter-spacing:.1em; color:var(--ink-quiet); }
+  .tool-head .chev{ color:var(--ink-quiet); font-size:15px; transition:transform .25s; }
+  .tool.open .tool-head .chev{ transform:rotate(90deg); }
+  .tool-body{ display:none; padding:0 16px 16px; }
+  .tool.open .tool-body{ display:block; }
+  .why{ font-size:13px; line-height:1.55; color:var(--ink-dim); border-top:1px solid var(--line); padding-top:11px; margin-bottom:12px; }
+  .why b{ color:var(--gold); }
+  .fl{ margin-bottom:11px; }
+  .fl label{ display:block; font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:var(--accent-hi); margin-bottom:5px; }
+  .fl .hintline{ font-size:12px; color:var(--ink-quiet); line-height:1.45; margin-bottom:6px; }
+  textarea, input[type=text], select{ width:100%; background:rgba(5,22,52,.55); border:1px solid var(--line); border-radius:10px;
+    color:var(--ink); font-size:14.5px; line-height:1.5; padding:10px 12px; font-family:inherit; resize:vertical; }
+  textarea:focus, input[type=text]:focus, select:focus{ outline:2px solid var(--accent); outline-offset:0; border-color:transparent; }
+  textarea::placeholder, input::placeholder{ color:rgba(234,244,255,.3); }
+  select{ appearance:none; -webkit-appearance:none; background-image:linear-gradient(45deg,transparent 50%,var(--accent-hi) 50%),linear-gradient(135deg,var(--accent-hi) 50%,transparent 50%);
+    background-position:calc(100% - 17px) 18px, calc(100% - 12px) 18px; background-size:5px 5px,5px 5px; background-repeat:no-repeat; padding-right:34px; }
+  select option{ background:#0b2547; color:#eaf4ff; }
+  .twocol{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (max-width:520px){ .twocol{ grid-template-columns:1fr; } }
+  .colhd{ font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; margin-bottom:5px; }
+  .colhd.l{ color:var(--red); } .colhd.r{ color:var(--accent-hi); }
+  .rung{ display:flex; gap:9px; align-items:flex-start; margin-bottom:8px; }
+  .rung .rn{ flex:0 0 20px; height:20px; border-radius:50%; background:rgba(180,140,255,.2); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:10.5px; font-weight:800; color:#d4bcff; margin-top:9px; }
+  .rung .rl{ flex:1; }
+  .rung .rl .rlab{ font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); margin-bottom:3px; }
+  .chk{ display:flex; align-items:flex-start; gap:10px; font-size:14px; line-height:1.5; margin:9px 0; cursor:pointer; }
+  .chk input{ flex:0 0 19px; width:19px; height:19px; margin-top:1px; accent-color:var(--accent); }
+  .chk span b{ color:var(--accent-hi); }
+  .toolbar{ display:flex; gap:9px; margin-top:13px; flex-wrap:wrap; }
+  .sbtn{ border:0; border-radius:999px; padding:11px 20px; font-size:13px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; }
+  .sbtn.ghost{ background:rgba(9,36,80,.6); color:#fff; border:1px solid var(--line); }
+  .sbtn.danger{ background:rgba(255,138,138,.16); color:#ffb3b3; border:1px solid rgba(255,138,138,.4); }
+  .sbtn:disabled{ opacity:.35; cursor:default; }
+  .analysis{ display:none; margin-top:13px; background:rgba(245,215,110,.09); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; }
+  .analysis.on{ display:block; }
+  .analysis .ah{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800; color:var(--gold); margin-bottom:8px; }
+  .analysis .aq{ font-size:14px; line-height:1.55; margin:8px 0; padding-left:14px; position:relative; }
+  .analysis .aq:before{ content:'\2192'; position:absolute; left:0; color:var(--gold); font-weight:700; }
+  .analysis .aq b{ color:var(--gold); }
+  .flag{ font-size:13.5px; line-height:1.55; margin:8px 0; padding:9px 11px; border-radius:9px; background:rgba(255,138,138,.12); border-left:3px solid var(--red); }
+  .flag b{ color:#ffc0c0; }
+  .flag.ok{ background:rgba(63,208,192,.11); border-left-color:var(--teal); }
+  .flag.ok b{ color:#8ff0e4; }
+  .hist{ margin-top:14px; border-top:1px solid var(--line); padding-top:11px; }
+  .hist-k{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); margin-bottom:8px; }
+  .entry{ background:rgba(5,22,52,.4); border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin-bottom:8px; }
+  .entry .edate{ font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; color:var(--accent-hi); margin-bottom:5px;
+    display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .entry .edate .del{ color:var(--ink-quiet); cursor:pointer; font-size:15px; line-height:1; padding:0 4px; }
+  .entry .erow{ font-size:13px; line-height:1.5; color:var(--ink-dim); margin:4px 0; white-space:pre-wrap; }
+  .entry .erow .el{ font-size:10px; letter-spacing:.1em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); display:block; }
+  .empty{ font-size:12.5px; color:var(--ink-quiet); font-style:italic; }
+  .pattern{ background:rgba(63,208,192,.09); border-left:4px solid var(--teal); border-radius:12px; padding:13px 15px; margin-bottom:13px; font-size:13.5px; line-height:1.6; }
+  .pattern b{ color:#8ff0e4; }
+
+  /* drill */
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(19px,5vw,26px); font-weight:300; line-height:1.4; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .btn:focus-visible, .toggle button:focus-visible, .sbtn:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-work" onclick="setMode('work')">Work</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>Argyris</h1>
+    <div class="sub">What you say you believe, and what your behaviour is actually running on. Chris Argyris spent forty years on the gap between the two and on why capable, sincere people cannot see it in themselves. Eight instruments in the Work tab.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="section-k">The gap</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">01</span><span class="p-name">Espoused theory</span><span class="ev c">C</span></div>
+      <div class="p-ess">What you would say if asked what you believe and intend.</div>
+      <div class="para">It is sincere. It is usually admirable. It is also the only thing introspection can reach, which is why asking yourself what you believe returns it every time and tells you nothing you did not already have.</div>
+    </div>
+
+    <div class="card red">
+      <div class="p-head"><span class="p-num">02</span><span class="p-name">Theory-in-use</span><span class="ev c">C</span></div>
+      <div class="p-ess">The operating logic your behaviour actually runs on.</div>
+      <div class="para">Inferred backwards from what you did, never reported directly. Argyris found that almost nobody's two theories match, and that <b>the person holding them is the last to know</b>. Other people can often see yours.</div>
+      <div class="move">The instrument is never a question about yourself. It is a <b>record of behaviour</b> plus the question: what rule would have had to be running to produce that?</div>
+    </div>
+
+    <div class="band"><b>Why reading does nothing.</b> A book, a workshop, a protocol page updates your espoused theory. The theory-in-use is untouched, because it was never built out of propositions in the first place. This is the mechanism behind "I know what to do and I don't do it" &mdash; not weakness, not akrasia. Two separate systems, only one of which you can edit by being told things.</div>
+
+    <div class="section-k">Model I &mdash; the default</div>
+
+    <div class="card red">
+      <div class="p-head"><span class="p-name">The four governing values</span><span class="ev d">D</span></div>
+      <div class="p-ess">Argyris claimed almost every theory-in-use he measured ran these four, across cultures and professions.</div>
+      <div class="move"><b>Stay in unilateral control.</b> Define the purpose and keep hold of it.</div>
+      <div class="move"><b>Maximise winning, minimise losing.</b> Treat changing your position as a loss.</div>
+      <div class="move"><b>Suppress negative feeling.</b> Yours and theirs. Keep it pleasant.</div>
+      <div class="move"><b>Be rational.</b> Appear objective; treat emotion as a lapse.</div>
+      <div class="note">Each one is defensible on its own. Together they produce a person who cannot receive disconfirming information, because every route in has been closed for a good reason.</div>
+    </div>
+
+    <div class="card red">
+      <div class="p-head"><span class="p-name">Skilled incompetence</span><span class="ev d">D</span></div>
+      <div class="p-ess">Being very good at not finding out.</div>
+      <div class="para">The competence is real &mdash; years of practice at smoothing, deflecting, easing in, keeping the room comfortable. It is skilled because it is fluent and automatic. It is incompetence because what it reliably produces is the absence of the information you needed.</div>
+      <div class="move"><b>Easing in</b> is the signature move: asking leading questions designed to walk someone to a conclusion you already hold, rather than stating it and testing it. It feels kind. It is unilateral control wearing a soft coat.</div>
+    </div>
+
+    <div class="section-k">The two loops</div>
+
+    <div class="card teal">
+      <div class="p-head"><span class="p-name">Single loop</span><span class="ev c">C</span></div>
+      <div class="p-ess">Detect the error, change the strategy, leave the goal alone.</div>
+      <div class="para">A thermostat holding the room at 68. Most improvement is single-loop and most of it is correct &mdash; this is not the inferior option. It is simply unable to notice that you are solving the wrong problem well.</div>
+    </div>
+
+    <div class="card violet">
+      <div class="p-head"><span class="p-name">Double loop</span><span class="ev c">C</span></div>
+      <div class="p-ess">Turn and interrogate the governing value itself.</div>
+      <div class="para">The thermostat asking why it is set to 68. <b>Single loop feels like diligence; double loop feels like insubordination</b> &mdash; including to yourself, which is most of why it is rare.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Room 148</span>Single: reteach the unit, rebuild the worksheet, regroup the desks. Double: is the thing I am assessing the thing I actually want them to be able to do?</div>
+        <div class="ex-row"><span class="tag">FLA 6/7</span>Single: adjust the pacing of the presentation block. Double: is a presentation the right evidence of this outcome for adults in an evening class?</div>
+        <div class="ex-row"><span class="tag">Income</span>Single: ship the next module faster. Double: is the course the vehicle, or is it the thing that feels like progress?</div>
+        <div class="ex-row"><span class="tag">Home</span>Single: get the work done earlier so there is time. Double: is "enough work done" the right test at all?</div>
+      </div>
+    </div>
+
+    <div class="section-k">Defensive routines</div>
+
+    <div class="card red">
+      <div class="p-head"><span class="p-name">The undiscussable, and its cover</span><span class="ev c">C</span></div>
+      <div class="p-ess">Practices that protect people from embarrassment and prevent the problem from being named.</div>
+      <div class="para">Everyone in the room knows. Nobody says it. That is stage one and it is survivable. Stage two is what makes it permanent: <b>the undiscussability is itself undiscussable</b>. Naming the fact that nobody names it is the forbidden move, so the routine never comes up for review.</div>
+      <div class="move">The diagnostic is cheap. <b>What can you not say here?</b> The boundary of what is sayable is the boundary of the frame, and it marks it more reliably than anything you can say.</div>
+    </div>
+
+    <div class="section-k">Model II &mdash; the alternative</div>
+
+    <div class="card teal">
+      <div class="p-head"><span class="p-name">Three governing values</span><span class="ev d">D</span></div>
+      <div class="move"><b>Valid information.</b> Including the information that makes you look bad.</div>
+      <div class="move"><b>Free and informed choice.</b> The other person can genuinely decide otherwise.</div>
+      <div class="move"><b>Internal commitment, monitored.</b> Held because it holds up, not because it was agreed &mdash; and checked again later.</div>
+      <div class="note">In practice this comes down to pairing advocacy with inquiry: state your actual view, say what it rests on, then ask what they see that you do not &mdash; and mean it. Instrument 8 drafts this.</div>
+    </div>
+
+    <div class="band warn"><b>Honest grading.</b> Argyris's reputation outruns his evidence. The body of work is case studies, consulting engagements and self-report, with very little controlled replication &mdash; hence the C and D grades above. The <i>framework</i> is durable and widely used; it is not a measured mechanism. What independently supports the underlying claim is listed next.</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">What does hold up</span><span class="ev b">B</span></div>
+      <div class="move"><b>Self-report diverges from behaviour.</b> Self-evaluations correlate only modestly with objective performance measures (Mabe &amp; West 1982 meta-analysis, corrected r &asymp; .29). You are a weak instrument on yourself.</div>
+      <div class="move"><b>Intention is not the bottleneck.</b> A meta-analysis of experimental studies found that a medium-to-large change in intention produced only a small-to-medium change in behaviour (Webb &amp; Sheeran 2006). Updating what you believe does not move what you do &mdash; which is the gap in different language.</div>
+      <div class="move"><b>Introspective reports are reconstructions.</b> People confidently explain choices by causes that demonstrably were not operating (Nisbett &amp; Wilson 1977). Contested in its strong form; the weak form is secure and is all this page needs.</div>
+      <div class="note">None of this proves Model I. It establishes the part that matters operationally: asking yourself is not a method, and a behavioural record is.</div>
+    </div>
+
+    <div class="section-k">Scope</div>
+
+    <div class="band"><b>Where this does not go.</b> This is an instrument for examining your own reasoning, not other people's. Running the Model I diagnosis on a colleague, a student or your daughters is exactly the unilateral-control move it is meant to catch, and it converts a tool into a weapon &mdash; you end up with a vocabulary for being right about people. The only parts that travel outward are advocacy-with-inquiry and asking what cannot be said here. Everything else points inward or it is being misused.</div>
+
+    <div class="band vio"><b>Hands off to <a class="inl" href="./shaping-adapting.html">Shaping and Adapting</a>.</b> That page already owns writing and scoring predictions about outcomes, the outside judge, and finding contradictions between what you claim and what the world returns. This page does not restate them. Instrument 6 here is deliberately narrower: predictions about <i>your own conduct</i>, which is the one case where you are the only available observer.</div>
+
+    <div class="section-k">Start this week</div>
+    <div class="step"><div class="n">1</div><div>Do <b>one</b> left-hand column. A conversation from the last fortnight that left a residue. Twenty minutes.</div></div>
+    <div class="step"><div class="n">2</div><div>Run the Model I check against that same conversation. Do not do it from memory of yourself &mdash; do it against the left column you just wrote.</div></div>
+    <div class="step"><div class="n">3</div><div>Pick one problem you are currently working on and put it through the loop sorter. Just classify it; change nothing.</div></div>
+    <div class="step"><div class="n">4</div><div>Start the self-prediction log. One line before, one line after. Only mine the misses.</div></div>
+    <div class="step"><div class="n">5</div><div>Once, this term: the artifact audit on a set of marks. It is the only instrument here that uses data you did not generate for the purpose.</div></div>
+
+    <div class="section-k">Sunday block</div>
+    <div class="q">Which of this week's problems did I treat as single-loop that was actually double?</div>
+    <div class="q">What did I not say, and what was I protecting?</div>
+    <div class="q">Where did my prediction about my own conduct miss, and in which direction does it keep missing?</div>
+    <div class="q">What is currently undiscussable in a room I am in &mdash; and am I maintaining it?</div>
+
+    <div class="band"><b>The one thing.</b> What would have to be true for me to be wrong about this &mdash; and have I gone and looked?</div>
+
+    <div class="section-k">Failure modes</div>
+    <div class="card red">
+      <div class="move"><b>Collecting insights instead of records.</b> If an entry contains no quoted speech and no number, it is your espoused theory with new vocabulary on it.</div>
+      <div class="move"><b>Explaining the left column.</b> The urge to justify why your unsaid thought was warranted in that particular case is not an obstacle to the exercise. It is the exercise working, and stopping there wastes it.</div>
+      <div class="move"><b>Using it on other people.</b> Covered in the scope band. The tell is that it starts feeling good.</div>
+      <div class="move"><b>Double-looping everything.</b> Interrogating the governing value of every small decision is paralysis with a respectable name. Most things are single-loop and should stay there.</div>
+      <div class="move"><b>Treating the grades as higher than they are.</b> C and D means use it as a lens, not as proof. If you cite this in the book, cite it as a framework.</div>
+    </div>
+
+    <div class="section-k">Evidence key</div>
+    <div class="key">
+      <b>A</b> &mdash; replicated experiments or meta-analysis, effect holds.<br>
+      <b>B</b> &mdash; good evidence, some contest at the edges.<br>
+      <b>C</b> &mdash; coherent and widely used, thin controlled testing.<br>
+      <b>D</b> &mdash; descriptive framework from case work; useful, unmeasured.
+    </div>
+
+    <div class="foot">Argyris &middot; Forge OS</div>
+  </div>
+
+  <!-- ===================== WORK ===================== -->
+  <div id="work">
+    <h1 style="font-size:21px;">Work</h1>
+    <div class="sub">Eight instruments. Each one saves to this device only, keeps a running history, and gives you the analysis after you commit the entry &mdash; not before, so the prompts cannot shape what you write.</div>
+
+    <div class="pattern" id="pattern"></div>
+
+    <!-- 1 -->
+    <div class="tool" id="t1">
+      <div class="tool-head" onclick="toggleTool('t1')"><div class="tn">1</div><div class="tt">Left-hand column</div><div class="cnt" id="c-lhc"></div><div class="chev">&#9656;</div></div>
+      <div class="tool-body">
+        <div class="why">The core instrument. <b>Transcribe, do not assess.</b> Right side: what was actually said, both parts, as close to verbatim as you can get. Left side: what you were thinking and feeling and did not say. You are not being asked to judge yourself, which is what keeps the defences down.</div>
+        <div class="fl"><label>Situation</label><div class="hintline">Who, when, what it was about. One line.</div><input type="text" id="lhc-sit" placeholder="Dept meeting, Thursday &mdash; the ELL block allocation"></div>
+        <div class="twocol">
+          <div class="fl"><div class="colhd l">What I thought &amp; didn't say</div><textarea id="lhc-left" rows="7" placeholder="He has already decided. If I push this it becomes a thing. He always does this when&hellip;"></textarea></div>
+          <div class="fl"><div class="colhd r">What was actually said</div><textarea id="lhc-right" rows="7" placeholder="HIM: &ldquo;I think we're fine with the current split.&rdquo;&#10;ME: &ldquo;Sure, we can look at it later.&rdquo;"></textarea></div>
+        </div>
+        <div class="toolbar"><button class="sbtn" onclick="saveLHC()">Save &amp; analyse</button><button class="sbtn ghost" onclick="clearForm('lhc',true)">Clear</button></div>
+        <div class="analysis" id="a-lhc"></div>
+        <div class="hist" id="h-lhc"></div>
+      </div>
+    </div>
+
+    <!-- 2 -->
+    <div class="tool violet" id="t2">
+      <div class="tool-head" onclick="toggleTool('t2')"><div class="tn">2</div><div class="tt">Ladder of inference</div><div class="cnt" id="c-lad"></div><div class="chev">&#9656;</div></div>
+      <div class="tool-body">
+        <div class="why">For a <b>conclusion</b> rather than a conversation. Walk down from the judgment to the thing a camera could have recorded. The distance between the bottom rung and the top is the leap, and the leap is where your theory lives.</div>
+        <div class="fl"><label>The conclusion</label><div class="hintline">State it as baldly as you actually hold it.</div><input type="text" id="lad-concl" placeholder="He doesn't care about the ELL kids"></div>
+        <div class="rung"><div class="rn">5</div><div class="rl"><div class="rlab">Beliefs I now hold because of it</div><textarea id="lad-5" rows="2" placeholder="Not worth raising things with him"></textarea></div></div>
+        <div class="rung"><div class="rn">4</div><div class="rl"><div class="rlab">Assumptions I added</div><textarea id="lad-4" rows="2" placeholder="Someone who cared would have asked a follow-up"></textarea></div></div>
+        <div class="rung"><div class="rn">3</div><div class="rl"><div class="rlab">Meaning I put on it</div><textarea id="lad-3" rows="2" placeholder="The short reply meant dismissal"></textarea></div></div>
+        <div class="rung"><div class="rn">2</div><div class="rl"><div class="rlab">What I selected from what was available</div><textarea id="lad-2" rows="2" placeholder="I noticed the reply; I didn't notice he was mid-corridor with a class waiting"></textarea></div></div>
+        <div class="rung"><div class="rn">1</div><div class="rl"><div class="rlab">Observable data &mdash; what a camera recorded</div><textarea id="lad-1" rows="3" placeholder="Exact words, time, place. Nothing interpretive."></textarea></div></div>
+        <div class="toolbar"><button class="sbtn" onclick="saveLad()">Save &amp; analyse</button><button class="sbtn ghost" onclick="clearForm('lad',true)">Clear</button></div>
+        <div class="analysis" id="a-lad"></div>
+        <div class="hist" id="h-lad"></div>
+      </div>
+    </div>
+
+    <!-- 3 -->
+    <div class="tool" id="t3">
+      <div class="tool-head" onclick="toggleTool('t3')"><div class="tn">3</div><div class="tt">Model I self-check</div><div class="cnt" id="c-mod"></div><div class="chev">&#9656;</div></div>
+      <div class="tool-body">
+        <div class="why">Run this <b>against a record</b>, not against your memory of yourself &mdash; ideally the left-hand column you just wrote. Tick only what the record actually shows.</div>
+        <div class="fl"><label>Which episode</label><input type="text" id="mod-ep" placeholder="Same dept meeting"></div>
+        <label class="chk"><input type="checkbox" id="mod-1"><span><b>Unilateral control.</b> I set or held the purpose and did not test whether it was shared.</span></label>
+        <label class="chk"><input type="checkbox" id="mod-2"><span><b>Win / don't lose.</b> Changing my position would have felt like losing something.</span></label>
+        <label class="chk"><input type="checkbox" id="mod-3"><span><b>Suppress feeling.</b> I kept it pleasant and left something unsaid to do it.</span></label>
+        <label class="chk"><input type="checkbox" id="mod-4"><span><b>Appear rational.</b> I presented a conclusion as objective and left out what it rested on.</span></label>
+        <label class="chk"><input type="checkbox" id="mod-5"><span><b>Easing in.</b> I asked questions to walk them to a conclusion I already held.</span></label>
+        <label class="chk"><input type="checkbox" id="mod-6"><span><b>Untested attribution.</b> I assigned them a motive and never checked it out loud.</span></label>
+        <div class="fl" style="margin-top:11px;"><label>What I would have had to say</label><div class="hintline">The actual sentence, in quotes, that you did not say.</div><textarea id="mod-say" rows="2" placeholder="&ldquo;I think the split is wrong and here's the roster that shows it &mdash; what am I missing?&rdquo;"></textarea></div>
+        <div class="toolbar"><button class="sbtn" onclick="saveMod()">Save &amp; analyse</button><button class="sbtn ghost" onclick="clearForm('mod',true)">Clear</button></div>
+        <div class="analysis" id="a-mod"></div>
+        <div class="hist" id="h-mod"></div>
+      </div>
+    </div>
+
+    <!-- 4 -->
+    <div class="tool teal" id="t4">
+      <div class="tool-head" onclick="toggleTool('t4')"><div class="tn">4</div><div class="tt">Loop sorter</div><div class="cnt" id="c-loop"></div><div class="chev">&#9656;</div></div>
+      <div class="tool-body">
+        <div class="why">Take a problem you are working on now. Classify the response you are planning. <b>Most things are single-loop and should stay there</b> &mdash; the point is to notice when you have chosen, not to escalate everything.</div>
+        <div class="fl"><label>The problem</label><input type="text" id="loop-prob" placeholder="Half the class bombed the paragraph assessment"></div>
+        <div class="fl"><label>What I am planning to do</label><textarea id="loop-plan" rows="2" placeholder="Reteach topic sentences, rebuild the scaffold"></textarea></div>
+        <div class="fl"><label>The goal that plan serves</label><div class="hintline">State the governing value, not the task.</div><textarea id="loop-goal" rows="2" placeholder="They should be able to write a correctly structured paragraph"></textarea></div>
+        <div class="fl"><label>Is that goal the right goal?</label><div class="hintline">Answer it properly. This is the whole second loop.</div><textarea id="loop-q" rows="3" placeholder=""></textarea></div>
+        <div class="fl"><label>Classification</label>
+          <select id="loop-cls">
+            <option value="">&mdash; choose &mdash;</option>
+            <option value="single">Single loop &mdash; and that is correct here</option>
+            <option value="single-should">Single loop &mdash; but it probably should be double</option>
+            <option value="double">Double loop &mdash; I am changing the goal</option>
+            <option value="unclear">Not sure yet</option>
+          </select></div>
+        <div class="toolbar"><button class="sbtn" onclick="saveLoop()">Save &amp; analyse</button><button class="sbtn ghost" onclick="clearForm('loop',true)">Clear</button></div>
+        <div class="analysis" id="a-loop"></div>
+        <div class="hist" id="h-loop"></div>
+      </div>
+    </div>
+
+    <!-- 5 -->
+    <div class="tool red" id="t5" style="border-left-color:#ff8a8a; background:rgba(255,138,138,.07);">
+      <div class="tool-head" onclick="toggleTool('t5')"><div class="tn">5</div><div class="tt">Undiscussables map</div><div class="cnt" id="c-und"></div><div class="chev">&#9656;</div></div>
+      <div class="tool-body">
+        <div class="why">The boundary of what is sayable marks the frame. <b>Second question matters more than the first</b> &mdash; a thing that cannot be said is survivable; a thing whose unsayability cannot be mentioned is permanent.</div>
+        <div class="fl"><label>The room</label><input type="text" id="und-room" placeholder="Dept meeting / FLA staffroom / home / my own planning"></div>
+        <div class="fl"><label>What cannot be said here</label><textarea id="und-what" rows="3" placeholder="That the Block B support model isn't working as designed"></textarea></div>
+        <div class="fl"><label>Can you say that it cannot be said?</label>
+          <select id="und-meta">
+            <option value="">&mdash; choose &mdash;</option>
+            <option value="yes">Yes &mdash; I could name the silence itself</option>
+            <option value="no">No &mdash; naming the silence is also off-limits</option>
+            <option value="untested">Never tested it</option>
+          </select></div>
+        <div class="fl"><label>What am I doing to maintain it?</label><div class="hintline">The hard one. Not what they do &mdash; what you do.</div><textarea id="und-me" rows="3" placeholder=""></textarea></div>
+        <div class="toolbar"><button class="sbtn" onclick="saveUnd()">Save &amp; analyse</button><button class="sbtn ghost" onclick="clearForm('und',true)">Clear</button></div>
+        <div class="analysis" id="a-und"></div>
+        <div class="hist" id="h-und"></div>
+      </div>
+    </div>
+
+    <!-- 6 -->
+    <div class="tool" id="t6">
+      <div class="tool-head" onclick="toggleTool('t6')"><div class="tn">6</div><div class="tt">Self-prediction log</div><div class="cnt" id="c-pred"></div><div class="chev">&#9656;</div></div>
+      <div class="tool-body">
+        <div class="why">Predictions about <b>your own conduct</b> only &mdash; outcome forecasting lives on <a class="inl" href="./shaping-adapting.html">Shaping and Adapting</a>. Write the before line before. You only mine the misses, and what you are after is not that you were wrong but <b>the direction it keeps missing in</b>.</div>
+        <div class="fl"><label>Situation</label><input type="text" id="pred-sit" placeholder="Parent call about attendance, 3:30"></div>
+        <div class="fl"><label>Before &mdash; what I expect myself to do or say</label><textarea id="pred-before" rows="2" placeholder="I'll lay out the record calmly and ask what's going on at home"></textarea></div>
+        <div class="fl"><label>After &mdash; what I actually did</label><div class="hintline">Leave blank and save; fill it in afterwards from the history list.</div><textarea id="pred-after" rows="2" placeholder=""></textarea></div>
+        <div class="toolbar"><button class="sbtn" onclick="savePred()">Save &amp; analyse</button><button class="sbtn ghost" onclick="clearForm('pred',true)">Clear</button></div>
+        <div class="analysis" id="a-pred"></div>
+        <div class="hist" id="h-pred"></div>
+      </div>
+    </div>
+
+    <!-- 7 -->
+    <div class="tool gold" id="t7">
+      <div class="tool-head" onclick="toggleTool('t7')"><div class="tn">7</div><div class="tt">Artifact audit</div><div class="cnt" id="c-art"></div><div class="chev">&#9656;</div></div>
+      <div class="tool-body">
+        <div class="why">The only instrument here that uses <b>data you did not generate for this purpose</b>, which is exactly what makes it the strongest. Your rubric is your espoused theory. Your mark distribution is your theory-in-use.</div>
+        <div class="fl"><label>What I audited</label><input type="text" id="art-what" placeholder="ENG8 paragraph set, 28 scripts"></div>
+        <div class="fl"><label>What the rubric says I value</label><div class="hintline">In order, as written.</div><textarea id="art-says" rows="3" placeholder="1 Idea development 2 Organisation 3 Voice 4 Conventions"></textarea></div>
+        <div class="fl"><label>What the marks actually tracked</label><div class="hintline">Which criterion best predicts the final mark? Rough is fine &mdash; eyeball it.</div><textarea id="art-did" rows="3" placeholder="Conventions. The clean ones all landed 4s regardless of idea."></textarea></div>
+        <div class="fl"><label>Feedback comments &mdash; what are they mostly doing?</label><div class="hintline">Pull about fifty. Tally the dominant function.</div>
+          <select id="art-fb">
+            <option value="">&mdash; choose &mdash;</option>
+            <option value="correct">Correcting errors</option>
+            <option value="encourage">Encouraging / affirming</option>
+            <option value="justify">Justifying the grade</option>
+            <option value="next">Naming the next move</option>
+            <option value="hedge">Hedging / softening</option>
+            <option value="mixed">Genuinely mixed, no dominant</option>
+          </select></div>
+        <div class="fl"><label>The gap, in one sentence</label><textarea id="art-gap" rows="2" placeholder=""></textarea></div>
+        <div class="toolbar"><button class="sbtn" onclick="saveArt()">Save &amp; analyse</button><button class="sbtn ghost" onclick="clearForm('art',true)">Clear</button></div>
+        <div class="analysis" id="a-art"></div>
+        <div class="hist" id="h-art"></div>
+      </div>
+    </div>
+
+    <!-- 8 -->
+    <div class="tool teal" id="t8">
+      <div class="tool-head" onclick="toggleTool('t8')"><div class="tn">8</div><div class="tt">Advocacy &amp; inquiry draft</div><div class="cnt" id="c-adv"></div><div class="chev">&#9656;</div></div>
+      <div class="tool-body">
+        <div class="why">Model II, made into a sentence you can actually say. State the view, expose what it rests on, invite the disconfirmation, and <b>mean the invitation</b> &mdash; if you would not change your position on a good answer, this is easing in with better manners.</div>
+        <div class="fl"><label>The conversation</label><input type="text" id="adv-conv" placeholder="Raising the Block B split with the host teachers"></div>
+        <div class="fl"><label>My actual view, stated plainly</label><div class="hintline">No cushioning. The real one.</div><textarea id="adv-view" rows="2" placeholder=""></textarea></div>
+        <div class="fl"><label>What it rests on</label><div class="hintline">The observable data, so they can check it rather than trust it.</div><textarea id="adv-data" rows="3" placeholder=""></textarea></div>
+        <div class="fl"><label>My inquiry</label><div class="hintline">A real question whose answer could move you.</div><textarea id="adv-ask" rows="2" placeholder="What are you seeing from your side that I'm not?"></textarea></div>
+        <div class="fl"><label>What answer would change my mind?</label><div class="hintline">Name it before the conversation. If nothing would, say so.</div><textarea id="adv-change" rows="2" placeholder=""></textarea></div>
+        <div class="toolbar"><button class="sbtn" onclick="saveAdv()">Save &amp; analyse</button><button class="sbtn ghost" onclick="clearForm('adv',true)">Clear</button></div>
+        <div class="analysis" id="a-adv"></div>
+        <div class="hist" id="h-adv"></div>
+      </div>
+    </div>
+
+    <div class="band" style="margin-top:18px;"><b>On device only.</b> Everything here is stored in this browser and nothing is synced or committed. Export before you clear a browser.</div>
+    <div class="toolbar"><button class="sbtn ghost" onclick="exportAll()">Export all as text</button><button class="sbtn danger" onclick="wipeAll()">Erase everything</button></div>
+
+    <div class="foot">Argyris &middot; Forge OS</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h1 style="font-size:20px;">Name the move</h1>
+    <div class="sub">Recognition, not recall. A situation from your week. Name what is running &mdash; or say it is clean &mdash; before revealing. Ten per round, shuffled.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Done</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn ghost" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  document.getElementById('read').style.display  = (m==='read')  ? 'block' : 'none';
+  document.getElementById('work').style.display  = (m==='work')  ? 'block' : 'none';
+  document.getElementById('drill').style.display = (m==='drill') ? 'block' : 'none';
+  document.getElementById('tab-read').className  = (m==='read')  ? 'on' : '';
+  document.getElementById('tab-work').className  = (m==='work')  ? 'on' : '';
+  document.getElementById('tab-drill').className = (m==='drill') ? 'on' : '';
+  if(m==='drill'){ restart(); }
+  if(m==='work'){ renderAll(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-argyris';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- work store ---------------- */
+var WKEY='forge-argyris-work';
+function store(){ try{ var v=JSON.parse(localStorage.getItem(WKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function put(s){ try{ localStorage.setItem(WKEY, JSON.stringify(s)); }catch(e){ alert('Could not save on this device.'); } }
+function list(k){ var s=store(); return Array.isArray(s[k])?s[k]:[]; }
+function push(k,rec){ var s=store(); if(!Array.isArray(s[k])) s[k]=[]; rec.d=new Date().toISOString(); rec.id=Date.now()+'-'+Math.floor(Math.random()*1e4); s[k].unshift(rec); put(s); }
+function drop(k,id){ var s=store(); if(!Array.isArray(s[k])) return; s[k]=s[k].filter(function(r){ return r.id!==id; }); put(s); renderAll(); }
+function val(id){ var e=document.getElementById(id); return e?(e.value||'').trim():''; }
+function chk(id){ var e=document.getElementById(id); return !!(e&&e.checked); }
+function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function nl(t){ return esc(t).replace(/\n/g,'<br>'); }
+function fdate(iso){ try{ var d=new Date(iso); return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}); }catch(e){ return ''; } }
+
+function toggleTool(id){ var el=document.getElementById(id); el.className = el.className.indexOf('open')>-1 ? el.className.replace(' open','') : el.className+' open'; }
+function clearForm(p, hideAnalysis){
+  var ids={ lhc:['lhc-sit','lhc-left','lhc-right'], lad:['lad-concl','lad-5','lad-4','lad-3','lad-2','lad-1'],
+    mod:['mod-ep','mod-say'], loop:['loop-prob','loop-plan','loop-goal','loop-q','loop-cls'],
+    und:['und-room','und-what','und-meta','und-me'], pred:['pred-sit','pred-before','pred-after'],
+    art:['art-what','art-says','art-did','art-fb','art-gap'], adv:['adv-conv','adv-view','adv-data','adv-ask','adv-change'] };
+  (ids[p]||[]).forEach(function(i){ var e=document.getElementById(i); if(e) e.value=''; });
+  if(p==='mod'){ ['mod-1','mod-2','mod-3','mod-4','mod-5','mod-6'].forEach(function(i){ var e=document.getElementById(i); if(e) e.checked=false; }); }
+  if(hideAnalysis){ var a=document.getElementById('a-'+p); if(a) a.className='analysis'; }
+}
+function showA(p, html){ var a=document.getElementById('a-'+p); a.innerHTML=html; a.className='analysis on'; }
+function ah(t){ return '<div class="ah">'+t+'</div>'; }
+function aq(t){ return '<div class="aq">'+t+'</div>'; }
+function flag(t,ok){ return '<div class="flag'+(ok?' ok':'')+'">'+t+'</div>'; }
+
+/* ---------------- 1 left-hand column ---------------- */
+function saveLHC(){
+  var sit=val('lhc-sit'), L=val('lhc-left'), R=val('lhc-right');
+  if(!L && !R){ alert('Fill in at least one column.'); return; }
+  push('lhc',{sit:sit,left:L,right:R});
+  var h=ah('Now the analysis');
+  var lw=L.split(/\s+/).filter(Boolean).length, rw=R.split(/\s+/).filter(Boolean).length;
+  if(lw>rw*1.3 && rw>0) h+=flag('Your left column is substantially longer than your right. Most of this conversation happened in your head and never entered the room &mdash; which is the finding, not a flaw in the writing.');
+  if(rw>lw*1.5 && lw>0) h+=flag('Your right column is much longer. Either this was an unusually open exchange, or you are still editing the left column. Reread it and ask what you softened.',true);
+  if(R.indexOf('"')<0 && R.indexOf('“')<0) h+=flag('No quoted speech in the right column. Paraphrase is already interpretation &mdash; go back and put the actual words in, including your own.');
+  h+=aq('Read the left column only. <b>What were you protecting?</b> Name it as a thing that could have been lost.');
+  h+=aq('What did you <b>assume about them</b> that you never said out loud and never tested?');
+  h+=aq('What did you want this conversation to <b>do</b>? Compare that with what you told yourself you wanted.');
+  h+=aq('Pick the single strongest line in the left column. <b>What would have happened if you had said it?</b> Write the actual consequence, not the feeling.');
+  h+=aq('Now the rule: <b>what would have to have been running</b> to produce that right column from that left column? One sentence. That sentence is your theory-in-use for this situation.');
+  h+=flag('If you now feel the urge to explain why your left column was justified <i>in this particular case</i> &mdash; that is the material, not an objection to it.');
+  showA('lhc',h); clearForm('lhc'); renderAll();
+}
+
+/* ---------------- 2 ladder ---------------- */
+function saveLad(){
+  var c=val('lad-concl'), r1=val('lad-1'), r2=val('lad-2'), r3=val('lad-3'), r4=val('lad-4'), r5=val('lad-5');
+  if(!c){ alert('Write the conclusion first.'); return; }
+  push('lad',{concl:c,r1:r1,r2:r2,r3:r3,r4:r4,r5:r5});
+  var h=ah('Now the analysis');
+  if(!r1) h+=flag('Rung 1 is empty &mdash; the observable data. Without it there is nothing to check the conclusion against and the ladder has no bottom.');
+  else {
+    var interp=/\b(obvious|clearly|rude|dismissive|lazy|didn.?t care|hostile|defensive|aggressive|disrespect|ignored|couldn.?t be bothered)\b/i.test(r1);
+    if(interp) h+=flag('Rung 1 still contains interpretation. &ldquo;Dismissive&rdquo; and &ldquo;ignored&rdquo; are not on the tape. Strip it back to words, timing and movement only.');
+    else h+=flag('Rung 1 reads as genuinely observable. That is the hard part and you did it.',true);
+  }
+  if(r2) h+=aq('Rung 2 is the selection. <b>What was also available that you did not select?</b> That omission is doing more work than anything you did select.');
+  h+=aq('Rung 4 &mdash; your assumption. <b>Write the test.</b> What question, asked out loud, would settle whether it holds?');
+  h+=aq('Rung 5 closes the loop: the belief now shapes what you notice next time, which confirms it. <b>What evidence have you stopped collecting?</b>');
+  h+=aq('State the conclusion again, this time as a sentence beginning <b>&ldquo;I am inferring that&hellip;&rdquo;</b> Say it that way next time it comes up.');
+  showA('lad',h); clearForm('lad'); renderAll();
+}
+
+/* ---------------- 3 model I ---------------- */
+function saveMod(){
+  var ep=val('mod-ep'), say=val('mod-say');
+  var ks=['mod-1','mod-2','mod-3','mod-4','mod-5','mod-6'];
+  var names=['Unilateral control','Win / don’t lose','Suppress feeling','Appear rational','Easing in','Untested attribution'];
+  var hit=[]; for(var i=0;i<ks.length;i++){ if(chk(ks[i])) hit.push(names[i]); }
+  if(!ep && !hit.length){ alert('Name the episode or tick at least one.'); return; }
+  push('mod',{ep:ep,hits:hit,say:say});
+  var h=ah('Now the analysis');
+  if(!hit.length) h+=flag('Nothing ticked. That is possible &mdash; but Argyris’s claim is that these run nearly all the time, so a clean sheet is itself worth a second look. Did you check the record, or your memory of yourself?');
+  else if(hit.length>=4) h+=flag('Four or more. Not a bad day &mdash; this is the normal reading, which is precisely the uncomfortable part of the model.');
+  else h+=flag('Marked: '+esc(hit.join(', '))+'. These are the ones with a record behind them.',true);
+  if(hit.indexOf('Easing in')>-1) h+=aq('Easing in is the one that feels most like kindness. <b>Would you have accepted their answer</b> if it had gone the other way? If not, it was never a question.');
+  if(hit.indexOf('Untested attribution')>-1) h+=aq('You assigned a motive. Run that one through the <b>ladder</b> (instrument 2) &mdash; it will have a very short rung 1.');
+  if(say) h+=aq('You wrote the sentence you did not say. <b>What is the real cost of saying it</b> &mdash; and is that cost yours or theirs?');
+  else h+=aq('You did not write the unsaid sentence. Go back and write it in quotes. The specific words are the instrument; the summary is not.');
+  h+=aq('Pick <b>one</b> of these to drop in the next similar conversation. One, not all. Which, and what replaces it?');
+  showA('mod',h); clearForm('mod'); renderAll();
+}
+
+/* ---------------- 4 loop sorter ---------------- */
+function saveLoop(){
+  var p=val('loop-prob'), pl=val('loop-plan'), g=val('loop-goal'), q=val('loop-q'), c=val('loop-cls');
+  if(!p){ alert('Name the problem first.'); return; }
+  push('loop',{prob:p,plan:pl,goal:g,q:q,cls:c});
+  var h=ah('Now the analysis');
+  if(c==='single') h+=flag('Single loop, chosen deliberately. That is the right call most of the time &mdash; what matters is that you looked.',true);
+  if(c==='single-should') h+=flag('You have named the thing most people never reach: a frame you can see and are not yet changing. Do not force it today. <b>Write the date you will decide.</b>');
+  if(c==='double') h+=flag('Double loop. Expect a competence dip &mdash; the new frame performs worse than the old one before it performs better, and that dip is the usual reason people revert.',true);
+  if(c==='unclear'||!c) h+=flag('Unclassified. The sorting question is simple: <b>if your plan works perfectly, is the problem gone?</b> If yes, single. If it comes back in a new shape, the goal is the problem.');
+  if(g && /\b(should be able to|need to|have to|must)\b/i.test(g)) h+=aq('Your goal is phrased as an obligation. <b>Whose?</b> If the answer is a document rather than a person, that is worth a minute.');
+  h+=aq('If your plan works perfectly, <b>is the problem actually gone</b> &mdash; or does it come back in a different shape next term?');
+  h+=aq('Who set this goal? If it was inherited &mdash; curriculum, department, a version of you from years ago &mdash; <b>has it been reviewed since</b>, by anyone?');
+  if(!q) h+=aq('You left the second-loop question blank. That is the single most informative blank on this page. Go back and answer it badly rather than not at all.');
+  showA('loop',h); clearForm('loop'); renderAll();
+}
+
+/* ---------------- 5 undiscussables ---------------- */
+function saveUnd(){
+  var r=val('und-room'), w=val('und-what'), m=val('und-meta'), me=val('und-me');
+  if(!w){ alert('Name what cannot be said.'); return; }
+  push('und',{room:r,what:w,meta:m,me:me});
+  var h=ah('Now the analysis');
+  if(m==='no') h+=flag('Doubly undiscussable. This is the self-sealing state &mdash; the routine can never come up for review, so it will outlast everyone currently in the room, including you.');
+  if(m==='yes') h+=flag('The silence itself is nameable. That is the opening, and it is a far smaller move than saying the thing: you can describe the pattern without making the accusation.',true);
+  if(m==='untested'||!m) h+=flag('Untested. You may be maintaining a rule nobody has enforced in years. <b>The cheapest experiment on this page</b> is finding out.');
+  if(!me) h+=flag('You left your own contribution blank. That is the only part of this instrument that is yours to change &mdash; the rest is description of other people.');
+  else h+=aq('You named your own contribution. <b>What would it cost to stop doing that one thing</b>, and is the cost real or anticipated?');
+  h+=aq('Is this undiscussable <b>protecting someone</b>, or protecting the arrangement? Those have different exits.');
+  h+=aq('Who else in that room knows? If the answer is everyone, the silence is a <b>shared</b> routine, not a personal failure, and naming the pattern is safer than it feels.');
+  h+=aq('One sentence that describes the pattern <b>without naming the thing</b>. Draft it. That is usually the first move that is actually available.');
+  showA('und',h); clearForm('und'); renderAll();
+}
+
+/* ---------------- 6 self-prediction ---------------- */
+function savePred(){
+  var s=val('pred-sit'), b=val('pred-before'), a=val('pred-after');
+  if(!b){ alert('Write the before line first &mdash; that is the whole instrument.'); return; }
+  push('pred',{sit:s,before:b,after:a});
+  var h=ah('Now the analysis');
+  if(!a) h+=flag('Saved with the after line open. Come back and fill it in from the history below &mdash; an unresolved prediction is worth nothing, and a resolved miss is worth more than ten hits.',true);
+  else {
+    h+=aq('Hit or miss? If a miss: <b>in which direction?</b> Did you expect yourself to be calmer, braver, clearer or more patient than you were?');
+    h+=aq('Look at your last several misses in the history. <b>Do they miss the same way?</b> A repeated direction is not noise &mdash; it is the shape of the gap between your espoused theory and what actually runs.');
+  }
+  var n=list('pred').filter(function(r){ return r.after; }).length;
+  if(n>=4) h+=flag('You now have '+n+' resolved predictions. That is enough to read a direction. Open the history and look at them as a set rather than one at a time.',true);
+  h+=aq('Was the before line a <b>prediction</b> or an <b>intention</b>? Intentions are espoused theory in disguise. A prediction is what you would bet on.');
+  showA('pred',h); clearForm('pred'); renderAll();
+}
+
+/* ---------------- 7 artifact audit ---------------- */
+var FBMAP={ correct:'Correcting errors', encourage:'Encouraging / affirming', justify:'Justifying the grade', next:'Naming the next move', hedge:'Hedging / softening', mixed:'Genuinely mixed' };
+function saveArt(){
+  var w=val('art-what'), s=val('art-says'), d=val('art-did'), fb=val('art-fb'), g=val('art-gap');
+  if(!w){ alert('Name what you audited.'); return; }
+  push('art',{what:w,says:s,did:d,fb:fb,gap:g});
+  var h=ah('Now the analysis');
+  h+=flag('This is the strongest instrument on the page, because the data was generated before you decided to look at it. It cannot have been shaped by the looking.',true);
+  if(fb==='justify') h+=flag('Comments mostly justifying the grade. That is feedback aimed at defending a decision rather than changing a performance &mdash; the audience is the appeal, not the student.');
+  if(fb==='encourage') h+=flag('Comments mostly affirming. Check against the Model I value of suppressing negative feeling: is the warmth doing work, or is it keeping the exchange comfortable?');
+  if(fb==='hedge') h+=flag('Comments mostly hedging. Worth asking what you are protecting yourself from &mdash; the student’s reaction, or the parent’s.');
+  if(fb==='correct') h+=flag('Comments mostly correcting. Efficient, and it tends to teach that writing is error-avoidance. Check whether that matches the top line of your rubric.');
+  if(fb==='next') h+=flag('Comments mostly naming the next move. That is the one with the best evidence behind it.',true);
+  if(s && d) h+=aq('Your rubric says one thing and your marks did another. <b>Which one do you actually want to change</b> &mdash; the rubric, or the marking? Answer honestly; changing the rubric is often the correct answer and it feels like cheating.');
+  h+=aq('Which criterion would a student <b>infer</b> you care about, from their marks alone and nothing you said?');
+  h+=aq('If the gap is real, it has been running for every set you have marked this year. <b>What does that change</b> about the marks already entered?');
+  h+=aq('Run this once more at the end of term on a different set. One audit is an anecdote.');
+  showA('art',h); clearForm('art'); renderAll();
+}
+
+/* ---------------- 8 advocacy & inquiry ---------------- */
+function saveAdv(){
+  var c=val('adv-conv'), v=val('adv-view'), d=val('adv-data'), a=val('adv-ask'), ch=val('adv-change');
+  if(!v){ alert('State your actual view first.'); return; }
+  push('adv',{conv:c,view:v,data:d,ask:a,change:ch});
+  var h=ah('Now the analysis');
+  if(!ch) h+=flag('You did not name what would change your mind. Until you do, the inquiry is decoration and they will feel it. Go back and write it, even if the honest answer is &ldquo;nothing would&rdquo;.');
+  else if(/^(nothing|none|n\/a|no)\b/i.test(ch)) h+=flag('You answered honestly that nothing would change your mind. Then do not ask the question &mdash; <b>advocate and say so</b>. A fake inquiry costs more trust than a blunt position.',true);
+  else h+=flag('You named the disconfirmer in advance. That is the move that separates this from easing in.',true);
+  if(!d) h+=flag('No data under the view. They can only trust it or not &mdash; they cannot check it, which means they cannot be persuaded by it either.');
+  if(a && /\b(don.?t you|wouldn.?t you|isn.?t it|shouldn.?t we|right\?)\b/i.test(a)) h+=flag('Your question is leading. That is easing in with a question mark on it. Rewrite it so a genuinely different answer fits.');
+  h+=aq('Read the view aloud. <b>Does it still sound like your view</b>, or has it been pre-softened for the room?');
+  h+=aq('Have you given them enough that they could <b>build a case against you</b>? If not, you have advocated without exposing anything.');
+  h+=aq('After the conversation: come back and log what they actually said in the <b>left-hand column</b>. That is the only way to know whether you ran this or just planned it.');
+  showA('adv',h); clearForm('adv'); renderAll();
+}
+
+/* ---------------- history rendering ---------------- */
+function row(l,t){ return t ? '<div class="erow"><span class="el">'+l+'</span>'+nl(t)+'</div>' : ''; }
+function entryWrap(k,r,inner){
+  return '<div class="entry"><div class="edate"><span>'+fdate(r.d)+'</span><span class="del" onclick="drop(\''+k+'\',\''+r.id+'\')">&times;</span></div>'+inner+'</div>';
+}
+function renderHist(k,elId,cntId,fn){
+  var arr=list(k), el=document.getElementById(elId), c=document.getElementById(cntId);
+  if(c) c.textContent = arr.length ? arr.length : '';
+  if(!el) return;
+  if(!arr.length){ el.innerHTML='<div class="hist-k">History</div><div class="empty">Nothing saved yet.</div>'; return; }
+  var b='<div class="hist-k">History &mdash; '+arr.length+'</div>';
+  for(var i=0;i<arr.length;i++){ b+=entryWrap(k,arr[i],fn(arr[i])); }
+  el.innerHTML=b;
+}
+function renderAll(){
+  renderHist('lhc','h-lhc','c-lhc',function(r){ return row('Situation',r.sit)+row('Left &mdash; unsaid',r.left)+row('Right &mdash; said',r.right); });
+  renderHist('lad','h-lad','c-lad',function(r){ return row('Conclusion',r.concl)+row('Observable (rung 1)',r.r1)+row('Assumption (rung 4)',r.r4); });
+  renderHist('mod','h-mod','c-mod',function(r){ return row('Episode',r.ep)+row('Marked',(r.hits||[]).join(', '))+row('Unsaid sentence',r.say); });
+  renderHist('loop','h-loop','c-loop',function(r){ return row('Problem',r.prob)+row('Goal',r.goal)+row('Classified',r.cls)+row('Is the goal right?',r.q); });
+  renderHist('und','h-und','c-und',function(r){ return row('Room',r.room)+row('Cannot be said',r.what)+row('Nameable?',r.meta)+row('My part',r.me); });
+  renderHist('pred','h-pred','c-pred',function(r){ return row('Situation',r.sit)+row('Before',r.before)+row('After',r.after||'— open —'); });
+  renderHist('art','h-art','c-art',function(r){ return row('Audited',r.what)+row('Rubric says',r.says)+row('Marks tracked',r.did)+row('Comments',FBMAP[r.fb]||r.fb)+row('The gap',r.gap); });
+  renderHist('adv','h-adv','c-adv',function(r){ return row('Conversation',r.conv)+row('View',r.view)+row('Would change my mind',r.change); });
+  paintPattern();
+}
+function paintPattern(){
+  var s=store(), total=0, keys=['lhc','lad','mod','loop','und','pred','art','adv'];
+  keys.forEach(function(k){ total += list(k).length; });
+  var el=document.getElementById('pattern');
+  if(!total){ el.innerHTML='<b>Nothing logged yet.</b> Start with instrument 1. Everything saves to this device only, and the analysis appears after you commit an entry so the prompts cannot shape what you write.'; return; }
+  var open=list('pred').filter(function(r){ return !r.after; }).length;
+  var mods=list('mod'), tally={};
+  mods.forEach(function(r){ (r.hits||[]).forEach(function(n){ tally[n]=(tally[n]||0)+1; }); });
+  var top='', topN=0;
+  for(var k in tally){ if(tally[k]>topN){ topN=tally[k]; top=k; } }
+  var b='<b>'+total+' entr'+(total===1?'y':'ies')+' logged.</b>';
+  if(top && topN>=2) b+=' Your most frequently marked Model I value is <b>'+esc(top)+'</b> ('+topN+'&times;). That is the one to pick if you are only going to change one thing.';
+  if(open) b+=' <b>'+open+'</b> prediction'+(open===1?' is':'s are')+' still open &mdash; unresolved predictions teach nothing.';
+  el.innerHTML=b;
+}
+function exportAll(){
+  var s=store(), keys=[['lhc','Left-hand column'],['lad','Ladder of inference'],['mod','Model I self-check'],['loop','Loop sorter'],['und','Undiscussables'],['pred','Self-prediction log'],['art','Artifact audit'],['adv','Advocacy & inquiry']];
+  var out='ARGYRIS — WORK LOG\nExported '+new Date().toLocaleString()+'\n';
+  keys.forEach(function(p){
+    var arr=Array.isArray(s[p[0]])?s[p[0]]:[]; if(!arr.length) return;
+    out+='\n\n=== '+p[1]+' ('+arr.length+') ===\n';
+    arr.forEach(function(r){
+      out+='\n-- '+fdate(r.d)+'\n';
+      for(var f in r){ if(f==='d'||f==='id') continue; var v=r[f]; if(Array.isArray(v)) v=v.join(', '); if(v) out+=f+': '+v+'\n'; }
+    });
+  });
+  var w=window.open('','_blank');
+  if(w){ w.document.write('<pre style="white-space:pre-wrap;font:14px -apple-system,sans-serif;padding:18px;">'+esc(out)+'</pre>'); w.document.close(); }
+  else { alert('Allow pop-ups to export, or copy from the history lists.'); }
+}
+function wipeAll(){
+  if(!confirm('Erase every saved entry on this device? This cannot be undone.')) return;
+  if(!confirm('Really erase all of it?')) return;
+  try{ localStorage.removeItem(WKEY); }catch(e){}
+  renderAll();
+}
+
+/* ---------------- drill ---------------- */
+var POOL = [
+  { prompt:'You leave a meeting having said <b>&ldquo;sure, that works&rdquo;</b> while thinking it clearly does not.',
+    lines:['<b>Suppress negative feeling, plus unilateral control.</b> You kept the room comfortable and kept your real position where it could not be tested.','The left-hand column exists for exactly this exchange. Write it tonight while the words are still recoverable.'] },
+  { prompt:'You ask a colleague a series of questions, <b>each one pointing at a conclusion you already hold</b>.',
+    lines:['<b>Easing in.</b> The most socially fluent Model I move, and the hardest to see because it feels considerate.','Test: would you have accepted the opposite answer? If not, it was advocacy wearing a question mark. State the view instead.'] },
+  { prompt:'A student&rsquo;s results drop. You rebuild the scaffold, change the grouping and reteach the unit.',
+    lines:['<b>Single loop &mdash; and quite possibly correct.</b> Not every problem is a frame problem.','The check is one question: if this works perfectly, is the problem gone, or back in a new shape next term?'] },
+  { prompt:'Everyone in the staffroom knows the arrangement is not working. <b>Nobody says so</b>, and nobody says that nobody says so.',
+    lines:['<b>A doubly undiscussable defensive routine.</b> Stage one is survivable; stage two is what makes it permanent.','The available move is usually to describe the pattern without naming the thing. Draft that sentence.'] },
+  { prompt:'You read a chapter, strongly agree with it, and <b>behave exactly as before</b>.',
+    lines:['<b>You updated the espoused theory.</b> The theory-in-use was never built from propositions, so it did not receive the update.','Nothing read changes it. Only a record of your own behaviour, examined, gets near it.'] },
+  { prompt:'Asked for feedback, you say the work is &ldquo;a really strong start&rdquo; while thinking <b>it needs rebuilding</b>.',
+    lines:['<b>Espoused: honest feedback. In use: protect them, and protect yourself from their reaction.</b>','Notice who the softening actually serves. That is usually the finding.'] },
+  { prompt:'A colleague was short with you in the corridor. You conclude <b>that is how he sees your subject</b>.',
+    lines:['<b>Untested attribution &mdash; a very long ladder from a very short rung one.</b>','Rung 1 is: six words, 8:40am, mid-corridor, class waiting. Everything above it is yours.'] },
+  { prompt:'You are planning a hard conversation and you have <b>scripted every line of your part</b>.',
+    lines:['<b>Unilateral control.</b> A fully scripted conversation is one you have decided the outcome of.','Model II needs one unscripted element: a question whose answer could move you. Name it in advance.'] },
+  { prompt:'Your rubric&rsquo;s top criterion is idea development. The <b>cleanest scripts got the highest marks</b>.',
+    lines:['<b>The rubric is the espoused theory; the mark distribution is the theory-in-use.</b>','This is the strongest instrument you have, because the data was made before you thought to look at it.'] },
+  { prompt:'Someone gives you honest critical feedback and you immediately <b>explain the context they are missing</b>.',
+    lines:['<b>Win / don’t lose, running in real time.</b> The explanation may even be correct, which is what makes it effective as a defence.','The question is not whether your context is true. It is whether anything they said has survived into your thinking.'] },
+  { prompt:'You decide to interrogate the governing assumption behind <b>every item on today&rsquo;s list</b>.',
+    lines:['<b>Double-looping everything.</b> Paralysis with a respectable name.','Most things are single-loop and belong there. The second loop is for the ones that keep coming back.'] },
+  { prompt:'You notice a colleague doing all four Model I moves at once and feel a <b>small flush of satisfaction</b>.',
+    lines:['<b>Out of scope, and the satisfaction is the tell.</b>','Run on yourself this becomes an instrument; run on others it becomes a vocabulary for being right about people.'] },
+  { prompt:'You predicted you would stay calm on the parent call. You did not. <b>Fourth time this term.</b>',
+    lines:['<b>A repeated direction, not noise.</b> You consistently predict a calmer version of yourself than the one that shows up.','The hit rate is uninteresting. The direction of the miss is the whole finding.'] },
+  { prompt:'You change a long-standing approach and the first fortnight goes <b>noticeably worse</b>.',
+    lines:['<b>The competence dip after a double-loop change.</b> The new frame underperforms the old one before it overtakes it.','This dip is the usual reason people revert and conclude the old way was right. Decide the review date in advance.'] },
+  { prompt:'You write in your reflection: <b>&ldquo;I need to be more present with them.&rdquo;</b>',
+    lines:['<b>That is an espoused theory with a new coat on.</b> No record, no quoted speech, no number.','If an entry contains nothing a camera could have caught, it has not reached the theory-in-use.'] },
+  { prompt:'A meeting you chaired reached your preferred outcome and everyone <b>seemed content</b>.',
+    lines:['<b>Not evidence of anything yet.</b> Model I produces exactly this: comfortable rooms and unexpressed positions.','Who disagreed and did not say so? If you cannot name the answer, you do not have one.'] },
+  { prompt:'You tell yourself you did not raise it because <b>it was not the right moment</b>.',
+    lines:['<b>Check whether the right moment has ever arrived.</b> &ldquo;Not now&rdquo; is the most durable form of never.','If this is the third postponement, the timing is not the reason. Name what is.'] },
+  { prompt:'You ask your class for honest feedback on the unit and <b>get warm, vague answers</b>.',
+    lines:['<b>Their Model I, running on you.</b> They are protecting you and themselves exactly as you do upward.','Anonymous, specific, and about the work rather than you. And then your reaction to it is the next piece of data.'] },
+  { prompt:'You are about to write &ldquo;as we discussed&rdquo; in an email about something <b>you decided alone</b>.',
+    lines:['<b>Unilateral control, retroactively laundered as agreement.</b>','Small, routine, and it is the sentence that makes the decision undiscussable later.'] },
+  { prompt:'You state your view, give the evidence under it, and ask what they see that you do not &mdash; <b>and you would actually change</b>.',
+    lines:['<b>Advocacy paired with inquiry. Model II.</b>','The whole thing turns on the last clause. Name in advance what answer would move you, or they will know it was theatre.'] },
+  { prompt:'Someone says the thing nobody says. <b>The room goes quiet and then moves on.</b>',
+    lines:['<b>The routine defending itself.</b> No one argued; the topic simply failed to exist.','Whoever says it next needs someone to go second. That is a decision you can make in advance.'] },
+  { prompt:'Reviewing your own protocol pages, you look for <b>signs they are working</b>.',
+    lines:['<b>Defence motivation is highest on your own work.</b>','Name the result that would make you drop it, before you look. Then ask who other than you says it is working.'] },
+  { prompt:'You finish the left-hand column and immediately want to <b>explain why your left column was fair</b>.',
+    lines:['<b>That is the exercise working, not an objection to it.</b>','The urge to justify is the theory-in-use defending itself in real time. Note it and do not act on it.'] },
+  { prompt:'Name <b>the one thing</b>.',
+    lines:['<b>What would have to be true for me to be wrong about this &mdash; and have I gone and looked?</b>','Unlike &ldquo;am I being defensive?&rdquo;, it has an answer that exists outside your own head, which means you can go and get it.'] }
+];
+var ROUND=10, STEPS=[], idx=0, revealed=false;
+var ONE = POOL[POOL.length-1];
+
+function startRound(){
+  var a=POOL.slice(0,POOL.length-1);
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+  STEPS=a.slice(0,ROUND-1); STEPS.push(ONE); idx=0;
+}
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Name it &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  startRound();
+  document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-argyris-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+startRound();
+renderAll();
+</script>
+</body>
+</html>
