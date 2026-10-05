@@ -197,20 +197,215 @@ def load_user_data():
             "body_comp": {"weight": None, "body_fat": None, "muscle_mass": None, "bmi": None, "visceral_fat": None}
         }
 
-def get_weather():
-    """Fetch weather for Richmond, BC."""
+# -- 7-day forecast (Oct 4 2026) -------------------------------------------
+# Replaces the single current-conditions line. Open-Meteo's free endpoint
+# serves the daily block from the same call, same coords, no key, no cost.
+# RICHMOND_COORDS still honours the FORGE_LAT / FORGE_LON travel override.
+# NOTE: no backslash escapes inside f-string braces anywhere below - that
+# is a syntax error before Python 3.12, and this file is parsed on a 3.9 Mac
+# and run on a 3.11 runner.
+WX_EMDASH = "—"
+WX_DEGREE = "°"
+WX_DROP = "\U0001F4A7"
+WX_MIDDOT = "·"
+
+WMO_CODES = {
+    0: "Clear sky", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
+    45: "Fog", 48: "Rime fog",
+    51: "Light drizzle", 53: "Drizzle", 55: "Heavy drizzle",
+    56: "Freezing drizzle", 57: "Heavy freezing drizzle",
+    61: "Slight rain", 63: "Rain", 65: "Heavy rain",
+    66: "Freezing rain", 67: "Heavy freezing rain",
+    71: "Light snow", 73: "Snow", 75: "Heavy snow", 77: "Snow grains",
+    80: "Rain showers", 81: "Heavy rain showers", 82: "Violent rain showers",
+    85: "Snow showers", 86: "Heavy snow showers",
+    95: "Thunderstorm", 96: "Thunderstorm, hail", 99: "Thunderstorm, heavy hail",
+}
+
+_COMPASS_16 = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+               "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+
+
+def _wx_esc(s):
+    """Minimal HTML escape. Written out rather than importing the stdlib
+    html module, which would collide confusingly with the local variable
+    named html in generate_html()."""
+    return (str(s).replace("&", "&amp;").replace("<", "&lt;")
+            .replace(">", "&gt;").replace('"', "&quot;"))
+
+
+def _wx_desc(code):
+    """WMO code to words. An unrecognised code says so rather than
+    guessing 'Cloudy' - the old 9-entry table silently mislabelled snow
+    and freezing rain. A wrong label is worse than an honest unknown."""
+    if code is None:
+        return WX_EMDASH
     try:
-        url = f"https://api.open-meteo.com/v1/forecast?latitude={RICHMOND_COORDS[0]}&longitude={RICHMOND_COORDS[1]}&current=temperature_2m,weather_code&temperature_unit=celsius&timezone={FORGE_TZ_NAME}"
-        with urllib.request.urlopen(url, timeout=10) as response:
+        code = int(code)
+    except (TypeError, ValueError):
+        return WX_EMDASH
+    known = WMO_CODES.get(code)
+    if known:
+        return known
+    return "Unknown (code " + str(code) + ")"
+
+
+def _wx_compass(deg):
+    """Bearing in degrees to a 16-point compass label."""
+    try:
+        deg = float(deg) % 360
+    except (TypeError, ValueError):
+        return None
+    return _COMPASS_16[int((deg + 11.25) // 22.5) % 16]
+
+
+def _wx_num(v):
+    """Open-Meteo sends null for a field it has no value for. Keep None
+    distinct from zero - 0% rain and 'no data' must not render alike."""
+    if v is None:
+        return None
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
+
+def get_weather():
+    """Fetch a 7-day forecast for Richmond, BC.
+
+    Returns {"days": [...], "error": str|None}. Each day carries label,
+    date, desc, hi, lo, rain, wind, wdir - any of which may be None, and
+    the renderer prints an em-dash for those rather than inventing a
+    number. On failure "days" is empty and "error" is set, which the card
+    shows loudly; nothing here fails silently."""
+    out = {"days": [], "error": None}
+    try:
+        url = (
+            "https://api.open-meteo.com/v1/forecast"
+            "?latitude=" + str(RICHMOND_COORDS[0]) +
+            "&longitude=" + str(RICHMOND_COORDS[1]) +
+            "&daily=weather_code,temperature_2m_max,temperature_2m_min,"
+            "precipitation_probability_max,wind_speed_10m_max,"
+            "wind_direction_10m_dominant"
+            "&forecast_days=7&temperature_unit=celsius&wind_speed_unit=kmh"
+            "&timezone=" + urllib.parse.quote(str(FORGE_TZ_NAME), safe="")
+        )
+        with urllib.request.urlopen(url, timeout=15) as response:
             data = json.loads(response.read().decode())
-            temp = data.get("current", {}).get("temperature_2m", "N/A")
-            code = data.get("current", {}).get("weather_code", 0)
-            desc = {0:"Clear sky",1:"Mainly clear",2:"Partly cloudy",3:"Overcast",45:"Foggy",51:"Light drizzle",61:"Slight rain",80:"Rain showers",95:"Thunderstorm"}.get(code, "Cloudy")
-            return f"{desc}, {temp}°C"
+        daily = data.get("daily") or {}
+        times = daily.get("time") or []
+        if not times:
+            out["error"] = "Open-Meteo returned no daily block"
+            return out
+        for idx, day in enumerate(times[:7]):
+            def _at(key, _i=idx):
+                arr = daily.get(key) or []
+                return arr[_i] if _i < len(arr) else None
+            try:
+                dt = datetime.strptime(str(day), "%Y-%m-%d")
+                label = "Today" if idx == 0 else dt.strftime("%a")
+            except ValueError:
+                label = str(day)
+            out["days"].append({
+                "label": label,
+                "date": str(day),
+                "desc": _wx_desc(_at("weather_code")),
+                "hi": _wx_num(_at("temperature_2m_max")),
+                "lo": _wx_num(_at("temperature_2m_min")),
+                "rain": _wx_num(_at("precipitation_probability_max")),
+                "wind": _wx_num(_at("wind_speed_10m_max")),
+                "wdir": _wx_compass(_at("wind_direction_10m_dominant")),
+            })
     except Exception as e:
         import traceback; traceback.print_exc()
-        print(f"Weather fetch failed: {e}")
-        return "Weather unavailable"
+        print("Weather fetch failed: " + str(e))
+        out["days"] = []
+        out["error"] = type(e).__name__ + ": " + str(e)
+    return out
+
+
+def render_weather_card(wx):
+    """Build the forecast card's inner HTML - seven rows, today first.
+
+    Inline styles only, deliberately: the stylesheet lives inside an
+    f-string where every brace is doubled, and this helper sits outside
+    it, so nothing here needs brace-escaping. Colours come from the
+    brief's own light-theme variables; the error chip copies the
+    sleep-alert pattern (red carried by the chip, never by the letters)
+    because pale warning colours are invisible on the orange-amber
+    background.
+
+    LAYOUT, decided by rendering it rather than guessing: each day is a
+    two-line block, not one flex line. At 390px a single line forces the
+    condition to ellipsis - 'Heavy snow' and 'Heavy rain' both truncate
+    to 'Hea...', which is a quiet falsehood on a Friday in February. So
+    line 1 carries day / high / low / rain%, which align into columns
+    down the card, and line 2 gives the condition and wind the full
+    width, where even 'Violent rain showers' fits uncut."""
+    if not isinstance(wx, dict):
+        wx = {"days": [], "error": "forecast data missing"}
+    days = wx.get("days") or []
+    err = wx.get("error")
+
+    def _temp(v):
+        if v is None:
+            return WX_EMDASH
+        return format(round(v), "g") + WX_DEGREE
+
+    rows = []
+    total = len(days)
+    for n, d in enumerate(days):
+        border = "" if n == total - 1 else "border-bottom:1px solid rgba(13,13,13,0.18);"
+        rain = d.get("rain")
+        rain_txt = WX_EMDASH if rain is None else format(round(rain), "g") + "%"
+        wind = d.get("wind")
+        if wind is None:
+            wind_txt = WX_EMDASH
+        else:
+            wind_txt = format(round(wind), "g") + " km/h"
+            if d.get("wdir"):
+                wind_txt = wind_txt + " " + str(d["wdir"])
+        day_weight = "800" if n == 0 else "700"
+        label = _wx_esc(d.get("label") or "")
+        desc = _wx_esc(d.get("desc") or WX_EMDASH)
+        rows.append(
+            '<div style="padding:9px 2px 10px;' + border + '">'
+            '<div style="display:flex;align-items:baseline;gap:8px;">'
+            '<span style="flex:0 0 48px;font-size:15px;font-weight:' + day_weight +
+            ';color:var(--text-bright);">' + label + '</span>'
+            '<span style="font-size:18px;font-weight:800;color:var(--text-bright);">' +
+            _temp(d.get("hi")) + '</span>'
+            '<span style="font-size:14px;color:var(--muted);">/ ' +
+            _temp(d.get("lo")) + '</span>'
+            '<span style="flex:1 1 auto;"></span>'
+            '<span style="font-size:15px;font-weight:700;color:#1a5fa8;">' +
+            WX_DROP + ' ' + rain_txt + '</span>'
+            '</div>'
+            '<div style="margin-left:56px;margin-top:2px;font-size:13px;'
+            'color:var(--text-light);">' + desc +
+            ' <span style="color:var(--muted);">' + WX_MIDDOT + ' ' + wind_txt +
+            '</span></div>'
+            '</div>'
+        )
+
+    chip = ""
+    if err:
+        chip = (
+            '<div style="background:rgba(200,60,60,0.15);'
+            'border:2px solid rgba(200,60,60,0.35);border-radius:8px;'
+            'padding:10px 12px;margin-bottom:10px;color:var(--text-bright);'
+            'font-size:14px;font-weight:700;">FORECAST UNAVAILABLE &mdash; ' +
+            _wx_esc(err) + '</div>'
+        )
+
+    if not rows:
+        if chip:
+            return chip
+        return ('<div class="mini-card"><div class="mini-detail">'
+                'FORECAST UNAVAILABLE &mdash; no days returned</div></div>')
+    return (chip + '<div class="mini-card" style="padding:4px 12px;">' +
+            "".join(rows) + '</div>')
+
 
 ZERO_WIDTH_CHARS = "\ufeff\u200b\u200c\u200d\u2060"
 
@@ -2127,6 +2322,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     sports_text = get_sports_updates()
     reminders = fetch_reminders()
     sitrep_text = generate_sitrep(welltory, sleep, calendar_events, weather, reminders)
+    weather_html = render_weather_card(weather)
 
     # install10: the Sleep card states MISSING in words rather than printing a
     # number that was never measured. Silent fake data is worse than a gap.
@@ -2676,7 +2872,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
 
   <div class="card">
     <div class="card-header"><span class="card-icon">🌤️🌴</span><span>Richmond Weather</span></div>
-    <div class="mini-card"><div class="mini-detail">{weather}</div></div>
+    {weather_html}
   </div>
 
   <div class="card" data-newscan>
