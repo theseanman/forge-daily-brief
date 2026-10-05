@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rubirosa</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0; --red:#ff8a8a; --violet:#b48cff;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+  a.inl{ color:var(--accent-hi); }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.teal{ border-left-color:var(--teal); background:rgba(63,208,192,.08); }
+  .card.gold{ border-left-color:var(--gold); background:rgba(245,215,110,.08); }
+  .card.red{ border-left-color:var(--red); background:rgba(255,138,138,.08); }
+  .card.violet{ border-left-color:var(--violet); background:rgba(180,140,255,.09); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .trig{ font-size:13px; line-height:1.5; margin:4px 0 8px; color:var(--ink-dim); }
+  .trig b{ color:var(--gold); font-weight:800; letter-spacing:.04em; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .card.teal .move b{ color:#8ff0e4; } .card.teal .move:before{ color:var(--teal); }
+  .card.red .move b{ color:#ffc0c0; } .card.red .move:before{ color:var(--red); }
+  .card.violet .move b{ color:#d4bcff; } .card.violet .move:before{ color:var(--violet); }
+  .card.gold .move b{ color:var(--gold); } .card.gold .move:before{ color:var(--gold); }
+  .num{ display:flex; gap:10px; font-size:14px; line-height:1.55; margin:8px 0; }
+  .num .nn{ flex:0 0 20px; height:20px; border-radius:50%; background:rgba(74,157,232,.22); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; color:var(--accent-hi); margin-top:2px; }
+  .num b{ color:var(--accent-hi); }
+  .card.teal .num .nn{ background:rgba(63,208,192,.2); color:#8ff0e4; }
+  .card.teal .num b{ color:#8ff0e4; }
+  .ex{ margin-top:11px; padding-top:10px; border-top:1px solid var(--line); }
+  .ex-row{ font-size:13.5px; line-height:1.55; margin:7px 0; }
+  .ex-row .tag{ display:inline-block; min-width:92px; font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .group-k{ font-size:12.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--teal); font-weight:800; margin:16px 0 6px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .band.warn{ background:rgba(255,138,138,.10); border-left-color:var(--red); }
+  .band.warn b{ color:var(--red); }
+  .band.vio{ background:rgba(180,140,255,.11); border-left-color:var(--violet); }
+  .band.vio b{ color:#d4bcff; }
+  .band.teal{ background:rgba(63,208,192,.10); border-left-color:var(--teal); }
+  .band.teal b{ color:#8ff0e4; }
+  .para{ font-size:14px; line-height:1.6; margin:7px 0; }
+  .para b{ color:var(--accent-hi); }
+  .card.teal .para b{ color:#8ff0e4; }
+  .card.red .para b{ color:#ffc0c0; }
+  .q{ font-size:14px; line-height:1.55; margin:6px 0 6px 4px; padding-left:12px; border-left:2px solid var(--gold); }
+  .step{ display:flex; gap:11px; font-size:14px; line-height:1.55; margin:9px 0; }
+  .step .n{ flex:0 0 22px; height:22px; border-radius:50%; background:rgba(74,157,232,.22); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:800; color:var(--accent-hi); margin-top:1px; }
+  .step b{ color:var(--accent-hi); }
+  .rung{ display:flex; gap:11px; font-size:14px; line-height:1.55; margin:10px 0; }
+  .rung .n{ flex:0 0 24px; height:24px; border-radius:50%; background:rgba(180,140,255,.2); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:800; color:#d4bcff; margin-top:1px; }
+  .rung b{ color:#d4bcff; }
+  .rung.home .n{ background:rgba(63,208,192,.2); color:#8ff0e4; }
+  .rung.home b{ color:#8ff0e4; }
+  .vrow{ font-size:13.5px; line-height:1.55; margin:8px 0; padding-bottom:8px; border-bottom:1px solid rgba(122,175,255,.12); }
+  .vrow:last-child{ border-bottom:0; padding-bottom:0; }
+  .vrow .bk{ font-weight:700; color:var(--ink); }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+  .ev.x{ background:rgba(255,138,138,.16); color:#ffb3b3; border-color:rgba(255,138,138,.4); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+
+  /* drill */
+  #drill{ display:none; }
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(19px,5vw,26px); font-weight:300; line-height:1.4; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .btn:focus-visible, .toggle button:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>Rubirosa</h1>
+    <div class="sub">Dating register. The five things the charisma protocol deliberately does not do &mdash; stripped of the money, the regime and the press mythology, graded honestly, and ordered so the cheap rungs come first.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="section-k">What was not learnable</div>
+
+    <div class="card red">
+      <div class="para">Porfirio Rubirosa was born in 1909 into the Dominican diplomatic class, raised largely in Paris, and married Flor de Oro Trujillo at twenty-three. He spent his life on diplomatic postings funded by his father-in-law's regime. <b>He did not enter the rooms where heiresses and film actresses were</b> &mdash; he was born adjacent to them and married into the rest. <span class="ev a">A</span></div>
+      <div class="para">A large share of the legend is press invention: the pepper-mill nickname, the Monroe rumour, the running tally. Treat the myth as evidence of publicity, not of technique. <span class="ev c">C</span></div>
+      <div class="note">What survives across contemporaneous accounts, once you strip the money and the regime, is a short list. That list is learnable. This page is that list.</div>
+    </div>
+
+    <div class="band warn"><b>Grading, stated up front.</b> Most of what is sold on this subject is <span class="ev d">D</span> wearing a lab coat. Responsiveness and self-expansion are <span class="ev b">B</span>; the nonverbal and vocal material is <span class="ev c">C</span>; the pillar everyone would want padded out &mdash; signalling interest &mdash; has the weakest base here and is marked as such rather than dressed up.</div>
+
+    <div class="section-k">What charisma already owns</div>
+
+    <div class="band vio"><b>Run <a class="inl" href="./charisma.html">Charisma</a> as the base layer.</b> Grounded centre, credible floor, the warm approach, the golden rule of attention, calibrated depth, expressiveness. None of it is rebuilt here. One note before moving on: the golden rule is not merely transferable to this register, it is the strongest single lever in it. <b>Perceived partner responsiveness</b> &mdash; the sense that someone understands you, values you and is actually attending &mdash; predicts attraction and desire more reliably than nearly anything else measured. <span class="ev b">B</span> Rubirosa's most consistently reported trait was exactly this: he looked at whoever he was speaking to as though the rest of the room had gone dark. If you keep one thing from the old page, keep that.</div>
+
+    <div class="section-k">Pillar 1 &mdash; A life already in motion</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">01</span><span class="p-name">A life already in motion</span><span class="ev b">B</span></div>
+      <div class="p-ess">People are drawn to a trajectory they can join, not to an invitation to become your audience.</div>
+      <div class="para">Aron's self-expansion model holds that we are attracted to people who enlarge our sense of self &mdash; new capacities, perspectives, experience &mdash; and that shared novel or arousing activity raises relationship quality. <span class="ev b">B</span> The mate-preference literature on status is real but frequently overread; what generalises is not wealth but <b>visible competence and forward motion</b>. <span class="ev b">B</span> Rubirosa had both for structural reasons. You supply yours.</div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><span class="p-name">What actually counts</span></div>
+      <div class="p-ess">Not hobbies. Three components, and the diagnosis is which one is missing.</div>
+      <div class="move"><b>Something being built that could visibly fail.</b> Present &mdash; the book, the course, the stack.</div>
+      <div class="move"><b>Something that makes a physical demand.</b> Present &mdash; Krav, and it is the one that cannot be faked or held together cognitively.</div>
+      <div class="move"><b>Something that puts you in front of people outside your household.</b> This is the gap.</div>
+      <div class="note">Naming it precisely beats "needs more life". Day job, night job, building alone at a desk, home. Two of three are already strong; the third is close to absent, and it is the only one this pillar actually requires from you.</div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><span class="p-name">The build &mdash; three to six months</span></div>
+      <div class="num"><div class="nn">1</div><div><b>One recurring thing outside the house</b> that is neither work nor family. Fortnightly minimum, in the calendar as a fixed appointment, not an intention. Dancing is the obvious candidate and the one men skip &mdash; it is also the only item that serves Pillar 2 and Pillar 3 at the same time.</div></div>
+      <div class="num"><div class="nn">2</div><div><b>Protect Krav exactly as it is.</b> No added training load. It already does its job.</div></div>
+      <div class="num"><div class="nn">3</div><div><b>Get one thing to a finish line someone else can see.</b> Self-Evidence shipping is worth more here than three more half-built pages &mdash; forward motion only reads as motion when something lands.</div></div>
+      <div class="num"><div class="nn">4</div><div><b>Write the three lines.</b> What you are building, what you are training, who you are raising. Not for anyone else &mdash; so you stop improvising the answer.</div></div>
+      <div class="note">Rungs 1&ndash;4 of the ladder cost nothing and can start this week. The out-of-house commitment is the only item here with a real calendar cost.</div>
+    </div>
+
+    <div class="band"><b>The interim &mdash; what is available and what is not.</b> There is a real version of &ldquo;fake it till you make it&rdquo; here and a version that backfires, and they are easy to confuse.<br><br>
+    <b>Available:</b> presentation, not fabrication. You almost certainly describe yourself worse than the facts warrant &mdash; &ldquo;I teach, and I mess about with some projects&rdquo; misrepresents a man running two courses, writing a book and building a software stack. Correcting that is not faking; it is stopping an inaccuracy. And starting the out-of-house thing on day one means that by week two the true answer has already improved.<br><br>
+    <b>Not available:</b> performing a life you do not have. Borrowed material reads as borrowed, and performed attention is detected almost instantly and lands worse than open distraction <span class="ev b">B</span> &mdash; one of the better-evidenced findings on this page. It also has to be maintained in front of someone paying close attention, which is the exact circumstance in which you would rather not be managing a story.</div>
+
+    <div class="band teal"><b>Worth testing rather than assuming.</b> Your read that there is less there than it sounds is itself a self-assessment, and self-evaluations correlate only modestly with objective measures <span class="ev b">B</span> (see <a class="inl" href="./argyris.html">Argyris</a>). That particular miscalibration runs low in people who are busy producing. Hold it as a hypothesis, not a finding.</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">Never audition it</span></div>
+      <div class="move">Mention <b>one</b> thing in passing, with the detail that interests <i>you</i>, then drop it. If it lands you will be asked.</div>
+      <div class="move">The failure mode is presenting a life in motion as <b>a list of hobbies</b>, or quietly hiding the half you think is too niche.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Everyday</span>&ldquo;What do you do?&rdquo; &mdash; answer with the true interesting detail, not the job title. One sentence, then a question back.</div>
+        <div class="ex-row"><span class="tag">Out of house</span>The fortnightly thing is itself the answer within two weeks of starting it.</div>
+        <div class="ex-row"><span class="tag">Krav</span>Never raised as a credential. It shows in the body or it does not matter.</div>
+      </div>
+    </div>
+
+    <div class="section-k">Pillar 2 &mdash; Competence in the body</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">02</span><span class="p-name">Competence in the body</span><span class="ev c">C</span></div>
+      <div class="p-ess">He played international polo, drove Le Mans, boxed, played guitar. None of it was described at dinner. It was evident in how he moved.</div>
+      <div class="para">Observers rate relaxed, unhurried, expansive movement as higher in status and attractiveness on very short exposure. <span class="ev c">C</span> The famous power-posing hormonal claims <b>failed replication</b> &mdash; ignore those entirely. <span class="ev x">X</span> What survives is an effect on how others read you, not on your own biochemistry.</div>
+      <div class="num"><div class="nn">1</div><div>Krav continues. No additional training load.</div></div>
+      <div class="num"><div class="nn">2</div><div>Convert grooming from a decision into a <b>maintenance interval</b>: haircut on a recurring date, one set of clothes that actually fit, shoes kept. The point is removing it from thought permanently.</div></div>
+      <div class="num"><div class="nn">3</div><div><b>Slow your hands for one week.</b> Notice the reach for the phone, the gesturing while talking, the speed of getting out of a chair. Unhurried reads as unworried. <span class="ev c">C</span></div></div>
+      <div class="num"><div class="nn">4</div><div>Learn one physical thing badly and keep doing it.</div></div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Room 148</span>Standing still while talking is the whole drill, and a classroom gives you five hours a day of it. Feet planted, hands quiet, no pacing.</div>
+        <div class="ex-row"><span class="tag">Everyday</span>Getting out of the car, walking into a shop, putting a bag down. Unhurried is trained in the dull reps, not the ones that matter.</div>
+        <div class="ex-row"><span class="tag">Krav</span>Already supplies the floor. The transfer is deliberate: carry the same settled posture out of the gym.</div>
+        <div class="ex-row"><span class="tag">Out of house</span>Dancing badly, in public, is the single highest-yield item in this pillar and the one you will most want to skip.</div>
+      </div>
+    </div>
+
+    <div class="section-k">Pillar 3 &mdash; Play</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">03</span><span class="p-name">Play</span><span class="ev b">B</span></div>
+      <div class="p-ess">Flirtation is a register, not a technique.</div>
+      <div class="para">Humour production and humour receptivity both predict attraction, and shared laughter early is one of the better observable markers of mutual interest. <span class="ev b">B</span> Rubirosa's second most reported quality, after the attention, is simply that he was <b>a good time</b> &mdash; food, music, staying up, dancing. Being fun is badly underrated in nearly everything written on this subject.</div>
+      <div class="para"><b>Your specific risk.</b> Teaching rewards earnestness and the protocols reward earnestness. Earnest is respectable. It is not, on its own, attractive.</div>
+      <div class="num"><div class="nn">1</div><div><b>Misinterpret one thing per conversation</b>, lightly and transparently. Nonsense is the register. It is not wit and is not supposed to be clever.</div></div>
+      <div class="num"><div class="nn">2</div><div>Leave one ambiguity unresolved. Do not explain yourself immediately.</div></div>
+      <div class="num"><div class="nn">3</div><div>Tease only what is small. Never the load-bearing thing, never an insecurity. Negging is <span class="ev d">D</span> as a method and reads as contempt to anyone above nineteen.</div></div>
+      <div class="num"><div class="nn">4</div><div>Once a week, have a conversation in which <b>you are of no use to anyone</b>. Being useful is your default mode and it is the exact opposite of play.</div></div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Staff room</span>Register practice at zero stakes, with colleagues, where nothing is riding on it.</div>
+        <div class="ex-row"><span class="tag">Everyday</span>The barista, the hardware shop, the rink at your daughter's ringette. Low stakes by construction.</div>
+        <div class="ex-row"><span class="tag">Home ground</span>Your daughters are the best available audience for the register and the only one that costs nothing to get wrong.</div>
+      </div>
+      <div class="note">Deliberately not listed: your night-class adults. They are your students. The register belongs nowhere near a room you grade.</div>
+    </div>
+
+    <div class="section-k">Pillar 4 &mdash; Signalling interest cleanly</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">04</span><span class="p-name">Signalling interest cleanly</span><span class="ev c">C</span></div>
+      <div class="p-ess">This is the thing the charisma register deliberately refuses to do. Warmth given to everyone signals nothing to anyone.</div>
+      <div class="para"><b>Graded honestly:</b> the folk claim that ambiguity and uncertainty increase attraction rests largely on one small 2011 study and is routinely overstated &mdash; <span class="ev c">C</span> at best, and usually misapplied. <span class="ev d">D</span> for the version sold in the seduction industry. The defensible position is narrower: <b>clear interest, expressed once, at low stakes</b>, removes the interpretive burden from the other person and removes the campaign from you.</div>
+      <div class="num"><div class="nn">1</div><div><b>Differentiate.</b> With one person, once, let the attention visibly not be what you give everyone: hold eye contact a beat past comfortable, then be the one to look away, warmly.</div></div>
+      <div class="num"><div class="nn">2</div><div><b>Say the true thing plainly and once.</b> &ldquo;I'd like to take you to dinner Thursday.&rdquo; A time, a question, finished.</div></div>
+      <div class="num"><div class="nn">3</div><div><b>Take the answer in one beat</b> and stay warm either way. That beat is the whole test, and it is Charisma Pillar 1 doing the work.</div></div>
+      <div class="num"><div class="nn">4</div><div>Never re-ask and never explain why you asked. Explaining converts an offer into a request for permission.</div></div>
+      <div class="num"><div class="nn">5</div><div><b>Frequency over intensity.</b> Many low-stakes asks, no campaigns. Campaigns are where otherwise decent men become strange.</div></div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Out of house</span>The only context on this page where the ask belongs. Shared activity, people you meet as peers.</div>
+        <div class="ex-row"><span class="tag">Apps</span>Same rule, compressed: one clear ask after a short exchange, no campaign, warm exit on a no.</div>
+        <div class="ex-row"><span class="tag">Never</span>Work. Students, their parents, colleagues you hold any authority over. This is not caution, it is a hard line.</div>
+      </div>
+    </div>
+
+    <div class="section-k">Pillar 5 &mdash; Discretion</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">05</span><span class="p-name">Discretion</span><span class="ev c">C</span></div>
+      <div class="p-ess">He never traded women for status among other men. It is the likeliest reason so many of them stayed fond of him afterwards. <span class="ev c">C &mdash; accounts, not measurement</span></div>
+      <div class="para"><b>Why it matters more for you than for him.</b> This is the only pillar that compounds over years, and Richmond is small. He could leave a continent. You will see these people again.</div>
+      <div class="num"><div class="nn">1</div><div>Nothing said to you in private is repeated, ever, including after it ends. No exception for close friends.</div></div>
+      <div class="num"><div class="nn">2</div><div><b>End things yourself</b> &mdash; in person, briefly, without a list of reasons. A list invites litigation.</div></div>
+      <div class="num"><div class="nn">3</div><div>Assume you will meet everyone again, in a city this size, in a school community this connected.</div></div>
+      <div class="num"><div class="nn">4</div><div>The test that costs nothing: <b>would you be content with your daughters knowing exactly how you conducted it.</b></div></div>
+    </div>
+
+    <div class="section-k">The ladder</div>
+
+    <div class="band teal"><b>Home ground first, one rung at a time, do not climb until the current rung is boring.</b> Your own design principle from <a class="inl" href="./second-nature.html">Second Nature</a>. Rungs 1&ndash;4 are teal: zero stakes, no other person required, start this week.</div>
+
+    <div class="rung home"><div class="n">1</div><div><b>Grooming interval set and running.</b></div></div>
+    <div class="rung home"><div class="n">2</div><div><b>Three lines written</b>; one mentioned in passing to someone safe.</div></div>
+    <div class="rung home"><div class="n">3</div><div><b>One play move a day</b> with people you have no interest in &mdash; colleagues, the staff room, everyday errands. Register practice, zero stakes.</div></div>
+    <div class="rung home"><div class="n">4</div><div><b>Slow hands, one full week.</b></div></div>
+    <div class="rung"><div class="n">5</div><div><b>One fortnightly thing out of the house</b>, held for a month.</div></div>
+    <div class="rung"><div class="n">6</div><div><b>One differentiated attention.</b> No ask.</div></div>
+    <div class="rung"><div class="n">7</div><div><b>One clean ask.</b> Any outcome. Warm exit.</div></div>
+    <div class="rung"><div class="n">8</div><div><b>Repeat seven until the answer stops mattering within the hour.</b></div></div>
+
+    <div class="band"><b>Rung eight is the entire protocol.</b> Everything above it exists to make that single act cheap.</div>
+
+    <div class="section-k">Start this week</div>
+    <div class="step"><div class="n">1</div><div>Book the haircut on a recurring date. Removes a decision permanently.</div></div>
+    <div class="step"><div class="n">2</div><div>Write the three lines. Twenty minutes, for you, not for anyone.</div></div>
+    <div class="step"><div class="n">3</div><div>Find the fortnightly out-of-house thing and <b>put the first date in the calendar</b>. This is the only item with a real cost and the only one that addresses the actual gap.</div></div>
+    <div class="step"><div class="n">4</div><div>Slow hands. Starts the moment you read it, costs nothing, runs all week.</div></div>
+    <div class="step"><div class="n">5</div><div>One play move a day. Staff room, errands, home.</div></div>
+
+    <div class="section-k">Failure modes</div>
+
+    <div class="card red">
+      <div class="move"><b>Performing attention.</b> Waiting for your turn with an interested face on. Detected almost instantly and lands worse than open distraction. <span class="ev b">B</span></div>
+      <div class="move"><b>Running it as volume on people.</b> Low stakes works because it keeps you honest, not because people are throughput. The moment the count matters, Pillar 5 starts failing.</div>
+      <div class="move"><b>Borrowed material.</b> Lines from the seduction industry read as lines. The evidence base there is <span class="ev d">D</span>, and the genuinely useful part of it is Charisma Pillar 1 under a new name.</div>
+      <div class="move"><b>Stacking it on a hard month.</b> Rungs 1&ndash;4 cost nothing and can start now. Do not start rung six in a week you are drowning &mdash; and marking weeks are weeks you are drowning.</div>
+      <div class="move"><b>Waiting to be ready.</b> There is no version of this where the ask becomes comfortable before you have done it several times.</div>
+      <div class="move"><b>Building the page instead of climbing it.</b> The nearest-to-hand failure for you specifically: this is a protocol you can read, re-read and improve indefinitely without ever reaching rung five.</div>
+    </div>
+
+    <div class="section-k">The one thing</div>
+    <div class="band"><b>The ask, at low stakes, repeatedly, with a warm exit either way.</b><br><br>Every pillar exists to make that single act cheap. Rubirosa's real advantage, once you remove the money and the regime, was that no individual outcome mattered to him &mdash; and the only route there is reps. Not reasoning, not reading, not this page. Your own observation stands: what held up was what was tested.</div>
+
+    <div class="section-k">The ledger &mdash; what not to copy</div>
+
+    <div class="card red">
+      <div class="vrow"><span class="bk">The regime.</span> He was a fixer for one of the hemisphere's nastier governments, including proximity to the Gal&iacute;ndez disappearance. <span class="ev c">C</span></div>
+      <div class="vrow"><span class="bk">The marriages.</span> Large settlements from two conspicuously troubled heiresses; the Barbara Hutton marriage lasted fifty-three days. <span class="ev a">A</span></div>
+      <div class="vrow"><span class="bk">The end.</span> Dead at fifty-six in 1965, wrapped around a tree in the Bois de Boulogne after a night out. <span class="ev a">A</span></div>
+      <div class="vrow"><span class="bk">The ledger line.</span> Five marriages. No children he raised.</div>
+      <div class="note">He is a source of five techniques. He is not a model of a life. <b>The part he never had, you already have.</b></div>
+    </div>
+
+    <div class="section-k">Evidence key</div>
+    <div class="key">
+      <b>A</b> &mdash; strong and replicated, or documented historical fact.<br>
+      <b>B</b> &mdash; good evidence, some dispute.<br>
+      <b>C</b> &mdash; suggestive: thin, contested, or a single study.<br>
+      <b>D</b> &mdash; plausible reasoning, no real evidence behind it.<br>
+      <b>X</b> &mdash; failed replication. Do not use.
+    </div>
+
+    <div class="foot">Rubirosa &middot; Forge OS</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h1 style="font-size:20px;">Name the move</h1>
+    <div class="sub">Recognition, not recall. A situation. Name the pillar or the move &mdash; or say it is out of scope &mdash; before revealing. Ten per round, shuffled.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Done</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn ghost" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  var read = m === 'read';
+  document.getElementById('read').style.display  = read ? 'block' : 'none';
+  document.getElementById('drill').style.display = read ? 'none' : 'block';
+  document.getElementById('tab-read').className  = read ? 'on' : '';
+  document.getElementById('tab-drill').className = read ? '' : 'on';
+  if(!read){ restart(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-rubirosa';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- drill: 24-situation pool, 10 per round, one-thing last ---------------- */
+var POOL = [
+  { prompt:'Asked what you do, you say <b>&ldquo;I teach, and I mess about with some projects&rdquo;</b>.',
+    lines:['<b>Pillar 1 &mdash; and this is the interim move, not the build.</b> That sentence misrepresents two courses, a book and a software stack.','Correcting it is not faking. It is stopping an inaccuracy. Write the three lines so you stop improvising.'] },
+  { prompt:'You have been talking for ten minutes about the thing you are building, in detail, <b>and no one asked a second question</b>.',
+    lines:['<b>Auditioning.</b> Pillar 1&rsquo;s failure mode, not its application.','Mention one thing in passing with the detail that interests you, then drop it. If it lands you get asked.'] },
+  { prompt:'You realise almost everything you do is <b>at a desk, at school, or at home</b>.',
+    lines:['<b>The actual gap in Pillar 1.</b> Something being built: present. Physical demand: present. People outside the household: close to absent.','One recurring thing outside the house, fortnightly, in the calendar as a fixed appointment. It is the only item here with a real cost.'] },
+  { prompt:'You are mid-conversation and notice you have <b>reached for your phone twice</b> without deciding to.',
+    lines:['<b>Pillar 2 &mdash; slow hands.</b> Unhurried reads as unworried. <b>[C]</b>','The reps are in the dull moments: getting out of a chair, walking into a shop, putting a bag down.'] },
+  { prompt:'You consider adding a second training session a week <b>to look more athletic</b>.',
+    lines:['<b>No &mdash; Pillar 2 says explicitly to protect Krav and add nothing.</b>','The pillar is about how you move, not how much you train. Added load competes with the thing already working.'] },
+  { prompt:'You are about to hold a power pose in the car <b>to raise your testosterone before going in</b>.',
+    lines:['<b>Failed replication. [X] &mdash; ignore entirely.</b>','What survives is an effect on how others read your movement, not on your own biochemistry.'] },
+  { prompt:'Someone makes a small joke and you respond with <b>a thoughtful, useful observation</b>.',
+    lines:['<b>Pillar 3 &mdash; your specific risk.</b> Earnest is respectable. It is not, on its own, attractive.','Misinterpret one thing lightly. Nonsense is the register; it is not supposed to be clever.'] },
+  { prompt:'You want to practise the play register. You consider trying it <b>with the adults in your night class</b>.',
+    lines:['<b>Out of scope &mdash; and deliberately excluded from this page.</b> They are your students and you grade them.','Staff room, errands, your own kitchen. Zero stakes means no one is in a room you hold authority over.'] },
+  { prompt:'You tease someone about <b>the thing they are quietly insecure about</b>, lightly.',
+    lines:['<b>Tease only what is small.</b> Never the load-bearing thing, never an insecurity.','Negging is <b>[D]</b> as a method and reads as contempt to anyone above nineteen.'] },
+  { prompt:'You give the same easy warmth to <b>everyone in the room, including her</b>.',
+    lines:['<b>Pillar 4 &mdash; warmth given to everyone signals nothing to anyone.</b>','Differentiate once: attention that is visibly not what you give everyone. Then the clean ask.'] },
+  { prompt:'You want to build intrigue by <b>being a bit unavailable and hard to read</b>.',
+    lines:['<b>That is the [C]-at-best claim, sold as [D].</b> It rests largely on one small 2011 study and is routinely misapplied.','The defensible version is the opposite: clear interest, once, at low stakes. It removes the interpretive burden from her and the campaign from you.'] },
+  { prompt:'She says no. You find yourself <b>explaining why you asked</b>.',
+    lines:['<b>Never explain.</b> Explaining converts an offer into a request for permission.','Take the answer in one beat, stay warm, move on. That beat is the whole test.'] },
+  { prompt:'It has been three weeks and you are <b>still working up to asking</b>.',
+    lines:['<b>Waiting to be ready.</b> There is no version where the ask becomes comfortable before you have done it several times.','Frequency over intensity. Many low-stakes asks, no campaigns.'] },
+  { prompt:'A colleague you find interesting <b>reports to you on the Block B split</b>.',
+    lines:['<b>Hard line, not caution.</b> Work is excluded: students, their parents, anyone you hold authority over.','No pillar applies. The question does not get weighed.'] },
+  { prompt:'A friend asks how it went with someone you saw a few times <b>and it ended months ago</b>.',
+    lines:['<b>Pillar 5 &mdash; nothing private is repeated, ever, including after it ends.</b> No exception for close friends.','It is the only pillar that compounds over years, and this city is small.'] },
+  { prompt:'You decide to end it <b>by going quiet and letting it fade</b>.',
+    lines:['<b>Pillar 5 &mdash; end things yourself.</b> In person, briefly, without a list of reasons.','A list invites litigation. Fading is the version you would not want described back to you.'] },
+  { prompt:'You are deciding whether something you are about to do is all right. <b>You cannot quite tell.</b>',
+    lines:['<b>The test that costs nothing:</b> would you be content with your daughters knowing exactly how you conducted it.','If the answer needs a qualifier, it has already answered.'] },
+  { prompt:'You have done rung one and rung two and feel ready to <b>skip ahead to the ask</b>.',
+    lines:['<b>Do not climb until the current rung is boring.</b> Your own design principle from Second Nature.','Rungs three and four cost nothing and are the ones that make rung seven survivable.'] },
+  { prompt:'You read a line online that <b>sounds like it would land well</b>.',
+    lines:['<b>Borrowed material reads as borrowed.</b> The evidence base there is <b>[D]</b>.','The genuinely useful part of that whole industry is Charisma Pillar 1 under a different name.'] },
+  { prompt:'It is a marking week. You consider <b>starting rung six anyway</b>.',
+    lines:['<b>Do not stack it on a hard month.</b> Rungs one to four cost nothing and run fine through marking.','Rung six needs attention a drowning week does not have.'] },
+  { prompt:'You are listening, and you are <b>waiting for your turn with an interested face on</b>.',
+    lines:['<b>Performing attention.</b> Detected almost instantly and lands worse than open distraction. <b>[B]</b>','The real version is the golden rule from Charisma &mdash; responsiveness is the strongest single lever in this register. <b>[B]</b>'] },
+  { prompt:'You notice you have improved this page twice this week <b>and climbed no rungs</b>.',
+    lines:['<b>Building the protocol instead of running it.</b> The nearest-to-hand failure for you specifically.','A page you can refine indefinitely is a page you never have to act on. Rung five has a calendar date or it is not real.'] },
+  { prompt:'You find yourself keeping a rough count of <b>how many asks you have made</b>.',
+    lines:['<b>Running it as volume.</b> Low stakes works because it keeps you honest, not because people are throughput.','The moment the count matters, Pillar 5 starts failing.'] },
+  { prompt:'Name <b>the one thing</b>.',
+    lines:['<b>The ask, at low stakes, repeatedly, with a warm exit either way.</b>','Every pillar exists to make that single act cheap. The only route to outcomes not mattering is reps &mdash; not reasoning, not reading, not this page.'] }
+];
+var ROUND=10, STEPS=[], idx=0, revealed=false;
+var ONE = POOL[POOL.length-1];
+
+function startRound(){
+  var a=POOL.slice(0,POOL.length-1);
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+  STEPS=a.slice(0,ROUND-1); STEPS.push(ONE); idx=0;
+}
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Name it &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  startRound();
+  document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-rubirosa-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+startRound();
+</script>
+</body>
+</html>
