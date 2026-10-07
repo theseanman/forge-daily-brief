@@ -5,32 +5,32 @@
     "health": 20
   },
   "body_comp": {
-    "weight": 208.3,
-    "body_fat": 27.4,
+    "weight": 208.6,
+    "body_fat": 27.5,
     "muscle_mass": null,
-    "bmi": 29.8,
+    "bmi": 29.9,
     "visceral_fat": null
   },
   "sleep": {
     "score": null,
     "duration": null,
     "hr_range": null,
-    "rem": 111,
-    "core": 255,
-    "deep": 120,
-    "awake": 4,
-    "duration_min": 486,
-    "time_in_bed_min": 538,
-    "computed_score": 98,
+    "rem": 121,
+    "core": 258,
+    "deep": 91,
+    "awake": 2,
+    "duration_min": 470,
+    "time_in_bed_min": 516,
+    "computed_score": 97,
     "computed_score_parts": {
-      "duration": 40,
+      "duration": 39.1,
       "deep": 20,
       "rem": 20,
-      "efficiency": 18.1
+      "efficiency": 18.2
     },
     "capture_method": "health_auto_export_v1",
     "capture_method_since": "2026-08-13",
-    "stage_source_date": "2026-10-05"
+    "stage_source_date": "2026-10-06"
   },
   "notes": "",
   "updated": "2026-10-07T14:35:04.097Z",
