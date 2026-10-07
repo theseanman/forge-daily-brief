@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Return</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0; --red:#ff8a8a; --violet:#b48cff;
+    --s-left:#f5d76e; --s-right:#4a9de8;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 13px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+  a.inl{ color:var(--accent-hi); }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.teal{ border-left-color:var(--teal); background:rgba(63,208,192,.08); }
+  .card.gold{ border-left-color:var(--gold); background:rgba(245,215,110,.08); }
+  .card.red{ border-left-color:var(--red); background:rgba(255,138,138,.08); }
+  .card.violet{ border-left-color:var(--violet); background:rgba(180,140,255,.09); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .trig{ font-size:13px; line-height:1.5; margin:4px 0 8px; color:var(--ink-dim); }
+  .trig b{ color:var(--gold); font-weight:800; letter-spacing:.04em; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .card.teal .move b{ color:#8ff0e4; } .card.teal .move:before{ color:var(--teal); }
+  .card.gold .move b{ color:var(--gold); } .card.gold .move:before{ color:var(--gold); }
+  .card.red .move b{ color:#ffc0c0; } .card.red .move:before{ color:var(--red); }
+  .card.violet .move b{ color:#d4bcff; } .card.violet .move:before{ color:var(--violet); }
+  .ex{ margin-top:11px; padding-top:10px; border-top:1px solid var(--line); }
+  .ex-row{ font-size:13.5px; line-height:1.55; margin:6px 0; }
+  .ex-row .tag{ display:inline-block; min-width:78px; font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .group-k{ font-size:12.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--teal); font-weight:800; margin:16px 0 6px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .band.warn{ background:rgba(255,138,138,.10); border-left-color:var(--red); }
+  .band.warn b{ color:var(--red); }
+  .band.vio{ background:rgba(180,140,255,.11); border-left-color:var(--violet); }
+  .band.vio b{ color:#d4bcff; }
+  .para{ font-size:14px; line-height:1.6; margin:7px 0; }
+  .para b{ color:var(--accent-hi); }
+  .card.teal .para b{ color:#8ff0e4; }
+  .card.gold .para b{ color:var(--gold); }
+  .card.red .para b{ color:#ffc0c0; }
+  .q{ font-size:14px; line-height:1.55; margin:6px 0 6px 4px; padding-left:12px; border-left:2px solid var(--gold); }
+  .step{ display:flex; gap:11px; font-size:14px; line-height:1.55; margin:9px 0; }
+  .step .n{ flex:0 0 22px; height:22px; border-radius:50%; background:rgba(74,157,232,.22); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:800; color:var(--accent-hi); margin-top:1px; }
+  .step b{ color:var(--accent-hi); }
+
+  /* session table */
+  .wk{ width:100%; border-collapse:collapse; margin:10px 0 4px; font-size:13.5px; }
+  .wk th{ text-align:left; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; padding:6px 8px 6px 0; border-bottom:1px solid var(--line); }
+  .wk td{ padding:7px 8px 7px 0; border-bottom:1px solid rgba(122,175,255,.1); line-height:1.45; vertical-align:top; }
+  .wk td:first-child{ color:var(--accent-hi); font-weight:700; white-space:nowrap; }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+
+  /* ---------- WORK tab ---------- */
+  #work{ display:none; }
+  #drill{ display:none; }
+  .tool{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; margin-bottom:13px; overflow:hidden; }
+  .tool.teal{ border-left-color:var(--teal); background:rgba(63,208,192,.07); }
+  .tool.gold{ border-left-color:var(--gold); background:rgba(245,215,110,.07); }
+  .tool-head{ display:flex; align-items:center; gap:10px; padding:14px 16px; cursor:pointer; }
+  .tool-head .tn{ flex:0 0 24px; height:24px; border-radius:50%; background:rgba(74,157,232,.22); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:800; color:var(--accent-hi); }
+  .tool-head .tt{ flex:1; font-size:16px; font-weight:700; line-height:1.3; }
+  .tool-head .cnt{ font-size:10.5px; font-weight:800; letter-spacing:.1em; color:var(--ink-quiet); }
+  .tool-head .chev{ color:var(--ink-quiet); font-size:15px; transition:transform .25s; }
+  .tool.open .tool-head .chev{ transform:rotate(90deg); }
+  .tool-body{ display:none; padding:0 16px 16px; }
+  .tool.open .tool-body{ display:block; }
+  .why{ font-size:13px; line-height:1.55; color:var(--ink-dim); border-top:1px solid var(--line); padding-top:11px; margin-bottom:12px; }
+  .why b{ color:var(--gold); }
+  .fl{ margin-bottom:11px; }
+  .fl label{ display:block; font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:var(--accent-hi); margin-bottom:5px; }
+  .fl .hintline{ font-size:12px; color:var(--ink-quiet); line-height:1.45; margin-bottom:6px; }
+  textarea, input[type=text], input[type=number], select{ width:100%; background:rgba(5,22,52,.55); border:1px solid var(--line); border-radius:10px;
+    color:var(--ink); font-size:14.5px; line-height:1.5; padding:10px 12px; font-family:inherit; resize:vertical; }
+  textarea:focus, input:focus, select:focus{ outline:2px solid var(--accent); outline-offset:0; border-color:transparent; }
+  textarea::placeholder, input::placeholder{ color:rgba(234,244,255,.3); }
+  input[type=number]{ -moz-appearance:textfield; }
+  input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+  select{ appearance:none; -webkit-appearance:none; background-image:linear-gradient(45deg,transparent 50%,var(--accent-hi) 50%),linear-gradient(135deg,var(--accent-hi) 50%,transparent 50%);
+    background-position:calc(100% - 17px) 18px, calc(100% - 12px) 18px; background-size:5px 5px,5px 5px; background-repeat:no-repeat; padding-right:34px; }
+  select option{ background:#0b2547; color:#eaf4ff; }
+  .twocol{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .colhd{ font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; margin-bottom:5px; }
+  .colhd.l{ color:var(--gold); } .colhd.r{ color:var(--accent-hi); }
+  .toolbar{ display:flex; gap:9px; margin-top:13px; flex-wrap:wrap; }
+  .sbtn{ border:0; border-radius:999px; padding:11px 20px; font-size:13px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; }
+  .sbtn.ghost{ background:rgba(9,36,80,.6); color:#fff; border:1px solid var(--line); }
+  .sbtn:disabled{ opacity:.35; cursor:default; }
+  .analysis{ display:none; margin-top:13px; background:rgba(245,215,110,.09); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; }
+  .analysis.on{ display:block; }
+  .analysis .ah{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800; color:var(--gold); margin-bottom:8px; }
+  .analysis .aq{ font-size:14px; line-height:1.55; margin:8px 0; padding-left:14px; position:relative; }
+  .analysis .aq:before{ content:'\2192'; position:absolute; left:0; color:var(--gold); font-weight:700; }
+  .analysis .aq b{ color:var(--gold); }
+  .flag{ font-size:13.5px; line-height:1.55; margin:8px 0; padding:9px 11px; border-radius:9px; background:rgba(255,138,138,.12); border-left:3px solid var(--red); }
+  .flag b{ color:#ffc0c0; }
+  .flag.ok{ background:rgba(63,208,192,.11); border-left-color:var(--teal); }
+  .flag.ok b{ color:#8ff0e4; }
+  .hist{ margin-top:14px; border-top:1px solid var(--line); padding-top:11px; }
+  .hist-k{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); margin-bottom:8px; }
+  .entry{ background:rgba(5,22,52,.4); border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin-bottom:8px; }
+  .entry .edate{ font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; color:var(--accent-hi); margin-bottom:5px;
+    display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .entry .edate .del{ color:var(--ink-quiet); cursor:pointer; font-size:15px; line-height:1; padding:0 4px; }
+  .entry .erow{ font-size:13px; line-height:1.5; color:var(--ink-dim); margin:4px 0; }
+  .entry .erow .el{ font-size:10px; letter-spacing:.1em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); display:inline-block; min-width:118px; }
+  .empty{ font-size:12.5px; color:var(--ink-quiet); font-style:italic; }
+
+  /* phase / gates */
+  .phase{ background:rgba(63,208,192,.09); border-left:4px solid var(--teal); border-radius:12px; padding:13px 15px; margin-bottom:13px; }
+  .phase .ph-k{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800; color:#8ff0e4; margin-bottom:6px; }
+  .phase .ph-t{ font-size:18px; font-weight:700; margin-bottom:3px; }
+  .phase .ph-s{ font-size:13px; color:var(--ink-dim); line-height:1.5; }
+  .gate{ display:flex; align-items:flex-start; gap:10px; font-size:13.5px; line-height:1.5; margin:8px 0; }
+  .gate .gm{ flex:0 0 19px; height:19px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:800; margin-top:1px; background:rgba(255,255,255,.08); color:var(--ink-quiet); border:1px solid var(--line); }
+  .gate.met .gm{ background:rgba(63,208,192,.22); color:#8ff0e4; border-color:rgba(63,208,192,.5); }
+  .gate .gt b{ color:var(--accent-hi); }
+  .gate.met .gt b{ color:#8ff0e4; }
+  .gate .gv{ color:var(--ink-quiet); font-size:12.5px; }
+
+  /* charts */
+  .chartbox{ background:rgba(5,22,52,.35); border:1px solid var(--line); border-radius:12px; padding:12px 12px 8px; margin-bottom:11px; }
+  .ch-t{ font-size:13.5px; font-weight:700; margin-bottom:1px; }
+  .ch-s{ font-size:11.5px; color:var(--ink-quiet); margin-bottom:8px; line-height:1.4; }
+  .legend{ display:flex; gap:14px; flex-wrap:wrap; margin-bottom:6px; }
+  .lg{ display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--ink-dim); font-weight:700; }
+  .lg i{ width:13px; height:3px; border-radius:2px; display:inline-block; }
+  .ch-wrap{ position:relative; }
+  .ch-wrap svg{ display:block; width:100%; height:auto; touch-action:pan-y; }
+  .tip{ position:absolute; pointer-events:none; opacity:0; transition:opacity .12s; background:rgba(5,22,52,.95);
+    border:1px solid var(--line); border-radius:9px; padding:7px 10px; font-size:12px; line-height:1.5; color:var(--ink);
+    white-space:nowrap; transform:translate(-50%,-115%); z-index:5; }
+  .tip.on{ opacity:1; }
+  .tip .td{ font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; margin-bottom:3px; }
+  .tip .tr{ display:flex; align-items:center; gap:6px; }
+  .tip .tr i{ width:9px; height:3px; border-radius:2px; }
+
+  /* drill */
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(19px,5vw,26px); font-weight:300; line-height:1.4; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .btn:focus-visible, .toggle button:focus-visible, .sbtn:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  @media (max-width:520px){ .twocol{ grid-template-columns:1fr 1fr; } }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-work" onclick="setMode('work')">Work</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>The Return</h1>
+    <div class="sub">Twelve weeks from eighteen months off to the training week in <a class="inl" href="./longevity.html">the Longevity Protocol</a>. A bridge, not a destination &mdash; that page already owns labs, sleep, Zone 2 vs HIIT, protein and the garnish tier, and none of it is restated here.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="band"><b>Why this exists.</b> The Longevity Protocol's week &mdash; Mon/Tue/Fri lifts, Wed/Sat HIIT, Sunday long Zone 2 &mdash; is correct for a trained body. Started cold on a grade&nbsp;III ankle and a bad elbow after eighteen months out, it is the fastest route back to being injured. This gets you to the point where that week is the right week, and then hands you over to it.</div>
+
+    <div class="section-k">The one principle</div>
+
+    <div class="card gold">
+      <div class="p-head"><div class="p-name">Tissue lags capacity</div></div>
+      <div class="p-ess">Muscle adapts in weeks. Tendon, ligament and the neural map of a joint adapt in months.</div>
+      <div class="para">Your strength will come back far faster than the tissue that has to tolerate it. This is why returning lifters get hurt in weeks four to eight &mdash; not week one, when they are careful, but week six, when the muscle feels ready and the connective tissue is six weeks behind. <span class="ev b">B</span></div>
+      <div class="move"><b>You advance on gates, not on dates.</b> If a phase's gate is not met, you repeat the week. Twelve weeks is the fast version, not the schedule.</div>
+    </div>
+
+    <div class="section-k">The two constraints</div>
+
+    <div class="card">
+      <div class="p-head"><div class="p-num">01</div><div class="p-name">The ankle</div></div>
+      <div class="p-ess">Four torn ligaments is grade III. It governs the whole programme.</div>
+      <div class="para">Up to 70% of lateral ankle sprains leave chronic ankle instability behind &mdash; lost dorsiflexion range, degraded single-leg balance, weak peroneals, and altered neuromuscular control measured at spinal and cortical level, not just locally. <span class="ev a">A</span></div>
+      <div class="para">The sense that the left leg is <b>longer</b>, when it measures the same, is that picture exactly: the brain's positional map of the foot has not fully updated, so the limb feels wrong because the signal is degraded. <span class="ev a">A</span> for the deficits, <span class="ev d">D</span> for reading your particular sensation that way.</div>
+      <div class="move">A stiff, poorly controlled ankle changes squat mechanics and running gait, and pushes the load it cannot absorb up into <b>knee, hip and low back</b>.</div>
+      <div class="move">It does not fix itself through general conditioning. In one trial the control group that simply <b>cycled improved on nothing</b>. <span class="ev b">B</span></div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><div class="p-num">02</div><div class="p-name">The elbow</div></div>
+      <div class="p-ess">Cane use loads the wrist extensors through grip, so this is almost certainly lateral.</div>
+      <div class="para">First-line treatment is <b>progressive tendon loading</b> &mdash; not rest, and not isometrics specifically. The 2015 isometric-analgesia finding did not replicate, and meta-analysis found isometric no better than isotonic for chronic tendinopathy. <span class="ev b">B</span></div>
+      <div class="move">It gates pulling. Rows, deadlifts, carries and chin-ups are all grip-limited, so they come in <b>light, with straps and neutral grips</b> where those help.</div>
+    </div>
+
+    <div class="section-k">Week 1 &mdash; baselines</div>
+
+    <div class="band"><b>Do these before you train anything.</b> Fifteen minutes, repeatable, and without them you have no idea whether the ankle work is doing anything. Log them in the <b>Work</b> tab and re-test at weeks 4, 8 and 12.</div>
+
+    <div class="card teal">
+      <div class="p-head"><div class="p-num">1</div><div class="p-name">Knee-to-wall</div></div>
+      <div class="p-ess">Dorsiflexion range, in centimetres.</div>
+      <div class="para">Foot square to a wall, drive the knee forward to touch without the heel lifting. Slide the foot back to the furthest point where the knee still touches and the heel stays down. Measure big toe to wall. Both sides.</div>
+      <div class="move">Target: <b>left within 1.5 cm of right</b>. <span class="ev c">C</span></div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><div class="p-num">2</div><div class="p-name">Single-leg balance</div></div>
+      <div class="p-ess">Postural control, in seconds.</div>
+      <div class="para">Hands on hips, other foot off the ground. Time to the first touch-down or hop. Eyes open, then eyes closed. Both sides.</div>
+      <div class="move">Target: <b>45 s eyes open, 30 s eyes closed</b>, left matching right. <span class="ev c">C</span></div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><div class="p-num">3</div><div class="p-name">Single-leg heel raise</div></div>
+      <div class="p-ess">Calf endurance, in reps.</div>
+      <div class="para">Full height, controlled, one leg, fingertips on a wall for balance only. Count good reps to failure. Both sides.</div>
+      <div class="move">Target: <b>25 reps, left within 3 of right</b>. <span class="ev c">C</span></div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><div class="p-num">4</div><div class="p-name">Elbow load</div></div>
+      <div class="p-ess">Tendon tolerance, in pounds.</div>
+      <div class="para">Grip a dumbbell, wrist neutral, lower slowly into wrist flexion. Note the weight at which pain reaches 4/10 &mdash; and whether it has settled by the next morning.</div>
+      <div class="move">The <b>next-morning</b> answer matters more than the number. <span class="ev c">C</span></div>
+    </div>
+
+    <div class="section-k">Phase 1 &middot; Weeks 1&ndash;4</div>
+
+    <div class="card">
+      <div class="p-head"><div class="p-name">Rebuild the joint, build the engine</div></div>
+      <div class="p-ess">Ankle range, balance and peroneal strength; elbow loading tolerance; aerobic base with zero impact. No barbell. No running.</div>
+
+      <div class="group-k">Daily &mdash; ankle, 10 minutes, every day</div>
+      <div class="move"><b>Knee-to-wall mobilisation</b> &mdash; 3 &times; 30 s each side, heel down, driving into the stretch.</div>
+      <div class="move"><b>Single-leg balance</b> &mdash; 4 &times; 30 s left, 2 &times; 30 s right. Weeks 1&ndash;2 eyes open on the floor; weeks 3&ndash;4 eyes closed, or eyes open on a folded towel. One variable at a time. <span class="ev b">B</span></div>
+      <div class="move"><b>Band eversion</b> &mdash; 3 &times; 15 each side, slow. The peroneal work, and the most neglected piece of ankle rehab.</div>
+      <div class="move"><b>Calf raises</b> &mdash; bilateral, 3 &times; 15, straight-knee. Add bent-knee (soleus) sets from week 3.</div>
+
+      <div class="group-k">Most days &mdash; elbow, 5 minutes</div>
+      <div class="move"><b>Eccentric wrist extension</b> &mdash; light dumbbell, raise with the other hand, lower over 3&ndash;4 seconds. 3 &times; 15. Pain to 4/10 during is expected; it must be settled by morning. If it is not, drop the weight. <span class="ev b">B</span></div>
+
+      <div class="group-k">Lifting &mdash; 2 sessions a week, full body, ~40 min</div>
+      <div class="para">Machines and supported positions only. No free-weight squat, no deadlift, no overhead press from the floor. Two to three sets, 8&ndash;12 reps, stopping with <b>four reps still in the tank</b>. You are not making progress yet &mdash; you are reminding tissue what load is.</div>
+      <table class="wk">
+        <tr><th>Pattern</th><th>Exercise</th><th>Why</th></tr>
+        <tr><td>Knee</td><td>Leg press</td><td>Quads with the ankle supported and fixed</td></tr>
+        <tr><td>Hinge</td><td>Hamstring curl</td><td>Hinge without spinal or grip load</td></tr>
+        <tr><td>Push</td><td>Chest press / DB bench</td><td>Neutral-ish grip, easy on the elbow</td></tr>
+        <tr><td>Pull</td><td>Chest-supported row, straps</td><td>Removes the grip limiter entirely</td></tr>
+        <tr><td>Vertical</td><td>Lat pulldown, neutral grip</td><td>Markedly kinder to lateral elbow</td></tr>
+        <tr><td>Trunk</td><td>Dead bug, side plank</td><td>No spinal loading yet</td></tr>
+      </table>
+
+      <div class="group-k">Cardio &mdash; 3 sessions, 30&ndash;40 min</div>
+      <div class="move">Bike or elliptical, <b>Zone 2</b> &mdash; conversational, you could hold a sentence. No running. No rowing: the rower demands exactly the dorsiflexion you do not have yet.</div>
+    </div>
+
+    <div class="band"><b>Gate to Phase 2.</b> Knee-to-wall left within 2 cm of right &middot; balance 30 s eyes open on the left with no touch-down &middot; elbow under 4/10 on the loading set and settled by morning &middot; three cardio sessions in each of weeks 3 and 4.</div>
+
+    <div class="section-k">Phase 2 &middot; Weeks 5&ndash;8</div>
+
+    <div class="card">
+      <div class="p-head"><div class="p-name">Load it</div></div>
+      <div class="p-ess">Real strength training. Free weights return. Still no impact.</div>
+
+      <div class="group-k">Ankle work continues &mdash; progressed</div>
+      <div class="move">Balance moves to <b>single-leg with head turns</b>, then single-leg reaches in three directions (forward, diagonal back-left, diagonal back-right), 5 each way, 3 rounds.</div>
+      <div class="move">Calf raises go <b>single-leg</b>, 3 &times; 12, straight and bent-knee. Band eversion stays.</div>
+
+      <div class="group-k">Lifting &mdash; 3 sessions a week, full body, ~50 min</div>
+      <div class="para">Three to four sets, 6&ndash;10 reps, now stopping with <b>two reps in reserve</b>. Add load when you hit the top of the rep range on every set. Introduce one new movement per week, in this order:</div>
+      <div class="step"><div class="n">5</div><div><b>Goblet squat</b> &mdash; only to the depth your dorsiflexion allows without the left heel lifting. Heels on a 1 cm plate is a legitimate fix, not a cheat.</div></div>
+      <div class="step"><div class="n">6</div><div><b>Romanian deadlift</b> &mdash; dumbbells, straps on, light.</div></div>
+      <div class="step"><div class="n">7</div><div><b>Split squat</b> &mdash; rear foot on the floor, not elevated. The first real loaded single-leg test of the ankle. Watch for the knee drifting inward.</div></div>
+      <div class="step"><div class="n">8</div><div><b>Overhead press</b> &mdash; dumbbells, neutral grip.</div></div>
+
+      <div class="group-k">Cardio &mdash; 4 sessions</div>
+      <div class="move">Three Zone 2 of 40&ndash;50 min, plus <b>one interval session on the bike</b>: four minutes hard, three easy, four rounds. The best-evidenced protocol for moving VO&#8322;max, run at full intensity with zero ankle load. <span class="ev a">A</span></div>
+    </div>
+
+    <div class="band"><b>Gate to Phase 3.</b> Single-leg heel raise 20 reps on the left &middot; balance 30 s eyes closed on the left &middot; loaded split squat pain-free with the knee tracking straight &middot; elbow tolerating a straps-off set with no next-morning soreness.</div>
+
+    <div class="section-k">Phase 3 &middot; Weeks 9&ndash;12</div>
+
+    <div class="card">
+      <div class="p-head"><div class="p-name">Intensity and impact</div></div>
+      <div class="p-ess">Running and power come back. This is the phase where the ankle finds out.</div>
+
+      <div class="group-k">Impact progression &mdash; the slow part</div>
+      <div class="step"><div class="n">9</div><div><b>Hops in place</b> &mdash; double-leg 3 &times; 10, then single-leg left 3 &times; 5, landing softly and holding a second.</div></div>
+      <div class="step"><div class="n">10</div><div><b>Walk/jog</b> &mdash; 1 min jog, 2 min walk, 10 rounds. Flat, even ground only.</div></div>
+      <div class="step"><div class="n">11</div><div><b>Walk/jog</b> &mdash; 2 min jog, 2 min walk, 8 rounds.</div></div>
+      <div class="step"><div class="n">12</div><div><b>Continuous</b> &mdash; 20 minutes easy, flat.</div></div>
+      <div class="band warn"><b>Never on trails, gravel or camber.</b> Uneven ground is how grade III ankles become grade III ankles again. If a session leaves the ankle sore next morning, repeat the previous week &mdash; no exceptions, nothing made up later.</div>
+
+      <div class="group-k">The VO&#8322;max number arrives here</div>
+      <div class="move">The Amazfit Active Max calculates VO&#8322;max <b>only in Outdoor Running, Trail Running and Track Run</b> modes &mdash; Amazfit's own spec, and why the field has always read &ldquo;no data.&rdquo; It stays blank until roughly week 10. Chasing it earlier means running before the ankle is ready. <span class="ev a">A</span></div>
+
+      <div class="group-k">Lifting &mdash; 3 sessions a week</div>
+      <div class="move">Three to five sets, 5&ndash;8 reps, one to two in reserve. Add <b>speed work</b>: one exercise per session moved fast on the concentric. Power predicts mortality better than raw strength. <span class="ev b">B</span></div>
+      <div class="move">Add <b>loaded carries</b> &mdash; farmer's walks, bare grip, light. The elbow is the gate: start with a weight you could carry twice as far as you do.</div>
+
+      <div class="group-k">Cardio &mdash; 4 to 5 sessions</div>
+      <div class="move">Two Zone 2 at 45&ndash;60 min, one bike 4&times;4, plus the run progression. Total lands near <b>150&ndash;180 min a week</b>, which is where the Longevity Protocol wants you.</div>
+    </div>
+
+    <div class="band"><b>Gate to handoff.</b> Knee-to-wall left within 1.5 cm &middot; balance 45 s eyes open and 30 s eyes closed on the left &middot; heel raise 25 reps, left within 3 of right &middot; 20 minutes continuous running with no next-day ankle soreness &middot; elbow a non-issue on all pulling.</div>
+
+    <div class="section-k">Week 13 &mdash; hand off</div>
+
+    <div class="card violet">
+      <div class="p-head"><div class="p-name">This protocol ends</div></div>
+      <div class="para">Open <a class="inl" href="./longevity.html">the Longevity Protocol</a> and run its training week as written. That page is the programme from here.</div>
+      <div class="move">Keep two things permanently: the <b>single-leg balance work</b> (five minutes &mdash; it is what stops the next sprain) and the <b>knee-to-wall measurement</b> monthly.</div>
+    </div>
+
+    <div class="section-k">Rules that override everything above</div>
+
+    <div class="card red">
+      <div class="move"><b>The 24-hour rule.</b> Soreness during a session is fine. Soreness next morning in a <b>joint</b> &mdash; not a muscle &mdash; means the last session was too much. Repeat, do not advance.</div>
+      <div class="move"><b>Never advance two variables at once.</b> New exercise or more load, not both. New surface or eyes closed, not both.</div>
+      <div class="move"><b>One deload week.</b> Week 8 or wherever the fatigue lands: half the sets, same movements. Eighteen months off means recovery capacity is detrained too.</div>
+      <div class="move"><b>Tuesdays and Thursdays are not training days.</b> Not home until after 21:30 and the sleep window is already the weak point.</div>
+      <div class="move"><b>When a week is busy, cut lifting before the ankle work.</b> It is ten minutes and it protects everything else.</div>
+    </div>
+
+    <div class="band vio"><b>What I would spend money on.</b> One or two physiotherapy sessions, early &mdash; not for a programme, for a measurement. A physio can assess that ankle's dorsiflexion, balance and peroneal strength properly in twenty minutes and say whether these are the right gates for your ankle. Everything here is reasoned from the literature on grade III sprains in general, not from your ankle, because it cannot be seen from here.</div>
+
+    <div class="section-k">The one thing</div>
+    <div class="band"><b>You advance on gates, not on dates.</b> The calendar is an estimate. The numbers in the Work tab are not.</div>
+
+    <div class="section-k">Evidence</div>
+    <div class="card">
+      <div class="key">
+        <b>A</b> &mdash; strong trial or meta-analytic support.<br>
+        <b>B</b> &mdash; good support, some inconsistency.<br>
+        <b>C</b> &mdash; clinically standard figure, not trial-derived.<br>
+        <b>D</b> &mdash; reasoned judgement.<br>
+        <br>
+        The physiology here is well-supported. The <b>specific numbers</b> are not: the gate thresholds are clinical conventions <span class="ev c">C</span>, and the twelve-week shape is a judgement about how fast a detrained 47-year-old with these two constraints can reasonably move <span class="ev d">D</span>. Treat the gates as real and the calendar as an estimate.
+      </div>
+      <div class="note">Not medical advice. Clearance to exercise is not the same as clearance for a specific return-to-running progression, which is a physio's call.</div>
+    </div>
+
+    <div class="foot">The Return &middot; Forge OS</div>
+  </div>
+
+  <!-- ===================== WORK ===================== -->
+  <div id="work">
+    <h1 style="font-size:21px;">Work</h1>
+    <div class="sub">Log the four baseline tests. Everything saves to this device only. The gates below read off your most recent entry, and the charts read off all of them.</div>
+
+    <div class="phase" id="phase"></div>
+
+    <div class="tool open" id="t1">
+      <div class="tool-head" onclick="toggleTool('t1')"><div class="tn">1</div><div class="tt">Log a test session</div><div class="cnt" id="c-log"></div><div class="chev">&#9656;</div></div>
+      <div class="tool-body">
+        <div class="why">Fill what you measured &mdash; <b>blanks are fine</b> and simply don't plot. Same conditions each time: same shoes or barefoot, same wall, same time of day. The analysis appears after you commit, not before.</div>
+
+        <div class="fl"><label>Knee-to-wall &mdash; cm</label>
+          <div class="hintline">Big toe to wall at the furthest point the knee still touches, heel down.</div>
+          <div class="twocol">
+            <div><div class="colhd l">Left</div><input type="number" inputmode="decimal" step="0.1" id="kw-l" placeholder="8.5"></div>
+            <div><div class="colhd r">Right</div><input type="number" inputmode="decimal" step="0.1" id="kw-r" placeholder="10.0"></div>
+          </div>
+        </div>
+
+        <div class="fl"><label>Single-leg balance, eyes open &mdash; seconds</label>
+          <div class="twocol">
+            <div><div class="colhd l">Left</div><input type="number" inputmode="numeric" id="bo-l" placeholder="22"></div>
+            <div><div class="colhd r">Right</div><input type="number" inputmode="numeric" id="bo-r" placeholder="45"></div>
+          </div>
+        </div>
+
+        <div class="fl"><label>Single-leg balance, eyes closed &mdash; seconds</label>
+          <div class="twocol">
+            <div><div class="colhd l">Left</div><input type="number" inputmode="numeric" id="bc-l" placeholder="6"></div>
+            <div><div class="colhd r">Right</div><input type="number" inputmode="numeric" id="bc-r" placeholder="15"></div>
+          </div>
+        </div>
+
+        <div class="fl"><label>Single-leg heel raise &mdash; reps</label>
+          <div class="twocol">
+            <div><div class="colhd l">Left</div><input type="number" inputmode="numeric" id="hr-l" placeholder="11"></div>
+            <div><div class="colhd r">Right</div><input type="number" inputmode="numeric" id="hr-r" placeholder="24"></div>
+          </div>
+        </div>
+
+        <div class="fl"><label>Elbow &mdash; load at 4/10, lb</label>
+          <div class="twocol">
+            <div><div class="colhd r">Weight</div><input type="number" inputmode="decimal" step="0.5" id="elb" placeholder="5"></div>
+            <div><div class="colhd r">Settled by morning?</div>
+              <select id="elb-ok"><option value="">&mdash;</option><option value="y">Yes</option><option value="n">No</option></select></div>
+          </div>
+        </div>
+
+        <div class="fl"><label>Notes</label>
+          <input type="text" id="nt" placeholder="Barefoot, evening. Left ankle stiff after the bike.">
+        </div>
+
+        <div class="toolbar">
+          <button class="sbtn" onclick="saveLog()">Save &amp; analyse</button>
+          <button class="sbtn ghost" onclick="clearForm(true)">Clear</button>
+        </div>
+        <div class="analysis" id="a-log"></div>
+      </div>
+    </div>
+
+    <div class="section-k">The four numbers over time</div>
+    <div id="charts"></div>
+
+    <div class="tool" id="t2">
+      <div class="tool-head" onclick="toggleTool('t2')"><div class="tn">2</div><div class="tt">All sessions</div><div class="cnt" id="c-hist"></div><div class="chev">&#9656;</div></div>
+      <div class="tool-body">
+        <div class="why">The table behind the charts. <b>Tap &times; to delete</b> a session &mdash; a mistyped number distorts every plot it appears in.</div>
+        <div class="hist" id="hist"></div>
+      </div>
+    </div>
+
+    <div class="foot">Stored on this device only &middot; never synced</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h1 style="font-size:20px;">Call it</h1>
+    <div class="sub">Recognition, not recall. A moment from the twelve weeks &mdash; say what you would actually do, out loud, before revealing. Ten per round, shuffled.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Done</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn ghost" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  document.getElementById('read').style.display  = (m==='read')  ? 'block' : 'none';
+  document.getElementById('work').style.display  = (m==='work')  ? 'block' : 'none';
+  document.getElementById('drill').style.display = (m==='drill') ? 'block' : 'none';
+  document.getElementById('tab-read').className  = (m==='read')  ? 'on' : '';
+  document.getElementById('tab-work').className  = (m==='work')  ? 'on' : '';
+  document.getElementById('tab-drill').className = (m==='drill') ? 'on' : '';
+  if(m==='drill'){ restart(); }
+  if(m==='work'){ renderAll(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-return';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- store ---------------- */
+var WKEY='forge-return-work';
+function store(){ try{ var v=JSON.parse(localStorage.getItem(WKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function put(s){ try{ localStorage.setItem(WKEY, JSON.stringify(s)); }catch(e){ alert('Could not save on this device.'); } }
+function list(){ var s=store(); return Array.isArray(s.log)?s.log:[]; }
+function push(rec){ var s=store(); if(!Array.isArray(s.log)) s.log=[]; rec.d=new Date().toISOString(); rec.id=Date.now()+'-'+Math.floor(Math.random()*1e4); s.log.unshift(rec); put(s); }
+function drop(id){ var s=store(); if(!Array.isArray(s.log)) return; s.log=s.log.filter(function(r){ return r.id!==id; }); put(s); renderAll(); }
+function num(id){ var e=document.getElementById(id); if(!e) return null; var v=(e.value||'').trim(); if(v==='') return null; var n=parseFloat(v); return isFinite(n)?n:null; }
+function val(id){ var e=document.getElementById(id); return e?(e.value||'').trim():''; }
+function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fdate(iso){ try{ var d=new Date(iso); return d.toLocaleDateString(undefined,{month:'short',day:'numeric'}); }catch(e){ return ''; } }
+function fdatetime(iso){ try{ var d=new Date(iso); return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}); }catch(e){ return ''; } }
+function toggleTool(id){ var el=document.getElementById(id); el.className = el.className.indexOf('open')>-1 ? el.className.replace(' open','') : el.className+' open'; }
+
+var FIELDS=['kw-l','kw-r','bo-l','bo-r','bc-l','bc-r','hr-l','hr-r','elb','elb-ok','nt'];
+function clearForm(hideAnalysis){
+  FIELDS.forEach(function(i){ var e=document.getElementById(i); if(e) e.value=''; });
+  if(hideAnalysis){ var a=document.getElementById('a-log'); if(a) a.className='analysis'; }
+}
+function showA(html){ var a=document.getElementById('a-log'); a.innerHTML=html; a.className='analysis on'; }
+function ah(t){ return '<div class="ah">'+t+'</div>'; }
+function aq(t){ return '<div class="aq">'+t+'</div>'; }
+function flag(t,ok){ return '<div class="flag'+(ok?' ok':'')+'">'+t+'</div>'; }
+
+/* ---------------- save + analyse ---------------- */
+function saveLog(){
+  var r={ kwL:num('kw-l'), kwR:num('kw-r'), boL:num('bo-l'), boR:num('bo-r'),
+          bcL:num('bc-l'), bcR:num('bc-r'), hrL:num('hr-l'), hrR:num('hr-r'),
+          elb:num('elb'), elbOk:val('elb-ok'), nt:val('nt') };
+  var any=['kwL','kwR','boL','boR','bcL','bcR','hrL','hrR','elb'].some(function(k){ return r[k]!==null; });
+  if(!any && !r.elbOk){ alert('Enter at least one measurement.'); return; }
+
+  var prev=list()[0]||null;
+  push(r);
+
+  var h=ah('This session');
+
+  if(r.kwL!==null && r.kwR!==null){
+    var gap=Math.round((r.kwR-r.kwL)*10)/10;
+    if(gap<=1.5) h+=flag('Knee-to-wall gap <b>'+gap+' cm</b> &mdash; inside the handoff target. Dorsiflexion is no longer the limiter.',true);
+    else if(gap<=2) h+=flag('Knee-to-wall gap <b>'+gap+' cm</b> &mdash; clears the Phase 2 gate, short of the 1.5 cm handoff target.',true);
+    else h+=flag('Knee-to-wall gap <b>'+gap+' cm</b>. Over 2 cm, so the ankle is still restricting squat depth. Keep the mobilisation daily and do not chase depth under load.');
+  }
+  if(r.bcL!==null && r.bcL<30) h+=aq('Eyes-closed balance on the left is <b>'+r.bcL+' s</b>. This is the slowest-moving number in the set and the one most worth protecting five minutes a day for.');
+  if(r.hrL!==null && r.hrR!==null && (r.hrR-r.hrL)>5) h+=flag('Heel raise asymmetry of <b>'+(r.hrR-r.hrL)+' reps</b>. Calf endurance is the deficit most likely to show up as a changed gait &mdash; which is the sensation you described.');
+  if(r.elbOk==='n') h+=flag('Elbow not settled by morning. <b>That load was too much.</b> Drop the weight next session rather than holding it and hoping.');
+  else if(r.elbOk==='y') h+=flag('Elbow settled overnight &mdash; that load is in the right range. Progress it slowly.',true);
+
+  if(prev){
+    var moved=[];
+    if(r.kwL!==null && prev.kwL!==null && r.kwL>prev.kwL) moved.push('dorsiflexion');
+    if(r.bcL!==null && prev.bcL!==null && r.bcL>prev.bcL) moved.push('eyes-closed balance');
+    if(r.hrL!==null && prev.hrL!==null && r.hrL>prev.hrL) moved.push('heel raise');
+    if(moved.length) h+=flag('Improved on the left since '+fdate(prev.d)+': <b>'+esc(moved.join(', '))+'</b>.',true);
+  } else {
+    h+=flag('First session logged. This is the baseline everything else is measured against &mdash; the absolute numbers matter far less than the direction they move.',true);
+  }
+
+  h+=aq('Check the gate panel at the top. <b>If the phase gate is not met, repeat the week.</b> That is the whole mechanism.');
+  showA(h); clearForm(false); renderAll();
+}
+
+/* ---------------- gates ---------------- */
+var PHASES=[
+  { k:'Phase 1 &middot; Weeks 1&ndash;4', t:'Rebuild the joint', s:'Ankle and elbow work, machines only, non-impact cardio. No barbell, no running.',
+    gates:[
+      { t:'Knee-to-wall gap within <b>2 cm</b>', f:function(r){ return r.kwL!==null && r.kwR!==null && (r.kwR-r.kwL)<=2; },
+        v:function(r){ return (r.kwL!==null&&r.kwR!==null)?(Math.round((r.kwR-r.kwL)*10)/10)+' cm':'not logged'; } },
+      { t:'Balance eyes open, left <b>30 s</b>', f:function(r){ return r.boL!==null && r.boL>=30; },
+        v:function(r){ return r.boL!==null?r.boL+' s':'not logged'; } },
+      { t:'Elbow <b>settled by morning</b>', f:function(r){ return r.elbOk==='y'; },
+        v:function(r){ return r.elbOk==='y'?'yes':(r.elbOk==='n'?'no':'not logged'); } }
+    ] },
+  { k:'Phase 2 &middot; Weeks 5&ndash;8', t:'Load it', s:'Free weights return, one new movement a week. Bike intervals start. Still no impact.',
+    gates:[
+      { t:'Heel raise, left <b>20 reps</b>', f:function(r){ return r.hrL!==null && r.hrL>=20; },
+        v:function(r){ return r.hrL!==null?r.hrL+' reps':'not logged'; } },
+      { t:'Balance eyes closed, left <b>30 s</b>', f:function(r){ return r.bcL!==null && r.bcL>=30; },
+        v:function(r){ return r.bcL!==null?r.bcL+' s':'not logged'; } }
+    ] },
+  { k:'Phase 3 &middot; Weeks 9&ndash;12', t:'Intensity and impact', s:'Hops, then walk/jog, then continuous running. Speed work and carries added.',
+    gates:[
+      { t:'Knee-to-wall gap within <b>1.5 cm</b>', f:function(r){ return r.kwL!==null && r.kwR!==null && (r.kwR-r.kwL)<=1.5; },
+        v:function(r){ return (r.kwL!==null&&r.kwR!==null)?(Math.round((r.kwR-r.kwL)*10)/10)+' cm':'not logged'; } },
+      { t:'Balance eyes open, left <b>45 s</b>', f:function(r){ return r.boL!==null && r.boL>=45; },
+        v:function(r){ return r.boL!==null?r.boL+' s':'not logged'; } },
+      { t:'Heel raise, left <b>25 reps</b> and within <b>3</b> of right', f:function(r){ return r.hrL!==null && r.hrL>=25 && r.hrR!==null && (r.hrR-r.hrL)<=3; },
+        v:function(r){ return r.hrL!==null?(r.hrL+' reps'+(r.hrR!==null?', gap '+(r.hrR-r.hrL):'')):'not logged'; } }
+    ] },
+  { k:'Handoff', t:'Week 13 &mdash; this protocol ends', s:'Open the Longevity Protocol and run its training week as written. Keep the balance work and the monthly knee-to-wall.', gates:[] }
+];
+
+function renderPhase(){
+  var el=document.getElementById('phase'), L=list();
+  if(!L.length){
+    el.innerHTML='<div class="ph-k">Phase 1 &middot; Weeks 1&ndash;4</div><div class="ph-t">Rebuild the joint</div>'
+      +'<div class="ph-s">No sessions logged yet. Run the four baseline tests and save them &mdash; the gates below need a measurement before they can tell you anything.</div>';
+    return;
+  }
+  var r=L[0], i=0;
+  while(i<PHASES.length-1 && PHASES[i].gates.every(function(g){ return g.f(r); })) i++;
+  var p=PHASES[i];
+  var h='<div class="ph-k">'+p.k+'</div><div class="ph-t">'+p.t+'</div><div class="ph-s">'+p.s+'</div>';
+  if(p.gates.length){
+    h+='<div style="margin-top:11px;">';
+    p.gates.forEach(function(g){
+      var met=g.f(r);
+      h+='<div class="gate'+(met?' met':'')+'"><div class="gm">'+(met?'&#10003;':'&middot;')+'</div>'
+       + '<div class="gt">'+g.t+' <span class="gv">&mdash; '+g.v(r)+'</span></div></div>';
+    });
+    h+='</div>';
+    var all=p.gates.every(function(g){ return g.f(r); });
+    if(!all) h+='<div class="ph-s" style="margin-top:9px;">Gates read off your most recent session, '+fdate(r.d)+'. Repeat the week until they clear.</div>';
+  } else {
+    h+='<div class="gate met"><div class="gm">&#10003;</div><div class="gt">Every gate cleared. <b>Hand off.</b></div></div>';
+  }
+  el.innerHTML=h;
+}
+
+/* ---------------- charts ---------------- */
+var CHARTS=[
+  { t:'Knee-to-wall', s:'Dorsiflexion range, cm. Higher is better; the two lines closing is the point.', unit:'cm',
+    series:[{k:'kwL',n:'Left',c:'var(--s-left)',hex:'#f5d76e'},{k:'kwR',n:'Right',c:'var(--s-right)',hex:'#4a9de8'}] },
+  { t:'Balance, eyes closed', s:'Seconds to first touch-down. The slowest-moving number in the set.', unit:'s', target:30,
+    series:[{k:'bcL',n:'Left',c:'var(--s-left)',hex:'#f5d76e'},{k:'bcR',n:'Right',c:'var(--s-right)',hex:'#4a9de8'}] },
+  { t:'Single-leg heel raise', s:'Good reps to failure. Handoff target is 25 on the left.', unit:'reps', target:25,
+    series:[{k:'hrL',n:'Left',c:'var(--s-left)',hex:'#f5d76e'},{k:'hrR',n:'Right',c:'var(--s-right)',hex:'#4a9de8'}] },
+  { t:'Elbow load', s:'Weight at 4/10 pain on the eccentric, lb. One line &mdash; tendon tolerance.', unit:'lb',
+    series:[{k:'elb',n:'Load',c:'var(--s-right)',hex:'#4a9de8'}] }
+];
+
+function renderCharts(){
+  var host=document.getElementById('charts');
+  var L=list().slice().reverse(); /* oldest first */
+  if(L.length<1){ host.innerHTML='<div class="chartbox"><div class="empty">Charts appear once you have logged a session. Two or more sessions draw a line; one draws a point.</div></div>'; return; }
+  var h='';
+  CHARTS.forEach(function(c,ci){
+    var has=c.series.some(function(s){ return L.some(function(r){ return r[s.k]!==null && r[s.k]!==undefined; }); });
+    h+='<div class="chartbox"><div class="ch-t">'+c.t+'</div><div class="ch-s">'+c.s+'</div>';
+    if(!has){ h+='<div class="empty">Not logged yet.</div></div>'; return; }
+    if(c.series.length>1){
+      h+='<div class="legend">';
+      c.series.forEach(function(s){ h+='<div class="lg"><i style="background:'+s.c+'"></i>'+s.n+'</div>'; });
+      h+='</div>';
+    }
+    h+='<div class="ch-wrap" id="cw'+ci+'">'+svgFor(c,L,ci)+'<div class="tip" id="tip'+ci+'"></div></div></div>';
+  });
+  host.innerHTML=h;
+  CHARTS.forEach(function(c,ci){ wireChart(c,L,ci); });
+}
+
+var CW=600, CH=190, PL=38, PR=14, PT=12, PB=26;
+function svgFor(c,L,ci){
+  var vals=[];
+  c.series.forEach(function(s){ L.forEach(function(r){ var v=r[s.k]; if(v!==null&&v!==undefined) vals.push(v); }); });
+  if(c.target) vals.push(c.target);
+  var mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals);
+  if(mn===mx){ mn=Math.max(0,mn-1); mx=mx+1; }
+  var pad=(mx-mn)*0.14; mn=Math.max(0,mn-pad); mx=mx+pad;
+  var n=L.length;
+  function X(i){ return n<=1 ? (PL+(CW-PL-PR)/2) : PL+(CW-PL-PR)*i/(n-1); }
+  function Y(v){ return PT+(CH-PT-PB)*(1-(v-mn)/(mx-mn)); }
+
+  var g='<svg viewBox="0 0 '+CW+' '+CH+'" role="img" aria-label="'+c.t+' over time">';
+  /* grid */
+  var ticks=4;
+  for(var t=0;t<=ticks;t++){
+    var v=mn+(mx-mn)*t/ticks, y=Y(v);
+    g+='<line x1="'+PL+'" y1="'+y.toFixed(1)+'" x2="'+(CW-PR)+'" y2="'+y.toFixed(1)+'" stroke="rgba(122,175,255,.13)" stroke-width="1"/>';
+    g+='<text x="'+(PL-7)+'" y="'+(y+4).toFixed(1)+'" text-anchor="end" font-size="10.5" fill="rgba(234,244,255,.5)">'+(Math.round(v*10)/10)+'</text>';
+  }
+  /* target */
+  if(c.target!==undefined && c.target>=mn && c.target<=mx){
+    var ty=Y(c.target);
+    g+='<line x1="'+PL+'" y1="'+ty.toFixed(1)+'" x2="'+(CW-PR)+'" y2="'+ty.toFixed(1)+'" stroke="rgba(234,244,255,.45)" stroke-width="1" stroke-dasharray="5 4"/>';
+    g+='<text x="'+(CW-PR)+'" y="'+(ty-5).toFixed(1)+'" text-anchor="end" font-size="10" font-weight="700" fill="rgba(234,244,255,.6)">TARGET '+c.target+'</text>';
+  }
+  /* x labels: first, last, and middle when room */
+  var marks=[0]; if(n>2) marks.push(Math.floor((n-1)/2)); if(n>1) marks.push(n-1);
+  marks.forEach(function(i){
+    g+='<text x="'+X(i).toFixed(1)+'" y="'+(CH-7)+'" text-anchor="middle" font-size="10.5" fill="rgba(234,244,255,.5)">'+esc(fdate(L[i].d))+'</text>';
+  });
+  /* series */
+  var labels=[];
+  c.series.forEach(function(s){
+    var pts=[];
+    for(var i=0;i<n;i++){ var v=L[i][s.k]; if(v!==null&&v!==undefined) pts.push([X(i),Y(v),v,i]); }
+    if(!pts.length) return;
+    if(pts.length>1){
+      var d=''; pts.forEach(function(p,k){ d+=(k?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)+' '; });
+      g+='<path d="'+d.trim()+'" fill="none" stroke="'+s.c+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+    }
+    pts.forEach(function(p){
+      g+='<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="4.5" fill="'+s.c+'" stroke="#0a2a57" stroke-width="2"/>';
+    });
+    var last=pts[pts.length-1];
+    labels.push({ x:last[0], y:last[1], v:last[2], c:s.c });
+  });
+  /* direct labels on the last points, decluttered.
+     The two sides converging is the whole point of this protocol, so the end
+     labels WILL collide late in the programme unless they are pushed apart. */
+  var MINSEP=13, TOP=PT+10, BOT=CH-PB-3;
+  labels.sort(function(a,b){ return (a.y-9)-(b.y-9); });
+  var placed=null;
+  labels.forEach(function(l){
+    var ly=l.y-9;
+    if(placed!==null && ly-placed<MINSEP) ly=placed+MINSEP;
+    if(ly<TOP) ly=TOP;
+    if(ly>BOT) ly=BOT;
+    placed=ly;
+    var lx=l.x+9, anchor='start';
+    if(lx>CW-PR-28){ lx=l.x-9; anchor='end'; }
+    g+='<text x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'" text-anchor="'+anchor+'" font-size="11.5" font-weight="800" fill="'+l.c+'">'+l.v+'</text>';
+  });
+  g+='</svg>';
+  return g;
+}
+
+function wireChart(c,L,ci){
+  var wrap=document.getElementById('cw'+ci); if(!wrap) return;
+  var svg=wrap.querySelector('svg'), tip=document.getElementById('tip'+ci);
+  if(!svg||!tip) return;
+  var n=L.length;
+  function show(ev){
+    var rect=wrap.getBoundingClientRect();
+    var cx=(ev.touches?ev.touches[0].clientX:ev.clientX)-rect.left;
+    var frac=rect.width? (cx/rect.width) : 0;
+    var sx=frac*CW;
+    var i=0;
+    if(n>1){
+      var step=(CW-PL-PR)/(n-1);
+      i=Math.round((sx-PL)/step);
+      if(i<0) i=0; if(i>n-1) i=n-1;
+    }
+    var r=L[i], rows='', got=false;
+    c.series.forEach(function(s){
+      var v=r[s.k];
+      if(v===null||v===undefined) return;
+      got=true;
+      rows+='<div class="tr"><i style="background:'+s.c+'"></i>'+s.n+' &middot; <b>'+v+'</b> '+c.unit+'</div>';
+    });
+    if(!got){ tip.className='tip'; return; }
+    tip.innerHTML='<div class="td">'+esc(fdate(r.d))+'</div>'+rows;
+    var px = n<=1 ? (rect.width/2) : (PL+(CW-PL-PR)*i/(n-1))/CW*rect.width;
+    tip.style.left=px+'px';
+    tip.style.top=(CH*0.45/CH*rect.height)+'px';
+    tip.className='tip on';
+  }
+  function hide(){ tip.className='tip'; }
+  svg.addEventListener('mousemove',show);
+  svg.addEventListener('mouseleave',hide);
+  svg.addEventListener('touchstart',function(e){ show(e); },{passive:true});
+  svg.addEventListener('touchmove',function(e){ show(e); },{passive:true});
+  svg.addEventListener('touchend',hide);
+}
+
+/* ---------------- history ---------------- */
+function renderHist(){
+  var L=list(), el=document.getElementById('hist');
+  document.getElementById('c-hist').textContent=L.length?(L.length+(L.length===1?' session':' sessions')):'';
+  document.getElementById('c-log').textContent=L.length?('last '+fdate(L[0].d)):'';
+  if(!L.length){ el.innerHTML='<div class="empty">No sessions yet.</div>'; return; }
+  var h='';
+  L.forEach(function(r){
+    h+='<div class="entry"><div class="edate">'+esc(fdatetime(r.d))+'<span class="del" onclick="drop(\''+r.id+'\')">&times;</span></div>';
+    function row(lab,a,b,u){
+      if((a===null||a===undefined)&&(b===null||b===undefined)) return '';
+      var t=(a===null||a===undefined?'&mdash;':a)+(b===null||b===undefined?'':' / '+b);
+      return '<div class="erow"><span class="el">'+lab+'</span>'+t+' '+u+'</div>';
+    }
+    h+=row('Knee-to-wall',r.kwL,r.kwR,'cm');
+    h+=row('Balance, open',r.boL,r.boR,'s');
+    h+=row('Balance, closed',r.bcL,r.bcR,'s');
+    h+=row('Heel raise',r.hrL,r.hrR,'reps');
+    if(r.elb!==null&&r.elb!==undefined) h+='<div class="erow"><span class="el">Elbow load</span>'+r.elb+' lb'+(r.elbOk?(r.elbOk==='y'?' &middot; settled':' &middot; not settled'):'')+'</div>';
+    else if(r.elbOk) h+='<div class="erow"><span class="el">Elbow</span>'+(r.elbOk==='y'?'settled':'not settled')+'</div>';
+    if(r.nt) h+='<div class="erow"><span class="el">Notes</span>'+esc(r.nt)+'</div>';
+    h+='<div class="erow" style="color:var(--ink-quiet);font-size:11.5px;">Left / Right</div></div>';
+  });
+  el.innerHTML=h;
+}
+
+function renderAll(){ renderPhase(); renderCharts(); renderHist(); }
+
+/* ---------------- drill ---------------- */
+var ROUND=10;
+var POOL=[
+  { prompt:'Week 6. The ankle feels fine and you want to <b>put the barbell back squat back in</b>.',
+    lines:['<b>No &mdash; and the feeling is exactly the trap.</b> Week six is when muscle has caught up and connective tissue has not.','Phase 2 adds goblet squat, RDL, split squat, overhead press. One per week, in that order. The barbell is a Phase 3 conversation at the earliest.'] },
+  { prompt:'Four weeks in. Knee-to-wall gap is <b>2.6 cm</b> and balance eyes-open on the left is 34 seconds.',
+    lines:['<b>Gate not met. Repeat the week.</b> Two of three is not the gate.','The balance number is good news and it does not buy you the dorsiflexion. Keep the mobilisation daily.'] },
+  { prompt:'You wake up and the <b>left ankle joint</b> is sore from yesterday&rsquo;s session. Nothing severe.',
+    lines:['<b>The 24-hour rule. That session was too much.</b> Joint soreness next morning is the signal; muscle soreness is not.','Repeat, do not advance. Nothing gets made up later.'] },
+  { prompt:'Week 10. The run progression says 1 min jog / 2 min walk. There is a <b>beautiful trail</b> ten minutes away.',
+    lines:['<b>Flat, even ground only.</b> Camber, roots and gravel are how a grade III ankle becomes a grade III ankle again.','Trails are not a Phase 3 reward. They come after the handoff, and even then with the balance work still running.'] },
+  { prompt:'The elbow handled 10 lb on the eccentrics. It is <b>still sore the next morning</b>.',
+    lines:['<b>Drop the weight.</b> Pain to 4/10 during is expected; next-morning soreness means the dose was wrong.','Holding the load and hoping is how a six-week tendon problem becomes a six-month one.'] },
+  { prompt:'A busy week. You have time for <b>one thing</b> &mdash; a lifting session, or the ten minutes of ankle work.',
+    lines:['<b>The ankle work.</b> It is ten minutes and it protects everything else.','Lifting is the thing you cut. The rule exists because the opposite choice feels more productive.'] },
+  { prompt:'Week 3. You check the watch and <b>VO&#8322;max still says &ldquo;no data.&rdquo;</b>',
+    lines:['<b>Expected, and nothing is broken.</b> The Active Max only calculates it in Outdoor Running, Trail Running and Track Run modes.','It will populate around week 10. Chasing it earlier means running before the ankle is ready.'] },
+  { prompt:'Balance work is going well. You want to add the <b>wobble board and close your eyes</b> at the same time.',
+    lines:['<b>One variable at a time.</b> New surface or eyes closed, never both.','Two changes at once means that when it goes wrong you cannot tell which one did it &mdash; and it will go wrong on an ankle with degraded proprioception.'] },
+  { prompt:'Week 5, goblet squat. To hit depth, the <b>left heel comes off the floor</b>.',
+    lines:['<b>Stop at the depth the heel holds.</b> A lifting heel is the ankle running out of dorsiflexion, and the load goes somewhere else.','Heels on a 1 cm plate is a legitimate fix, not a cheat. The depth comes back when the range does.'] },
+  { prompt:'Heel raise: <b>left 14, right 24</b>. You feel fine walking around.',
+    lines:['<b>A 10-rep asymmetry, and feeling fine is not the test.</b> Calf endurance is the deficit most likely to show up as the altered gait you describe.','Phase 3 needs 20 on the left. Single-leg calf work, straight and bent knee.'] },
+  { prompt:'You read that isometric holds kill tendon pain and want to <b>swap the eccentrics for wall sits and holds</b>.',
+    lines:['<b>No advantage.</b> The 2015 isometric-analgesia result did not replicate, and meta-analysis found isometric no better than isotonic for chronic tendinopathy.','Progressive loading is the treatment. Keep the eccentrics.'] },
+  { prompt:'Tuesday. You finish the night class at 21:30 and think about <b>getting a lift in</b>.',
+    lines:['<b>Tuesdays and Thursdays are not training days.</b> You are not home until after 21:30 and the sleep window is already the week&rsquo;s weak point.','Protecting sleep on those two nights outranks the session you would get.'] },
+  { prompt:'Week 8. Everything has gone well and you feel like you could <b>skip straight to the Longevity week</b>.',
+    lines:['<b>Check the Phase 3 gates first.</b> Heel raise 25 on the left and within 3 of right, eyes-closed balance 30 s, knee-to-wall within 1.5 cm, 20 min continuous running.','If they are all met, hand off. If they are not, the feeling is not evidence.'] },
+  { prompt:'You have not re-measured in six weeks because <b>you can feel it is improving</b>.',
+    lines:['<b>The sensation is the least reliable instrument you have</b> &mdash; a leg that measures the same feels longer.','Re-test at weeks 4, 8 and 12. The gates cannot fire off a feeling.'] },
+  { prompt:'Three weeks of hard sessions and everything feels <b>heavy and flat</b>.',
+    lines:['<b>Take the deload.</b> Half the sets, same movements, one week.','Eighteen months off detrains recovery capacity, not just strength. The deload is scheduled, not a failure.'] },
+  { prompt:'Phase 1 cardio. The gym has a <b>rowing machine</b> free and the bikes are all taken.',
+    lines:['<b>Not in Phase 1.</b> The rower demands exactly the dorsiflexion range you are still rebuilding.','Elliptical, or wait for a bike. There is no hurry worth spending the ankle on.'] },
+  { prompt:'You want to know whether this programme is <b>right for your ankle specifically</b>.',
+    lines:['<b>It cannot be, and that is the honest limit.</b> Everything here is reasoned from the literature on grade III sprains in general.','One or two physio sessions to measure that ankle properly is the highest-value spend on the whole list.'] },
+  { prompt:'Week 9. First session of single-leg hops. The ankle holds, and you want to <b>go straight to the 20-minute run</b>.',
+    lines:['<b>Weeks 10 and 11 exist for a reason.</b> 1/2, then 2/2, then continuous.','Impact tolerance is built across sessions, not demonstrated in one.'] },
+  { prompt:'Pulling day. Chest-supported row, and you think the <b>straps are cheating</b>.',
+    lines:['<b>In Phase 1 the straps are the point.</b> They remove the grip limiter so the back gets trained while the elbow is still loading separately.','Bare grip comes back when the elbow tolerates a straps-off set with no next-morning soreness.'] },
+  { prompt:'Someone tells you a <b>daily two-minute wall sit</b> will cover the strength side of this.',
+    lines:['<b>It will not.</b> It is a blood-pressure intervention with a side order of quad endurance at one knee angle.','It is also not the ankle work. Nothing in this protocol is replaced by it.'] },
+  { prompt:'You log a session and realise you typed <b>the right-side number into the left field</b>.',
+    lines:['<b>Delete the session.</b> It is in All sessions, tap the &times;.','One mistyped number distorts every chart it appears in and can fire a gate that is not actually met.'] },
+  { prompt:'Week 13. Every gate is green.',
+    lines:['<b>Hand off.</b> Open the Longevity Protocol and run its training week as written.','Keep two things permanently: the single-leg balance work, and the knee-to-wall measurement monthly.'] }
+];
+var ONE={ prompt:'The whole protocol in one line.',
+  lines:['<b>You advance on gates, not on dates.</b>','The calendar is an estimate. The numbers in the Work tab are not.'] };
+
+var STEPS=[], idx=0, revealed=false;
+function startRound(){
+  var a=POOL.slice(0);
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+  STEPS=a.slice(0,ROUND-1); STEPS.push(ONE); idx=0;
+}
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Call it &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  startRound();
+  document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-return-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+startRound();
+renderAll();
+</script>
+</body>
+</html>
