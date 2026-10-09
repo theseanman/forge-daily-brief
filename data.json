@@ -1,1 +1,164 @@
-{"welltory": {"stress": 20, "energy": 73, "health": 20}, "body_comp": {"weight": 207, "body_fat": 27.3, "muscle_mass": null, "bmi": 29.6, "visceral_fat": null}, "sleep": {"score": null, "duration": null, "hr_range": null, "rem": 121, "core": 258, "deep": 91, "awake": 2, "duration_min": 470, "time_in_bed_min": 516, "computed_score": 97, "computed_score_parts": {"duration": 39.1, "deep": 20, "rem": 20, "efficiency": 18.2}, "capture_method": "health_auto_export_v1", "capture_method_since": "2026-08-13", "stage_source_date": "2026-10-06"}, "notes": "", "updated": "2026-10-08T14:23:51.455Z", "calendar": [{"date": "Sat Oct 10", "time": "All day", "title": "Arthur\u2019s Birthday"}, {"date": "Sat Oct 10", "time": "07:00 PM", "title": "Arthur and Laura Birthday"}, {"date": "Sun Oct 11", "time": "All day", "title": "POF \u2014 HARD DEADLINE: OSF registration"}, {"date": "Mon Oct 12", "time": "All day", "title": "POF W1 \u2014 Baseline (habitual training)"}, {"date": "Mon Oct 12", "time": "06:30 AM", "title": "POF \u2014 Morning reading"}, {"date": "Mon Oct 12", "time": "07:00 AM", "title": "POF \u2014 Step test + orthostatic test"}, {"date": "Tue Oct 13", "time": "All day", "title": "Go to Knight earlier Jason has sushi"}, {"date": "Wed Oct 14", "time": "09:41 AM", "title": "Mark: ELL 3 \u2014 DRAFT READ L10 \u2014 back before L12"}, {"date": "Wed Oct 14", "time": "01:54 PM", "title": "Mark: English 8 \u2014 QUICK READ L6 Part B from duotangs (CC10)"}, {"date": "Thu Oct 08", "time": "All day", "title": "E-PLT-FGH"}, {"date": "Thu Oct 08", "time": "06:30 PM", "title": "Layna \u2014 U12A Practice \u00b7 Richmond Ice Centre Coliseum \u00b7 Share ice with U12B"}, {"date": "Thu Oct 08", "time": "08:00 PM", "title": "Kayla \u2014 U16 Practice \u00b7 Richmond Ice Centre Forum \u00b7 Share ice with U19"}, {"date": "Fri Oct 09", "time": "12:00 AM", "title": "Family Night - closed"}, {"date": "Fri Oct 09", "time": "All day", "title": "Grade 9 Yearbook Photos"}, {"date": "Fri Oct 09", "time": "All day", "title": "ABCD"}, {"date": "Fri Oct 09", "time": "04:30 AM", "title": "ONE Friday Fights 174 & The Inner Circle 34"}, {"date": "Sat Oct 10", "time": "02:15 PM", "title": "Layna \u2014 U12A vs CRA U12 \u00b7 Minoru Arenas Silver (Richmond)"}, {"date": "Sat Oct 10", "time": "05:00 PM", "title": "UFC Fight Night: Allen vs Duncan"}, {"date": "Sun Oct 11", "time": "06:15 PM", "title": "Kayla \u2014 U16 at BNWRA U16-2 \u00b7 Rosemary Brown Recreation Centre - Rink B (Burnaby)"}, {"date": "Mon Oct 12", "time": "12:00 AM", "title": "Thanksgiving"}, {"date": "Mon Oct 12", "time": "All day", "title": "School Closed"}, {"date": "Mon Oct 12", "time": "All day", "title": "Thanksgiving"}, {"date": "Tue Oct 13", "time": "All day", "title": "EFGH"}, {"date": "Wed Oct 14", "time": "All day", "title": "A-PLT-BCD"}, {"date": "Wed Oct 14", "time": "All day", "title": "6:30pm PAC Meeting"}]}
+{
+  "welltory": {
+    "stress": 54,
+    "energy": 41,
+    "health": 100
+  },
+  "body_comp": {
+    "weight": 207,
+    "body_fat": 27.3,
+    "muscle_mass": null,
+    "bmi": 29.6,
+    "visceral_fat": null
+  },
+  "sleep": {
+    "score": null,
+    "duration": null,
+    "hr_range": null,
+    "rem": 121,
+    "core": 258,
+    "deep": 91,
+    "awake": 2,
+    "duration_min": 470,
+    "time_in_bed_min": 516,
+    "computed_score": 97,
+    "computed_score_parts": {
+      "duration": 39.1,
+      "deep": 20,
+      "rem": 20,
+      "efficiency": 18.2
+    },
+    "capture_method": "health_auto_export_v1",
+    "capture_method_since": "2026-08-13",
+    "stage_source_date": "2026-10-06"
+  },
+  "notes": "",
+  "updated": "2026-10-09T14:25:32.088Z",
+  "calendar": [
+    {
+      "date": "Sat Oct 10",
+      "time": "All day",
+      "title": "Arthur’s Birthday"
+    },
+    {
+      "date": "Sat Oct 10",
+      "time": "07:00 PM",
+      "title": "Arthur and Laura Birthday"
+    },
+    {
+      "date": "Sun Oct 11",
+      "time": "All day",
+      "title": "POF — HARD DEADLINE: OSF registration"
+    },
+    {
+      "date": "Mon Oct 12",
+      "time": "All day",
+      "title": "POF W1 — Baseline (habitual training)"
+    },
+    {
+      "date": "Mon Oct 12",
+      "time": "06:30 AM",
+      "title": "POF — Morning reading"
+    },
+    {
+      "date": "Mon Oct 12",
+      "time": "07:00 AM",
+      "title": "POF — Step test + orthostatic test"
+    },
+    {
+      "date": "Tue Oct 13",
+      "time": "All day",
+      "title": "Go to Knight earlier Jason has sushi"
+    },
+    {
+      "date": "Wed Oct 14",
+      "time": "09:41 AM",
+      "title": "Mark: ELL 3 — DRAFT READ L10 — back before L12"
+    },
+    {
+      "date": "Wed Oct 14",
+      "time": "01:54 PM",
+      "title": "Mark: English 8 — QUICK READ L6 Part B from duotangs (CC10)"
+    },
+    {
+      "date": "Thu Oct 08",
+      "time": "All day",
+      "title": "E-PLT-FGH"
+    },
+    {
+      "date": "Thu Oct 08",
+      "time": "06:30 PM",
+      "title": "Layna — U12A Practice · Richmond Ice Centre Coliseum · Share ice with U12B"
+    },
+    {
+      "date": "Thu Oct 08",
+      "time": "08:00 PM",
+      "title": "Kayla — U16 Practice · Richmond Ice Centre Forum · Share ice with U19"
+    },
+    {
+      "date": "Fri Oct 09",
+      "time": "12:00 AM",
+      "title": "Family Night - closed"
+    },
+    {
+      "date": "Fri Oct 09",
+      "time": "All day",
+      "title": "Grade 9 Yearbook Photos"
+    },
+    {
+      "date": "Fri Oct 09",
+      "time": "All day",
+      "title": "ABCD"
+    },
+    {
+      "date": "Fri Oct 09",
+      "time": "04:30 AM",
+      "title": "ONE Friday Fights 174 & The Inner Circle 34"
+    },
+    {
+      "date": "Sat Oct 10",
+      "time": "02:15 PM",
+      "title": "Layna — U12A vs CRA U12 · Minoru Arenas Silver (Richmond)"
+    },
+    {
+      "date": "Sat Oct 10",
+      "time": "05:00 PM",
+      "title": "UFC Fight Night: Allen vs Duncan"
+    },
+    {
+      "date": "Sun Oct 11",
+      "time": "06:15 PM",
+      "title": "Kayla — U16 at BNWRA U16-2 · Rosemary Brown Recreation Centre - Rink B (Burnaby)"
+    },
+    {
+      "date": "Mon Oct 12",
+      "time": "12:00 AM",
+      "title": "Thanksgiving"
+    },
+    {
+      "date": "Mon Oct 12",
+      "time": "All day",
+      "title": "School Closed"
+    },
+    {
+      "date": "Mon Oct 12",
+      "time": "All day",
+      "title": "Thanksgiving"
+    },
+    {
+      "date": "Tue Oct 13",
+      "time": "All day",
+      "title": "EFGH"
+    },
+    {
+      "date": "Wed Oct 14",
+      "time": "All day",
+      "title": "A-PLT-BCD"
+    },
+    {
+      "date": "Wed Oct 14",
+      "time": "All day",
+      "title": "6:30pm PAC Meeting"
+    }
+  ]
+}
