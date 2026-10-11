@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Work Efficiency</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0; --violet:#b48cff;
+    --s-log:#f5d76e; --s-mark:#4a9de8;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    padding:8px 13px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* read cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.phys{ border-left-color:var(--teal); background:rgba(63,208,192,.08); }
+  .card.meth{ border-left-color:var(--violet); background:rgba(180,140,255,.09); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .trig{ font-size:13px; line-height:1.5; margin:4px 0 8px; color:var(--ink-dim); }
+  .trig b{ color:var(--gold); font-weight:800; letter-spacing:.04em; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .ex{ margin-top:11px; padding-top:10px; border-top:1px solid var(--line); }
+  .ex-row{ font-size:13.5px; line-height:1.55; margin:6px 0; }
+  .ex-row .tag{ display:inline-block; min-width:74px; font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .band.scope{ background:rgba(180,140,255,.10); border-left-color:var(--violet); }
+  .band.scope b{ color:#cdb4ff; }
+  .para{ font-size:14px; line-height:1.6; margin:7px 0; }
+  .para b{ color:var(--accent-hi); }
+  .card.phys .para b{ color:#8ff0e4; }
+  .card.meth .para b{ color:#cdb4ff; }
+
+  /* tools */
+  .tool{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:14px 16px; margin-bottom:11px; }
+  .t-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:5px; flex-wrap:wrap; }
+  .t-name{ font-size:16.5px; font-weight:700; }
+  .t-dose{ font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; }
+  .t-rule{ font-size:14px; line-height:1.55; margin:6px 0; }
+  .t-rule b{ color:var(--accent-hi); }
+  .q{ font-size:14px; line-height:1.55; margin:6px 0 6px 4px; padding-left:12px; border-left:2px solid var(--gold); }
+  .seq{ font-size:14px; line-height:1.6; margin:7px 0; padding-left:26px; position:relative; }
+  .seq .n{ position:absolute; left:0; font-size:11.5px; font-weight:800; color:var(--gold); letter-spacing:.08em; top:2px; }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+  .ev.x{ background:rgba(255,120,120,.14); color:#ffb3b3; border-color:rgba(255,120,120,.4); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+
+  /* ---------- LOG tab ---------- */
+  #log{ display:none; }
+  .inst{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--gold); border-radius:14px; padding:15px 16px; margin-bottom:16px; }
+  .i-name{ font-size:17px; font-weight:700; margin-bottom:3px; }
+  .i-why{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-bottom:12px; }
+  .fld{ margin-bottom:10px; }
+  .fld label{ display:block; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; margin-bottom:5px; }
+  .fld input, .fld select{ width:100%; background:rgba(9,36,80,.55); border:1px solid var(--line); border-radius:10px; color:var(--ink);
+    font-size:15px; padding:11px 12px; font-family:inherit; -webkit-appearance:none; appearance:none; }
+  .fld input:focus, .fld select:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .two{ display:flex; gap:10px; } .two > .fld{ flex:1; }
+  .ibar{ display:flex; gap:10px; margin-top:4px; }
+  .ibtn{ border:0; border-radius:999px; padding:11px 20px; font-size:13px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; }
+  .ibtn.ghost{ background:rgba(9,36,80,.55); color:#fff; border:1px solid var(--line); }
+  .stat{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 2px; }
+  .stat .box{ flex:1; min-width:92px; background:rgba(9,36,80,.45); border:1px solid var(--line); border-radius:12px; padding:10px 12px; }
+  .stat .box .v{ font-size:22px; font-weight:300; letter-spacing:-.01em; }
+  .stat .box .l{ font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; margin-top:2px; }
+  .hist{ margin-top:14px; border-top:1px solid var(--line); padding-top:10px; }
+  .hrow{ display:flex; align-items:flex-start; gap:10px; font-size:13px; line-height:1.5; padding:8px 0; border-bottom:1px solid rgba(122,175,255,.10); }
+  .hrow:last-child{ border-bottom:0; }
+  .hrow .meta{ flex:1; }
+  .hrow .meta .d{ font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; }
+  .hrow .del{ border:0; background:transparent; color:var(--ink-quiet); font-size:17px; cursor:pointer; line-height:1; padding:2px 4px; }
+  .empty{ font-size:13px; color:var(--ink-quiet); line-height:1.5; padding:8px 0; }
+  .chart{ margin-top:14px; }
+  .chart svg{ width:100%; height:auto; display:block; }
+  .legend{ display:flex; gap:14px; justify-content:center; margin-top:6px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; font-weight:800; }
+  .legend i{ display:inline-block; width:11px; height:3px; border-radius:2px; vertical-align:middle; margin-right:5px; }
+
+  /* drill */
+  #drill{ display:none; }
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(19px,5vw,26px); font-weight:300; line-height:1.4; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .btn:focus-visible, .toggle button:focus-visible, .ibtn:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-log" onclick="setMode('log')">Log</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>Work Efficiency</h1>
+    <div class="sub">Throughput is not the constraint. Selection is. What gets picked, what comes off the plate entirely, how few things stay open &mdash; and one number watched over weeks. Experiment 1 of an ongoing set.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="section-k">The trap</div>
+
+    <div class="card phys">
+      <div class="p-head"><span class="p-name">Faster at the wrong work</span><span class="ev b">B</span></div>
+      <div class="para"><b>There are two ways to be busy.</b> One moves the thing that matters. The other clears a list. Both produce the same feeling at four in the afternoon, which is why the difference is almost impossible to see from inside the day.</div>
+      <div class="para"><b>The tell is at the end of the week, not the end of the day.</b> A week where every day felt productive and the one thing that mattered did not move is the failure this page exists for. It is not a motivation problem and it is not a speed problem. It is a selection problem, and speed makes it worse.</div>
+      <div class="para"><b>So efficiency is the wrong first lever for you.</b> Tooling, batching and faster hands applied to a badly selected week give you more of the week you already had. Every ordinary productivity system is built for someone who cannot get started. Running one of those is pouring fuel into the failure mode.</div>
+    </div>
+
+    <div class="band scope"><b>Scope &mdash; what this page is not.</b> <b>The Honest Stop</b> owns where to stop on a task you have already picked: done or covered, the line, the cut. <b>Entropy</b> owns upkeep and drift. <b>Organic Design</b> owns stopping being the node. <b>Shaping and Adapting</b> owns the relevance gate and the outside judge. The <b>three-tier rule</b> on the brief owns tempo. None of them say <b>which work</b>. That is this page: what gets picked, what gets handed off, and how few things are open at once.</div>
+
+    <div class="section-k">The method &mdash; how every experiment in this set runs</div>
+
+    <div class="card meth">
+      <div class="p-head"><span class="p-name">One variable, four weeks, one number</span><span class="ev a">A</span></div>
+      <div class="para"><b>Name the single change.</b> One. Two changes at once and you learn nothing from either, because you cannot attribute the result. This is the rule that makes the set worth keeping rather than a pile of good intentions.</div>
+      <div class="para"><b>Name the number that would move if it worked</b> &mdash; before you start, in writing, on the Log tab. If you cannot name it, you do not yet know what you are testing.</div>
+      <div class="para"><b>Run four weeks, then decide: keep, kill, or adjust.</b> Four is long enough to survive one bad week and short enough that a dud dies cheap. The decision is made from the numbers, not from how it felt.</div>
+      <div class="para"><b>Recording the number is not admin &mdash; it is most of the effect.</b> Monitoring progress toward a goal measurably improves attainment, and it works better when the progress is physically written down. The log is not bookkeeping about the intervention. It is part of the intervention.</div>
+    </div>
+
+    <div class="section-k">The six moves</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">1</span><span class="p-name">Count the week before you change it</span><span class="ev a">A</span></div>
+      <div class="p-ess">One week. Change nothing. Just count. A baseline you did not measure is a story you will tell yourself later.</div>
+      <div class="trig"><b>Use when</b> starting any experiment in this set, including this one. Week one is always observation.</div>
+      <div class="move"><b>Four numbers, once a week</b> &mdash; minutes you spent on in-class logistics, minutes on marking, whether the primary moved, and how many things are open and half-done on Sunday night.</div>
+      <div class="move"><b>Estimate badly rather than not at all</b> &mdash; a rough tally beaten out on Sunday is worth more than an exact one you abandon by Thursday. Precision is not the point; direction over weeks is.</div>
+      <div class="move"><b>Do not improve anything in week one</b> &mdash; the temptation is enormous and it destroys the comparison. Write the numbers down and leave them alone.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Room 148</span> Logistics means handing out, taking in, settling, repeating instructions, hunting for the dongle &mdash; anything that is not teaching or assessing.</div>
+        <div class="ex-row"><span class="tag">Marking</span> Count the real total across the week, including the parts done at home after everyone is in bed.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">2</span><span class="p-name">One primary, and a kill list</span><span class="ev a">A</span></div>
+      <div class="p-ess">Name the one thing that would make the week worth it &mdash; and name what you are not doing to pay for it.</div>
+      <div class="trig"><b>Use when</b> the week is being set, Sunday or Monday morning, before anything is in motion.</div>
+      <div class="move"><b>One primary for the week, written as a result</b> &mdash; not a topic, not an area. If only this moved, the week was worth having.</div>
+      <div class="move"><b>Three things on the kill list, in writing</b> &mdash; named projects you are explicitly not doing this term. Not deprioritised. Not later. Not doing.</div>
+      <div class="move"><b>The kill list is the half that works</b> &mdash; a primary without one is a wish, because everything else stays live and keeps bidding for the same hours.</div>
+      <div class="move"><b>A new idea does not displace the primary mid-week</b> &mdash; it goes to Sunday. That is already the rule on the brief; this is where the rule earns its keep.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Income</span> Primary: one module is ready for a pilot user. Not: the book, the second book, a new page on the OS.</div>
+        <div class="ex-row"><span class="tag">Room 148</span> Primary: the next unit's worksheets exist. Not: rebuilding a generator that already works.</div>
+        <div class="ex-row"><span class="tag">Kill list</span> Written on paper, read on Sunday, and genuinely untouched until the term ends.</div>
+      </div>
+      <div class="note">Specific, named goals beat &ldquo;do your best&rdquo; reliably. The kill list is the part with no study behind it &mdash; it is here because the documented failure is low-impact work crowding out high-impact work, and a primary alone does not stop that.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">3</span><span class="p-name">Estimate, then log</span><span class="ev b">B</span></div>
+      <div class="p-ess">Two numbers per task: what you thought it would take, what it took. Build your own multiplier instead of trusting your sense of time.</div>
+      <div class="trig"><b>Use when</b> you start any task you will do again &mdash; a lesson build, a set of marking, a page, a report-card batch.</div>
+      <div class="move"><b>Write the estimate before you start</b> &mdash; in minutes, on the Log tab, one line. Guess freely; a bad guess recorded is data, a good guess unrecorded is nothing.</div>
+      <div class="move"><b>Write the actual when you stop</b> &mdash; honestly, including the part where you wandered off.</div>
+      <div class="move"><b>After about fifteen tasks you have a personal multiplier</b> &mdash; the typical ratio of actual to estimate. Use it. If your multiplier is 1.8, two hours of planned work is a three-and-a-half-hour evening, and the planning that assumed two hours was fiction.</div>
+      <div class="move"><b>The multiplier is the whole deliverable here</b> &mdash; not faster work. A true number about your own time changes what you agree to.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Marking</span> &ldquo;22 ELL paragraphs&rdquo; &mdash; estimate 45, actual 80. Three of those and the week has no evening left in it.</div>
+        <div class="ex-row"><span class="tag">Forge OS</span> &ldquo;One protocol page&rdquo; &mdash; the estimate here has been wrong in the same direction for months.</div>
+      </div>
+      <div class="note">The planning fallacy &mdash; systematic underestimation of your own task durations &mdash; is well established, and the remedy that holds up is using your own past record of similar tasks rather than reasoning afresh about this one.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">4</span><span class="p-name">Hand the room its own operations</span><span class="ev b">B</span><span class="ev c">C</span></div>
+      <div class="p-ess">Every minute of in-class logistics you do yourself is a minute bought at full price. Most of it is work a fifteen-year-old can own, and owning it is worth more to them than watching you do it.</div>
+      <div class="trig"><b>Use when</b> the logistics number from move 1 is the biggest of the four &mdash; which it probably is.</div>
+      <div class="move"><b>The test for a real job: if nobody does it, does something break?</b> If nothing breaks, it is decoration, and a teenager will know inside a week. Every job must come off your plate, not be invented for them.</div>
+      <div class="move"><b>Rotate, don't appoint</b> &mdash; a fixed chief of staff is more efficient and teaches nobody anything about themselves. Two weeks per job, assigned not volunteered, or the keenest student takes everything and the quiet ones learn they are not the sort who gets picked.</div>
+      <div class="move"><b>Start with two jobs, not a system</b> &mdash; the timekeeper and the log. Three weeks. If the logistics number drops and both jobs run without reminding, add three more.</div>
+      <div class="move"><b>One line per rotation is the whole reflection</b> &mdash; &ldquo;what did this job need from you that came easily, and what did it need that didn't?&rdquo; On a card you keep. Nine cards at term's end is their Personal and Social self-assessment, already written.</div>
+      <div class="move"><b>Hard line: no job touches another student's marks, attendance or personal information.</b> Not even handing back a pile. Give materials the unmarked work only.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">ELL 1/2</span> Timekeeper and reset need almost no English &mdash; they are the two to give first to a student eleven months in the country.</div>
+        <div class="ex-row"><span class="tag">ELL 1/2</span> Onboarding: a named student owns a new arrival's first three days. Your largest recurring time sink, handed to the person best placed to do it.</div>
+        <div class="ex-row"><span class="tag">Room 148</span> The log: what was done, what is owed. Kills &ldquo;what did I miss&rdquo; permanently.</div>
+        <div class="ex-row"><span class="tag">ENG8</span> Speaking is assessed here, so the verbal jobs &mdash; MC, discussion chair &mdash; are curriculum, not housekeeping.</div>
+        <div class="ex-row"><span class="tag">FLA 6/7</span> Don't. Rotating classroom jobs with adults reads as patronising. There it is asking one person, once, as a favour.</div>
+      </div>
+      <div class="note">Responsibility and competence effects are solid ground. The claim that this teaches a fifteen-year-old what career suits them is not &mdash; what it reliably gives them is language for describing their own work, which is the thing almost no nineteen-year-old can do in an interview.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">5</span><span class="p-name">Batch it, and put a ceiling on marking</span><span class="ev b">B</span></div>
+      <div class="p-ess">Same kind of work, one block. And a fixed minutes-per-piece decided before you open the pile, because marking expands to fill whatever is left of your life.</div>
+      <div class="trig"><b>Use when</b> the same type of task is scattered across the week, and every single time you mark.</div>
+      <div class="move"><b>One kind of work per block</b> &mdash; all the marking, then all the building. Switching between kinds carries a real cost each time, and eleven fragments of marking cost more than one block of the same total length.</div>
+      <div class="move"><b>Set the per-piece ceiling in advance</b> &mdash; four minutes, six, whatever you choose, times the number of pieces, and that is the budget. A timer, visible. When the ceiling hits, the piece is finished.</div>
+      <div class="move"><b>Cap the comments, don't cap the care</b> &mdash; a small number of targeted, actionable comments does more than comprehensive correction, and comprehensive correction is where your evenings go. One thing to fix next, named, is the standard.</div>
+      <div class="move"><b>Mark against the Check part</b> &mdash; the tick-box outcomes are already on the sheet in student language. Marking what is already named is faster and more consistent than marking freehand.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Marking</span> 22 paragraphs at four minutes is 88 minutes, set and visible, not &ldquo;an evening&rdquo;.</div>
+        <div class="ex-row"><span class="tag">Room 148</span> Build all four worksheets in one sitting, not one per night across the week.</div>
+      </div>
+      <div class="note">Switch costs are real and measured, but the figures that circulate about them &mdash; losing 40 per cent of your productivity, needing 23 minutes to refocus &mdash; are far stronger than the evidence supports. The direction holds; the numbers are folklore. On written feedback specifically: that focused beats comprehensive is the better-supported position, but the second-language correction literature is genuinely contested and you know it better than I do &mdash; treat the ceiling as a time instrument, not a pedagogical claim.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">6</span><span class="p-name">Close before you open</span><span class="ev c">C</span></div>
+      <div class="p-ess">Count the things that are open and half-done. Keep the count low. An unfinished thing charges rent on attention whether or not you are working on it.</div>
+      <div class="trig"><b>Use when</b> starting anything new, and on Sunday when you count.</div>
+      <div class="move"><b>A hard cap on open items</b> &mdash; pick a number, three or four, and finish one before starting another. The cap is arbitrary on purpose so it cannot be argued with at ten at night.</div>
+      <div class="move"><b>Finishing beats starting, even on something worse</b> &mdash; a closed mediocre thing costs nothing further. An open excellent thing costs every day it stays open.</div>
+      <div class="move"><b>Park, don't juggle</b> &mdash; the park list already exists on the planner. A parked thing is closed for the purposes of the count; a thing you are &ldquo;coming back to this week&rdquo; is not.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Forge OS</span> Pages built and not deployed have been the standing example. Deployed or parked; nothing in between.</div>
+        <div class="ex-row"><span class="tag">Income</span> One module finished and sent beats three modules at eighty per cent.</div>
+      </div>
+    </div>
+
+    <div class="section-k">Three tools</div>
+
+    <div class="tool">
+      <div class="t-head"><span class="t-name">The week card</span><span class="t-dose">Sunday &middot; 3 min</span></div>
+      <div class="t-rule">Four numbers on the Log tab: <b>logistics minutes, marking minutes, did the primary move, open items.</b> Plus the primary, named. That is the experiment's whole instrument panel.</div>
+    </div>
+    <div class="tool">
+      <div class="t-head"><span class="t-name">The estimate log</span><span class="t-dose">Per task &middot; 15 sec</span></div>
+      <div class="t-rule">Task, estimate, actual. The Log tab computes the <b>multiplier</b> for you once there are a few entries. Fifteen entries is where it becomes trustworthy.</div>
+    </div>
+    <div class="tool">
+      <div class="t-head"><span class="t-name">The rotation card</span><span class="t-dose">Fortnightly &middot; 1 line</span></div>
+      <div class="t-rule">An index card per student, one line per rotation: <b>what came easily, what didn't.</b> You keep them. They get them back at the end of term and write one paragraph about the pattern.</div>
+    </div>
+
+    <div class="section-k">Start Monday</div>
+    <div class="card">
+      <div class="seq"><span class="n">1</span>Open the Log tab and write this week's primary before anything else happens. One result.</div>
+      <div class="seq"><span class="n">2</span>Write three things on the kill list. On paper, somewhere you will see it.</div>
+      <div class="seq"><span class="n">3</span>Change nothing else this week. Count only: logistics, marking, primary, open items.</div>
+      <div class="seq"><span class="n">4</span>Log an estimate and an actual for every task you do twice or more.</div>
+      <div class="seq"><span class="n">5</span>Sunday: fill the week card. Compare nothing yet &mdash; one week is a dot, not a line.</div>
+      <div class="seq"><span class="n">6</span>Week two: name the two jobs, give them away, keep counting. That is the first real change, and it is the only one.</div>
+      <div class="seq"><span class="n">7</span>End of week four: keep, kill, or adjust, from the numbers.</div>
+    </div>
+
+    <div class="section-k">Sunday block &mdash; three questions</div>
+    <div class="card">
+      <div class="q">Did the primary move, or did a full week of other work happen instead?</div>
+      <div class="q">What did I do myself this week that someone in the room could have owned?</div>
+      <div class="q">How far off was my estimate, and in which direction?</div>
+      <div class="t-rule">These are not wired into the debrief. Three questions, read off this page on Sunday, until there is reason to build them in.</div>
+    </div>
+
+    <div class="section-k">The one thing</div>
+    <div class="band" style="margin-bottom:0;">
+      <b>What would make this week worth it &mdash; and what am I not doing to pay for it?</b><br>
+      Asked Monday morning, in writing. The second half is the half that works.
+    </div>
+
+    <div class="section-k">Failure modes</div>
+    <div class="card">
+      <div class="move"><b>Optimising the week you should have cut</b> &mdash; the whole trap, restated. Faster at work that should not exist is the failure this page is for, and it is the one most likely to come back.</div>
+      <div class="move"><b>The log becomes the project</b> &mdash; charts, fields, a better tracker. Building the measuring instrument is itself low-impact work that feels like progress. Four numbers, three minutes, Sunday. If it grows, it has become the thing it was meant to catch.</div>
+      <div class="move"><b>Two changes at once</b> &mdash; then nothing is learned and the whole set is just activity with better vocabulary.</div>
+      <div class="move"><b>A kill list that is really a later list</b> &mdash; if you expect to do it in March, it is not on the kill list and it is still spending your attention now.</div>
+      <div class="move"><b>Jobs invented to be jobs</b> &mdash; decoration. The students detect it faster than any adult audience and the system dies quietly.</div>
+      <div class="move"><b>The ceiling used as an excuse</b> &mdash; it is a budget for a known pile, not permission to stop caring. The standard is still one thing to fix next, named.</div>
+      <div class="move"><b>Reading this instead of counting</b> &mdash; week one is four numbers. Nothing on this page does anything until those exist.</div>
+    </div>
+
+    <div class="section-k">The queue &mdash; experiments 2 to 6</div>
+    <div class="card meth">
+      <div class="para"><b>2. The teaching load audit.</b> Where the week actually goes, block by block, for two weeks &mdash; then one structural change to the worst block.</div>
+      <div class="para"><b>3. Build once, use many.</b> How much of what you make each week is reusable next year, and what would make it reusable by default.</div>
+      <div class="para"><b>4. The two hours.</b> Two protected hours a week is the real building capacity in term time. The experiment is whether a fixed slot beats a floating one.</div>
+      <div class="para"><b>5. The summer block.</b> Capacity is the break, so the experiment runs backwards: what has to be decided in May for July to be worth anything.</div>
+      <div class="para"><b>6. Delegation past the classroom.</b> What comes off the plate that is not student work &mdash; tooling, templates, and what is genuinely someone else's job.</div>
+      <div class="note">Order is not fixed. Each one gets its own four weeks and its own number, and none of them start while this one is running.</div>
+    </div>
+
+    <div class="section-k">Evidence</div>
+    <div class="key">
+      <span class="ev a">A</span> <b>Strong.</b> Monitoring progress toward a goal improves attainment, with larger effects when progress is physically recorded (Harkin et al. 2016, meta-analysis) &mdash; this is the case for the log being part of the intervention rather than admin around it. Specific, named goals outperform &ldquo;do your best&rdquo; (Locke &amp; Latham 2002) &mdash; the case for one named primary written as a result.<br><br>
+      <span class="ev b">B</span> <b>Good, with variance.</b> The planning fallacy &mdash; systematic underestimation of one's own task durations &mdash; is robust (Buehler, Griffin &amp; Ross 1994), and the remedy with the best support is taking the outside view from your own record of similar past tasks (Kahneman &amp; Lovallo 1993). Task-switching carries a measurable time cost (Rubinstein, Meyer &amp; Evans 2001). Autonomy and competence as drivers of engagement (Deci &amp; Ryan, self-determination theory) &mdash; the case for real jobs rather than decorative ones. Feedback works better when it is specific and actionable than when it is exhaustive (Shute 2008 review).<br><br>
+      <span class="ev c">C</span> <b>Extrapolated.</b> The open-item cap, and the claim that an unfinished task charges ongoing attention, lean on the Zeigarnik line of work, which has replicated unevenly. The reasoning is sound and the specific cap is not tested. Likewise the claim that rotating jobs teaches self-knowledge: the exposure and the vocabulary are plausible, the self-insight is not demonstrated.<br><br>
+      <span class="ev d">D</span> <b>Arbitrary.</b> Four weeks per experiment, three items on the kill list, two jobs to start, the open-item cap, the minutes-per-piece ceiling, fifteen entries before trusting the multiplier. No evidence sets any of these. They are fixed in advance precisely so they cannot be renegotiated in the moment.<br><br>
+      <span class="ev x">X</span> <b>Taught but not supported.</b> &ldquo;Multitasking costs 40 per cent of your productivity&rdquo; and &ldquo;it takes 23 minutes to refocus&rdquo; &mdash; both far exceed what the underlying studies show. Inbox zero as a productivity intervention. The 25-minute Pomodoro as anything other than an arbitrary number that works because it is fixed. &ldquo;Touch it once.&rdquo; Any system whose first move is to get you started faster &mdash; wrong failure mode for you, and it accelerates the one you have.<br><br>
+      <b>One honest caveat on move 5.</b> That focused feedback beats comprehensive correction is the better-supported position, but written corrective feedback in second-language writing is an actively contested literature with twenty-five years of argument in it. Treat the ceiling as a budget for your time, not as a settled claim about ELL pedagogy.<br><br>
+      <b>Verify before quoting.</b> Citations are from recall, not looked up. Check any of them before they go anywhere public.
+    </div>
+
+    <div class="foot">Work Efficiency &middot; Experiment 1 &middot; Forge OS</div>
+  </div>
+
+  <!-- ===================== LOG ===================== -->
+  <div id="log">
+    <h1 style="font-size:20px;">The numbers</h1>
+    <div class="sub">Four numbers a week and two per task. The analysis shows only after an entry is saved, so the prompts cannot shape what you write.</div>
+
+    <div class="inst">
+      <div class="i-name">Week card</div>
+      <div class="i-why">Sunday, three minutes. Week one is observation &mdash; write the numbers and change nothing.</div>
+      <div class="fld"><label>Week starting (Monday)</label><input type="date" id="w-date"></div>
+      <div class="fld"><label>This week's primary, as a result</label><input type="text" id="w-primary" placeholder="If only this moved, the week was worth it"></div>
+      <div class="fld"><label>Did the primary move?</label><select id="w-moved"><option value="">&mdash;</option><option value="yes">Yes</option><option value="part">Partly</option><option value="no">No</option></select></div>
+      <div class="two">
+        <div class="fld"><label>Logistics min</label><input type="number" id="w-log" inputmode="numeric" min="0" placeholder="0"></div>
+        <div class="fld"><label>Marking min</label><input type="number" id="w-mark" inputmode="numeric" min="0" placeholder="0"></div>
+        <div class="fld"><label>Open items</label><input type="number" id="w-open" inputmode="numeric" min="0" placeholder="0"></div>
+      </div>
+      <div class="ibar"><button class="ibtn" onclick="saveWeek()">Save week</button><button class="ibtn ghost" onclick="clearWeek()">Clear</button></div>
+      <div class="stat" id="w-stat"></div>
+      <div class="chart" id="w-chart"></div>
+      <div class="hist" id="w-hist"></div>
+    </div>
+
+    <div class="inst">
+      <div class="i-name">Estimate log</div>
+      <div class="i-why">Write the estimate before you start, the actual when you stop. The multiplier becomes trustworthy at about fifteen entries.</div>
+      <div class="fld"><label>Task</label><input type="text" id="e-task" placeholder="22 ELL paragraphs"></div>
+      <div class="two">
+        <div class="fld"><label>Estimate (min)</label><input type="number" id="e-est" inputmode="numeric" min="1" placeholder="45"></div>
+        <div class="fld"><label>Actual (min)</label><input type="number" id="e-act" inputmode="numeric" min="1" placeholder="80"></div>
+      </div>
+      <div class="ibar"><button class="ibtn" onclick="saveEst()">Save task</button><button class="ibtn ghost" onclick="clearEst()">Clear</button></div>
+      <div class="stat" id="e-stat"></div>
+      <div class="hist" id="e-hist"></div>
+    </div>
+
+    <div class="foot">On this device only &middot; nothing synced</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h1 style="font-size:20px;">Which move?</h1>
+    <div class="sub">Recognition, not recall. Each prompt is a moment. Name the move &mdash; or name the page that owns it, because several of these belong somewhere else.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Done</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn ghost" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  document.getElementById('read').style.display  = (m==='read')  ? 'block' : 'none';
+  document.getElementById('log').style.display   = (m==='log')   ? 'block' : 'none';
+  document.getElementById('drill').style.display = (m==='drill') ? 'block' : 'none';
+  document.getElementById('tab-read').className  = (m==='read')  ? 'on' : '';
+  document.getElementById('tab-log').className   = (m==='log')   ? 'on' : '';
+  document.getElementById('tab-drill').className = (m==='drill') ? 'on' : '';
+  if(m==='drill'){ idx=0; document.getElementById('done').className='done-view'; document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity=''; renderStep(); }
+  if(m==='log'){ paintWeeks(); paintEsts(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-work-efficiency';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- work store ---------------- */
+var WKEY='forge-work-efficiency-work';
+function wkRead(){
+  var o=null;
+  try{ o=JSON.parse(localStorage.getItem(WKEY)||'{}'); }catch(e){ o=null; }
+  if(!o || typeof o!=='object' || Array.isArray(o)) o={};
+  if(!Array.isArray(o.weeks)) o.weeks=[];
+  if(!Array.isArray(o.ests))  o.ests=[];
+  return o;
+}
+function wkWrite(o){ try{ localStorage.setItem(WKEY, JSON.stringify(o)); }catch(e){} }
+function num(v){ var n=parseInt(v,10); return (isFinite(n)&&n>=0)?n:0; }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ---------- week card ---------- */
+function saveWeek(){
+  var d=document.getElementById('w-date').value;
+  var p=document.getElementById('w-primary').value.trim();
+  if(!d && !p){ alert('Give the week a date or a primary.'); return; }
+  var o=wkRead();
+  o.weeks.push({
+    d:d||'', p:p, mv:document.getElementById('w-moved').value||'',
+    lg:num(document.getElementById('w-log').value),
+    mk:num(document.getElementById('w-mark').value),
+    op:num(document.getElementById('w-open').value),
+    ts:Date.now()
+  });
+  o.weeks.sort(function(a,b){ return (a.d||'').localeCompare(b.d||'') || a.ts-b.ts; });
+  wkWrite(o); clearWeek(); paintWeeks();
+}
+function clearWeek(){
+  ['w-date','w-primary','w-log','w-mark','w-open'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('w-moved').value='';
+}
+function delWeek(i){
+  var o=wkRead(); if(i<0||i>=o.weeks.length) return;
+  if(!confirm('Delete this week?')) return;
+  o.weeks.splice(i,1); wkWrite(o); paintWeeks();
+}
+function paintWeeks(){
+  var o=wkRead(), w=o.weeks, st=document.getElementById('w-stat'), h=document.getElementById('w-hist');
+  if(!w.length){
+    st.innerHTML='';
+    h.innerHTML='<div class="empty">No weeks yet. Week one is observation &mdash; four numbers, no changes.</div>';
+    document.getElementById('w-chart').innerHTML=''; return;
+  }
+  var moved=0, lg=0, mk=0;
+  for(var i=0;i<w.length;i++){ if(w[i].mv==='yes') moved++; lg+=w[i].lg; mk+=w[i].mk; }
+  st.innerHTML =
+    '<div class="box"><div class="v">'+w.length+'</div><div class="l">Weeks</div></div>'+
+    '<div class="box"><div class="v">'+moved+'/'+w.length+'</div><div class="l">Primary moved</div></div>'+
+    '<div class="box"><div class="v">'+Math.round(lg/w.length)+'</div><div class="l">Avg logistics</div></div>'+
+    '<div class="box"><div class="v">'+Math.round(mk/w.length)+'</div><div class="l">Avg marking</div></div>';
+  var b='';
+  for(var j=w.length-1;j>=0;j--){
+    var e=w[j], mvl = e.mv==='yes'?'primary moved' : (e.mv==='part'?'primary partly moved' : (e.mv==='no'?'primary did not move':'primary not recorded'));
+    b+='<div class="hrow"><div class="meta"><div class="d">'+esc(e.d||'no date')+' &middot; '+mvl+'</div>'+
+       (e.p?('<div>'+esc(e.p)+'</div>'):'')+
+       '<div class="d" style="margin-top:3px;">logistics '+e.lg+' &middot; marking '+e.mk+' &middot; open '+e.op+'</div>'+
+       '</div><button class="del" onclick="delWeek('+j+')" aria-label="Delete">&times;</button></div>';
+  }
+  h.innerHTML=b;
+  drawChart(w);
+}
+function drawChart(w){
+  var host=document.getElementById('w-chart');
+  if(w.length<2){ host.innerHTML='<div class="empty">Two weeks draws a line. One is a dot.</div>'; return; }
+  var W=600, H=200, pad=34, padR=46, padT=14, padB=26;
+  var max=0;
+  for(var i=0;i<w.length;i++){ if(w[i].lg>max) max=w[i].lg; if(w[i].mk>max) max=w[i].mk; }
+  if(max<=0) max=10;
+  max = Math.ceil(max/30)*30;
+  var n=w.length;
+  function X(i){ return pad + (n===1?0:(i*(W-pad-padR)/(n-1))); }
+  function Y(v){ return padT + (H-padT-padB) * (1 - (v/max)); }
+  function path(key){
+    var d='';
+    for(var i=0;i<n;i++){ d += (i?' L ':'M ') + X(i).toFixed(1) + ' ' + Y(w[i][key]).toFixed(1); }
+    return d;
+  }
+  var s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Logistics and marking minutes per week">';
+  for(var g=0; g<=2; g++){
+    var gv = max*g/2, gy=Y(gv);
+    s+='<line x1="'+pad+'" y1="'+gy.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+gy.toFixed(1)+'" stroke="rgba(122,175,255,.16)" stroke-width="1"/>';
+    s+='<text x="'+(pad-6)+'" y="'+(gy+4).toFixed(1)+'" fill="rgba(234,244,255,.45)" font-size="11" text-anchor="end">'+Math.round(gv)+'</text>';
+  }
+  s+='<path d="'+path('lg')+'" fill="none" stroke="var(--s-log)" stroke-width="2.5" stroke-linejoin="round"/>';
+  s+='<path d="'+path('mk')+'" fill="none" stroke="var(--s-mark)" stroke-width="2.5" stroke-linejoin="round"/>';
+  for(var k=0;k<n;k++){
+    s+='<circle cx="'+X(k).toFixed(1)+'" cy="'+Y(w[k].lg).toFixed(1)+'" r="3.2" fill="var(--s-log)"/>';
+    s+='<circle cx="'+X(k).toFixed(1)+'" cy="'+Y(w[k].mk).toFixed(1)+'" r="3.2" fill="var(--s-mark)"/>';
+  }
+  var ly=Y(w[n-1].lg), my=Y(w[n-1].mk);
+  /* declutter: guarantee a gap, then clamp the PAIR as a unit so the clamp
+     cannot squash them back together (caught by the geometry audit, not by jsdom) */
+  var GAP=14, top=padT+10, bot=H-padB-2;
+  if(Math.abs(ly-my) < GAP){
+    var mid=(ly+my)/2, hi=mid-GAP/2, lo=mid+GAP/2;
+    if(ly<=my){ ly=hi; my=lo; } else { ly=lo; my=hi; }
+  }
+  var hiV=Math.min(ly,my), loV=Math.max(ly,my), shift=0;
+  if(hiV < top) shift = top - hiV;
+  else if(loV > bot) shift = bot - loV;
+  ly+=shift; my+=shift;
+  s+='<text x="'+(W-padR+6)+'" y="'+(ly+4).toFixed(1)+'" fill="var(--s-log)" font-size="12" font-weight="700">'+w[n-1].lg+'</text>';
+  s+='<text x="'+(W-padR+6)+'" y="'+(my+4).toFixed(1)+'" fill="var(--s-mark)" font-size="12" font-weight="700">'+w[n-1].mk+'</text>';
+  s+='<text x="'+pad+'" y="'+(H-6)+'" fill="rgba(234,244,255,.45)" font-size="11">wk 1</text>';
+  s+='<text x="'+(W-padR)+'" y="'+(H-6)+'" fill="rgba(234,244,255,.45)" font-size="11" text-anchor="end">wk '+n+'</text>';
+  s+='</svg>';
+  s+='<div class="legend"><span style="color:var(--s-log)"><i style="background:var(--s-log)"></i>Logistics</span><span style="color:var(--s-mark)"><i style="background:var(--s-mark)"></i>Marking</span></div>';
+  host.innerHTML=s;
+}
+
+/* ---------- estimate log ---------- */
+function saveEst(){
+  var t=document.getElementById('e-task').value.trim();
+  var es=parseInt(document.getElementById('e-est').value,10);
+  var ac=parseInt(document.getElementById('e-act').value,10);
+  if(!t){ alert('Name the task.'); return; }
+  if(!isFinite(es)||es<=0||!isFinite(ac)||ac<=0){ alert('Both minutes need a number above zero.'); return; }
+  var o=wkRead();
+  o.ests.push({ t:t, e:es, a:ac, ts:Date.now() });
+  wkWrite(o); clearEst(); paintEsts();
+}
+function clearEst(){ ['e-task','e-est','e-act'].forEach(function(id){ document.getElementById(id).value=''; }); }
+function delEst(i){
+  var o=wkRead(); if(i<0||i>=o.ests.length) return;
+  if(!confirm('Delete this entry?')) return;
+  o.ests.splice(i,1); wkWrite(o); paintEsts();
+}
+function median(a){
+  if(!a.length) return 0;
+  var s=a.slice().sort(function(x,y){ return x-y; }), m=Math.floor(s.length/2);
+  return s.length%2 ? s[m] : (s[m-1]+s[m])/2;
+}
+function paintEsts(){
+  var o=wkRead(), E=o.ests, st=document.getElementById('e-stat'), h=document.getElementById('e-hist');
+  if(!E.length){
+    st.innerHTML='';
+    h.innerHTML='<div class="empty">No tasks yet. A bad guess written down is data; a good guess in your head is nothing.</div>';
+    return;
+  }
+  var rs=[], over=0;
+  for(var i=0;i<E.length;i++){ var r=E[i].a/E[i].e; rs.push(r); if(r>1) over++; }
+  var mult=median(rs);
+  var trust = E.length>=15 ? 'trustworthy' : (15-E.length)+' to go';
+  st.innerHTML =
+    '<div class="box"><div class="v">'+mult.toFixed(2)+'&times;</div><div class="l">Multiplier</div></div>'+
+    '<div class="box"><div class="v">'+E.length+'</div><div class="l">'+trust+'</div></div>'+
+    '<div class="box"><div class="v">'+Math.round(100*over/E.length)+'%</div><div class="l">Ran over</div></div>';
+  var b='';
+  for(var j=E.length-1;j>=0;j--){
+    var e=E[j], rr=(e.a/e.e);
+    b+='<div class="hrow"><div class="meta"><div>'+esc(e.t)+'</div>'+
+       '<div class="d" style="margin-top:3px;">est '+e.e+' &middot; actual '+e.a+' &middot; '+rr.toFixed(2)+'&times;</div>'+
+       '</div><button class="del" onclick="delEst('+j+')" aria-label="Delete">&times;</button></div>';
+  }
+  h.innerHTML=b;
+}
+
+/* ---------------- drill ---------------- */
+var POOL = [
+  { prompt:'It is Monday. You have a list of nine things and <b>no single one</b> named as the week’s result.',
+    lines:['<b>Move 2 &mdash; one primary, and a kill list.</b>','Nine live items means the week will be decided by whatever shouts loudest, which is never the important one.'] },
+  { prompt:'You spent the week clearing tasks. Every day felt productive. The <b>course module did not move</b>.',
+    lines:['<b>The trap itself.</b> This is the week this page exists for.','Not a speed problem. The week was badly selected, and more speed would have produced more of it.'] },
+  { prompt:'You are about to buy an app that promises to make your marking <b>30% faster</b>.',
+    lines:['<b>Wrong lever, and probably the trap.</b> Move 5 caps the time; nothing caps a pile you should not be marking exhaustively at all.','Also: tooling before counting. Move 1 comes first.'] },
+  { prompt:'You thought the worksheets would take <b>forty minutes</b>. It was gone eleven when you finished.',
+    lines:['<b>Move 3 &mdash; estimate, then log.</b> Two numbers, every time, until you have a multiplier.','Your planning has been built on a number you have never checked.'] },
+  { prompt:'Eleven minutes of every block goes on handing things out, taking things in and <b>hunting for the dongle</b>.',
+    lines:['<b>Move 4 &mdash; hand the room its own operations.</b>','Eleven minutes times five blocks times five days. That is the biggest number on the card and it is bought at full price.'] },
+  { prompt:'You give the keenest student in the room <b>every job</b>, because she is reliable.',
+    lines:['<b>Move 4, got wrong.</b> Rotate, don’t appoint.','Efficient, and it teaches nobody anything about themselves &mdash; including her.'] },
+  { prompt:'You invent a job called <b>Positivity Monitor</b> so that everyone has one.',
+    lines:['<b>Decoration.</b> If nobody does it, nothing breaks.','They will know within a week, and the real jobs lose credibility with it.'] },
+  { prompt:'You ask a student to <b>hand back the marked essays</b>.',
+    lines:['<b>Stop.</b> That crosses the hard line &mdash; no job touches another student’s marks.','Materials gets the unmarked work only. This one is not a preference.'] },
+  { prompt:'You mark twenty-two paragraphs in <b>eleven separate sittings</b> across the week.',
+    lines:['<b>Move 5 &mdash; batch it.</b> One kind of work, one block.','Each re-entry costs you, and the total is well above what one block of the same length would have been.'] },
+  { prompt:'You circle <b>every error</b> on a student’s page so nobody can say you missed one.',
+    lines:['<b>Covered, not done &mdash; and that belongs to The Honest Stop.</b>','Here the relevant move is the ceiling: cap the comments, name one thing to fix next.'] },
+  { prompt:'Four pages are built and <b>none are deployed</b>. You start a fifth.',
+    lines:['<b>Move 6 &mdash; close before you open.</b>','Deployed or parked. A thing at ninety per cent charges rent every day it sits there.'] },
+  { prompt:'Week one, Wednesday. You notice the logistics problem and <b>fix it immediately</b>.',
+    lines:['<b>Move 1, broken.</b> Week one is observation. Changing it mid-week destroys the baseline.','Write it down, leave it alone, change it in week two.'] },
+  { prompt:'You start the jobs rotation <b>and</b> the marking ceiling <b>and</b> the estimate log, all on Monday.',
+    lines:['<b>Two changes at once &mdash; three, in fact.</b>','Nothing will be attributable. The whole set stops being research and becomes activity with better vocabulary.'] },
+  { prompt:'You are redesigning the week card to add <b>two more fields and a second chart</b>.',
+    lines:['<b>The log has become the project.</b> Named in the failure modes.','Building the instrument is low-impact work that feels like progress. Four numbers, three minutes.'] },
+  { prompt:'Your kill list says: <b>the book &mdash; revisit in March</b>.',
+    lines:['<b>That is a later list, not a kill list.</b>','If you expect to pick it up, it is still live and still bidding for the same hours.'] },
+  { prompt:'A new build idea arrives Wednesday and it is <b>genuinely good</b>.',
+    lines:['<b>It waits for Sunday.</b> That is the three-tier rule on the brief, not this page.','Here the point is narrower: it does not displace the primary mid-week, however good it is.'] },
+  { prompt:'The lesson is finished and meets the plan. You are <b>adjusting the navy</b>.',
+    lines:['<b>Polishing &mdash; and that is The Honest Stop’s ground, not this page’s.</b>','Different question: that page asks where to stop, this one asks what to pick.'] },
+  { prompt:'The printer is jammed again, the cart is missing a charger, the room is <b>slowly degrading</b>.',
+    lines:['<b>That is Entropy &mdash; upkeep and drift.</b>','Not a selection problem. Count the upkeep there; don’t import it here.'] },
+  { prompt:'You have logged <b>six</b> estimate entries and your multiplier reads 2.1&times;.',
+    lines:['<b>Too early to trust it.</b> Fifteen is the arbitrary-but-fixed threshold.','Keep logging. The direction is interesting; the number is not yet yours.'] },
+  { prompt:'Four weeks are done. The logistics number is <b>flat</b> and you feel like it helped.',
+    lines:['<b>Decide from the numbers.</b> Keep, kill or adjust &mdash; and flat means kill or adjust.','How it felt is exactly the signal this set was built to replace.'] },
+  { prompt:'You are two weeks in and want to know whether it is working, so you <b>compare week one to week two</b>.',
+    lines:['<b>Too soon.</b> Two dots is a line but not a trend, and week two is the first week with a change in it.','Four weeks, then decide.'] },
+  { prompt:'Name <b>the one thing</b>.',
+    lines:['<b>What would make this week worth it &mdash; and what am I not doing to pay for it?</b>','Monday morning, in writing. The second half is the half that works.'] }
+];
+var STEPS=[], idx=0, revealed=false;
+function buildRound(){
+  var body=POOL.slice(0, POOL.length-1), last=POOL[POOL.length-1];
+  for(var i=body.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=body[i]; body[i]=body[j]; body[j]=t; }
+  STEPS=body.slice(0,9); STEPS.push(last);
+}
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  if(!STEPS.length || idx===0) buildRound();
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Name it &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  idx=0; STEPS=[]; document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-work-efficiency-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+</script>
+</body>
+</html>
