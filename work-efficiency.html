@@ -101,8 +101,12 @@
   .ibtn{ border:0; border-radius:999px; padding:11px 20px; font-size:13px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
     cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; }
   .ibtn.ghost{ background:rgba(9,36,80,.55); color:#fff; border:1px solid var(--line); }
-  .stat{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 2px; }
-  .stat .box{ flex:1; min-width:92px; background:rgba(9,36,80,.45); border:1px solid var(--line); border-radius:12px; padding:10px 12px; }
+  /* explicit column counts — four boxes flex-wrapped to 3+1 at phone width and the
+     orphan stretched full width, which read as a bug rather than a choice */
+  .stat{ display:grid; gap:10px; margin:12px 0 2px; }
+  #w-stat{ grid-template-columns:repeat(2,1fr); }
+  #e-stat{ grid-template-columns:repeat(3,1fr); }
+  .stat .box{ background:rgba(9,36,80,.45); border:1px solid var(--line); border-radius:12px; padding:10px 12px; }
   .stat .box .v{ font-size:22px; font-weight:300; letter-spacing:-.01em; }
   .stat .box .l{ font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; margin-top:2px; }
   .hist{ margin-top:14px; border-top:1px solid var(--line); padding-top:10px; }
@@ -110,7 +114,11 @@
   .hrow:last-child{ border-bottom:0; }
   .hrow .meta{ flex:1; }
   .hrow .meta .d{ font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; }
-  .hrow .del{ border:0; background:transparent; color:var(--ink-quiet); font-size:17px; cursor:pointer; line-height:1; padding:2px 4px; }
+  /* 40px tap target, pulled back with negative margin so the row stays dense */
+  .hrow .del{ border:0; background:transparent; color:var(--ink-quiet); font-size:19px; cursor:pointer; line-height:1;
+    flex:0 0 auto; min-width:40px; min-height:40px; display:flex; align-items:center; justify-content:center;
+    margin:-7px -9px -7px 0; border-radius:10px; }
+  .hrow .del:active{ background:rgba(255,255,255,.07); }
   .empty{ font-size:13px; color:var(--ink-quiet); line-height:1.5; padding:8px 0; }
   .chart{ margin-top:14px; }
   .chart svg{ width:100%; height:auto; display:block; }
