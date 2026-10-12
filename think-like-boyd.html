@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Think Like Boyd</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0; --violet:#b48cff; --red:#ff8a8a; --green:#6fe3a0;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; white-space:nowrap; }
+  /* four tabs: tighter than the three-tab pages so the bar fits 390px beside the back link without overflow */
+  .toggle{ display:flex; gap:2px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; flex:0 1 auto; min-width:0; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:11.5px; font-weight:800; letter-spacing:.03em; text-transform:uppercase;
+    padding:8px 8px; border-radius:999px; cursor:pointer; white-space:nowrap; }
+  @media (max-width:360px){ a.back span{ display:none; } }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* read cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.phys{ border-left-color:var(--teal); background:rgba(63,208,192,.08); }
+  .card.meth{ border-left-color:var(--violet); background:rgba(180,140,255,.09); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .para{ font-size:14px; line-height:1.6; margin:7px 0; }
+  .para b{ color:var(--accent-hi); }
+  .card.phys .para b{ color:#8ff0e4; }
+  .card.meth .para b{ color:#cdb4ff; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .band.scope{ background:rgba(180,140,255,.10); border-left-color:var(--violet); }
+  .band.scope b{ color:#cdb4ff; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); }
+  .pat{ font-size:14px; line-height:1.55; margin:9px 0; }
+  .pat b{ color:var(--gold); }
+  .pat i{ color:var(--ink-dim); }
+  .lad{ display:flex; gap:10px; align-items:flex-start; padding:9px 0; border-bottom:1px solid rgba(122,175,255,.10); font-size:14px; line-height:1.5; }
+  .lad:last-child{ border-bottom:0; }
+  .lad .n{ flex:0 0 26px; font-size:12px; font-weight:800; color:var(--gold); letter-spacing:.08em; padding-top:2px; }
+  .lad .g{ font-size:12.5px; color:var(--ink-quiet); margin-top:2px; }
+  .lad .g b{ color:var(--ink-dim); font-weight:700; }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+  .ev.x{ background:rgba(255,120,120,.14); color:#ffb3b3; border-color:rgba(255,120,120,.4); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+
+  /* ---------- tool tabs ---------- */
+  #watch, #predict, #aim{ display:none; }
+  .inst{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--gold); border-radius:14px; padding:15px 16px; margin-bottom:16px; }
+  .inst.v{ border-left-color:var(--violet); }
+  .inst.t{ border-left-color:var(--teal); }
+  .i-name{ font-size:17px; font-weight:700; margin-bottom:3px; }
+  .i-why{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-bottom:12px; }
+  .fld{ margin-bottom:10px; }
+  .fld label{ display:block; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; margin-bottom:5px; }
+  .fld input, .fld select, .fld textarea{ width:100%; background:rgba(9,36,80,.55); border:1px solid var(--line); border-radius:10px; color:var(--ink);
+    font-size:15px; padding:11px 12px; font-family:inherit; -webkit-appearance:none; appearance:none; }
+  .fld textarea{ min-height:74px; resize:vertical; line-height:1.45; }
+  .fld input:focus, .fld select:focus, .fld textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .two{ display:flex; gap:10px; } .two > .fld{ flex:1; min-width:0; }
+  .ibar{ display:flex; gap:10px; margin-top:4px; flex-wrap:wrap; }
+  .ibtn{ border:0; border-radius:999px; padding:11px 20px; font-size:13px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; }
+  .ibtn.ghost{ background:rgba(9,36,80,.55); color:#fff; border:1px solid var(--line); }
+  .ibtn.sm{ padding:9px 14px; font-size:11.5px; }
+  .prompt-card{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:14px 16px; margin-bottom:14px; }
+  .prompt-card .k{ font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; margin-bottom:6px; }
+  .prompt-card .q{ font-size:17px; font-weight:300; line-height:1.45; }
+  .prompt-card .q b{ font-weight:700; color:var(--accent-hi); }
+  .prompt-card .s{ font-size:12px; color:var(--ink-quiet); margin-top:8px; }
+  .stat{ display:grid; gap:10px; margin:12px 0 2px; }
+  .stat.c2{ grid-template-columns:repeat(2,1fr); }
+  .stat.c3{ grid-template-columns:repeat(3,1fr); }
+  .stat .box{ background:rgba(9,36,80,.45); border:1px solid var(--line); border-radius:12px; padding:10px 12px; min-width:0; }
+  .stat .box .v{ font-size:22px; font-weight:300; letter-spacing:-.01em; }
+  .stat .box .v small{ font-size:12px; color:var(--ink-quiet); font-weight:700; }
+  .stat .box .l{ font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; margin-top:2px; }
+  .hist{ margin-top:14px; border-top:1px solid var(--line); padding-top:10px; }
+  .hrow{ display:flex; align-items:flex-start; gap:10px; font-size:13.5px; line-height:1.5; padding:9px 0; border-bottom:1px solid rgba(122,175,255,.10); }
+  .hrow:last-child{ border-bottom:0; }
+  .hrow .meta{ flex:1; min-width:0; }
+  .hrow .meta .d{ font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; margin-bottom:2px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .hrow .meta .d .dom{ color:var(--teal); }
+  .hrow .meta .d .pt{ color:var(--gold); }
+  .hrow .meta .d .seed{ color:var(--violet); }
+  .hrow .meta .saw{ }
+  .hrow .meta .mean{ color:var(--ink-dim); font-style:italic; margin-top:3px; }
+  .hrow .meta .sub2{ color:var(--ink-dim); margin-top:3px; font-size:13px; }
+  .hrow .meta .sub2 b{ color:var(--ink-quiet); font-weight:800; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; margin-right:4px; }
+  .hrow .meta .les{ color:#cdb4ff; margin-top:3px; font-size:13px; }
+  .hrow.done .meta .saw{ text-decoration:line-through; color:var(--ink-quiet); }
+  .hrow.hit .meta .d .res{ color:var(--green); } .hrow.miss .meta .d .res{ color:var(--red); }
+  /* actions stack vertically: three 40px buttons side by side took half the row at 390px and squeezed the text */
+  .hrow .acts{ display:flex; flex-direction:column; gap:4px; flex:0 0 58px; align-items:stretch; }
+  /* 40px tap target, pulled back with negative margin so the row stays dense */
+  .hrow .del{ border:0; background:transparent; color:var(--ink-quiet); font-size:19px; cursor:pointer; line-height:1;
+    min-width:40px; min-height:40px; display:flex; align-items:center; justify-content:center; border-radius:10px; }
+  .hrow .del:active{ background:rgba(255,255,255,.07); }
+  .hrow .rb{ border:1px solid var(--line); background:rgba(9,36,80,.55); color:var(--ink); font-size:11px; font-weight:800; letter-spacing:.06em;
+    text-transform:uppercase; min-width:40px; min-height:40px; padding:0 6px; border-radius:10px; cursor:pointer; }
+  .hrow .rb.hit{ color:var(--green); } .hrow .rb.miss{ color:var(--red); } .hrow .rb.ok{ color:var(--accent-hi); }
+  .lesson-row{ display:none; margin:6px 0 2px; }
+  .lesson-row.on{ display:block; }
+  .lesson-row input{ width:100%; background:rgba(9,36,80,.55); border:1px solid var(--line); border-radius:10px; color:var(--ink); font-size:14px; padding:9px 11px; font-family:inherit; }
+  .empty{ font-size:13px; color:var(--ink-quiet); line-height:1.5; padding:8px 0; }
+  .filt{ display:flex; gap:6px; flex-wrap:wrap; margin:10px 0 2px; }
+  .chip{ border:1px solid var(--line); background:rgba(9,36,80,.45); color:var(--ink-dim); font-size:11px; font-weight:800; letter-spacing:.08em;
+    text-transform:uppercase; padding:8px 11px; border-radius:999px; cursor:pointer; min-height:34px; }
+  .chip.on{ background:var(--accent); color:#06264f; border-color:var(--accent); }
+  .cal{ margin-top:12px; }
+  .cal .r{ display:grid; grid-template-columns:78px 1fr 64px; gap:10px; align-items:center; font-size:13px; padding:7px 0; border-bottom:1px solid rgba(122,175,255,.10); }
+  .cal .r:last-child{ border-bottom:0; }
+  .cal .r .nm{ font-weight:800; letter-spacing:.06em; text-transform:uppercase; font-size:11px; color:var(--ink-dim); }
+  .cal .r .bar{ height:10px; background:rgba(9,36,80,.55); border:1px solid var(--line); border-radius:999px; position:relative; overflow:hidden; }
+  .cal .r .bar i{ position:absolute; left:0; top:0; bottom:0; background:var(--accent); border-radius:999px; }
+  .cal .r .bar u{ position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--gold); }
+  .cal .r .pc{ text-align:right; font-weight:700; }
+  .cal .r .pc small{ color:var(--ink-quiet); font-weight:700; font-size:11px; }
+  .ladbox{ background:rgba(245,215,110,.10); border:1px solid rgba(245,215,110,.3); border-radius:14px; padding:14px 16px; margin-bottom:14px; }
+  .ladbox .cur{ font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); font-weight:800; }
+  .ladbox .nm{ font-size:20px; font-weight:300; margin:3px 0 4px; }
+  .ladbox .gate{ font-size:13px; color:var(--ink-dim); line-height:1.5; }
+  .ladbox .gate b{ color:var(--gold); }
+  .ladbox .day{ font-size:12.5px; color:var(--ink-quiet); margin-top:6px; }
+  .ladlist{ margin-top:10px; }
+  .ladlist .lr{ display:flex; gap:10px; align-items:center; padding:7px 0; font-size:13.5px; border-bottom:1px solid rgba(122,175,255,.10); }
+  .ladlist .lr:last-child{ border-bottom:0; }
+  .ladlist .lr .n{ flex:0 0 22px; font-size:11px; font-weight:800; color:var(--ink-quiet); }
+  .ladlist .lr.done .n, .ladlist .lr.done .t{ color:var(--green); }
+  .ladlist .lr.cur .n, .ladlist .lr.cur .t{ color:var(--gold); font-weight:700; }
+  .ladlist .lr .t{ flex:1; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .ibtn:focus-visible, .toggle button:focus-visible, .chip:focus-visible, .hrow .rb:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; <span>Protocols</span></a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-watch" onclick="setMode('watch')">Watch</button>
+      <button id="tab-predict" onclick="setMode('predict')">Predict</button>
+      <button id="tab-aim" onclick="setMode('aim')">Aim</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>Think Like Boyd</h1>
+    <div class="sub">The general method, not the episodes. See what is actually happening, pick what matters, observe cheaply, predict people, decide in calm, and think one move past the obvious response. Experiment 2 of the set. Seven skills, one at a time, a fortnight each.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="band scope"><b>Scope.</b> <b>Work Efficiency</b> owns which work gets picked. This page owns reading situations and people: what is really going on, who decides, what it costs, what happens next. The stories this comes from are fiction, and the moves in them work because they were written to. This page is where they get tested against people who have not read the script. Everything logged here stays on this device.</div>
+
+    <div class="section-k">What he is actually doing</div>
+
+    <div class="card phys">
+      <div class="p-head"><span class="p-name">Not prophecy. Two things that look like it.</span></div>
+      <div class="para"><b>He models people, not events.</b> When Boyd says a man will refuse twice and then agree, he is not seeing the future. He has read what the man is defending, and identity objections are predictable because they are about self-image rather than the proposal, and they run out because there are only so many ways to say the same thing about yourself. Saying the prediction aloud collapses it: a refusal that has been named is a performance both of you can see.</div>
+      <div class="para"><b>He changes the question instead of answering it.</b> He never tries to win the question on the table. He notices that the decision will be made later by tired people answering whatever question is in front of them, and he goes to work on the question. <i>You cannot win "what did he say in the gym." Nobody has to ask "who tells a hundred families Friday night is cancelled."</i> That is not long-range planning. It is choosing the ground.</div>
+      <div class="para"><b>Everything else is a notebook.</b> He measures, he writes the observation separately from what it means, he writes the prediction before the event, and he records being wrong with the same weight as being right. The whole apparatus is one notebook, carried everywhere and reread. If this page ever becomes more than that, it has failed.</div>
+    </div>
+
+    <div class="section-k">The loop &mdash; ten moves</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">01</span><span class="p-name">Terrain before action</span><span class="ev b">B</span></div>
+      <div class="p-ess">Delay the first move until the map exists.</div>
+      <div class="para"><b>In any new room, say nothing useful for longer than feels comfortable.</b> Who decides, who is believed, what the unwritten rules are, what each procedure costs and whom, what the timetable is. Boyd's own doctrine puts orientation at the centre of the loop, ahead of decision and action, because a fast decision on a bad map is just a fast way to be wrong.</div>
+      <div class="para"><b>The map has four columns.</b> Who holds power (decides, marks, files). Who holds authority (the room believes them). What the rules are that nobody wrote down. What things cost. The dangerous configuration is power and authority in different people; it never stays stable, and the day it breaks is predictable.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">02</span><span class="p-name">Measure what everyone assumes</span><span class="ev c">C</span></div>
+      <div class="p-ess">The gap between the assumed number and the measured one is where the cheap wins live.</div>
+      <div class="para"><b>Every institution runs on numbers nobody has checked.</b> The bus takes forty minutes. Marking a set takes an evening. That kid is lazy. The meeting is necessary. Pick one a fortnight and measure it; the result is usually wrong by enough to matter and the measurement usually costs less than an hour.</div>
+      <div class="para"><b>Measured beats clever.</b> A page of real bus times earned more goodwill in a week than anything impressive could have in a term, because it cannot be argued with and costs the recipient nothing to accept. The move does not survive being faked.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">03</span><span class="p-name">Observation separated from meaning</span><span class="ev a">A</span></div>
+      <div class="p-ess">Two lines, never one. What you saw. What you think it means.</div>
+      <div class="para"><b>The interpretation contaminates the observation the moment they share a sentence.</b> "She was dismissive" is a conclusion. "She looked at her laptop while he spoke, twice" is an observation, and it can turn out to mean something else next week. The Watch tab enforces the split with two fields because willpower will not.</div>
+      <div class="para"><b>Why it matters:</b> once you hold a hypothesis, search becomes confirmatory. You gather evidence <i>for</i> the reading rather than <i>against</i> it, and the case feels strongest exactly when it was built after you picked the answer. This is among the best-replicated findings in the judgement literature, and separating the two lines is the cheapest known defence.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">04</span><span class="p-name">Model people by their constraints</span><span class="ev b">B</span></div>
+      <div class="p-ess">Not what they say. What they are judged on, what they fear, what they run out of.</div>
+      <div class="para"><b>Three questions per person.</b> What is this person evaluated on by someone above them? What would embarrass them in front of the people they care about? What do they run out of first &mdash; time, patience, political cover, attention? Predictions built from constraints hold; predictions built from stated intentions do not.</div>
+      <div class="para"><b>Then write the prediction down before the event.</b> One line: what they will do and why. One line afterwards: what they did. Calibration improves with feedback and not otherwise; intuition about people is only trustworthy in environments where you find out quickly whether you were right. The log is what makes this one of those environments.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">05</span><span class="p-name">Find the structure under the instance</span><span class="ev b">B</span></div>
+      <div class="p-ess">Every situation is a shape you have met somewhere else. Name the shape.</div>
+      <div class="para"><b>This is Boyd's actual method</b> and the thing people mistake for genius. Read widely across fields that have nothing to do with each other, then notice the same structure wearing different clothes. A seminar complaint is a legal standing problem. A staffroom is an authority-versus-power split. A disciplinary process is a punishment regardless of its finding. The vocabulary rotates every generation; the move never changes.</div>
+      <div class="para"><b>The payoff is that the shape tells you what the situation needs in order to work</b> &mdash; and therefore what to remove. A complaint that borrows an absent person's voice needs the person to stay absent. A free rider needs the contribution to stay invisible. You do not have to find who; you have to find what it runs on. A hunt for who will always find somebody. The pattern catalogue below is the starting set.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">06</span><span class="p-name">State the objective as a checkable condition</span><span class="ev a">A</span></div>
+      <div class="p-ess">Not "handle it well." Make it short. Make him expensive. Change the question.</div>
+      <div class="para"><b>The test is whether an outsider could tell afterwards if you hit it.</b> "Make it eleven days instead of eleven weeks" passes. "Win" does not, because winning is a feeling and you will award it to yourself. Specific, checkable objectives outperform vague ones by a wide and well-replicated margin, and the Aim tab will not let you save one without the test.</div>
+      <div class="para"><b>Then ask what the cheapest action is that satisfies the condition.</b> Usually it is smaller than the one you were about to take, and usually it involves not doing something.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">07</span><span class="p-name">Decide the hard things in calm</span><span class="ev a">A</span></div>
+      <div class="p-ess">Three things on the bus. One of them is what you will not do.</div>
+      <div class="para"><b>By the time you are deciding in the room, you have lost.</b> Before any hard conversation, write three things: what you will concede immediately because it is true and free; what you will ask for; what you will not do no matter how available it is. The last one is the one that costs, and it is not a thinking skill &mdash; it is a decision you make in advance and then find out whether you meant.</div>
+      <div class="para"><b>The evidence here is unusually strong.</b> If&ndash;then plans made in advance roughly double the rate at which people do the hard thing in the moment, across a very large number of studies, because the decision has already been made and the moment only has to recognise it.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">08</span><span class="p-name">Act small, early, visibly useful</span><span class="ev b">B</span></div>
+      <div class="p-ess">Goodwill is cheapest bought in week three with a solved physical problem.</div>
+      <div class="para"><b>Nobody can be impressive in week three; they have not done anything yet.</b> What a newcomer can do is solve one small physical problem that everybody has and nobody has measured: the bus, the photocopier, the room booking, the thing that wastes ten minutes a day. Physical problems are the right kind because a solution has no status content; it cannot be judged wrong or read as a bid.</div>
+      <div class="para"><b>The obligation created is out of all proportion to the favour</b>, which is the oldest finding in social exchange. It only works because the favour is real.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">09</span><span class="p-name">Review against the prediction</span><span class="ev a">A</span></div>
+      <div class="p-ess">Reflection without a prior prediction is unfalsifiable. It confirms whatever you already believe about yourself.</div>
+      <div class="para"><b>This is the whole difference between action research and a diary.</b> What did I expect, what happened, where was the gap, what do I change &mdash; and is that a lesson or an excuse. Without the written prediction the review has nothing to be wrong against, which is why journalling makes people feel better and change nothing.</div>
+      <div class="para"><b>Record being wrong with the same weight as being right.</b> Six weeks mispronouncing a name. Four days convicting the wrong person on a beautiful case. The error is the data; the win is just the absence of it.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">10</span><span class="p-name">One move past the obvious response</span><span class="ev b">B</span></div>
+      <div class="p-ess">For any action: what does the other party do in reply, and what does that leave me?</div>
+      <div class="para"><b>This is as far ahead as he ever actually looks.</b> Not five moves. One. Before acting, write what the other side does in response and whether that position is better or worse than the one you are in. Most bad moves fail this test immediately and most people never run it.</div>
+      <div class="para"><b>Its sharper form is second intention</b>, borrowed from fencing: a move you expect to fail, made to draw the response you can actually use. And its defensive form is the premortem &mdash; assume the plan has failed, then explain why. Imagining an outcome as already having happened measurably improves the reasons people generate for it.</div>
+    </div>
+
+    <div class="section-k">How to be more observant</div>
+
+    <div class="card meth">
+      <div class="p-head"><span class="p-name">Where to put your eyes</span></div>
+      <div class="move"><b>Arrive early.</b> The five minutes before a meeting starts carry more information than the meeting: who sits with whom, who checks with whom before speaking, who the latecomers apologise to.</div>
+      <div class="move"><b>Watch eyes when a hard question lands.</b> Before anyone answers, the room looks at someone. That is who holds authority, and it is frequently not the person running the meeting.</div>
+      <div class="move"><b>Count.</b> Who spoke, how many times, in what order, who spoke after whom. Order of speaking is a deference map and nobody notices you building it.</div>
+      <div class="move"><b>Note how disagreements end.</b> Every room has a de-escalation signal &mdash; a phrase that means <i>I am withdrawing before this becomes a scene</i>. Learn it. It tells you where the real limits are.</div>
+      <div class="move"><b>Note what people apologise for.</b> That is the unwritten rule, stated out loud by the person breaking it.</div>
+      <div class="move"><b>Note what gets praised versus what gets rewarded.</b> They differ in every institution, and the gap is the institution's actual values.</div>
+      <div class="move"><b>Note the number everyone quotes.</b> Then measure it.</div>
+      <div class="move"><b>Ask one insider one naive question a week.</b> <i>What's the thing everybody here knows that nobody says out loud?</i> An eighteen-year-old answered that in nine words. It costs a coffee.</div>
+      <div class="move"><b>Write it within the hour or lose it.</b> One line. Observation only. Meaning goes in the second field, later, if at all.</div>
+    </div>
+
+    <div class="section-k">Patterns to watch for</div>
+
+    <div class="card meth">
+      <div class="p-head"><span class="p-name">The starting catalogue</span></div>
+      <div class="pat"><b>Authority / power split.</b> <i>The one the room believes is not the one who decides. Unstable; watch for the day one needs something only the other has.</i></div>
+      <div class="pat"><b>The borrowed voice.</b> <i>Someone speaks for an absent party to gain something for themselves. Ask who has standing. The complaint needs the absent person to stay absent.</i></div>
+      <div class="pat"><b>The process is the punishment.</b> <i>A procedure whose cost is paid regardless of outcome. The only variable you control is length.</i></div>
+      <div class="pat"><b>The invisible contribution.</b> <i>Free riding happens where effort cannot be seen. Fix with visibility, not rules.</i></div>
+      <div class="pat"><b>The assumed number.</b> <i>A figure everyone quotes and nobody has measured.</i></div>
+      <div class="pat"><b>The identity objection.</b> <i>A refusal about self-image rather than the proposal. Predictable, finite, collapses when named.</i></div>
+      <div class="pat"><b>Cheap to lose.</b> <i>A person or thing the institution can drop at no cost. The move is to make it expensive, not to defend it.</i></div>
+      <div class="pat"><b>The unwinnable question.</b> <i>The question on the table has no good answer for you. Find the question nobody has to ask.</i></div>
+      <div class="pat"><b>Method instead of objective.</b> <i>Someone has been told how to walk up the hill but not what the hill is for. They stop thinking the moment they are confused.</i></div>
+      <div class="pat"><b>Praised versus rewarded.</b> <i>What the institution says it values and what it actually pays for.</i></div>
+      <div class="pat"><b>The culminating point.</b> <i>A win pushed one step past where it was complete, which is where it turns into a loss.</i></div>
+      <div class="pat"><b>Moral isolation.</b> <i>Menace, uncertainty and mistrust around one person. When a room goes quiet on someone, that is a mechanism, not a mood.</i></div>
+      <div class="pat"><b>The explanation as confession.</b> <i>Length reads as anxiety; anxiety reads as guilt. The long defence is the admission.</i></div>
+      <div class="note">Add your own as they turn up. A pattern earns its place in the catalogue when you have seen it in two different domains.</div>
+    </div>
+
+    <div class="section-k">The ladder &mdash; one skill per fortnight</div>
+
+    <div class="card">
+      <div class="lad"><div class="n">01</div><div><div>Measure before you assert</div><div class="g"><b>Gate:</b> three assumed numbers measured and logged.</div></div></div>
+      <div class="lad"><div class="n">02</div><div><div>Observation separated from interpretation</div><div class="g"><b>Gate:</b> ten Watch entries where the first line contains no judgement. You are the judge.</div></div></div>
+      <div class="lad"><div class="n">03</div><div><div>Predict the person, not the event</div><div class="g"><b>Gate:</b> twenty predictions resolved. The calibration readout unlocks.</div></div></div>
+      <div class="lad"><div class="n">04</div><div><div>Decide before the room</div><div class="g"><b>Gate:</b> five hard rooms entered with three things written; held on four.</div></div></div>
+      <div class="lad"><div class="n">05</div><div><div>Name the structure</div><div class="g"><b>Gate:</b> ten entries tagged with a pattern, three different patterns, at least two domains.</div></div></div>
+      <div class="lad"><div class="n">06</div><div><div>Choose the objective, not the win</div><div class="g"><b>Gate:</b> three objectives pass their checkable test on review day.</div></div></div>
+      <div class="lad"><div class="n">07</div><div><div>Change the question</div><div class="g"><b>Gate:</b> one documented case where you changed the question and the decision followed.</div></div></div>
+      <div class="note">Ordered by cost. The cheap ones first because they generate the evidence that makes the slow ones worth sticking with. Skill 5 is years, not a fortnight; the gate is the start of it, not the end.</div>
+    </div>
+
+    <div class="section-k">Why not affirmations</div>
+
+    <div class="band"><b>Skipped on the evidence</b> <span class="ev b">B</span>. Reaffirming your <i>values</i> under threat has real support. Repeating a statement about <i>yourself</i> does not, and for people who do not already believe it, positive self-statements made them feel measurably worse. The Boyd equivalent is not a sentence about who you are. It is a standing decision about what you will do, written down before the moment, which has the strongest evidence on this page.</div>
+
+    <div class="section-k">Evidence</div>
+    <div class="key">
+      <b>A</b> &mdash; replicated experimental literature or meta-analysis &middot; <b>B</b> &mdash; solid single studies, consistent field evidence, or established doctrine &middot; <b>C</b> &mdash; reasoning from well-supported adjacent findings &middot; <b>D</b> &mdash; plausible, untested here &middot; <b>X</b> &mdash; contradicted.<br>
+      03: confirmation bias &mdash; Wason 1960; Nickerson 1998 review. &middot; 04/09: calibration improves with feedback &mdash; Lichtenstein &amp; Fischhoff 1980; conditions for trustworthy intuition &mdash; Kahneman &amp; Klein 2009. &middot; 06: goal specificity &mdash; Locke &amp; Latham 2002. &middot; 07: implementation intentions, d &asymp; 0.65 &mdash; Gollwitzer &amp; Sheeran 2006 meta-analysis. &middot; 08: reciprocity &mdash; Gouldner 1960. &middot; 10: prospective hindsight &mdash; Mitchell, Russo &amp; Pennington 1989; premortem &mdash; Klein 2007. &middot; Patterns: free riding and identifiability &mdash; Karau &amp; Williams 1993; the process is the punishment &mdash; Feeley 1979; mission tactics &mdash; Moltke; Boyd, <i>Patterns of Conflict</i>. &middot; Affirmations: Steele 1988; Wood, Perunovic &amp; Lee 2009.<br>
+      Grades were checked against primary-source listings at build time, not recalled. Boyd's own briefings are doctrine, not experiments, and are graded B on that basis.
+    </div>
+  </div>
+
+  <!-- ===================== WATCH ===================== -->
+  <div id="watch">
+    <h1>Watch</h1>
+    <div class="sub">The notebook. Two lines, always: what you saw, then what you think it means. The first line is the data. The second is allowed to be wrong.</div>
+
+    <div class="prompt-card">
+      <div class="k">This fortnight, look for</div>
+      <div class="q" id="w-prompt"></div>
+      <div class="s" id="w-prompt-s"></div>
+      <div class="ibar" style="margin-top:10px"><button class="ibtn ghost sm" onclick="nextPrompt()">Another</button></div>
+    </div>
+
+    <div class="inst t">
+      <div class="i-name">New observation</div>
+      <div class="i-why">Within the hour. One line. If you catch yourself writing a judgement in the first field, move it to the second.</div>
+      <div class="two">
+        <div class="fld"><label>Domain</label><select id="w-dom"></select></div>
+        <div class="fld"><label>Pattern</label><select id="w-pat"></select></div>
+      </div>
+      <div class="fld"><label>What I saw</label><textarea id="w-saw" placeholder="She looked at her laptop twice while he spoke. He stopped mid-sentence the second time."></textarea></div>
+      <div class="fld"><label>What I think it means</label><textarea id="w-mean" placeholder="Optional. Can be wrong. Can be blank."></textarea></div>
+      <div class="ibar"><button class="ibtn" onclick="saveObs()">Save</button><button class="ibtn ghost" onclick="clearObs()">Clear</button></div>
+      <div class="stat c3">
+        <div class="box"><div class="v" id="w-n">0</div><div class="l">Entries</div></div>
+        <div class="box"><div class="v" id="w-fn">0</div><div class="l">This fortnight</div></div>
+        <div class="box"><div class="v" id="w-pn">0</div><div class="l">With pattern</div></div>
+      </div>
+      <div class="filt" id="w-filt"></div>
+      <div class="hist" id="w-hist"></div>
+    </div>
+  </div>
+
+  <!-- ===================== PREDICT ===================== -->
+  <div id="predict">
+    <h1>Predict</h1>
+    <div class="sub">Who will do what, written before it happens. Then the result. The readout is your calibration, and it opens at twenty.</div>
+
+    <div class="inst v">
+      <div class="i-name">New prediction</div>
+      <div class="i-why">A named person or specific thing. Built from their constraints, not their words. Pick the confidence honestly &mdash; the readout will tell you if you were lying.</div>
+      <div class="two">
+        <div class="fld"><label>Domain</label><select id="p-dom"></select></div>
+        <div class="fld"><label>Confidence</label><select id="p-conf">
+          <option value="60">Likely &middot; 60%</option><option value="75" selected>Confident &middot; 75%</option><option value="90">Sure &middot; 90%</option></select></div>
+      </div>
+      <div class="fld"><label>Who / what</label><input id="p-who" placeholder="Dept head, Thursday meeting"></div>
+      <div class="fld"><label>Will</label><textarea id="p-pred" placeholder="Say no to the room change the first time it's raised, because she's judged on not creating timetable exceptions."></textarea></div>
+      <div class="fld"><label>Resolve by</label><input id="p-due" type="date"></div>
+      <div class="ibar"><button class="ibtn" onclick="savePred()">Save</button><button class="ibtn ghost" onclick="clearPred()">Clear</button></div>
+
+      <div class="stat c3">
+        <div class="box"><div class="v" id="p-open">0</div><div class="l">Open</div></div>
+        <div class="box"><div class="v" id="p-res">0<small>/20</small></div><div class="l">Resolved</div></div>
+        <div class="box"><div class="v" id="p-hit">&ndash;</div><div class="l">Hit rate</div></div>
+      </div>
+      <div class="cal" id="p-cal"></div>
+      <div class="note" id="p-calnote"></div>
+      <div class="hist" id="p-hist"></div>
+    </div>
+  </div>
+
+  <!-- ===================== AIM ===================== -->
+  <div id="aim">
+    <h1>Aim</h1>
+    <div class="sub">The current skill and its gate, then objectives stated as conditions an outsider could check. The seeds are suggestions. Delete the wrong ones; that is what they are for.</div>
+
+    <div class="ladbox" id="ladbox"></div>
+    <div class="ladlist" id="ladlist"></div>
+
+    <div class="inst" style="margin-top:16px">
+      <div class="i-name">New objective</div>
+      <div class="i-why">Not a win. A condition. If you cannot write the test, you do not yet have an objective.</div>
+      <div class="fld"><label>Domain</label><select id="a-dom"></select></div>
+      <div class="fld"><label>Objective</label><input id="a-obj" placeholder="One solved physical problem for the department"></div>
+      <div class="fld"><label>Checkable test &mdash; how would an outsider verify it?</label><input id="a-test" placeholder="It exists and three colleagues have used it unasked"></div>
+      <div class="fld"><label>Cheapest action that moves it</label><input id="a-act" placeholder="Ask two people what wastes ten minutes a day"></div>
+      <div class="fld"><label>Review on</label><input id="a-rev" type="date"></div>
+      <div class="ibar"><button class="ibtn" onclick="saveAim()">Save</button><button class="ibtn ghost" onclick="clearAim()">Clear</button></div>
+      <div class="stat c3">
+        <div class="box"><div class="v" id="a-open">0</div><div class="l">Open</div></div>
+        <div class="box"><div class="v" id="a-due">0</div><div class="l">Due</div></div>
+        <div class="box"><div class="v" id="a-done">0</div><div class="l">Passed</div></div>
+      </div>
+      <div class="filt" id="a-filt"></div>
+      <div class="hist" id="a-hist"></div>
+    </div>
+  </div>
+
+  <div class="foot">Forge OS &middot; Think Like Boyd &middot; on-device only</div>
+</div>
+<script>
+/* ---------------- constants ---------------- */
+var DOMS=['Work','Build','Family','Health','Friends','Money'];
+var PATS=['none yet','Authority / power split','The borrowed voice','The process is the punishment','The invisible contribution','The assumed number',
+  'The identity objection','Cheap to lose','The unwinnable question','Method instead of objective','Praised versus rewarded','The culminating point',
+  'Moral isolation','The explanation as confession','Other'];
+var SKILLS=[
+  {n:'Measure before you assert', g:'Three assumed numbers measured and logged in Watch.'},
+  {n:'Observation separated from interpretation', g:'Ten Watch entries whose first line contains no judgement.'},
+  {n:'Predict the person, not the event', g:'Twenty predictions resolved.'},
+  {n:'Decide before the room', g:'Five hard rooms entered with three things written in advance; held on four.'},
+  {n:'Name the structure', g:'Ten entries tagged with a pattern, three different patterns, two or more domains.'},
+  {n:'Choose the objective, not the win', g:'Three objectives pass their checkable test on review day.'},
+  {n:'Change the question', g:'One documented case where you changed the question and the decision followed.'}
+];
+var PROMPTS=[
+  [ ['What number do people in your department quote that nobody has measured?','Then measure it. Log the assumed figure and the real one.'],
+    ['How long does the thing you "always" do actually take?','Time it three separate times. Marking a set, a transition, the walk to the office.'],
+    ['What does the building assume about one student that you could check in a single conversation?','Write the assumption first, then the finding.'] ],
+  [ ['In the next meeting, write three things you saw and nothing about what they meant.','If a judgement sneaks in, move it to the second field.'],
+    ['What did somebody apologise for this week?','That is an unwritten rule, spoken aloud by the person breaking it.'],
+    ['How did the last disagreement you witnessed end?','Find the de-escalation phrase. It marks where the real limit is.'] ],
+  [ ['Pick one person. What are they judged on, and what do they run out of first?','Time, patience, political cover, attention. Predict from that.'],
+    ['Who has authority without power here? Who has power without authority?','Write both names. Watch for the day one needs the other.'],
+    ['Before your next ask of anyone, write what they will say.','Then log it on the Predict tab and find out.'] ],
+  [ ['Before the next hard room: what will you concede for free, and what will you not do?','Three things. The refusal is the one that costs.'],
+    ['What is the available win you should decline this week?','The one sitting right there. Write why declining it is the stronger position.'],
+    ['What are you going to be tempted to do in the next six hours that you should not?','Name it before it arrives.'] ],
+  [ ['Which situation this week was an instance of a shape you have seen in another domain?','Name the shape. If it is new, add it to the catalogue.'],
+    ['Where is someone speaking for an absent party?','Who actually has standing? What does the complaint need in order to keep working?'],
+    ['Which procedure in the building is the punishment regardless of outcome?','Who pays its cost, and what is the only variable they control?'] ],
+  [ ['For the thing you are trying to win: what checkable condition would satisfy you instead?','Something an outsider could verify on a date.'],
+    ['What is the cheapest action that meets the condition?','It is usually smaller than the one you were about to take.'],
+    ['Where have you been chasing a win that the objective does not require?','Write the objective. See if the chase survives.'] ],
+  [ ['What question is everyone trying to answer? What different question would make the decision easy?','Work on the question, not the answer.'],
+    ['For your next move: what does the other party do in response, and what does that leave you?','One move past the obvious. Most bad moves fail this immediately.'],
+    ['What move could you make that you expect to fail, in order to draw the response you can actually use?','Second intention. Use sparingly.'] ]
+];
+
+/* ---------------- mode ---------------- */
+function setMode(m){
+  ['read','watch','predict','aim'].forEach(function(k){
+    document.getElementById(k).style.display = (m===k) ? 'block' : 'none';
+    document.getElementById('tab-'+k).className = (m===k) ? 'on' : '';
+  });
+  if(m==='watch'){ paintPrompt(); paintObs(); }
+  if(m==='predict'){ paintPreds(); }
+  if(m==='aim'){ paintLadder(); paintAims(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-think-like-boyd';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- store ---------------- */
+var KEY='forge-think-like-boyd';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function plus(days){ return ymd(new Date(Date.now()+days*86400000)); }
+function daysBetween(a,b){ var A=new Date(a+'T00:00:00'), B=new Date(b+'T00:00:00'); return Math.round((B-A)/86400000); }
+function rd(){
+  var o=null;
+  try{ o=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){ o=null; }
+  if(!o || typeof o!=='object' || Array.isArray(o)) o={};
+  if(!Array.isArray(o.obs)) o.obs=[];
+  if(!Array.isArray(o.preds)) o.preds=[];
+  if(!Array.isArray(o.aims)) o.aims=[];
+  if(!o.ladder || typeof o.ladder!=='object') o.ladder={skill:1,start:null,done:[]};
+  if(!Array.isArray(o.ladder.done)) o.ladder.done=[];
+  if(typeof o.ladder.skill!=='number' || o.ladder.skill<1 || o.ladder.skill>7) o.ladder.skill=1;
+  if(typeof o.pi!=='number') o.pi=0;
+  if(!o.seeded){ o.aims=seedAims().concat(o.aims); o.seeded=true; wr(o); }
+  return o;
+}
+function wr(o){ try{ localStorage.setItem(KEY, JSON.stringify(o)); }catch(e){} }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fillDoms(id){ var s=document.getElementById(id); s.innerHTML=DOMS.map(function(d){ return '<option>'+d+'</option>'; }).join(''); }
+function fillPats(){ var s=document.getElementById('w-pat'); s.innerHTML=PATS.map(function(p){ return '<option>'+esc(p)+'</option>'; }).join(''); }
+var filt={w:'All', a:'All'};
+function paintFilt(id, key, fn){
+  var el=document.getElementById(id);
+  el.innerHTML=['All'].concat(DOMS).map(function(d){ return '<button class="chip'+(filt[key]===d?' on':'')+'" data-d="'+d+'">'+d+'</button>'; }).join('');
+  Array.prototype.forEach.call(el.querySelectorAll('.chip'), function(b){ b.onclick=function(){ filt[key]=b.getAttribute('data-d'); fn(); }; });
+}
+
+/* ---------------- seeds ---------------- */
+function seedAims(){
+  var r14=plus(14), r28=plus(28);
+  return [
+    {dom:'Work',   obj:'Know who the room looks at when a hard question lands in a staff meeting', test:'A name written in Watch, confirmed at two separate meetings', act:'Arrive five minutes early, sit where you can see faces, watch the first hard question', rev:r14},
+    {dom:'Work',   obj:'One solved physical problem for the department &mdash; the bus-card equivalent', test:'It exists, and three colleagues have used it without being asked to', act:'Ask two people what wastes them ten minutes a day', rev:r28},
+    {dom:'Work',   obj:'Before the next five hard conversations, three things written in advance, one of them a refusal', test:'Five Watch entries tagged with what was written and whether it held; held on four', act:'Write the three on the way in, every time, even when it feels unnecessary', rev:r28},
+    {dom:'Work',   obj:'Ask one person with two years in the building the question: what does everybody here know that nobody says out loud?', test:'The answer, in their words, logged in Watch', act:'Buy the coffee', rev:r14},
+    {dom:'Build',  obj:'One checkable Build objective stated before each fortnight starts, not during it', test:'The objective is on this tab dated before day one, with a test an outsider could verify on review day', act:'Write the next one now', rev:r14},
+    {dom:'Build',  obj:'Measure the assumed number: how many hours a week actually go to the Build work, versus what you would have said', test:'Two weeks of real hours logged in Watch beside the number you guessed first', act:'Write the guess down before you start counting', rev:r14},
+    {dom:'Family', obj:'One prediction per week at home, written before the reaction, resolved after', test:'Four resolved Family predictions on the Predict tab', act:'Pick the next ask you are going to make at home and write what the answer will be', rev:r28},
+    {dom:'Family', obj:'Measure one thing at home nobody has measured', test:'A real number beside the assumed one &mdash; minutes from "time to go" to the door, say', act:'Time it three times without announcing it', rev:r14},
+    {dom:'Health', obj:'One assumed health number checked against a measured one', test:'Both figures written side by side in Watch', act:'Pick the one you are most confident about; that is the one most likely to be wrong', rev:r14},
+    {dom:'Friends',obj:'Before the next specific ask of a friend, write what they will say and why', test:'Two resolved Friends predictions', act:'Choose the friend whose constraints you have never actually thought about', rev:r28},
+    {dom:'Money',  obj:'One recurring cost you have never measured, measured', test:'The annual figure from receipts written beside the figure you guessed first', act:'Guess first. Then add it up.', rev:r14}
+  ].map(function(a){ a.t=today(); a.seed=true; a.done=false; a.obj=a.obj.replace('&mdash;','—'); return a; });
+}
+
+/* ================= WATCH ================= */
+function paintPrompt(){
+  var o=rd(); var pool=PROMPTS[o.ladder.skill-1]; var p=pool[((o.pi%pool.length)+pool.length)%pool.length];
+  document.getElementById('w-prompt').innerHTML=esc(p[0]);
+  document.getElementById('w-prompt-s').textContent=p[1]+'  ·  Skill '+o.ladder.skill+' of 7';
+}
+function nextPrompt(){ var o=rd(); o.pi=(o.pi+1); wr(o); paintPrompt(); }
+function saveObs(){
+  var saw=document.getElementById('w-saw').value.trim();
+  if(!saw){ alert('The first line is the data. Write what you saw.'); return; }
+  var o=rd();
+  o.obs.unshift({t:today(), dom:document.getElementById('w-dom').value, pat:document.getElementById('w-pat').value,
+    saw:saw, mean:document.getElementById('w-mean').value.trim()});
+  wr(o); clearObs(); paintObs();
+}
+function clearObs(){ document.getElementById('w-saw').value=''; document.getElementById('w-mean').value=''; document.getElementById('w-pat').selectedIndex=0; }
+function delObs(i){ if(!confirm('Delete this observation?')) return; var o=rd(); o.obs.splice(i,1); wr(o); paintObs(); }
+function paintObs(){
+  var o=rd(), t=today();
+  var fortn=o.obs.filter(function(e){ return daysBetween(e.t,t)<=14; }).length;
+  var withp=o.obs.filter(function(e){ return e.pat && e.pat!=='none yet'; }).length;
+  document.getElementById('w-n').textContent=o.obs.length;
+  document.getElementById('w-fn').textContent=fortn;
+  document.getElementById('w-pn').textContent=withp;
+  paintFilt('w-filt','w',paintObs);
+  var rows=o.obs.map(function(e,i){ return {e:e,i:i}; }).filter(function(x){ return filt.w==='All' || x.e.dom===filt.w; });
+  var h=document.getElementById('w-hist');
+  if(!rows.length){ h.innerHTML='<div class="empty">Nothing logged'+(filt.w==='All'?'':' under '+esc(filt.w))+' yet. One line. What you saw.</div>'; return; }
+  h.innerHTML=rows.map(function(x){ var e=x.e;
+    return '<div class="hrow"><div class="meta"><div class="d"><span>'+esc(e.t)+'</span><span class="dom">'+esc(e.dom)+'</span>'+
+      (e.pat&&e.pat!=='none yet'?'<span class="pt">'+esc(e.pat)+'</span>':'')+'</div>'+
+      '<div class="saw">'+esc(e.saw)+'</div>'+(e.mean?'<div class="mean">'+esc(e.mean)+'</div>':'')+'</div>'+
+      '<div class="acts"><button class="del" aria-label="Delete" onclick="delObs('+x.i+')">&times;</button></div></div>';
+  }).join('');
+}
+
+/* ================= PREDICT ================= */
+function savePred(){
+  var who=document.getElementById('p-who').value.trim(), pred=document.getElementById('p-pred').value.trim();
+  if(!who||!pred){ alert('A named person or thing, and what they will do.'); return; }
+  var o=rd();
+  o.preds.unshift({t:today(), dom:document.getElementById('p-dom').value, conf:parseInt(document.getElementById('p-conf').value,10),
+    who:who, pred:pred, due:document.getElementById('p-due').value||plus(7), res:null, lesson:''});
+  wr(o); clearPred(); paintPreds();
+}
+function clearPred(){ ['p-who','p-pred','p-due'].forEach(function(id){ document.getElementById(id).value=''; }); document.getElementById('p-conf').value='75'; }
+function delPred(i){ if(!confirm('Delete this prediction?')) return; var o=rd(); o.preds.splice(i,1); wr(o); paintPreds(); }
+var openLesson=-1;
+function resolvePred(i,res){ var o=rd(); if(!o.preds[i]) return; o.preds[i].res=res; wr(o); openLesson=i; paintPreds();
+  var inp=document.getElementById('les-'+i); if(inp) inp.focus(); }
+function saveLesson(i){ var o=rd(); var inp=document.getElementById('les-'+i); if(o.preds[i]&&inp){ o.preds[i].lesson=inp.value.trim(); wr(o); } openLesson=-1; paintPreds(); }
+function reopenPred(i){ var o=rd(); if(o.preds[i]){ o.preds[i].res=null; wr(o); } paintPreds(); }
+function calib(preds){
+  var res=preds.filter(function(p){ return p.res==='hit'||p.res==='miss'; });
+  var bands=[60,75,90].map(function(c){
+    var b=res.filter(function(p){ return p.conf===c; }); var hits=b.filter(function(p){ return p.res==='hit'; }).length;
+    return {c:c, n:b.length, hits:hits, pct:b.length?Math.round(100*hits/b.length):null};
+  });
+  var doms=DOMS.map(function(d){
+    var b=res.filter(function(p){ return p.dom===d; }); var hits=b.filter(function(p){ return p.res==='hit'; }).length;
+    return {d:d, n:b.length, hits:hits, pct:b.length?Math.round(100*hits/b.length):null};
+  }).filter(function(x){ return x.n>0; });
+  var hits=res.filter(function(p){ return p.res==='hit'; }).length;
+  return {n:res.length, hits:hits, pct:res.length?Math.round(100*hits/res.length):null, bands:bands, doms:doms};
+}
+function paintPreds(){
+  var o=rd(), c=calib(o.preds);
+  document.getElementById('p-open').textContent=o.preds.filter(function(p){ return !p.res; }).length;
+  document.getElementById('p-res').innerHTML=c.n+'<small>/20</small>';
+  document.getElementById('p-hit').textContent=(c.pct==null?'–':c.pct+'%');
+  var cal=document.getElementById('p-cal'), note=document.getElementById('p-calnote');
+  if(c.n>=20){
+    cal.innerHTML=c.bands.map(function(b){
+      return '<div class="r"><div class="nm">'+(b.c===60?'Likely':b.c===75?'Confident':'Sure')+'</div>'+
+        '<div class="bar"><i style="width:'+(b.pct==null?0:b.pct)+'%"></i><u style="left:'+b.c+'%"></u></div>'+
+        '<div class="pc">'+(b.pct==null?'–':b.pct+'%')+' <small>n='+b.n+'</small></div></div>';
+    }).join('') + c.doms.map(function(d){
+      return '<div class="r"><div class="nm">'+esc(d.d)+'</div><div class="bar"><i style="width:'+d.pct+'%"></i></div><div class="pc">'+d.pct+'% <small>n='+d.n+'</small></div></div>';
+    }).join('');
+    var over=c.bands.filter(function(b){ return b.n>=4 && b.pct!=null && b.pct < b.c-10; }).map(function(b){ return b.c+'%'; });
+    note.textContent='Gold line is what you claimed; blue bar is what happened. '+(over.length?'You are overconfident at '+over.join(' and ')+'. Drop a band.':'Bars near the line mean your confidence is honest.');
+  } else {
+    cal.innerHTML='';
+    note.textContent=(20-c.n)+' more resolved before the calibration readout opens. Fewer than twenty and the percentages are noise.';
+  }
+  var h=document.getElementById('p-hist');
+  if(!o.preds.length){ h.innerHTML='<div class="empty">No predictions yet. Pick the next thing someone is going to do and write it down first.</div>'; return; }
+  var t=today();
+  h.innerHTML=o.preds.map(function(p,i){
+    var cls='hrow'+(p.res?' '+p.res:''); var overdue=!p.res && p.due && daysBetween(p.due,t)>0;
+    var acts = p.res
+      ? '<button class="rb ok" onclick="reopenPred('+i+')">Undo</button>'
+      : '<button class="rb hit" onclick="resolvePred('+i+',\'hit\')">Hit</button><button class="rb miss" onclick="resolvePred('+i+',\'miss\')">Miss</button>';
+    return '<div class="'+cls+'"><div class="meta"><div class="d"><span>'+esc(p.t)+'</span><span class="dom">'+esc(p.dom)+'</span><span>'+p.conf+'%</span>'+
+      (p.res?'<span class="res">'+p.res.toUpperCase()+'</span>':'<span'+(overdue?' style="color:var(--gold)"':'')+'>due '+esc(p.due)+'</span>')+'</div>'+
+      '<div class="saw"><b>'+esc(p.who)+'</b> &mdash; '+esc(p.pred)+'</div>'+
+      (p.lesson?'<div class="les">'+esc(p.lesson)+'</div>':'')+
+      '<div class="lesson-row'+(openLesson===i?' on':'')+'"><input id="les-'+i+'" placeholder="Lesson, one line. Is it a lesson or an excuse?" value="'+esc(p.lesson)+'" onkeydown="if(event.key===\'Enter\')saveLesson('+i+')"><div class="ibar" style="margin-top:6px"><button class="ibtn sm" onclick="saveLesson('+i+')">Save lesson</button></div></div>'+
+      '</div><div class="acts">'+acts+'<button class="del" aria-label="Delete" onclick="delPred('+i+')">&times;</button></div></div>';
+  }).join('');
+}
+
+/* ================= AIM ================= */
+function paintLadder(){
+  var o=rd(), L=o.ladder, s=SKILLS[L.skill-1];
+  var box=document.getElementById('ladbox');
+  var day = L.start ? daysBetween(L.start, today())+1 : null;
+  box.innerHTML='<div class="cur">Skill '+L.skill+' of 7'+(L.start?' &middot; day '+day+' of 14':'')+'</div><div class="nm">'+esc(s.n)+'</div>'+
+    '<div class="gate"><b>Gate:</b> '+esc(s.g)+'</div>'+
+    (L.start ? '<div class="day">Started '+esc(L.start)+(day>14?' &middot; past the fortnight &mdash; pass the gate or extend honestly':'')+'</div>' : '<div class="day">Not started.</div>')+
+    '<div class="ibar" style="margin-top:10px">'+
+    (L.start ? '<button class="ibtn sm" onclick="passGate()">Gate passed &rarr; next skill</button><button class="ibtn ghost sm" onclick="restartCycle()">Restart cycle</button>'
+             : '<button class="ibtn sm" onclick="startCycle()">Start this fortnight</button>')+
+    (L.skill>1?'<button class="ibtn ghost sm" onclick="backSkill()">Back one</button>':'')+'</div>';
+  document.getElementById('ladlist').innerHTML=SKILLS.map(function(k,i){
+    var n=i+1, cls='lr'+(L.done.indexOf(n)>=0?' done':'')+(n===L.skill?' cur':'');
+    return '<div class="'+cls+'"><div class="n">'+('0'+n).slice(-2)+'</div><div class="t">'+esc(k.n)+'</div>'+(L.done.indexOf(n)>=0?'<div class="n">✓</div>':'')+'</div>';
+  }).join('');
+}
+function startCycle(){ var o=rd(); o.ladder.start=today(); wr(o); paintLadder(); paintPrompt(); }
+function restartCycle(){ if(!confirm('Restart this skill\'s fortnight from today?')) return; var o=rd(); o.ladder.start=today(); wr(o); paintLadder(); }
+function passGate(){
+  var o=rd(); var L=o.ladder;
+  if(!confirm('Gate passed for skill '+L.skill+'? Be honest; the next one builds on it.')) return;
+  if(L.done.indexOf(L.skill)<0) L.done.push(L.skill);
+  if(L.skill<7){ L.skill+=1; L.start=today(); } else { L.start=null; }
+  o.pi=0; wr(o); paintLadder();
+}
+function backSkill(){ var o=rd(); if(o.ladder.skill>1){ o.ladder.skill-=1; o.ladder.start=null; o.pi=0; wr(o); paintLadder(); } }
+function saveAim(){
+  var obj=document.getElementById('a-obj').value.trim(), test=document.getElementById('a-test').value.trim();
+  if(!obj){ alert('Write the objective.'); return; }
+  if(!test){ alert('No test, no objective. How would an outsider verify it?'); return; }
+  var o=rd();
+  o.aims.unshift({t:today(), dom:document.getElementById('a-dom').value, obj:obj, test:test,
+    act:document.getElementById('a-act').value.trim(), rev:document.getElementById('a-rev').value||plus(14), done:false, seed:false});
+  wr(o); clearAim(); paintAims();
+}
+function clearAim(){ ['a-obj','a-test','a-act','a-rev'].forEach(function(id){ document.getElementById(id).value=''; }); }
+function delAim(i){ if(!confirm('Delete this objective?')) return; var o=rd(); o.aims.splice(i,1); wr(o); paintAims(); }
+function toggleAim(i){ var o=rd(); if(o.aims[i]){ o.aims[i].done=!o.aims[i].done; wr(o); } paintAims(); }
+function editAim(i){
+  var o=rd(), a=o.aims[i]; if(!a) return;
+  document.getElementById('a-dom').value=a.dom; document.getElementById('a-obj').value=a.obj; document.getElementById('a-test').value=a.test;
+  document.getElementById('a-act').value=a.act||''; document.getElementById('a-rev').value=a.rev||'';
+  o.aims.splice(i,1); wr(o); paintAims(); window.scrollTo(0, document.getElementById('a-obj').getBoundingClientRect().top + window.pageYOffset - 120);
+}
+function paintAims(){
+  var o=rd(), t=today();
+  var open=o.aims.filter(function(a){ return !a.done; });
+  document.getElementById('a-open').textContent=open.length;
+  document.getElementById('a-due').textContent=open.filter(function(a){ return a.rev && daysBetween(a.rev,t)>=0; }).length;
+  document.getElementById('a-done').textContent=o.aims.filter(function(a){ return a.done; }).length;
+  paintFilt('a-filt','a',paintAims);
+  var rows=o.aims.map(function(a,i){ return {a:a,i:i}; }).filter(function(x){ return filt.a==='All' || x.a.dom===filt.a; });
+  var h=document.getElementById('a-hist');
+  if(!rows.length){ h.innerHTML='<div class="empty">No objectives'+(filt.a==='All'?'':' under '+esc(filt.a))+'. State one as a condition.</div>'; return; }
+  h.innerHTML=rows.map(function(x){ var a=x.a, due=!a.done && a.rev && daysBetween(a.rev,t)>=0;
+    return '<div class="hrow'+(a.done?' done':'')+'"><div class="meta"><div class="d"><span class="dom">'+esc(a.dom)+'</span>'+
+      (a.seed?'<span class="seed">seed</span>':'')+'<span'+(due?' style="color:var(--gold)"':'')+'>review '+esc(a.rev)+'</span></div>'+
+      '<div class="saw">'+esc(a.obj)+'</div>'+
+      '<div class="sub2"><b>Test</b>'+esc(a.test)+'</div>'+(a.act?'<div class="sub2"><b>Cheapest</b>'+esc(a.act)+'</div>':'')+'</div>'+
+      '<div class="acts"><button class="rb'+(a.done?' ok':' hit')+'" onclick="toggleAim('+x.i+')">'+(a.done?'Undo':'Pass')+'</button>'+
+      '<button class="rb ok" onclick="editAim('+x.i+')">Edit</button><button class="del" aria-label="Delete" onclick="delAim('+x.i+')">&times;</button></div></div>';
+  }).join('');
+}
+
+/* ---------------- init ---------------- */
+fillDoms('w-dom'); fillDoms('p-dom'); fillDoms('a-dom'); fillPats();
+loadPhoto();
+</script>
+</body>
+</html>
