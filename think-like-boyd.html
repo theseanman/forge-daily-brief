@@ -375,6 +375,13 @@
     <h1>Predict</h1>
     <div class="sub">Who will do what, written before it happens. Then the result. The readout is your calibration, and it opens at twenty.</div>
 
+    <div class="prompt-card" id="pp-card">
+      <div class="k">Today&rsquo;s prompt <span id="pp-group" style="color:var(--ink-quiet)"></span></div>
+      <div class="q" id="pp-q"></div>
+      <div class="s" id="pp-s"></div>
+      <div class="ibar" style="margin-top:10px"><button class="ibtn sm" onclick="usePrompt()">Use this</button></div>
+    </div>
+
     <div class="inst v">
       <div class="i-name">New prediction</div>
       <div class="i-why">A named person or specific thing. Built from their constraints, not their words. Pick the confidence honestly &mdash; the readout will tell you if you were lying.</div>
@@ -383,6 +390,8 @@
         <div class="fld"><label>Confidence</label><select id="p-conf">
           <option value="60">Likely &middot; 60%</option><option value="75" selected>Confident &middot; 75%</option><option value="90">Sure &middot; 90%</option></select></div>
       </div>
+      <div class="fld"><label>Type</label><select id="p-type">
+        <option value="say">What they&rsquo;ll say</option><option value="happen" selected>What will happen</option><option value="howlong">How long</option><option value="who">Who or which</option></select></div>
       <div class="fld"><label>Who / what</label><input id="p-who" placeholder="Dept head, Thursday meeting"></div>
       <div class="fld"><label>Will</label><textarea id="p-pred" placeholder="Say no to the room change the first time it's raised, because she's judged on not creating timetable exceptions."></textarea></div>
       <div class="fld"><label>Resolve by</label><input id="p-due" type="date"></div>
@@ -428,6 +437,7 @@
 
   <div class="foot">Forge OS &middot; Think Like Boyd &middot; on-device only</div>
 </div>
+<script src="./tlb-prompts.js"></script>
 <script>
 /* ---------------- constants ---------------- */
 var DOMS=['Work','Build','Family','Health','Friends','Money'];
@@ -517,6 +527,7 @@ function rd(){
   if(!Array.isArray(o.ladder.done)) o.ladder.done=[];
   if(typeof o.ladder.skill!=='number' || o.ladder.skill<1 || o.ladder.skill>7) o.ladder.skill=1;
   if(typeof o.pi!=='number') o.pi=0;
+  if(!o.pseen || typeof o.pseen!=='object') o.pseen={};
   if(!o.seeded){ o.aims=seedAims().concat(o.aims); o.seeded=true; wr(o); }
   return o;
 }
@@ -591,10 +602,29 @@ function savePred(){
   if(!who||!pred){ alert('A named person or thing, and what they will do.'); return; }
   var o=rd();
   o.preds.unshift({t:today(), dom:document.getElementById('p-dom').value, conf:parseInt(document.getElementById('p-conf').value,10),
-    who:who, pred:pred, due:document.getElementById('p-due').value||plus(7), res:null, lesson:''});
+    type:document.getElementById('p-type').value, who:who, pred:pred, due:document.getElementById('p-due').value||plus(7), res:null, lesson:''});
   wr(o); clearPred(); paintPreds();
 }
-function clearPred(){ ['p-who','p-pred','p-due'].forEach(function(id){ document.getElementById(id).value=''; }); document.getElementById('p-conf').value='75'; }
+function clearPred(){ ['p-who','p-pred','p-due'].forEach(function(id){ document.getElementById(id).value=''; }); document.getElementById('p-conf').value='75'; document.getElementById('p-type').value='happen'; }
+var TYPE_LABEL={say:'What they\u2019ll say',happen:'What will happen',howlong:'How long',who:'Who or which'};
+function paintPrompt2(){
+  var card=document.getElementById('pp-card'); if(!window.TLB_PROMPTS){ card.style.display='none'; return; }
+  var o=rd(), t=today(); var r=TLB_PROMPTS.pick(t,o);
+  if(!r.pinned){ TLB_PROMPTS.pin(o,t,r.idx); wr(o); }
+  document.getElementById('pp-group').textContent='\u00b7 '+TLB_PROMPTS.GLABEL[r.p.g]+' \u00b7 '+TYPE_LABEL[r.p.t];
+  document.getElementById('pp-q').textContent=r.p.q;
+  var n=TLB_PROMPTS.loggedOn(o,t), due=TLB_PROMPTS.dueBy(o,t).length, weak=TLB_PROMPTS.weakestType(o);
+  document.getElementById('pp-s').textContent=(n?n+' logged today':'Nothing logged today')+(due?' \u00b7 '+due+' due to score':'')+(weak?' \u00b7 leaning on '+TYPE_LABEL[weak].toLowerCase()+', your weakest':'');
+}
+function usePrompt(){
+  var o=rd(), t=today(); var r=TLB_PROMPTS.pick(t,o);
+  document.getElementById('p-type').value=r.p.t;
+  var dom=TLB_PROMPTS.DOMAIN[r.p.g]; if(dom) document.getElementById('p-dom').value=dom;
+  document.getElementById('p-who').value=TLB_PROMPTS.GLABEL[r.p.g];
+  document.getElementById('p-pred').value='Q: '+r.p.q+'\nA: ';
+  document.getElementById('p-due').value=today();
+  var ta=document.getElementById('p-pred'); ta.focus(); try{ ta.setSelectionRange(ta.value.length, ta.value.length); }catch(e){}
+}
 function delPred(i){ if(!confirm('Delete this prediction?')) return; var o=rd(); o.preds.splice(i,1); wr(o); paintPreds(); }
 var openLesson=-1;
 function resolvePred(i,res){ var o=rd(); if(!o.preds[i]) return; o.preds[i].res=res; wr(o); openLesson=i; paintPreds();
@@ -611,10 +641,15 @@ function calib(preds){
     var b=res.filter(function(p){ return p.dom===d; }); var hits=b.filter(function(p){ return p.res==='hit'; }).length;
     return {d:d, n:b.length, hits:hits, pct:b.length?Math.round(100*hits/b.length):null};
   }).filter(function(x){ return x.n>0; });
+  var types=['say','happen','howlong','who'].map(function(k){
+    var b=res.filter(function(p){ return p.type===k; }); var hits=b.filter(function(p){ return p.res==='hit'; }).length;
+    return {k:k, n:b.length, hits:hits, pct:b.length?Math.round(100*hits/b.length):null};
+  }).filter(function(x){ return x.n>0; });
   var hits=res.filter(function(p){ return p.res==='hit'; }).length;
-  return {n:res.length, hits:hits, pct:res.length?Math.round(100*hits/res.length):null, bands:bands, doms:doms};
+  return {n:res.length, hits:hits, pct:res.length?Math.round(100*hits/res.length):null, bands:bands, doms:doms, types:types};
 }
 function paintPreds(){
+  paintPrompt2();
   var o=rd(), c=calib(o.preds);
   document.getElementById('p-open').textContent=o.preds.filter(function(p){ return !p.res; }).length;
   document.getElementById('p-res').innerHTML=c.n+'<small>/20</small>';
@@ -627,6 +662,8 @@ function paintPreds(){
         '<div class="pc">'+(b.pct==null?'–':b.pct+'%')+' <small>n='+b.n+'</small></div></div>';
     }).join('') + c.doms.map(function(d){
       return '<div class="r"><div class="nm">'+esc(d.d)+'</div><div class="bar"><i style="width:'+d.pct+'%"></i></div><div class="pc">'+d.pct+'% <small>n='+d.n+'</small></div></div>';
+    }).join('') + c.types.map(function(d){
+      return '<div class="r"><div class="nm" style="color:var(--violet)">'+esc(TYPE_LABEL[d.k])+'</div><div class="bar"><i style="width:'+d.pct+'%;background:var(--violet)"></i></div><div class="pc">'+d.pct+'% <small>n='+d.n+'</small></div></div>';
     }).join('');
     var over=c.bands.filter(function(b){ return b.n>=4 && b.pct!=null && b.pct < b.c-10; }).map(function(b){ return b.c+'%'; });
     note.textContent='Gold line is what you claimed; blue bar is what happened. '+(over.length?'You are overconfident at '+over.join(' and ')+'. Drop a band.':'Bars near the line mean your confidence is honest.');
@@ -642,7 +679,7 @@ function paintPreds(){
     var acts = p.res
       ? '<button class="rb ok" onclick="reopenPred('+i+')">Undo</button>'
       : '<button class="rb hit" onclick="resolvePred('+i+',\'hit\')">Hit</button><button class="rb miss" onclick="resolvePred('+i+',\'miss\')">Miss</button>';
-    return '<div class="'+cls+'"><div class="meta"><div class="d"><span>'+esc(p.t)+'</span><span class="dom">'+esc(p.dom)+'</span><span>'+p.conf+'%</span>'+
+    return '<div class="'+cls+'"><div class="meta"><div class="d"><span>'+esc(p.t)+'</span><span class="dom">'+esc(p.dom)+'</span>'+(p.type?'<span style="color:var(--violet)">'+esc(TYPE_LABEL[p.type]||p.type)+'</span>':'')+'<span>'+p.conf+'%</span>'+
       (p.res?'<span class="res">'+p.res.toUpperCase()+'</span>':'<span'+(overdue?' style="color:var(--gold)"':'')+'>due '+esc(p.due)+'</span>')+'</div>'+
       '<div class="saw"><b>'+esc(p.who)+'</b> &mdash; '+esc(p.pred)+'</div>'+
       (p.lesson?'<div class="les">'+esc(p.lesson)+'</div>':'')+

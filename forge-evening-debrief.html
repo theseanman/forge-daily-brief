@@ -279,6 +279,9 @@
         <button class="sync-btn" onclick="loadReminders()"><i class="ti ti-refresh"></i> Sync</button>
       </div>
       <div id="todo-list"><div class="loading-row"><div class="spinner"></div>Fetching from jsonbin...</div></div>
+      <div class="field-label" style="margin:16px 0 6px;">Predictions due <span style="color:var(--muted); font-weight:400; text-transform:none; letter-spacing:0;">&mdash; from Think Like Boyd</span></div>
+      <div id="pred-due"></div>
+      <div style="margin:6px 0 2px;"><a href="./think-like-boyd.html" style="font-size:11px; color:var(--blue); text-decoration:none; letter-spacing:0.08em;">Open Predict &rarr;</a></div>
       <div class="field" style="margin-top:0.75rem;">
         <div class="field-label">Anything else completed?</div>
         <textarea id="extra-done" placeholder="e.g. replied to that email..." style="min-height:60px;"></textarea>
@@ -590,6 +593,7 @@ function init() {
   loadReminders();
   loadTodayTop5();
   backfillHealth();
+  try { paintPredDue(); } catch (e) {} /* predictions due — Think Like Boyd store, same origin */
   try { syncPullDebrief(); } catch (e) {} /* install18 */
 }
 
@@ -2613,6 +2617,29 @@ function protoCollect() {
 }
 
 init();
+</script>
+<script>
+/* ---- Predictions due: reads the Think Like Boyd store (forge-think-like-boyd) on this device
+   and lets Hit / Miss be scored here. Same origin, same key, same shape as the Predict tab. ---- */
+var PD_KEY='forge-think-like-boyd';
+function pdRead(){ try{ var o=JSON.parse(localStorage.getItem(PD_KEY)||'{}'); if(!o||typeof o!=='object'||Array.isArray(o)) o={}; if(!Array.isArray(o.preds)) o.preds=[]; return o; }catch(e){ return {preds:[]}; } }
+function pdWrite(o){ try{ localStorage.setItem(PD_KEY, JSON.stringify(o)); }catch(e){} }
+function pdEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function pdToday(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function pdResolve(i,res){ var o=pdRead(); if(o.preds[i]){ o.preds[i].res=res; pdWrite(o); } paintPredDue(); }
+function paintPredDue(){
+  var el=document.getElementById('pred-due'); if(!el) return;
+  var o=pdRead(), t=pdToday();
+  var rows=[]; o.preds.forEach(function(p,i){ if(p && !p.res && p.due && p.due<=t) rows.push({p:p,i:i}); });
+  var scored=o.preds.filter(function(p){ return p && p.t===t && p.res; }).length;
+  if(!rows.length){ el.innerHTML='<div style="font-size:12px; color:var(--muted); line-height:1.5;">'+(scored?scored+' scored today. ':'')+'Nothing due. Predictions are made on the Predict tab in the morning.</div>'; return; }
+  el.innerHTML=rows.map(function(r){ var p=r.p;
+    return '<div style="display:flex; gap:8px; align-items:flex-start; padding:8px 0; border-bottom:1px solid var(--border);">'+
+      '<div style="flex:1; min-width:0; font-size:13px; line-height:1.45;"><div style="font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:2px;">'+pdEsc(p.dom||'')+(p.conf?' &middot; '+p.conf+'%':'')+' &middot; due '+pdEsc(p.due)+'</div><strong>'+pdEsc(p.who||'')+'</strong>'+(p.who?' &mdash; ':'')+pdEsc(p.pred||'').replace(/\n/g,'<br>')+'</div>'+
+      '<button class="sync-btn" style="color:var(--green); border-color:rgba(74,232,160,0.35); min-height:40px; min-width:48px;" onclick="pdResolve('+r.i+',\'hit\')">Hit</button>'+
+      '<button class="sync-btn" style="color:var(--red); border-color:rgba(232,84,84,0.35); min-height:40px; min-width:48px;" onclick="pdResolve('+r.i+',\'miss\')">Miss</button></div>';
+  }).join('');
+}
 </script>
 </body>
 </html>

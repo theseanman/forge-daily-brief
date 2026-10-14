@@ -1386,6 +1386,46 @@ def render_practice_card():
 
 
 
+def render_prediction_card():
+    """Prediction of the day — a client-side card. The prompt pool and rotation live in
+    tlb-prompts.js (shared with think-like-boyd.html and the evening debrief) and the
+    prediction store is the Think Like Boyd localStorage key on this device, so the card
+    is accurate on whichever device the predictions are logged on. Static markup; no
+    server-side data. Plain string on purpose: no f-string, so the JS braces stay literal."""
+    return (
+        '  <div class="card" id="pred-card">\n'
+        '    <div class="card-header"><span class="card-icon">&#x1F52E;&#x1F334;</span><span>Prediction of the Day</span></div>\n'
+        '    <div class="mini-card">\n'
+        '      <div class="mini-title" id="pred-group" style="color:var(--text-light); opacity:0.8;">Loading&hellip;</div>\n'
+        '      <div class="mini-detail" id="pred-q" style="font-size:15px; line-height:1.45; margin:6px 0 8px;"></div>\n'
+        '      <div class="mini-detail" id="pred-status" style="font-size:12px; opacity:0.8;"></div>\n'
+        '      <a href="./think-like-boyd.html" id="pred-link" style="display:block; text-align:center; margin-top:10px; padding:10px; border-radius:10px; background:rgba(74,157,232,0.28); border:1px solid rgba(74,157,232,0.55); color:#eaf4ff; font-weight:800; letter-spacing:0.06em; text-decoration:none; font-size:13px;">Write it before it happens &rarr;</a>\n'
+        '    </div>\n'
+        '  </div>\n'
+        '  <script src="./tlb-prompts.js"></script>\n'
+        '  <script>\n'
+        '  (function(){\n'
+        '    function ymd(d){ return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2); }\n'
+        '    function go(){\n'
+        '      var P=window.TLB_PROMPTS; var g=document.getElementById("pred-group"), q=document.getElementById("pred-q"), st=document.getElementById("pred-status");\n'
+        '      if(!P){ g.textContent="Prompt pool unavailable"; return; }\n'
+        '      var o={}; try{ o=JSON.parse(localStorage.getItem(P.KEY)||"{}")||{}; }catch(e){ o={}; }\n'
+        '      if(typeof o!=="object"||Array.isArray(o)) o={}; if(!Array.isArray(o.preds)) o.preds=[];\n'
+        '      var t=ymd(new Date()); var r=P.pick(t,o);\n'
+        '      if(!r.pinned){ P.pin(o,t,r.idx); try{ localStorage.setItem(P.KEY, JSON.stringify(o)); }catch(e){} }\n'
+        '      var TL={say:"what they\u2019ll say",happen:"what will happen",howlong:"how long",who:"who or which"};\n'
+        '      g.textContent=P.GLABEL[r.p.g]+" \u00b7 "+TL[r.p.t];\n'
+        '      q.textContent=r.p.q;\n'
+        '      var n=P.loggedOn(o,t), due=P.dueBy(o,t).length, weak=P.weakestType(o);\n'
+        '      st.textContent=(n?"\u2713 "+n+" logged today":"Nothing logged yet today")+(due?" \u00b7 "+due+" due to score tonight":"")+(weak?" \u00b7 leaning on "+TL[weak]+", your weakest":"");\n'
+        '      var a=document.getElementById("pred-link"); if(due && n){ a.textContent="Score the ones due \u2192"; }\n'
+        '    }\n'
+        '    go();  /* the card markup is above this script; no need to wait for DOMContentLoaded */\n'
+        '  })();\n'
+        '  </script>\n'
+    )
+
+
 def render_summer_protocol():
     """Build the Summer Protocol reference card — 7 drills, always visible.
     Pause/Trigger Breath, Opportunity Question and Slow Down were merged into
@@ -2316,6 +2356,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     triad_block = render_triad(day_of_year)
     protocol_block = render_summer_protocol()
     practice_card = render_practice_card()
+    prediction_card = render_prediction_card()
     identityless_card = '' if 'identityless' in PARKED_CARDS else '  <div class="card" style="background: linear-gradient(135deg, rgba(100,150,200,0.2), rgba(70,120,170,0.1)); border: 3px solid var(--text-bright);">\n    <div class="card-header"><span class="card-icon">🎭🌴</span><span>Identityless Protocol</span></div>\n    <div class="mini-card expandable" onclick="toggleSection(this)">\n      <div class="mini-title">🌀 Tap to expand</div>\n      <div class="expandable-content">\n        <strong>GROUNDLESSNESS TOLERANCE:</strong><br>\n        • No-Frame Actions: Act without identity narratives. Just do it.<br>\n        • "I Don\'t Know" as Full Stop: Sit in uncertainty 30–60 seconds.<br>\n        • "No Story. Just This": Cut narrative, focus on sensory data.<br><br>\n        <strong>INTERNAL AUDIENCE REMOVAL:</strong><br>\n        • Catching "Camera On": Detect self-observation, label it, don\'t judge.<br>\n        • Shift to Raw Perception: Anchor in ONE sensory channel.<br>\n        • Unwitnessed Existence: 2–5 min activities with zero self-reference.\n      </div>\n    </div>\n  </div>\n'
     future_self_card = '' if 'future_self' in PARKED_CARDS else '  <div class="card" style="background: linear-gradient(135deg, rgba(150,100,200,0.2), rgba(120,70,170,0.1)); border: 3px solid var(--text-bright);">\n    <div class="card-header"><span class="card-icon">⏰🌴</span><span>Future Self Protocol</span></div>\n    <div class="mini-card expandable" onclick="toggleSection(this)">\n      <div class="mini-title">📋 Tap to expand</div>\n      <div class="expandable-content">\n        <strong>MORNING:</strong> Posture Reset → Fractal Scan → Identity Merge → EV Selection → Atmospheric Bruiser Lock-In<br><br>\n        <strong>MIDDAY:</strong> Re-anchor → SBOS scan → Remove friction → Enforce boundary → Execute micro-win<br><br>\n        <strong>EVENING:</strong> What aligned? What violated? What friction needs removal? What system needs upgrading?\n      </div>\n    </div>\n  </div>\n'
     sbos_card = '' if 'sbos' in PARKED_CARDS else '  <div class="card">\n    <div class="card-header"><span class="card-icon">&#x1F3B0;&#x1F334;</span><span>SBOS Betting Intel</span></div>\n    @@SBOS@@\n    <div class="mini-card">\n      <div class="mini-title">&#x1F4E1; CFL Telegram</div>\n      <div class="mini-detail" style="font-size:13px; line-height:1.8;">\n        @SeanTradingAlertsBot &nbsp;&#183;&nbsp; Commands: <strong>STATUS</strong> &nbsp;&#183;&nbsp; <strong>Y</strong> &nbsp;&#183;&nbsp; <strong>HALF</strong> &nbsp;&#183;&nbsp; <strong>WATCH</strong> &nbsp;&#183;&nbsp; <strong>N</strong> &nbsp;&#183;&nbsp; <strong>RESULT</strong>\n      </div>\n    </div>\n    <div class="mini-card">\n      <div class="mini-title">&#x1F4CB; S1/S5 Scoring</div>\n      <div class="mini-detail" style="font-size:13px; line-height:1.8;">\n        <strong>S1:</strong> 1=neutral 2=home edge 3=strong narrative &nbsp;&#183;&nbsp; <strong>S5:</strong> 1=neutral 2=pressure 3=high-stakes<br>\n        <strong>Tier A (17-21):</strong> Full &nbsp;&#183;&nbsp; <strong>Tier B (13-16):</strong> Half &nbsp;&#183;&nbsp; <strong>Tier C:</strong> Pass\n      </div>\n    </div>\n  </div>\n'.replace('@@SBOS@@', sbos_signals_html)
@@ -2858,6 +2899,8 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
   </div>
 
 {practice_card}
+
+{prediction_card}
 
 {triad_block}
 
