@@ -76,6 +76,17 @@
   .hrow .del{ border:0; background:transparent; color:var(--ink-quiet); font-size:19px; cursor:pointer; line-height:1; min-width:40px; min-height:40px; display:flex; align-items:center; justify-content:center; border-radius:10px; margin:-6px -8px -6px 0; }
   .empty{ font-size:13px; color:var(--ink-quiet); line-height:1.5; padding:10px 0; }
 
+  .daysum{ margin-top:12px; display:flex; flex-wrap:wrap; gap:6px; }
+  .daysum span{ font-size:12px; font-weight:700; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:6px 10px; color:var(--ink-dim); }
+  .daysum span b{ color:var(--accent-hi); font-weight:800; margin-left:4px; }
+  .closed-tag{ display:inline-block; font-size:10px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:var(--green); border:1px solid rgba(111,227,160,.5); border-radius:999px; padding:3px 8px; margin-left:8px; vertical-align:middle; }
+  .days{ display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin:4px 0 10px; }
+  .days .dy{ background:rgba(9,36,80,.45); border:1px solid var(--line); border-radius:10px; padding:7px 2px; text-align:center; min-height:52px; }
+  .days .dy .n{ font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; }
+  .days .dy .h{ font-size:14px; font-weight:700; margin-top:2px; }
+  .days .dy .c{ font-size:11px; color:var(--green); font-weight:800; min-height:13px; }
+  .days .dy.today{ border-color:var(--accent); }
+  .days .dy.future{ opacity:.35; }
   /* week */
   .wnav{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin:4px 0 10px; }
   .wnav button{ border:1px solid var(--line); background:rgba(9,36,80,.45); color:var(--ink); min-width:44px; min-height:44px; border-radius:12px; font-size:18px; cursor:pointer; }
@@ -126,7 +137,7 @@
   <!-- ===================== LOG ===================== -->
   <div id="log">
     <h1>Count the Week</h1>
-    <div class="sub">Where the hours actually go. Tap what you just did, tap how long. No plan, no judgement, no right-hand column &mdash; just the number. The guess sits beside it on the Week tab.</div>
+    <div class="sub">Where the hours actually go. One day at a time. Tap what you did, tap how long; close the day when it's done and start the next one clean. Forgot something? Step back a day and add it. The week totals itself.</div>
 
     <div class="photo" id="photo" onclick="pickPhoto()">
       <div class="ph-hint">Tap to add an image</div>
@@ -135,6 +146,12 @@
     <input type="file" id="photo-input" accept="image/*" style="display:none">
 
     <div class="band"><b>The method.</b> One week, every hour, fifteen-minute blocks, counted as it happens or at the end of each day. Then the assumed figure beside the measured one. The gap is the finding; it is usually the only one you need. Skill 1 of <a href="./think-like-boyd.html" style="color:var(--gold);font-weight:800;text-decoration:none">Think Like Boyd</a>; the number behind Work Efficiency.</div>
+
+    <div class="wnav" id="daynav">
+      <button onclick="shiftDay(-1)" aria-label="Previous day">&lsaquo;</button>
+      <div class="t" id="d-title"></div>
+      <button onclick="shiftDay(1)" aria-label="Next day">&rsaquo;</button>
+    </div>
 
     <div class="pick" id="pick">
       <div class="nm" id="pick-nm">Tap a category below</div>
@@ -149,10 +166,12 @@
     <div id="cats"></div>
 
     <div class="stat">
-      <div class="box"><div class="v" id="s-today">0<small>h</small></div><div class="l">Today</div></div>
+      <div class="box"><div class="v" id="s-today">0<small>h</small></div><div class="l" id="s-today-l">This day</div></div>
       <div class="box"><div class="v" id="s-week">0<small>h</small></div><div class="l">This week</div></div>
-      <div class="box"><div class="v" id="s-n">0</div><div class="l">Entries</div></div>
+      <div class="box"><div class="v" id="s-n">0</div><div class="l">Days closed</div></div>
     </div>
+    <div class="daysum" id="daysum"></div>
+    <div class="row2" style="margin-top:10px"><button class="ibtn" id="closebtn" style="min-height:44px" onclick="toggleClose()">Close the day</button></div>
     <div class="hist" id="hist"></div>
   </div>
 
@@ -165,6 +184,7 @@
       <div class="t" id="w-title"></div>
       <button onclick="shiftWeek(1)" aria-label="Next week">&rsaquo;</button>
     </div>
+    <div class="days" id="w-days"></div>
     <div class="stat">
       <div class="box"><div class="v" id="w-logged">0<small>h</small></div><div class="l">Logged</div></div>
       <div class="box"><div class="v" id="w-unlogged">168<small>h</small></div><div class="l">Unlogged</div></div>
@@ -257,6 +277,7 @@ function rd(){
   o.entries=o.entries.filter(function(e){ return e && e.t && e.cat && isFinite(e.min); });
   if(!o.names || typeof o.names!=='object') o.names={};
   if(!o.wg || typeof o.wg!=='object') o.wg={};
+  if(!o.closed || typeof o.closed!=='object') o.closed={};
   if(seeded) wr(o);   // write the full normalised shape, not a partial one
   return o;
 }
@@ -268,10 +289,13 @@ function hrs(min){ var h=min/60; return (Math.round(h*4)/4).toString().replace(/
 function toast(s){ var t=document.getElementById('toast'); t.textContent=s; t.className='toast on'; clearTimeout(toast._x); toast._x=setTimeout(function(){ t.className='toast'; },1300); }
 
 /* ================= LOG ================= */
-var sel=null;
+var sel=null, dayOff=0;
+function viewDay(){ return addDays(today(), dayOff); }
+function shiftDay(n){ dayOff+=n; if(dayOff>0) dayOff=0; paintCats(); paintLog(); }
+function dayLabel(s){ var d=parse(s); return ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][(d.getDay()+6)%7]; }
 function paintCats(){
-  var o=rd(); var el=document.getElementById('cats'); var wk=monday(today());
-  var tot={}; o.entries.forEach(function(e){ if(monday(e.t)===wk) tot[e.cat]=(tot[e.cat]||0)+e.min; });
+  var o=rd(); var el=document.getElementById('cats'); var vd=viewDay();
+  var tot={}; o.entries.forEach(function(e){ if(e.t===vd) tot[e.cat]=(tot[e.cat]||0)+e.min; });
   var html='';
   [['work','Work'],['home','Home'],['self','Self']].forEach(function(b){
     var cs=o.cats.filter(function(c){ return c.band===b[0]; }); if(!cs.length) return;
@@ -288,24 +312,41 @@ function pickCat(id){ sel=(sel===id)?null:id; paintCats(); if(sel){ try{ documen
 function logMin(m){
   if(!sel){ toast('Pick a category first'); return; }
   var o=rd(); var note=document.getElementById('note').value.trim();
-  o.entries.unshift({t:today(), ts:Date.now(), cat:sel, min:num(m), note:note});
+  o.entries.unshift({t:viewDay(), ts:Date.now(), cat:sel, min:num(m), note:note});
   var c=catById(o,sel); if(c) o.names[c.id]=c.name;
   wr(o); document.getElementById('note').value=''; document.getElementById('min').value='';
   toast((c?c.name:'')+' · '+m+' min'); paintCats(); paintLog();
 }
 function saveCustom(){ var m=num(document.getElementById('min').value); if(!m){ toast('Enter minutes'); return; } logMin(m); }
 function delEntry(ts){ var o=rd(); o.entries=o.entries.filter(function(e){ return e.ts!==ts; }); wr(o); paintCats(); paintLog(); }
+function dayTotal(o, day){ var t=0; o.entries.forEach(function(e){ if(e.t===day) t+=e.min; }); return t; }
+function toggleClose(){
+  var o=rd(); var vd=viewDay();
+  if(o.closed[vd]!=null){ delete o.closed[vd]; wr(o); toast('Day reopened'); }
+  else { o.closed[vd]=dayTotal(o,vd); wr(o); toast(dayLabel(vd)+' closed · '+hrs(o.closed[vd])+'h'); }
+  paintLog();
+}
 function paintLog(){
-  var o=rd(), t=today(), wk=monday(t);
-  var td=0, tw=0; o.entries.forEach(function(e){ if(e.t===t) td+=e.min; if(monday(e.t)===wk) tw+=e.min; });
+  var o=rd(), vd=viewDay(), wk=monday(vd);
+  var td=dayTotal(o,vd), tw=0; o.entries.forEach(function(e){ if(monday(e.t)===wk) tw+=e.min; });
+  var isClosed = o.closed[vd]!=null;
+  document.getElementById('d-title').innerHTML=dayLabel(vd)+' '+esc(vd.slice(5))+(isClosed?'<span class="closed-tag">closed</span>':'')+'<small>'+(dayOff===0?'Today':(dayOff===-1?'Yesterday':(-dayOff)+' days ago'))+'</small>';
   document.getElementById('s-today').innerHTML=hrs(td)+'<small>h</small>';
+  document.getElementById('s-today-l').textContent=dayOff===0?'Today':'This day';
   document.getElementById('s-week').innerHTML=hrs(tw)+'<small>h</small>';
-  document.getElementById('s-n').textContent=o.entries.length;
-  var rows=o.entries.filter(function(e){ return monday(e.t)===wk; }).slice(0,40);
+  var nClosed=0; for(var i=0;i<7;i++){ if(o.closed[addDays(wk,i)]!=null) nClosed++; }
+  document.getElementById('s-n').textContent=nClosed+'/7';
+  document.getElementById('closebtn').textContent = isClosed ? 'Reopen the day' : 'Close the day';
+  document.getElementById('closebtn').className = 'ibtn'+(isClosed?' ghost':'');
+  // per-category summary for the day
+  var sum={}; o.entries.forEach(function(e){ if(e.t===vd) sum[e.cat]=(sum[e.cat]||0)+e.min; });
+  var ids=Object.keys(sum).sort(function(a,b){ return sum[b]-sum[a]; });
+  document.getElementById('daysum').innerHTML = ids.map(function(id){ return '<span>'+esc(nameOf(o,id))+'<b>'+hrs(sum[id])+'h</b></span>'; }).join('');
+  var rows=o.entries.filter(function(e){ return e.t===vd; });
   var h=document.getElementById('hist');
-  if(!rows.length){ h.innerHTML='<div class="empty">Nothing logged this week. Tap what you just did.</div>'; return; }
+  if(!rows.length){ h.innerHTML='<div class="empty">Nothing logged for this day. Tap what you did.</div>'; return; }
   h.innerHTML=rows.map(function(e){
-    var d=parse(e.t); var lbl=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][(d.getDay()+6)%7];
+    var tm=new Date(e.ts); var lbl=('0'+tm.getHours()).slice(-2)+':'+('0'+tm.getMinutes()).slice(-2);
     return '<div class="hrow"><div class="d">'+lbl+'</div><div class="c">'+esc(nameOf(o,e.cat))+(e.note?' <i>&middot; '+esc(e.note)+'</i>':'')+'</div><div class="m">'+e.min+'m</div><button class="del" aria-label="Delete" onclick="delEntry('+e.ts+')">&times;</button></div>';
   }).join('');
 }
@@ -325,6 +366,12 @@ function paintWeek(){
   var o=rd(); var wk=curWeek(); var g=weekGuess(o,wk); var tot=weekTotals(o,wk);
   var end=addDays(wk,6);
   document.getElementById('w-title').innerHTML=esc(wk)+' &rarr; '+esc(end.slice(5))+'<small>'+(wkOff===0?'This week':(wkOff===-1?'Last week':(-wkOff)+' weeks ago'))+'</small>';
+  var t0=today();
+  document.getElementById('w-days').innerHTML=[0,1,2,3,4,5,6].map(function(i){
+    var d=addDays(wk,i); var m=0; o.entries.forEach(function(e){ if(e.t===d) m+=e.min; });
+    var cls='dy'+(d===t0?' today':'')+(d>t0?' future':'');
+    return '<div class="'+cls+'"><div class="n">'+dayLabel(d)+'</div><div class="h">'+(m?hrs(m):'&middot;')+'</div><div class="c">'+(o.closed[d]!=null?'\u2713':'')+'</div></div>';
+  }).join('');
   var logged=0, gap=0, anyG=false;
   var ids=o.cats.map(function(c){ return c.id; }); Object.keys(tot).forEach(function(id){ if(ids.indexOf(id)<0) ids.push(id); });
   var maxH=1; ids.forEach(function(id){ maxH=Math.max(maxH, (tot[id]||0)/60, num(g[id])); });
