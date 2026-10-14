@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Paramount</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0; --violet:#b48cff; --red:#ff8a8a; --green:#6fe3a0;
+    /* the brief's own tokens, remapped for a dark page so its inline styles read correctly */
+    --text-bright:#eaf4ff; --text-light:rgba(234,244,255,.86); --muted:rgba(234,244,255,.56);
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; white-space:nowrap; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:14px; line-height:1.5; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:12px 14px; font-size:13.5px; line-height:1.55; margin-bottom:14px; }
+  .band b{ color:var(--gold); }
+  .band.v{ background:rgba(180,140,255,.10); border-left-color:var(--violet); } .band.v b{ color:#cdb4ff; }
+  .photo{ position:relative; width:100%; height:150px; border-radius:16px; overflow:hidden; margin-bottom:16px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; } .photo.set .ph-hint{ display:none; }
+  .later{ font-size:11.5px; color:var(--ink-quiet); line-height:1.5; margin:4px 0 14px; padding:8px 12px; border:1px dashed var(--line); border-radius:10px; }
+  .later b{ color:var(--ink-dim); }
+  .k{ font-size:10.5px; letter-spacing:.22em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:18px 0 8px; }
+  footer{ margin-top:26px; font-size:11px; color:var(--ink-quiet); line-height:1.5; }
+  footer a{ color:var(--accent-hi); text-decoration:none; }
+
+  /* ---- the brief's card classes, dark-adapted. Rules, not words, differ from index.html ---- */
+  .card{ background:rgba(9,36,80,.42); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:14px; }
+  .card-header{ font-size:14px; letter-spacing:0.18em; color:var(--text-bright); text-transform:uppercase; margin-bottom:12px; font-weight:800; display:flex; align-items:center; gap:10px; }
+  .card-icon{ font-size:26px; }
+  .mini-card{ background:rgba(255,255,255,0.06); border:1px solid var(--line); border-radius:10px; padding:12px; margin-bottom:10px; }
+  .mini-title{ font-size:15px; color:var(--text-bright); font-weight:700; margin-bottom:6px; }
+  .mini-detail{ font-size:13px; color:var(--text-light); line-height:1.6; }
+  .expandable{ cursor:pointer; }
+  .expandable-content{ display:none; font-size:14px; color:var(--text-light); line-height:1.7; margin-top:10px; padding:10px; background:rgba(255,255,255,0.05); border-radius:6px; }
+  .card a{ color:var(--text-bright); }
+  .pr-intro{ font-size:13px; color:var(--text-light); opacity:0.85; margin-bottom:12px; line-height:1.6; }
+  .pr-section{ border-radius:10px; padding:0 0 12px 0; margin-bottom:14px; overflow:hidden; }
+  .pimg-band{ height:200px; background-size:cover; background-position:center 28%; background-color:rgba(0,0,0,0.22); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .pimg-band.has-img .pimg-hint{ display:none; }
+  .pimg-hint{ font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-light); opacity:0.6; }
+  .pr-head{ font-size:15px; font-weight:800; letter-spacing:0.14em; padding:12px 14px 0 14px; }
+  .pr-sub{ font-size:12px; color:var(--text-light); opacity:0.75; padding:2px 14px 10px 14px; font-style:italic; }
+  .pr-item{ background:rgba(255,255,255,0.08); border-radius:6px; padding:11px 13px; margin:0 12px 9px 12px; }
+  .pr-name{ font-size:14px; font-weight:700; color:var(--text-bright); margin-bottom:6px; }
+  .pr-body{ font-size:13.5px; color:var(--text-light); line-height:1.65; font-weight:600; }
+  .pr-trigger{ font-size:11.5px; color:var(--text-light); opacity:0.72; margin-top:6px; }
+  .pr-note{ font-size:11px; color:var(--muted); margin-top:8px; line-height:1.5; }
+  .t5-row{ display:flex; gap:10px; align-items:flex-start; padding:9px 0; border-bottom:1px solid var(--line); }
+  .t5-row:last-child{ border-bottom:none; }
+  .t5-tick{ font-size:16px; line-height:1.35; min-width:18px; color:var(--text-bright); }
+  .t5-task{ font-size:15px; font-weight:700; line-height:1.45; }
+  .t5-done .t5-task{ opacity:0.5; text-decoration:line-through; }
+  .t5-meta{ font-size:11px; opacity:0.75; margin-top:3px; letter-spacing:0.04em; }
+  .triad-mode{ margin-bottom:14px; }
+  .triad-label{ font-size:12px; font-weight:700; color:var(--text-bright); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px; }
+  .triad-anchor{ background:rgba(255,255,255,0.06); border-left:3px solid var(--line); border-radius:6px; padding:10px 12px; margin-bottom:6px; font-size:13px; color:var(--text-light); line-height:1.5; }
+  .triad-anchor-hi{ background:rgba(74,157,232,0.22); border-left:5px solid var(--accent); font-weight:700; color:var(--text-bright); }
+  .triad-text{ background:rgba(255,255,255,0.06); border:1px solid var(--line); border-radius:8px; padding:12px; font-size:13px; color:var(--text-light); line-height:1.5; }
+  .advice-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .advice-item{ background:rgba(255,255,255,0.06); border:1px solid var(--line); border-radius:8px; padding:12px; }
+  .advice-label{ font-size:12px; font-weight:700; color:var(--accent-hi); text-transform:uppercase; margin-bottom:6px; }
+  .advice-text{ font-size:13px; color:var(--text-light); line-height:1.5; }
+  .focus-prompt{ font-size:19px; line-height:1.5; font-weight:700; color:var(--text-bright); background:rgba(255,255,255,0.08); border-left:5px solid var(--accent); border-radius:10px; padding:14px 16px; margin-bottom:12px; }
+  .strat-cat{ display:inline-block; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; background:rgba(255,255,255,0.14); border-radius:5px; padding:3px 9px; margin-bottom:10px; font-weight:700; }
+  .depth-toggle{ display:flex; justify-content:space-between; align-items:center; cursor:pointer; font-size:12px; letter-spacing:0.1em; font-weight:700; text-transform:uppercase; color:var(--text-light); padding:10px 2px; border-top:1px solid var(--line); }
+  .depth-chevron{ transition:transform 0.2s; font-size:15px; }
+  .depth-toggle.open .depth-chevron{ transform:rotate(180deg); }
+  .depth-body{ display:none; padding-top:4px; }
+  .depth-body.open{ display:block; }
+  .depth-origin{ font-size:11px; letter-spacing:0.08em; color:var(--muted); margin-bottom:8px; }
+  .depth-what{ font-size:14px; line-height:1.65; margin-bottom:12px; }
+  .depth-ex-wrap{ margin-top:6px; }
+  .depth-ex-head{ font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; font-weight:700; }
+  .depth-ex{ font-size:13px; line-height:1.6; padding:8px 0 8px 12px; border-left:2px solid var(--line); margin-bottom:6px; }
+  .character-quote-box{ background:rgba(9,36,80,.42); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:14px; display:grid; grid-template-columns:72px 1fr; gap:14px; align-items:center; }
+  .character-image{ width:72px; height:72px; border-radius:8px; border:1px solid var(--line); object-fit:cover; }
+  .character-quote{ font-size:16px; color:var(--text-bright); font-style:italic; font-weight:500; margin-bottom:8px; }
+  .character-name{ font-size:12px; color:var(--text-light); font-weight:600; }
+  .all-toggle{ display:block; width:100%; text-align:left; background:transparent; border:1px solid var(--line); color:var(--ink-dim); font-size:12px; letter-spacing:.1em; text-transform:uppercase; font-weight:800; padding:10px 12px; border-radius:10px; cursor:pointer; margin-top:6px; font-family:inherit; }
+  .all-list{ display:none; margin-top:8px; }
+  .all-list.open{ display:block; }
+  .all-list .it{ font-size:13px; line-height:1.55; color:var(--text-light); padding:8px 10px; border-left:2px solid var(--line); margin-bottom:6px; }
+  .all-list .it.now{ border-left-color:var(--gold); color:var(--text-bright); }
+  .all-list .it small{ display:block; color:var(--ink-quiet); font-size:11px; margin-top:2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="back" href="./protocols.html">&larr; Protocols</a>
+    <a class="back" href="./index.html">Brief &rarr;</a>
+  </div>
+  <h1>Paramount</h1>
+  <div class="sub">The Paramount Protocol with its three grounds and their images, the Practice counters — Mushin, Project time, Reps, the Mismatch readout, today’s cue, Depth, Deciding, Live or Over — and the Stress Inoculation pick for today. Live numbers, same keys, same sync as the brief.</div>
+  <div class="photo" id="photo" onclick="pickPhoto()">
+    <div class="ph-hint">Tap to add an image</div>
+    <div class="ph-edit">Change</div>
+  </div>
+  <input type="file" id="photo-input" accept="image/*" style="display:none">
+  <div class="later"><b>Moved here from the morning brief, Oct 14 2026, word for word.</b> Now that it has room of its own, this page is to be made more comprehensive later — the brief stays tight; the depth lives here.</div>
+  <div class="card" style="background: linear-gradient(135deg, rgba(255,215,0,0.16), rgba(255,140,0,0.08)); border: 3px double var(--text-bright);">
+    <div class="card-header"><span class="card-icon">🎯</span><span>Paramount Protocol</span></div>
+    <div class="pr-intro">Train where it is easy. Groove the reflex. It shows up when it matters.</div>
+  <div class="pr-section" style="background:linear-gradient(135deg, rgba(26,95,168,0.30), rgba(18,58,108,0.14)); border:2px solid #4a9de8;">
+    <div id="pimg-terrain" class="pimg-band" onclick="pimgPick('terrain')"><span class="pimg-hint">tap to add your TERRAIN image</span></div>
+    <div class="pr-head" style="color:#4a9de8;">TERRAIN</div>
+    <div class="pr-sub">Choose the ground. Refuse what you cannot hold.</div>
+    <div class="pr-item" style="border-left:4px solid #4a9de8;">
+      <div class="pr-name">⚔️ BOUNDARY REP</div>
+      <div class="pr-body">State one preference or decline one small thing. No qualifier, no apology. Let the silence sit.</div>
+      <div class="pr-trigger">Cue: once daily</div>
+    </div>
+    <div class="pr-item" style="border-left:4px solid #4a9de8;">
+      <div class="pr-name">🗡️ WARRIOR PROMISE</div>
+      <div class="pr-body">Name the one hard thing you are avoiding. Do it first, before the easy stuff.</div>
+      <div class="pr-trigger">Cue: morning</div>
+    </div>
+    <div class="pr-item" style="border-left:4px solid #4a9de8;">
+      <div class="pr-name">🏔️ OPPORTUNITY SCANNING</div>
+      <div class="pr-body">Every setback or new environment: “What opportunity does this situation present me with?”</div>
+      <div class="pr-trigger">Cue: the first setback of the day</div>
+    </div>
+    </div>
+  <div class="pr-section" style="background:linear-gradient(135deg, rgba(200,140,60,0.30), rgba(150,95,35,0.14)); border:2px solid #e0a854;">
+    <div id="pimg-tempo" class="pimg-band" onclick="pimgPick('tempo')"><span class="pimg-hint">tap to add your TEMPO image</span></div>
+    <div class="pr-head" style="color:#e0a854;">TEMPO</div>
+    <div class="pr-sub">Nothing hurried. Nothing anxious.</div>
+    <div class="pr-item" style="border-left:4px solid #e0a854;">
+      <div class="pr-name">⏸️ PAUSE BEFORE MOVING, DECIDING OR ACTING</div>
+      <div class="pr-body">When I catch myself drawing breath to speak — let it out without words, shoulders down, then speak.<br><span style="font-weight:400; font-size:13px;">Four places it applies: <strong>speaking</strong> · <strong>reaching</strong> · <strong>deciding</strong> · <strong>getting up and moving</strong>. Each is counted separately at the debrief, so you can see where it lands and where it does not.</span></div>
+      <div class="pr-trigger">Three today. Not all day. Raise it when three is boring.</div>
+    </div>
+    <div class="pr-item" style="border-left:4px solid #e0a854;">
+      <div class="pr-name">🐢 SLOW MOVEMENTS & SPEECH</div>
+      <div class="pr-body">Deliberate, slower pace in all physical and verbal communication. Move 20% slower than your impulse — reach, turn, walk slower.</div>
+      <div class="pr-trigger">Cue: all day</div>
+    </div>
+    <div class="pr-item" style="border-left:4px solid #e0a854;">
+      <div class="pr-name">🤝 I’M FINE EITHER WAY</div>
+      <div class="pr-body">Before the first tense interaction, say it silently and mean it. You would like it to go well; you do not need it to.</div>
+      <div class="pr-trigger">Cue: before tension</div>
+    </div>
+    </div>
+  <div class="pr-section" style="background:linear-gradient(135deg, rgba(90,105,160,0.30), rgba(52,62,105,0.14)); border:2px solid #8a9ad0;">
+    <div id="pimg-presence" class="pimg-band" onclick="pimgPick('presence')"><span class="pimg-hint">tap to add your PRESENCE image</span></div>
+    <div class="pr-head" style="color:#8a9ad0;">PRESENCE</div>
+    <div class="pr-sub">No performance in this one.</div>
+    <div class="pr-item" style="border-left:4px solid #8a9ad0;">
+      <div class="pr-name">🧘 NOT RELEVANT</div>
+      <div class="pr-body">When the optimizing narrative starts — how to improve this, what it should become — name it and take away its authority: <em>not relevant to being present with my family.</em> It can stay. It does not get a vote.<br><span style="font-weight:400; font-size:13px;">Scope: optimization thoughts, plus two that hide in free time — the LOOP (circling why am I like this) and the REPLAY (rehearsing a conversation already over). Not a general silencer: some internal signal is load-bearing, and emotion is not a thought to be dismissed. Two seconds, then back to one sense channel.</span></div>
+      <div class="pr-trigger">Cue: the moment it starts</div>
+    </div>
+    </div>
+  <div class="pr-item" style="border-left:4px solid var(--text-bright); margin-top:4px;">
+      <div class="pr-name">📱 CAL AI BEFORE MEALS</div>
+      <div class="pr-body">Log nutrition in Cal AI before eating. Every meal. Non-negotiable.</div>
+      <div class="pr-trigger">Cue: every meal</div>
+    </div>
+  <div id="pimg-note" class="pr-note"></div>
+    <div class="pr-note">Counts are recorded in the evening debrief, not here. Images stay on this device and are never uploaded.</div>
+    <input type="file" id="pimg-file" accept="image/*" style="display:none;" onchange="pimgLoad(event)">
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-icon">&#x25CB;&#x1F334;</span><span>Practice</span></div>
+    <div id="practice-brief-host"></div>
+  </div>
+<div class="card" style="background:linear-gradient(135deg, rgba(74,157,232,0.14), rgba(74,157,232,0.05)); border:2px solid #4a9de8;"><div class="card-header"><span class="card-icon">🎯🌴</span><span>Stress Inoculation — Today’s Pick</span></div><div style="font-size:13px; color:var(--text-light); line-height:1.5; margin:0 0 10px;">Pick one to aim at today. You’ll see the list again tonight. Nothing passes or fails.</div><div id="stress-brief-host"></div></div>
+<div class="pr-note" id="sync-note">Counts and picks are shared with the brief and the evening debrief through the same storage keys and the same sync endpoint — nothing was renamed. <span id="sync-state"></span></div>
+  <footer>Forge OS · Paramount · a protocol page. Sibling pages: <a href="./fixed-core.html">The Fixed Core</a> · <a href="./daily-rotation.html">The Daily Rotation</a> · <a href="./paramount.html">Paramount</a> · <a href="./protocols.html">all protocols</a>.</footer>
+</div>
+<script>
+
+/* ---------------- top photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-paramount';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo'); if(!el) return;
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; } else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+loadPhoto();
+
+var PIMG_SLOTS = ['terrain','tempo','presence'];
+var PIMG_PUSH = ['terrain','tempo','presence'];
+function pimgKey(k) { return 'forge-img-' + k; }
+function pimgPaint() {
+  for (var i = 0; i < PIMG_SLOTS.length; i++) {
+    var k = PIMG_SLOTS[i];
+    var el = document.getElementById('pimg-' + k);
+    if (!el) continue;
+    var v = null;
+    try { v = localStorage.getItem(pimgKey(k)); } catch(e) {}
+    if (v) {
+      el.style.backgroundImage = 'url(' + v + ')';
+      el.className = 'pimg-band has-img';
+    } else {
+      el.style.backgroundImage = '';
+      el.className = 'pimg-band';
+    }
+  }
+}
+function pimgPick(k) {
+  var inp = document.getElementById('pimg-file');
+  if (!inp) return;
+  inp.setAttribute('data-slot', k);
+  inp.value = '';
+  inp.click();
+}
+function pimgStore(slot, dataUrl) {
+  try {
+    localStorage.setItem(pimgKey(slot), dataUrl);
+  } catch(e) {
+    var n = document.getElementById('pimg-note');
+    if (n) n.textContent = 'Image too large for storage. Try a smaller photo.';
+    return;
+  }
+  var n2 = document.getElementById('pimg-note');
+  if (n2) n2.textContent = '';
+  pimgPaint();
+  if (PIMG_PUSH.indexOf(slot) >= 0) pimgPush(slot, dataUrl);
+}
+function pimgPush(slot, dataUrl) {
+  try {
+    fetch(SYNC_URL + '/' + encodeURIComponent(pimgKey(slot)), {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dataUrl)
+    }).then(function(r) {
+      var n = document.getElementById('pimg-note');
+      if (!r.ok && n) n.textContent = 'Saved on this device - cloud backup failed (' + r.status + ').';
+    }).catch(function() {
+      var n = document.getElementById('pimg-note');
+      if (n) n.textContent = 'Saved on this device - cloud backup offline.';
+    });
+  } catch(e) {}
+}
+function pimgPull() {
+  for (var i = 0; i < PIMG_PUSH.length; i++) {
+    (function(k) {
+      var haveLocal = false;
+      try { haveLocal = !!localStorage.getItem(pimgKey(k)); } catch(e) {}
+      if (haveLocal) return;
+      fetch(SYNC_URL + '/' + encodeURIComponent(pimgKey(k)))
+        .then(function(r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function(v) {
+          if (typeof v === 'string' && v.indexOf('data:image') === 0) {
+            var still = false;
+            try { still = !!localStorage.getItem(pimgKey(k)); } catch(e) {}
+            if (still) return;
+            try { localStorage.setItem(pimgKey(k), v); pimgPaint(); } catch(e) {}
+          }
+        })
+        .catch(function() {});
+    })(PIMG_PUSH[i]);
+  }
+}
+function pimgLoad(ev) {
+  var inp = ev.target;
+  var slot = inp.getAttribute('data-slot');
+  var f = inp.files && inp.files[0];
+  if (!f || !slot) return;
+  var fr = new FileReader();
+  fr.onload = function() {
+    var img = new Image();
+    img.onload = function() {
+      try {
+        var MAXW = 640;
+        var w = img.width, h = img.height;
+        if (w > MAXW) { h = Math.round(h * (MAXW / w)); w = MAXW; }
+        var c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        pimgStore(slot, c.toDataURL('image/jpeg', 0.72));
+      } catch(e) {
+        var n = document.getElementById('pimg-note');
+        if (n) n.textContent = 'Could not process that image.';
+      }
+    };
+    img.onerror = function() {
+      var n = document.getElementById('pimg-note');
+      if (n) n.textContent = 'Could not read that image.';
+    };
+    img.src = fr.result;
+  };
+  fr.onerror = function() {
+    var n = document.getElementById('pimg-note');
+    if (n) n.textContent = 'Could not read that file.';
+  };
+  fr.readAsDataURL(f);
+}
+function toggleSection(el) {
+  var c = el.querySelector('.expandable-content');
+  if (c) c.style.display = c.style.display === 'block' ? 'none' : 'block';
+}
+function ymdOffset(days) {
+  var d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') +
+         '-' + String(d.getDate()).padStart(2, '0');
+}
+function readJSONKey(k, fb) {
+  try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; }
+  catch (e) { return fb; }
+}
+var SYNC_URL = 'https://forge-sync.yoseanreid.workers.dev';
+/* ---------- install15: practice status on the brief ---------- */
+var MUSHIN_TARGET_BRIEF = 600;      /* 10 min/day  */
+var PROJ_TARGET_BRIEF   = 10800;    /* 180 min/week */
+
+function pfWeekKeyFrom(d) {
+  var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  var dow = x.getDay();                                    /* 0 Sun .. 6 Sat */
+  x.setDate(x.getDate() - (dow === 0 ? 6 : dow - 1));      /* back to Monday */
+  return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') +
+         '-' + String(x.getDate()).padStart(2, '0');
+}
+function pfWeekKey() { return pfWeekKeyFrom(new Date()); }
+
+function pfAll(key) {
+  var o = readJSONKey(key, {});
+  return (o && typeof o === 'object' && !Array.isArray(o)) ? o : {};
+}
+function pfEntry(key, k) {
+  var e = pfAll(key)[k];
+  if (!e || typeof e !== 'object') return { sec: 0, done: false };
+  return {
+    sec: (typeof e.sec === 'number' && e.sec > 0) ? e.sec : 0,
+    done: e.done === true
+  };
+}
+function pfClock(sec, wide) {
+  if (!(sec > 0)) sec = 0;
+  var m = Math.floor(sec / 60), s = sec % 60;
+  if (!wide) return m + ':' + (s < 10 ? '0' : '') + s;
+  var h = Math.floor(m / 60); m = m % 60;
+  return h + 'h ' + (m < 10 ? '0' : '') + m + 'm';
+}
+var CUES = [
+  'The first half-second after they start talking &mdash; your reaction either shows or gets swallowed. Swallowed reads as withholding.',
+  'Nod when they land a point, not on a steady beat. Steady nodding reads as waiting for your turn.',
+  'Does your face react while they are talking, or only while you are?',
+  'Stop for half a beat before your most important word. The silence does more than volume.',
+  'In relation to magnetism, warmth lands before competence. Do not lead with what you know.',
+  'One follow-up question deeper than the answer required.',
+  'Pay attention to the person, not to how you are performing.',
+  'Name the emotion before your content &mdash; &ldquo;that must have been hard,&rdquo; &ldquo;you sound proud.&rdquo; They feel heard, not answered.',
+  'Learn one name and one detail about someone new. Use both next time &mdash; it is rare enough to be memorable.'
+];
+function pfCue() {
+  var d = new Date();
+  var doy = Math.floor((d - new Date(d.getFullYear(), 0, 1)) / 86400000);
+  return CUES[((doy % CUES.length) + CUES.length) % CUES.length];
+}
+function pfReps() {
+  var all = pfAll('forge-reps');
+  var e = all[ymdOffset(0)];
+  if (!e || typeof e !== 'object' || Array.isArray(e)) return 0;
+  return (typeof e.n === 'number' && e.n > 0) ? Math.floor(e.n) : 0;
+}
+function pfStreak() {
+  var all = pfAll('forge-project'), n = 0, guard = 0;
+  var probe = new Date();
+  if (pfEntry('forge-project', pfWeekKeyFrom(probe)).sec >= PROJ_TARGET_BRIEF) n++;
+  probe.setDate(probe.getDate() - 7);
+  while (guard++ < 200) {
+    var e = all[pfWeekKeyFrom(probe)];
+    var s = (e && typeof e.sec === 'number') ? e.sec : 0;
+    if (s < PROJ_TARGET_BRIEF) break;
+    n++;
+    probe.setDate(probe.getDate() - 7);
+  }
+  return n;
+}
+
+/* ---------- mismatch: the act-side variables, read out loud ----------
+   Reads only keys the brief already pulls (forge-mushin, forge-project,
+   forge-reps). No new key, no extra fetch. Flat when current, loud when not. */
+var MM_MUSHIN_DAYS = 3;      /* days without a mushin day before it goes loud */
+var MM_PROJ_WEEKS  = 2;      /* weeks with zero project minutes before loud    */
+var MM_REPS_DAYS   = 7;      /* days without a recorded rep before loud        */
+var MM_DAY_CAP     = 120;
+var MM_WEEK_CAP    = 60;
+
+function mmDaysSinceMushin() {
+  var all = pfAll('forge-mushin');
+  for (var d = 0; d <= MM_DAY_CAP; d++) {
+    var e = all[ymdOffset(-d)];
+    if (e && typeof e === 'object' && !Array.isArray(e) &&
+        (e.done === true ||
+         (typeof e.sec === 'number' && e.sec >= MUSHIN_TARGET_BRIEF))) return d;
+  }
+  return -1;
+}
+
+function mmDaysSinceRep() {
+  var all = pfAll('forge-reps');
+  for (var d = 0; d <= MM_DAY_CAP; d++) {
+    var e = all[ymdOffset(-d)];
+    if (e && typeof e === 'object' && !Array.isArray(e) &&
+        typeof e.n === 'number' && e.n > 0) return d;
+  }
+  return -1;
+}
+
+/* forge-project is week-keyed, so this counts WEEKS, not days. It asks whether
+   any minutes were logged at all - not whether the 3h floor was cleared. */
+function mmWeeksSinceProject() {
+  var all = pfAll('forge-project');
+  var probe = new Date();
+  for (var w = 0; w <= MM_WEEK_CAP; w++) {
+    var e = all[pfWeekKeyFrom(probe)];
+    if (e && typeof e === 'object' && !Array.isArray(e) &&
+        typeof e.sec === 'number' && e.sec > 0) return w;
+    probe.setDate(probe.getDate() - 7);
+  }
+  return -1;
+}
+
+function mmPlural(n, one, many) { return n === 1 ? one : many; }
+
+function mmRow(label, txt, loud) {
+  /* Light theme: body is an orange/amber gradient and text is near-black.
+     Loud is carried by a dark-red chip, never by pale text. */
+  var wrap = loud
+    ? 'display:flex; gap:10px; align-items:baseline; padding:7px 9px; margin:3px 0; font-size:12px; line-height:1.5;' +
+      ' background:rgba(255,107,107,0.16); border-left:3px solid #ff6b6b; border-radius:5px;'
+    : 'display:flex; gap:10px; align-items:baseline; padding:4px 9px; margin:3px 0; font-size:12px; line-height:1.5;';
+  return '<div style="' + wrap + '">' +
+      '<span style="min-width:92px; letter-spacing:0.04em; color:var(--muted);">' + label + '</span>' +
+      '<span style="flex:1; min-width:0; color:var(--text-bright); font-weight:' +
+        (loud ? '800' : '600') + ';">' + txt + '</span>' +
+    '</div>';
+}
+
+function mmBlock() {
+  var md = mmDaysSinceMushin();
+  var pw = mmWeeksSinceProject();
+  var rd = mmDaysSinceRep();
+
+  var mLoud = (md < 0 || md >= MM_MUSHIN_DAYS);
+  var pLoud = (pw < 0 || pw >= MM_PROJ_WEEKS);
+  var rLoud = (rd < 0 || rd >= MM_REPS_DAYS);
+  var anyLoud = mLoud || pLoud || rLoud;
+
+  var mTxt, pTxt, rTxt;
+  if (md < 0)       mTxt = 'no mushin day in the last ' + MM_DAY_CAP + ' days';
+  else if (md === 0) mTxt = 'logged today';
+  else               mTxt = md + ' ' + mmPlural(md, 'day', 'days') + ' since a mushin day';
+
+  if (pw < 0)        pTxt = 'no minutes logged in the last ' + MM_WEEK_CAP + ' weeks';
+  else if (pw === 0) pTxt = 'minutes logged this week';
+  else               pTxt = pw + ' ' + mmPlural(pw, 'week', 'weeks') + ' with no minutes logged';
+
+  if (rd < 0)        rTxt = 'no rep recorded in the last ' + MM_DAY_CAP + ' days';
+  else if (rd === 0) rTxt = 'recorded today';
+  else               rTxt = rd + ' ' + mmPlural(rd, 'day', 'days') + ' since a rep was recorded';
+
+  var accent = anyLoud ? '#ff9a9a' : 'var(--muted)';
+  var border = anyLoud ? 'rgba(255,107,107,0.45)' : 'var(--line)';
+  var bg     = anyLoud ? 'rgba(255,107,107,0.07)' : 'transparent';
+
+  return '<div style="border:1px solid ' + border + '; border-radius:10px; padding:11px 12px; margin-bottom:13px; background:' + bg + ';">' +
+      '<div style="font-size:13px; letter-spacing:0.16em; color:' + accent + '; font-weight:700; margin-bottom:4px;">MISMATCH</div>' +
+      '<div style="font-size:12px; font-style:italic; line-height:1.45; color:var(--text-light); margin-bottom:9px;">Good news is dangerous. Bad news is the only thing that saves you.</div>' +
+      mmRow('Mushin', mTxt, mLoud) +
+      mmRow('Project time', pTxt, pLoud) +
+      mmRow('Reps', rTxt, rLoud) +
+      '<div style="font-size:10px; color:var(--muted); margin-top:9px; line-height:1.55;">This card only sees what is instrumented. Nothing here reports on your daughters, the classroom, or how you are landing with people &mdash; a clean reading is not an all-clear.</div>' +
+    '</div>';
+}
+
+function paintPractice() {
+  var host = document.getElementById('practice-brief-host');
+  if (!host) return;
+  var m = pfEntry('forge-mushin', ymdOffset(0));
+  var p = pfEntry('forge-project', pfWeekKey());
+  var mDone = m.done || m.sec >= MUSHIN_TARGET_BRIEF;
+  var pDone = p.sec >= PROJ_TARGET_BRIEF;
+  var streak = pfStreak();
+
+  var sub;
+  if (pDone) {
+    sub = streak + ' week' + (streak === 1 ? '' : 's') + ' clearing the floor';
+  } else {
+    var left = Math.ceil((PROJ_TARGET_BRIEF - p.sec) / 60);
+    sub = left + ' min to the floor';
+  }
+
+  host.innerHTML =
+    mmBlock() +
+    '<div class="t5-row' + (mDone ? ' t5-done' : '') + '">' +
+      '<span class="t5-tick">' + (mDone ? '&#10003;' : '&#9633;') + '</span>' +
+      '<div style="flex:1; min-width:0;">' +
+        '<div class="t5-task">Mushin</div>' +
+        '<div class="t5-meta">' + pfClock(m.sec, false) + ' of 10:00 today</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="t5-row' + (pDone ? ' t5-done' : '') + '">' +
+      '<span class="t5-tick">' + (pDone ? '&#10003;' : '&#9633;') + '</span>' +
+      '<div style="flex:1; min-width:0;">' +
+        '<div class="t5-task">Project time</div>' +
+        '<div class="t5-meta">' + pfClock(p.sec, true) + ' of 3h 00m this week &middot; ' + sub + '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="t5-row">' +
+      '<span class="t5-tick">&#9653;</span>' +
+      '<div style="flex:1; min-width:0;">' +
+        '<div class="t5-task">Reps</div>' +
+        '<div class="t5-meta">' + pfReps() + ' today &middot; conversations you started</div>' +
+      '</div>' +
+    '</div>' +
+    /* install27: today's cue + the decision tiers. install31: LIVE OR OVER. */
+    '<div style="border-top:2px solid var(--accent-hi); margin-top:10px; padding-top:10px;">' +
+      '<div style="font-size:13px; letter-spacing:0.16em; color:var(--accent-hi); font-weight:700; margin-bottom:3px;">TODAY&rsquo;S CUE</div>' +
+      '<div style="font-size:13px; font-weight:600; line-height:1.45; margin-bottom:12px;">' + pfCue() + '</div>' +
+      '<div style="font-size:13px; letter-spacing:0.16em; color:var(--accent-hi); font-weight:700; margin-bottom:3px;">DEPTH</div>' +
+      '<div style="font-size:12px; line-height:1.5; margin-bottom:12px;">Go one layer deeper with someone today &mdash; then match with your own at the same layer. That is how an acquaintance becomes a friend.</div>' +
+      '<div style="font-size:13px; letter-spacing:0.16em; color:var(--accent-hi); font-weight:700; margin-bottom:4px;">DECIDING</div>' +
+      '<div style="font-size:12px; line-height:1.55;">' +
+        '<strong style="color:var(--accent-hi);">3 seconds</strong> &mdash; minor, everyday, nothing survives the night. Which room, what to say, put the phone down. Auditing it <em>is</em> the problem.<br>' +
+        '<strong style="color:var(--accent-hi);">7 breaths</strong> &mdash; consequential, already in front of you, cannot be deferred. A deadline, an offer, a trip. Stewing adds nothing: decide and move.<br>' +
+        '<strong style="color:var(--accent-hi);">Sunday</strong> &mdash; anything that opens a new loop or commits future time, however urgent it feels. Especially the ones you generated yourself.' +
+      '</div>' +
+      '<div style="font-size:10px; opacity:0.65; margin-top:7px; line-height:1.5;">Seven breaths is from the Hagakure, c.1710 &mdash; a maxim from one retainer&rsquo;s reflections, not documented samurai practice. Roughly 30&ndash;45 seconds.</div>' +
+      '<div style="font-size:13px; letter-spacing:0.16em; color:var(--accent-hi); font-weight:700; margin-top:13px; margin-bottom:4px;">LIVE OR OVER</div>' +
+      '<div style="font-size:12px; line-height:1.55;">' +
+        '<strong style="color:var(--accent-hi);">Live</strong> &mdash; someone is in front of me, right now. A person talking. My daughters in the room. Attention goes outward: their face, their words. Not onto how I am doing.<br>' +
+        '<strong style="color:var(--accent-hi);">Over</strong> &mdash; it is finished. Driving home. Sunday. Kids asleep. Where could I have improved? The time to evaluate my performance is after the fact, not during, according to the experts.<br>' +
+        '<strong style="color:var(--accent-hi);">Never review while it is live.</strong> The more the moment matters, the more true this is &mdash; that is when monitoring does the most damage, not an exception to the rule.' +
+      '</div>' +
+      '<a href="./protocols.html" style="display:block; text-align:center; margin-top:13px; padding:11px; border-radius:10px; background:rgba(74,157,232,0.28); border:1px solid rgba(74,157,232,0.55); color:#eaf4ff; font-weight:800; letter-spacing:0.06em; text-decoration:none; font-size:13px;">Protocols &rarr;</a>' +
+    '</div>';
+}
+
+/* Same max-wins rule the planner uses: seconds never go backwards on a pull. */
+function pullPractice() {
+  ['forge-mushin', 'forge-project'].forEach(function (key) {
+    fetch(SYNC_URL + '/' + encodeURIComponent(key))
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (cloud) {
+        if (!cloud || typeof cloud !== 'object' || Array.isArray(cloud)) return;
+        var all = pfAll(key);
+        var changed = false;
+        for (var dk in cloud) {
+          if (!cloud.hasOwnProperty(dk)) continue;
+          var lc = all[dk], cc = cloud[dk];
+          if (!cc || typeof cc !== 'object') continue;
+          var ls = (lc && typeof lc.sec === 'number') ? lc.sec : -1;
+          var cs = (typeof cc.sec === 'number') ? cc.sec : -1;
+          if (cs > ls) {
+            all[dk] = { sec: cc.sec, done: cc.done === true };
+            changed = true;
+          } else if (cc.done === true && lc && lc.done !== true) {
+            lc.done = true; changed = true;
+          }
+        }
+        if (changed) {
+          try { localStorage.setItem(key, JSON.stringify(all)); } catch (e) {}
+          try { paintPractice(); } catch (e) {}
+        }
+      })
+      .catch(function () {});
+  });
+}
+
+/* Counts never go backwards on a pull. `att` is the debrief's field - the
+   brief must carry it through untouched rather than dropping it. */
+function pullReps() {
+  fetch(SYNC_URL + '/' + encodeURIComponent('forge-reps'))
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (cloud) {
+      if (!cloud || typeof cloud !== 'object' || Array.isArray(cloud)) return;
+      var all = pfAll('forge-reps');
+      var changed = false;
+      for (var dk in cloud) {
+        if (!cloud.hasOwnProperty(dk)) continue;
+        var lc = all[dk], cc = cloud[dk];
+        if (!cc || typeof cc !== 'object' || Array.isArray(cc)) continue;
+        var ln = (lc && typeof lc.n === 'number') ? lc.n : -1;
+        var cn = (typeof cc.n === 'number') ? cc.n : -1;
+        var lAtt = (lc && typeof lc.att === 'string') ? lc.att : '';
+        var cAtt = (typeof cc.att === 'string') ? cc.att : '';
+        var wantN = cn > ln ? cn : (ln > 0 ? ln : 0);
+        var wantAtt = lAtt || cAtt;
+        if (wantN !== (ln > 0 ? ln : 0) || wantAtt !== lAtt) {
+          all[dk] = { n: wantN, att: wantAtt };
+          changed = true;
+        }
+      }
+      if (changed) {
+        try { localStorage.setItem('forge-reps', JSON.stringify(all)); } catch (e) {}
+        try { paintPractice(); } catch (e) {}
+      }
+    })
+    .catch(function () {});
+}
+
+
+function stressTodayB(){
+  var e = pfAll('forge-stressinoc')[ymdOffset(0)];
+  return (e && typeof e === 'object' && !Array.isArray(e)) ? e : {pick:'',done:[]};
+}
+var STRESS_REPS_B = [['r1','Publish something small that could flop'],['r2','State a position in a meeting with no hedge'],['r3','Send the direct version of a message you\'d soften'],['r4','Ask for something with no justification tail'],['r5','Give one piece of feedback you\'d usually swallow'],['r6','Let a thing be visibly imperfect — ship at the done-when'],['r7','Say no to an optional ask, cleanly, no reason'],['r8','Hold a silence you\'d normally rush to fill'],['r9','Speak first in a new setting where you\'d observe'],['r10','Have the direct conversation you keep postponing']];
+function paintStress(){
+  var host = document.getElementById('stress-brief-host'); if (!host) return;
+  var st = stressTodayB(); var pick = (typeof st.pick === 'string') ? st.pick : '';
+  var html = '';
+  for (var i=0;i<STRESS_REPS_B.length;i++){
+    var id = STRESS_REPS_B[i][0], txt = STRESS_REPS_B[i][1]; var on = (pick === id);
+    html += '<button onclick="stressPick(\'' + id + '\')" style="display:block; width:100%; text-align:left; margin-bottom:6px; padding:9px 11px; border-radius:8px; line-height:1.35; cursor:pointer; '
+      + (on ? 'background:var(--accent-hi); color:#fff; border:2px solid var(--accent-hi); font-weight:700;' : 'background:rgba(74,157,232,0.10); color:var(--text-bright); border:2px solid rgba(74,157,232,0.35);')
+      + '">' + (on ? '\u2605 ' : '') + txt + '</button>';
+  }
+  host.innerHTML = html;
+}
+function stressPick(id){
+  var all = pfAll('forge-stressinoc'); if (!all || typeof all !== 'object' || Array.isArray(all)) all = {};
+  var t = ymdOffset(0); var e = all[t];
+  var done = (e && Array.isArray(e.done)) ? e.done : [];
+  all[t] = { pick: id, done: done };
+  try { localStorage.setItem('forge-stressinoc', JSON.stringify(all)); } catch (e2) {}
+  paintStress(); stressPush(all);
+}
+function stressPush(all){
+  try { fetch(SYNC_URL + '/' + encodeURIComponent('forge-stressinoc'), { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(all) }).catch(function(){}); } catch (e) {}
+}
+function pullStress(){
+  fetch(SYNC_URL + '/' + encodeURIComponent('forge-stressinoc'))
+    .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function(cloud){
+      if(!cloud || typeof cloud !== 'object' || Array.isArray(cloud) || cloud.error) return;
+      var all = pfAll('forge-stressinoc'); var changed=false;
+      for (var dk in cloud){
+        if(!cloud.hasOwnProperty(dk)) continue;
+        var lc=all[dk], cc=cloud[dk];
+        if(!cc || typeof cc !== 'object' || Array.isArray(cc)) continue;
+        var lPick=(lc&&typeof lc.pick==='string')?lc.pick:'';
+        var cPick=(typeof cc.pick==='string')?cc.pick:'';
+        var lDone=(lc&&Array.isArray(lc.done))?lc.done:[];
+        var cDone=Array.isArray(cc.done)?cc.done:[];
+        var wantPick=lPick||cPick; var seen={}, wantDone=[];
+        lDone.concat(cDone).forEach(function(x){ if(typeof x==='string'&&!seen[x]){seen[x]=1;wantDone.push(x);} });
+        if(wantPick===lPick && wantDone.length===lDone.length) continue;
+        all[dk]={pick:wantPick,done:wantDone}; changed=true;
+      }
+      if(changed){ try{ localStorage.setItem('forge-stressinoc', JSON.stringify(all)); }catch(e){} try{ paintStress(); }catch(e){} }
+    }).catch(function(){});
+}
+
+
+window.addEventListener('load', function () {
+  try { pimgPaint(); pimgPull(); } catch (e) {}
+  try { paintPractice(); } catch (e) {}
+  try { pullPractice(); } catch (e) {}
+  try { pullReps(); } catch (e) {}
+  try { paintStress(); } catch (e) {}
+  try { pullStress(); } catch (e) {}
+});
+
+</script>
+</body>
+</html>

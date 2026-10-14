@@ -1275,7 +1275,32 @@ def render_triad(day_of_year):
 # --- practice_merge_aug14: parked cards -------------------------------------
 # Remove a name from this set to bring that card back on the next workflow run.
 # The HTML for each still exists, in generate_html(). Nothing was deleted.
-PARKED_CARDS = {"identityless", "future_self", "sbos"}
+#
+# slim_oct14: the cards below were MOVED off the brief onto three protocol pages,
+# word for word, and parked here. The builders, pools and JS all remain in this
+# file; the pages are built from them (build/slim/build_pages.py), so un-parking
+# a name brings the card straight back on the next workflow run.
+#   orientation, domains, intheroom, breathe, hall  -> fixed-core.html
+#   triad, wisdom, model, strategy, colonel         -> daily-rotation.html
+#   practice (the Paramount Protocol card), practice_status, stress -> paramount.html
+PARKED_CARDS = {"identityless", "future_self", "sbos",
+                "orientation", "domains", "intheroom", "breathe", "hall",
+                "triad", "wisdom", "model", "strategy", "colonel",
+                "practice", "practice_status", "stress"}
+
+
+def render_protocol_links():
+    """slim_oct14: the one-line row that replaces the moved cards on the brief."""
+    return (
+        '  <div class="card" id="proto-links" style="padding:12px 14px;">\n'
+        '    <div style="display:flex; gap:8px; flex-wrap:wrap;">\n'
+        '      <a href="./fixed-core.html" style="flex:1; min-width:100px; text-align:center; padding:10px 8px; border-radius:10px; background:rgba(74,157,232,0.28); border:1px solid rgba(74,157,232,0.55); color:#eaf4ff; font-weight:800; letter-spacing:0.05em; text-decoration:none; font-size:12.5px;">\U0001F9ED The Fixed Core</a>\n'
+        '      <a href="./daily-rotation.html" style="flex:1; min-width:100px; text-align:center; padding:10px 8px; border-radius:10px; background:rgba(74,157,232,0.28); border:1px solid rgba(74,157,232,0.55); color:#eaf4ff; font-weight:800; letter-spacing:0.05em; text-decoration:none; font-size:12.5px;">\U0001F504 Daily Rotation</a>\n'
+        '      <a href="./paramount.html" style="flex:1; min-width:100px; text-align:center; padding:10px 8px; border-radius:10px; background:rgba(74,157,232,0.28); border:1px solid rgba(74,157,232,0.55); color:#eaf4ff; font-weight:800; letter-spacing:0.05em; text-decoration:none; font-size:12.5px;">\U0001F3AF Paramount</a>\n'
+        '      <a href="./protocols.html" style="flex:1; min-width:100px; text-align:center; padding:10px 8px; border-radius:10px; background:transparent; border:1px solid rgba(74,157,232,0.45); color:var(--text-bright); font-weight:800; letter-spacing:0.05em; text-decoration:none; font-size:12.5px;">All protocols &rarr;</a>\n'
+        '    </div>\n'
+        '  </div>'
+    )
 
 
 def render_practice_card():
@@ -2353,10 +2378,11 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     day_of_week = now.weekday()
     day_of_year = now.timetuple().tm_yday
     wisdom = get_wisdom(day_of_year)
-    triad_block = render_triad(day_of_year)
+    triad_block = '' if 'triad' in PARKED_CARDS else render_triad(day_of_year)
     protocol_block = render_summer_protocol()
-    practice_card = render_practice_card()
+    practice_card = '' if 'practice' in PARKED_CARDS else render_practice_card()
     prediction_card = render_prediction_card()
+    protocol_links = render_protocol_links()
     identityless_card = '' if 'identityless' in PARKED_CARDS else '  <div class="card" style="background: linear-gradient(135deg, rgba(100,150,200,0.2), rgba(70,120,170,0.1)); border: 3px solid var(--text-bright);">\n    <div class="card-header"><span class="card-icon">🎭🌴</span><span>Identityless Protocol</span></div>\n    <div class="mini-card expandable" onclick="toggleSection(this)">\n      <div class="mini-title">🌀 Tap to expand</div>\n      <div class="expandable-content">\n        <strong>GROUNDLESSNESS TOLERANCE:</strong><br>\n        • No-Frame Actions: Act without identity narratives. Just do it.<br>\n        • "I Don\'t Know" as Full Stop: Sit in uncertainty 30–60 seconds.<br>\n        • "No Story. Just This": Cut narrative, focus on sensory data.<br><br>\n        <strong>INTERNAL AUDIENCE REMOVAL:</strong><br>\n        • Catching "Camera On": Detect self-observation, label it, don\'t judge.<br>\n        • Shift to Raw Perception: Anchor in ONE sensory channel.<br>\n        • Unwitnessed Existence: 2–5 min activities with zero self-reference.\n      </div>\n    </div>\n  </div>\n'
     future_self_card = '' if 'future_self' in PARKED_CARDS else '  <div class="card" style="background: linear-gradient(135deg, rgba(150,100,200,0.2), rgba(120,70,170,0.1)); border: 3px solid var(--text-bright);">\n    <div class="card-header"><span class="card-icon">⏰🌴</span><span>Future Self Protocol</span></div>\n    <div class="mini-card expandable" onclick="toggleSection(this)">\n      <div class="mini-title">📋 Tap to expand</div>\n      <div class="expandable-content">\n        <strong>MORNING:</strong> Posture Reset → Fractal Scan → Identity Merge → EV Selection → Atmospheric Bruiser Lock-In<br><br>\n        <strong>MIDDAY:</strong> Re-anchor → SBOS scan → Remove friction → Enforce boundary → Execute micro-win<br><br>\n        <strong>EVENING:</strong> What aligned? What violated? What friction needs removal? What system needs upgrading?\n      </div>\n    </div>\n  </div>\n'
     sbos_card = '' if 'sbos' in PARKED_CARDS else '  <div class="card">\n    <div class="card-header"><span class="card-icon">&#x1F3B0;&#x1F334;</span><span>SBOS Betting Intel</span></div>\n    @@SBOS@@\n    <div class="mini-card">\n      <div class="mini-title">&#x1F4E1; CFL Telegram</div>\n      <div class="mini-detail" style="font-size:13px; line-height:1.8;">\n        @SeanTradingAlertsBot &nbsp;&#183;&nbsp; Commands: <strong>STATUS</strong> &nbsp;&#183;&nbsp; <strong>Y</strong> &nbsp;&#183;&nbsp; <strong>HALF</strong> &nbsp;&#183;&nbsp; <strong>WATCH</strong> &nbsp;&#183;&nbsp; <strong>N</strong> &nbsp;&#183;&nbsp; <strong>RESULT</strong>\n      </div>\n    </div>\n    <div class="mini-card">\n      <div class="mini-title">&#x1F4CB; S1/S5 Scoring</div>\n      <div class="mini-detail" style="font-size:13px; line-height:1.8;">\n        <strong>S1:</strong> 1=neutral 2=home edge 3=strong narrative &nbsp;&#183;&nbsp; <strong>S5:</strong> 1=neutral 2=pressure 3=high-stakes<br>\n        <strong>Tier A (17-21):</strong> Full &nbsp;&#183;&nbsp; <strong>Tier B (13-16):</strong> Half &nbsp;&#183;&nbsp; <strong>Tier C:</strong> Pass\n      </div>\n    </div>\n  </div>\n'.replace('@@SBOS@@', sbos_signals_html)
@@ -2661,6 +2687,65 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
         '<a href="./valhalla-hall.html" style="display:block; text-align:center; margin-top:12px; padding:11px; border-radius:10px; background:linear-gradient(135deg,#4f7bff,#2b5cff); color:#ffffff; font-weight:800; letter-spacing:0.06em; text-decoration:none;">Enter the hall \u2192</a>'
         '</div>'
     )
+
+    # \u2500\u2500 slim_oct14: park the moved cards. Each builder above still runs and its text
+    # is untouched; only the placement on the brief is switched off. The five cards
+    # that used to sit inline in the template below are lifted into variables here
+    # so they can be parked the same way. Nothing is deleted.
+    if 'orientation' in PARKED_CARDS: orientation_card = ''
+    if 'stress' in PARKED_CARDS: stress_card = ''
+    if 'domains' in PARKED_CARDS: domains_card = ''
+    if 'intheroom' in PARKED_CARDS: intheroom_card = ''
+    if 'breathe' in PARKED_CARDS: breathe_card = ''
+    if 'hall' in PARKED_CARDS: hall_card = ''
+    colonel_box = '' if 'colonel' in PARKED_CARDS else f'''  <div class="character-quote-box">
+    <img class="character-image" src="hannibal.jpg" alt="The Colonel" onerror="this.style.display='none'">
+    <div>
+      <div class="character-quote">{colonel['line']}</div>
+      <div class="character-name">\u2014 The Colonel&rsquo;s Take &middot; {colonel.get('tag','')}</div>
+    </div>
+  </div>'''
+    practice_status_card = '' if 'practice_status' in PARKED_CARDS else '''  <div class="card">
+    <div class="card-header"><span class="card-icon">&#x25CB;&#x1F334;</span><span>Practice</span></div>
+    <div id="practice-brief-host"></div>
+  </div>'''
+    wisdom_card = '' if 'wisdom' in PARKED_CARDS else f'''  <div class="card">
+    <div class="card-header"><span class="card-icon">\ud83d\udca1\ud83c\udf34</span><span>Quick Actionable Wisdom</span></div>
+    <div class="advice-grid">
+      <div class="advice-item"><div class="advice-label">\ud83e\udd4b Self-Defense</div><div class="advice-text">{wisdom_self_defense}</div></div>
+      <div class="advice-item"><div class="advice-label">\ud83d\udc68\u200d\ud83d\udc67\u200d\ud83d\udc66 Parenting</div><div class="advice-text">{wisdom_parenting}</div></div>
+      <div class="advice-item"><div class="advice-label">\ud83d\udc68 Fatherhood</div><div class="advice-text">{wisdom_fatherhood}</div></div>
+      <div class="advice-item"><div class="advice-label">\ud83e\udde0 Mindset</div><div class="advice-text">{wisdom_mindset}</div></div>
+      <div class="advice-item"><div class="advice-label">\u23f3 Longevity</div><div class="advice-text">{wisdom_longevity}</div></div>
+      <div class="advice-item"><div class="advice-label">\u26a1 Life Hack</div><div class="advice-text">{wisdom_life_hack}</div></div>
+    </div>
+  </div>'''
+    model_card = '' if 'model' in PARKED_CARDS else f'''  <div class="card" data-card="model">
+    <div class="card-header"><span class="card-icon">&#x1F9E0;&#x1F334;</span><span>Mental Model &mdash; {model['name']}</span></div>
+    <div class="focus-prompt">{model['focus']}</div>
+    <div class="depth-toggle" onclick="toggleDepth(this)">
+      <span class="depth-label">What it is &amp; how it applies</span><span class="depth-chevron">&#x25BE;</span>
+    </div>
+    <div class="depth-body">
+      <div class="depth-origin">{model.get('origin','')}</div>
+      <div class="depth-what">{model['what']}</div>
+      {model_examples_html}
+      <div style="margin-top:8px; font-size:12px;"><a href="models.html">Browse the full library &#8594;</a></div>
+    </div>
+  </div>'''
+    strategy_card = '' if 'strategy' in PARKED_CARDS else f'''  <div class="card" data-card="strategy">
+    <div class="card-header"><span class="card-icon">&#x265F;&#xFE0F;&#x1F334;</span><span>Strategy &mdash; {strat['name']}</span></div>
+    <div class="strat-cat">{strat.get('category','')}</div>
+    <div class="focus-prompt">{strat['focus']}</div>
+    <div class="depth-toggle" onclick="toggleDepth(this)">
+      <span class="depth-label">What it is &amp; how it applies</span><span class="depth-chevron">&#x25BE;</span>
+    </div>
+    <div class="depth-body">
+      <div class="depth-what">{strat['what']}</div>
+      {strat_examples_html}
+      <div style="margin-top:8px; font-size:12px;"><a href="models.html">Browse the full library &#8594;</a></div>
+    </div>
+  </div>'''
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2830,13 +2915,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     <div class="motd-source">— {stoic_source}</div>
   </div>
 
-  <div class="character-quote-box">
-    <img class="character-image" src="hannibal.jpg" alt="The Colonel" onerror="this.style.display='none'">
-    <div>
-      <div class="character-quote">{colonel['line']}</div>
-      <div class="character-name">— The Colonel&rsquo;s Take &middot; {colonel.get('tag','')}</div>
-    </div>
-  </div>
+{colonel_box}
 
   {pool_error_html}
   <div id="yday-host"></div>
@@ -2849,16 +2928,15 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
 
   {orientation_card}
 
+{protocol_links}
+
   <div class="card">
     <div class="card-header"><span class="card-icon">&#x1F3AF;&#x1F334;</span><span>Today&rsquo;s Five</span></div>
     <div id="today-five-host"></div>
     <div class="mini-card"><div class="mini-detail"><a href="planner.html">Open the day planner &#8594;</a><br><span style="font-size:12px;">Hour-by-hour grid with the calendar auto-filled. Set or edit the five here.</span></div></div>
   </div>
 
-  <div class="card">
-    <div class="card-header"><span class="card-icon">&#x25CB;&#x1F334;</span><span>Practice</span></div>
-    <div id="practice-brief-host"></div>
-  </div>
+{practice_status_card}
 
   {stress_card}
 
@@ -2936,19 +3014,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-header"><span class="card-icon">💡🌴</span><span>Quick Actionable Wisdom</span></div>
-    <div class="advice-grid">
-      <div class="advice-item"><div class="advice-label">🥋 Self-Defense</div><div class="advice-text">{wisdom_self_defense}</div></div>
-      <div class="advice-item"><div class="advice-label">👨‍👧‍👦 Parenting</div><div class="advice-text">{wisdom_parenting}</div></div>
-      <div class="advice-item"><div class="advice-label">👨 Fatherhood</div><div class="advice-text">{wisdom_fatherhood}</div></div>
-      <div class="advice-item"><div class="advice-label">🧠 Mindset</div><div class="advice-text">{wisdom_mindset}</div></div>
-      <div class="advice-item"><div class="advice-label">⏳ Longevity</div><div class="advice-text">{wisdom_longevity}</div></div>
-      <div class="advice-item"><div class="advice-label">⚡ Life Hack</div><div class="advice-text">{wisdom_life_hack}</div></div>
-    </div>
-  </div>
-
-
+{wisdom_card}
 
   <div class="card">
     <div class="card-header"><span class="card-icon">🏆🌴</span><span>Sports Intel</span></div>
@@ -2969,34 +3035,9 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     </div>
   </div>
 
-  <div class="card" data-card="model">
-    <div class="card-header"><span class="card-icon">&#x1F9E0;&#x1F334;</span><span>Mental Model &mdash; {model['name']}</span></div>
-    <div class="focus-prompt">{model['focus']}</div>
-    <div class="depth-toggle" onclick="toggleDepth(this)">
-      <span class="depth-label">What it is &amp; how it applies</span><span class="depth-chevron">&#x25BE;</span>
-    </div>
-    <div class="depth-body">
-      <div class="depth-origin">{model.get('origin','')}</div>
-      <div class="depth-what">{model['what']}</div>
-      {model_examples_html}
-      <div style="margin-top:8px; font-size:12px;"><a href="models.html">Browse the full library &#8594;</a></div>
-    </div>
-  </div>
+{model_card}
 
-  <div class="card" data-card="strategy">
-    <div class="card-header"><span class="card-icon">&#x265F;&#xFE0F;&#x1F334;</span><span>Strategy &mdash; {strat['name']}</span></div>
-    <div class="strat-cat">{strat.get('category','')}</div>
-    <div class="focus-prompt">{strat['focus']}</div>
-    <div class="depth-toggle" onclick="toggleDepth(this)">
-      <span class="depth-label">What it is &amp; how it applies</span><span class="depth-chevron">&#x25BE;</span>
-    </div>
-    <div class="depth-body">
-      <div class="depth-what">{strat['what']}</div>
-      {strat_examples_html}
-      <div style="margin-top:8px; font-size:12px;"><a href="models.html">Browse the full library &#8594;</a></div>
-    </div>
-  </div>
-
+{strategy_card}
 
 {concert_cards_html}
 
