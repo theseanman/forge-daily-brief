@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Leverage Points</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0; --red:#ff8a8a; --violet:#b48cff;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 13px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+  a.inl{ color:var(--accent-hi); }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.teal{ border-left-color:var(--teal); background:rgba(63,208,192,.08); }
+  .card.gold{ border-left-color:var(--gold); background:rgba(245,215,110,.08); }
+  .card.red{ border-left-color:var(--red); background:rgba(255,138,138,.08); }
+  .card.violet{ border-left-color:var(--violet); background:rgba(180,140,255,.09); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .trig{ font-size:13px; line-height:1.5; margin:4px 0 8px; color:var(--ink-dim); }
+  .trig b{ color:var(--gold); font-weight:800; letter-spacing:.04em; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .card.teal .move b{ color:#8ff0e4; } .card.teal .move:before{ color:var(--teal); }
+  .card.red .move b{ color:#ffc0c0; } .card.red .move:before{ color:var(--red); }
+  .card.violet .move b{ color:#d4bcff; } .card.violet .move:before{ color:var(--violet); }
+  .ex{ margin-top:11px; padding-top:10px; border-top:1px solid var(--line); }
+  .ex-row{ font-size:13.5px; line-height:1.55; margin:6px 0; }
+  .ex-row .tag{ display:inline-block; min-width:78px; font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .group-k{ font-size:12.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--teal); font-weight:800; margin:16px 0 6px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .band.warn{ background:rgba(255,138,138,.10); border-left-color:var(--red); }
+  .band.warn b{ color:var(--red); }
+  .band.vio{ background:rgba(180,140,255,.11); border-left-color:var(--violet); }
+  .band.vio b{ color:#d4bcff; }
+  .para{ font-size:14px; line-height:1.6; margin:7px 0; }
+  .para b{ color:var(--accent-hi); }
+  .card.teal .para b{ color:#8ff0e4; }
+  .card.red .para b{ color:#ffc0c0; }
+  .q{ font-size:14px; line-height:1.55; margin:6px 0 6px 4px; padding-left:12px; border-left:2px solid var(--gold); }
+  .step{ display:flex; gap:11px; font-size:14px; line-height:1.55; margin:9px 0; }
+  .step .n{ flex:0 0 22px; height:22px; border-radius:50%; background:rgba(74,157,232,.22); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:800; color:var(--accent-hi); margin-top:1px; }
+  .step b{ color:var(--accent-hi); }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+  .ev.x{ background:rgba(255,138,138,.16); color:#ffb3b3; border-color:rgba(255,138,138,.4); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+
+  /* ---------- WORK tab ---------- */
+  #work{ display:none; }
+  #drill{ display:none; }
+  .tool{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; margin-bottom:13px; overflow:hidden; }
+  .tool.teal{ border-left-color:var(--teal); background:rgba(63,208,192,.07); }
+  .tool.violet{ border-left-color:var(--violet); background:rgba(180,140,255,.08); }
+  .tool.gold{ border-left-color:var(--gold); background:rgba(245,215,110,.07); }
+  .tool-head{ display:flex; align-items:center; gap:10px; padding:14px 16px; cursor:pointer; }
+  .tool-head .tn{ flex:0 0 24px; height:24px; border-radius:50%; background:rgba(74,157,232,.22); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:800; color:var(--accent-hi); }
+  .tool-head .tt{ flex:1; font-size:16px; font-weight:700; line-height:1.3; }
+  .tool-head .cnt{ font-size:10.5px; font-weight:800; letter-spacing:.1em; color:var(--ink-quiet); }
+  .tool-head .chev{ color:var(--ink-quiet); font-size:15px; transition:transform .25s; }
+  .tool.open .tool-head .chev{ transform:rotate(90deg); }
+  .tool-body{ display:none; padding:0 16px 16px; }
+  .tool.open .tool-body{ display:block; }
+  .why{ font-size:13px; line-height:1.55; color:var(--ink-dim); border-top:1px solid var(--line); padding-top:11px; margin-bottom:12px; }
+  .why b{ color:var(--gold); }
+  .fl{ margin-bottom:11px; }
+  .fl label{ display:block; font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:var(--accent-hi); margin-bottom:5px; }
+  .fl .hintline{ font-size:12px; color:var(--ink-quiet); line-height:1.45; margin-bottom:6px; }
+  textarea, input[type=text], select{ width:100%; background:rgba(5,22,52,.55); border:1px solid var(--line); border-radius:10px;
+    color:var(--ink); font-size:14.5px; line-height:1.5; padding:10px 12px; font-family:inherit; resize:vertical; }
+  textarea:focus, input[type=text]:focus, select:focus{ outline:2px solid var(--accent); outline-offset:0; border-color:transparent; }
+  textarea::placeholder, input::placeholder{ color:rgba(234,244,255,.3); }
+  select{ appearance:none; -webkit-appearance:none; background-image:linear-gradient(45deg,transparent 50%,var(--accent-hi) 50%),linear-gradient(135deg,var(--accent-hi) 50%,transparent 50%);
+    background-position:calc(100% - 17px) 18px, calc(100% - 12px) 18px; background-size:5px 5px,5px 5px; background-repeat:no-repeat; padding-right:34px; }
+  select option{ background:#0b2547; color:#eaf4ff; }
+  .twocol{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (max-width:520px){ .twocol{ grid-template-columns:1fr; } }
+  .colhd{ font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; margin-bottom:5px; }
+  .colhd.l{ color:var(--red); } .colhd.r{ color:var(--accent-hi); }
+  .rung{ display:flex; gap:9px; align-items:flex-start; margin-bottom:8px; }
+  .rung .rn{ flex:0 0 20px; height:20px; border-radius:50%; background:rgba(180,140,255,.2); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:10.5px; font-weight:800; color:#d4bcff; margin-top:9px; }
+  .rung .rl{ flex:1; }
+  .rung .rl .rlab{ font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); margin-bottom:3px; }
+  .chk{ display:flex; align-items:flex-start; gap:10px; font-size:14px; line-height:1.5; margin:9px 0; cursor:pointer; }
+  .chk input{ flex:0 0 19px; width:19px; height:19px; margin-top:1px; accent-color:var(--accent); }
+  .chk span b{ color:var(--accent-hi); }
+  .toolbar{ display:flex; gap:9px; margin-top:13px; flex-wrap:wrap; }
+  .sbtn{ border:0; border-radius:999px; padding:11px 20px; font-size:13px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; }
+  .sbtn.ghost{ background:rgba(9,36,80,.6); color:#fff; border:1px solid var(--line); }
+  .sbtn.danger{ background:rgba(255,138,138,.16); color:#ffb3b3; border:1px solid rgba(255,138,138,.4); }
+  .sbtn:disabled{ opacity:.35; cursor:default; }
+  .analysis{ display:none; margin-top:13px; background:rgba(245,215,110,.09); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; }
+  .analysis.on{ display:block; }
+  .analysis .ah{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800; color:var(--gold); margin-bottom:8px; }
+  .analysis .aq{ font-size:14px; line-height:1.55; margin:8px 0; padding-left:14px; position:relative; }
+  .analysis .aq:before{ content:'\2192'; position:absolute; left:0; color:var(--gold); font-weight:700; }
+  .analysis .aq b{ color:var(--gold); }
+  .flag{ font-size:13.5px; line-height:1.55; margin:8px 0; padding:9px 11px; border-radius:9px; background:rgba(255,138,138,.12); border-left:3px solid var(--red); }
+  .flag b{ color:#ffc0c0; }
+  .flag.ok{ background:rgba(63,208,192,.11); border-left-color:var(--teal); }
+  .flag.ok b{ color:#8ff0e4; }
+  .hist{ margin-top:14px; border-top:1px solid var(--line); padding-top:11px; }
+  .hist-k{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); margin-bottom:8px; }
+  .entry{ background:rgba(5,22,52,.4); border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin-bottom:8px; }
+  .entry .edate{ font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; color:var(--accent-hi); margin-bottom:5px;
+    display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .entry .edate .del{ color:var(--ink-quiet); cursor:pointer; font-size:15px; line-height:1; padding:0 4px; }
+  .entry .erow{ font-size:13px; line-height:1.5; color:var(--ink-dim); margin:4px 0; white-space:pre-wrap; }
+  .entry .erow .el{ font-size:10px; letter-spacing:.1em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); display:block; }
+  .empty{ font-size:12.5px; color:var(--ink-quiet); font-style:italic; }
+  .pattern{ background:rgba(63,208,192,.09); border-left:4px solid var(--teal); border-radius:12px; padding:13px 15px; margin-bottom:13px; font-size:13.5px; line-height:1.6; }
+  .pattern b{ color:#8ff0e4; }
+
+  /* drill */
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(19px,5vw,26px); font-weight:300; line-height:1.4; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .btn:focus-visible, .toggle button:focus-visible, .sbtn:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+  .ev.doc{ background:rgba(180,140,255,.16); color:#d4bcff; border-color:rgba(180,140,255,.4); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-work" onclick="setMode('work')">Work</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>Leverage Points</h1>
+    <div class="sub">Twelve places to intervene in a system, weakest to strongest, after Donella Meadows (1999). People find the right point by instinct and push it the wrong way, and spend nearly all their effort at the bottom of the list. Three instruments in the Work tab.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="band"><b>The one thing.</b> Before you push harder &mdash; which rung am I on, and can I go up one?</div>
+
+    <div class="section-k">The bathtub</div>
+    <div class="card">
+      <div class="p-head"><span class="p-name">Stocks, flows, and the invisible goal</span><span class="ev doc">DOCTRINE</span></div>
+      <div class="p-ess">Everything in the essay rests on this one picture.</div>
+      <div class="move">A <b>stock</b> is anything that accumulates: money, trust with a student, how rested you are, how many people know your name.</div>
+      <div class="move">Stocks change only through <b>flows</b> &mdash; the faucet and the drain. So they move slowly, and a change in behaviour takes weeks to show in a result.</div>
+      <div class="move">The <b>goal, the rules and the information</b> that decide how the taps get turned are invisible. You can see the water. You usually cannot see why it moves.</div>
+      <div class="note">Hold onto the shower with the boiler four floors down. It comes back at lever 9.</div>
+    </div>
+
+    <div class="card" style="padding-bottom:10px;">
+      <div class="p-head"><span class="p-name">The ladder at a glance</span></div>
+      <div id="ladder"></div>
+    </div>
+
+    <div class="band warn"><b>Honest grading.</b> Most of this is <b>doctrine</b> &mdash; reasoning from thousands of system models, not controlled experiments. Meadows calls her own list "a work in progress" with a "slithery" order. Where a specific claim has real research, it carries a grade. Where one of her famous examples is a story rather than a study, the page says so.</div>
+
+    <!-- RUNG ONE -->
+    <div class="section-k">Rung one &middot; the physical levers</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">12</span><span class="p-name">Numbers and parameters</span><span class="ev doc">DOCTRINE</span></div>
+      <div class="p-ess">The settings on the taps. The weakest lever, and where almost all attention goes.</div>
+      <div class="para">Change a number and a stagnant system rarely starts, a wild one rarely steadies, a runaway one rarely brakes. New hands on the same old taps change little. Her landlord story: weeks hunting for the perfectly fair rent, when there was a <b>wide grey zone</b> where both sides did fine. Stop worrying and get on with your life.</div>
+      <div class="move"><b>The exception:</b> a number matters when it sits near a <b>threshold</b> that switches on something higher up. Ask "is this number near a threshold?" &mdash; most are not.</div>
+      <div class="move">Refining the same number for the third time is the signal to climb a rung. Same rule as <a class="inl" href="./entropy.html">Entropy</a>: pushed twice means redesign.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Forge OS</span>The 180-minute floor, ten minutes of mushin, the sleep-alert threshold. Careful work &mdash; did any of it change what you <i>do</i>, or how it reads?</div>
+        <div class="ex-row"><span class="tag">Room 148</span>Moving a due date a day, ten quiz items to eight. Sometimes right; rarely what unsticks a class.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">11</span><span class="p-name">Buffers</span><span class="ev doc">DOCTRINE</span><span class="ev c">C</span></div>
+      <div class="p-ess">A stock big relative to its flows. A lake, not a river.</div>
+      <div class="para">Rivers flood; lakes absorb. Bigger buffers steady a system, but too big makes it stiff and slow &mdash; which is why businesses went just-in-time. Usually physical and hard to change, so low on the list.</div>
+      <div class="move">Term time is a <b>river</b>: about two free hours a week, and one sick kid or marking crunch floods it. Summer is the <b>lake</b>. The lever is not willpower &mdash; it is <b>stop scheduling river-time as if it were lake-time</b>. Continuity work goes to summer; term gets small, interruptible pieces.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Room 148</span>The time-fillers library is a buffer you already built &mdash; it absorbs a collapsed block so you don't have to.</div>
+        <div class="ex-row"><span class="tag">Income</span>The exit number on the brief is a buffer: the stock that must exist before leaving is safe.</div>
+        <div class="ex-row"><span class="tag">Too big</span>Prepping five units ahead feels safe and locks you in when the class needs something else.</div>
+      </div>
+      <div class="note">C for the related scarcity research: real, but some lab effects have not replicated.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">10</span><span class="p-name">Physical structure</span><span class="ev doc">DOCTRINE</span></div>
+      <div class="p-ess">The plumbing: what connects to what, and through which bottleneck.</div>
+      <div class="para">Hungary's roads all ran through central Budapest; no traffic light could fix the result. Structure is powerful and slow to change. <b>The leverage is in good design at the start</b>, then in respecting the bottlenecks.</div>
+      <div class="move">Your structure &mdash; two jobs, three dependents, Tue/Thu nights, Room 148's footprint &mdash; will not move because you want it to. Change it at the <b>moments you know are coming</b>: September, a course launch, the start of a unit's seating plan.</div>
+    </div>
+
+    <!-- RUNG TWO -->
+    <div class="section-k">Rung two &middot; timing and loops</div>
+
+    <div class="card teal">
+      <div class="p-head"><span class="p-num">09</span><span class="p-name">Delays</span><span class="ev doc">DOCTRINE</span><span class="ev a">A</span></div>
+      <div class="p-ess">The London hotel shower: a minute between the tap and the water. Scalding, freezing, scalding.</div>
+      <div class="para">Late feedback makes you overshoot and undershoot. Sterman's Beer Distribution Game: with a few weeks' shipping delay, nearly everyone &mdash; experienced managers included &mdash; over-orders then under-orders, because they ignore what is already in the pipe. <b>A for the human failure.</b></div>
+      <div class="move">Delays are often unchangeable, so the usual move is to <b>slow your own rate of change</b> to match them, not wish them away.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Income</span>Self-Evidence renamed, restructured and partly rebuilt in a couple of months, with no market signal back yet. That is turning the tap before the water arrives. Shorten the delay (real people, one module) and slow the rebuilds.</div>
+        <div class="ex-row"><span class="tag">Room 148</span>A report card is a delay of weeks; an exit ticket is minutes. The exit ticket is why you can correct in September instead of finding out in November.</div>
+        <div class="ex-row"><span class="tag">Health</span>Judging a new habit after four days when its effects take three weeks is the shower.</div>
+      </div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><span class="p-num">08</span><span class="p-name">Balancing loops</span><span class="ev doc">DOCTRINE</span><span class="ev b">B</span></div>
+      <div class="p-ess">Thermostats. Goal, gap-measurer, response.</div>
+      <div class="para">Strength only matters <b>relative to the load</b>. The thermostat that holds on a cold day fails with every window open. A Sunday review set at August strength may be underpowered in mid-October.</div>
+      <div class="move"><b>Her most quotable warning:</b> we strip out emergency correction loops because they look costly and rarely fire &mdash; and she names our <b>time for rest, recreation, socialising and meditation</b>. Nothing happens that week. Over time, the range of conditions you can survive narrows sharply.</div>
+      <div class="move">Protect them hardest <b>exactly when they seem least necessary</b>; strengthen them when the load rises.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Yours</span>Sunday review, "not relevant", mushin, sleep, sauna, unscored time with your daughters.</div>
+        <div class="ex-row"><span class="tag">Room 148</span>A predictable opening routine pulls a class back to working order at no cost &mdash; you see its value on the day you skip it.</div>
+      </div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><span class="p-num">07</span><span class="p-name">Reinforcing loops</span><span class="ev doc">DOCTRINE</span><span class="ev a">A</span></div>
+      <div class="p-ess">The more it runs, the more power it has to run. Every growth and every collapse.</div>
+      <div class="para"><b>Slowing a runaway loop beats strengthening the brakes against it</b> &mdash; ease off the accelerator rather than ask for better brakes. And watch "success to the successful": winners get the means to win again.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Build loop</span>Idea &rarr; build &rarr; three more ideas. Parking lot, Sunday review and the three-tier rule are brakes. Lowering the gain does more: a new build retires an old one, nothing starts mid-term.</div>
+        <div class="ex-row"><span class="tag">Income</span>The audience loop &mdash; readers who share and bring readers &mdash; is not switched on. Substack is paused. It has not started compounding.</div>
+        <div class="ex-row"><span class="tag">Home</span>Time that is genuinely theirs &rarr; trust &rarr; they bring you more &rarr; the time is worth more. It runs downward too.</div>
+        <div class="ex-row"><span class="tag">Room 148</span>The confident speaker answers first, practises more, gets more confident. Cold-call, think-pair-share and wait time lower that gain.</div>
+      </div>
+    </div>
+
+    <!-- RUNG THREE -->
+    <div class="section-k">Rung three &middot; information and rules</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">06</span><span class="p-name">Information flows</span><span class="ev a">A</span><span class="ev d">D</span></div>
+      <div class="p-ess">Who sees what. Where leverage starts to get cheap.</div>
+      <div class="para">Identical houses; some had the electric meter in the basement, some in the front hall. The front-hall homes used 30% less. <b>Honest note:</b> the 30% is a story she passes on (D). Controlled trials point the same way, smaller: reviews such as Darby (2006) put direct feedback at roughly 5&ndash;15%; a German field study found about 4.5%; Opower's neighbour-comparison reports about 2% across hundreds of thousands of homes. <b>Feedback works &mdash; A.</b></div>
+      <div class="para">Stronger: the US Toxic Release Inventory (1986) required factories to publish emissions &mdash; no fines, no new limits. Emissions fell about 40% in four years, by her account.</div>
+      <div class="move">Missing feedback is one of the commonest causes of a broken system, and restoring it is far cheaper than rebuilding. It must go <b>to the place the decision is made</b>, in a form that compels: put the town's water intake downstream of its own outflow.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Done</span>The exit number on the brief and the video audit are both front-hall meters. You know how to pull this lever.</div>
+        <div class="ex-row"><span class="tag">Basement</span>Self-Evidence: rich data on you, almost none from the people it is for. Nobody's reaction to Module 1 reaches your front hall.</div>
+        <div class="ex-row"><span class="tag">Room 148</span>A visible tally of who has spoken today is a meter for them and for you.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">05</span><span class="p-name">Rules</span><span class="ev b">B</span></div>
+      <div class="p-ess">Boundaries, incentives, punishments &mdash; and whoever writes them.</div>
+      <div class="para">Her college thought experiment: students grade teachers; no degrees, you leave when you've learned it; a whole class graded as one. Imagine behaviour under each and you feel how much rules decide. Research version: <b>defaults</b> &mdash; Johnson &amp; Goldstein (2003), opt-out donation countries register far more donors. Effect on actual donations smaller; core finding holds.</div>
+      <div class="move">Yours work because they take the decision out of the moment: the three-second rule, "the hard line wins", "pushed twice means redesign".</div>
+      <div class="move"><b>Two rules that would beat effort:</b> no new module, page or build until N real people have been through Module 1. And a new build only starts by retiring an old one, never mid-term.</div>
+      <div class="ex"><div class="ex-row"><span class="tag">Room 148</span>How work is marked, what counts, whether a good copy can be resubmitted &mdash; change the grading rule and behaviour moves more than any instruction would.</div></div>
+    </div>
+
+    <!-- RUNG FOUR -->
+    <div class="section-k">Rung four &middot; design and goals</div>
+
+    <div class="card violet">
+      <div class="p-head"><span class="p-num">04</span><span class="p-name">Self-organization</span><span class="ev doc">DOCTRINE</span><span class="ev c">C</span></div>
+      <div class="p-ess">The power to change your own structure. Needs variety plus a way to select.</div>
+      <div class="para">Not magic: a stock of variety and a test for what works. Any system that wipes out its own variety and scorns experiment is doomed in the long run.</div>
+      <div class="move"><b>Action research is this lever</b> &mdash; plan, act, observe, reflect generates variety and selects by measuring. It is your most native lever and the product you sell.</div>
+      <div class="move"><b>Two warnings.</b> Selection needs outside data, or the loop drifts on its own readings. And nearly every idea becoming a protocol and an HTML page is a <b>single culture</b>. Sometimes the right answer is a conversation, a decision not to build, or a test with five strangers.</div>
+    </div>
+
+    <div class="card violet">
+      <div class="p-head"><span class="p-num">03</span><span class="p-name">Goals</span><span class="ev a">A</span><span class="ev doc">DOCTRINE</span></div>
+      <div class="p-ess">Read the goal from what the system does, not what it says.</div>
+      <div class="para">Change the goal and everything below bends to it. Corporations say profit; their behaviour says grow and control. And this is the one rung where <b>a single person changes the whole system</b> &mdash; by stating, repeating and insisting on a new goal. In a household or a classroom, that person is just whoever is in charge.</div>
+      <div class="move"><b>Stated:</b> more time with family; exiting teaching is the means. <b>Read from behaviour:</b> what would someone say your goal was, watching a month of your discretionary hours without the explanation?</div>
+      <div class="move">Exiting teaching is one route to family time, not the only one and maybe not the fastest. Give the others a fair hearing or the means stands in for the end for years.</div>
+      <div class="note">A for goal-setting (specific goals direct effort). The behaviour-reading is doctrine &mdash; the same gap <a class="inl" href="./argyris.html">Argyris</a> calls espoused theory vs theory-in-use.</div>
+    </div>
+
+    <!-- RUNG FIVE -->
+    <div class="section-k">Rung five &middot; the mind</div>
+
+    <div class="card violet">
+      <div class="p-head"><span class="p-num">02</span><span class="p-name">The paradigm</span><span class="ev doc">DOCTRINE</span><span class="ev c">C</span></div>
+      <div class="p-ess">The assumptions too deep to bother saying. Goals, rules and loops all grow out of them.</div>
+      <div class="para">Hardest to change in a society; for one person it can happen in a moment. Kuhn's method: <b>keep pointing at the anomalies</b> the old paradigm cannot explain.</div>
+      <div class="move">Under much of your system: the narrative of catching up and not yet being enough, and a second paradigm that every part of life can be optimized. They have built real things. They are still paradigms, and they decide which problems you notice.</div>
+      <div class="move">You already found the anomalies: <b>"not relevant"</b>, and the IMMERSE tag &mdash; a deliberate place where you refuse to measure.</div>
+      <div class="ex"><div class="ex-row"><span class="tag">Room 148</span>"I'm bad at English" drives everything downstream. A pep talk rarely moves it; an anomaly does &mdash; a paragraph they wrote that is undeniably good.</div></div>
+    </div>
+
+    <div class="card violet">
+      <div class="p-head"><span class="p-num">01</span><span class="p-name">Transcending paradigms</span><span class="ev doc">DOCTRINE</span></div>
+      <div class="p-ess">No paradigm is true &mdash; including yours &mdash; and seeing that is funny, not frightening.</div>
+      <div class="para">If none is true, you can choose whichever serves your purpose. "Not relevant" worked where years of labelling did not because it stepped outside the frame instead of arguing inside it. Mushin is the daily practice of the same. <b>Nothing to build here. It is practised, not engineered.</b></div>
+    </div>
+
+    <div class="band vio"><b>Her final caution.</b> The higher the lever, the harder the system resists &mdash; resistance is a sign you are near something real. No cheap tickets to mastery. Her last line: power has less to do with pushing leverage points than with strategically, profoundly letting go.</div>
+
+    <div class="section-k">How to spot one</div>
+    <div class="step"><div class="n">1</div><div><b>Policy resistance.</b> Pushing harder, nothing moves &rarr; you are on a parameter. Climb.</div></div>
+    <div class="step"><div class="n">2</div><div><b>Oscillation.</b> Swings, or rebuilding the same thing &rarr; look for a delay. Shorten it or slow down.</div></div>
+    <div class="step"><div class="n">3</div><div><b>Missing meter.</b> What would change your behaviour if you saw it daily &mdash; and does it reach you?</div></div>
+    <div class="step"><div class="n">4</div><div><b>Goal&ndash;behaviour gap.</b> Stated goal vs the goal the hours actually serve.</div></div>
+    <div class="step"><div class="n">5</div><div><b>Direction.</b> Would your obvious move speed up the loop you are trying to slow? Building a tool to manage your projects is the build loop pushed the wrong way.</div></div>
+
+    <div class="section-k">Where your levers are right now</div>
+    <div class="band"><b>Reasoning, not verified.</b> Claude's read from what you have said, each with what would prove it wrong.</div>
+    <div class="card red">
+      <div class="p-head"><span class="p-num">A</span><span class="p-name">Much of the OS sits at lever 12</span></div>
+      <div class="para">Numbers, thresholds, timers, cue rotations. Careful and not wasted &mdash; but the rung where least changes.</div>
+      <div class="move"><b>Wrong if</b> you can name builds that changed what you do, not how you track it. The likeliest &mdash; exit number, video audit &mdash; are lever 6, which supports the point.</div>
+    </div>
+    <div class="card red">
+      <div class="p-head"><span class="p-num">B</span><span class="p-name">Self-Evidence has no front-hall meter</span></div>
+      <div class="para">Lever 9 delay plus a missing lever 6 flow. The restructures are the shower.</div>
+      <div class="move"><b>Wrong if</b> real people have already been through part of it and their reactions are shaping the rebuilds.</div>
+    </div>
+    <div class="card red">
+      <div class="p-head"><span class="p-num">C</span><span class="p-name">Behaviour often serves "build the system"</span></div>
+      <div class="para">While the stated goal is family time. Lever 3 &mdash; the highest rung one person can move directly, and you are that person.</div>
+      <div class="move"><b>Wrong if</b> an honest week of discretionary hours shows most going to market-tested income work or to your family. <a class="inl" href="./count-the-week.html">Count the Week</a> will tell you.</div>
+    </div>
+    <div class="band"><b>If only one move:</b> put one module in front of five real people before building anything else. It switches on the meter (6), shortens the delay (9), slows the build loop (7) and tests the goal (3) at once.</div>
+
+    <div class="section-k">Weekly practice</div>
+    <div class="para">Inside the existing Sunday review, not a new ritual: one stuck problem through the <b>Lever Audit</b> in the Work tab. What accumulates, what fills it, what drains it, how long the feedback takes, which lever you are pushing by number &mdash; then name what one rung up would look like. You don't have to act on it. After a few weeks the history shows which rung you default to.</div>
+
+    <div class="section-k">Failure modes</div>
+    <div class="card red">
+      <div class="move"><b>Climbing for its own sake.</b> Paradigm talk flatters more than changing a deadline. If it is a parameter, change it and move on.</div>
+      <div class="move"><b>Mapping instead of moving.</b> If the audit takes longer than the fix, it has become the problem.</div>
+      <div class="move"><b>Pushing the right lever backwards.</b> Forrester's warning, and the commonest failure. Check the direction.</div>
+      <div class="move"><b>Running it on people.</b> Diagnosing your daughters', students' or colleagues' paradigms feels clever and damages relationships. Systems you are inside, and yourself.</div>
+      <div class="move"><b>Expecting high levers to be easy.</b> Resistance is a sign you are close, not wrong.</div>
+    </div>
+
+    <div class="band vio"><b>Hands off.</b> <a class="inl" href="./entropy.html">Entropy</a> owns "pushed twice means redesign" and upkeep. <a class="inl" href="./argyris.html">Argyris</a> owns the say/do gap in depth. <a class="inl" href="./shaping-adapting.html">Shaping and Adapting</a> owns predictions and the outside judge. This page is the map of where to push; those are the tools once you know.</div>
+
+    <div class="section-k">Evidence key</div>
+    <div class="key">
+      <b>A</b> &mdash; replicated experiments or meta-analysis, effect holds.<br>
+      <b>B</b> &mdash; good evidence, some contest at the edges.<br>
+      <b>C</b> &mdash; coherent and widely used, thin controlled testing.<br>
+      <b>D</b> &mdash; a story or case report; useful, unmeasured.<br>
+      <b>DOCTRINE</b> &mdash; systems reasoning from modelling and long practice; a strong framework never measured as a whole.
+    </div>
+    <div class="foot">Leverage Points &middot; Forge OS</div>
+  </div>
+
+  <!-- ===================== WORK ===================== -->
+  <div id="work">
+    <h1 style="font-size:21px;">Work</h1>
+    <div class="sub">Three instruments. Each saves to this device only, keeps a running history, and gives you its analysis after you commit the entry &mdash; not before, so the prompts cannot shape what you write.</div>
+
+    <div class="pattern" id="pattern"></div>
+
+    <!-- 1 lever audit -->
+    <div class="tool open" id="t1">
+      <div class="tool-head" onclick="toggleTool('t1')"><div class="tn">1</div><div class="tt">Lever audit</div><div class="cnt" id="c-aud"></div><div class="chev">&#9656;</div></div>
+      <div class="tool-body">
+        <div class="why">One stuck problem. <b>Describe the bathtub first, then say what you are pushing.</b> The analysis names the rung and asks what one rung up would look like.</div>
+        <div class="fl"><label>The stuck problem</label><input type="text" id="aud-prob" placeholder="Self-Evidence keeps getting rebuilt and never shipped"></div>
+        <div class="fl"><label>What accumulates (the stock)</label><div class="hintline">The thing that is too high, too low, or not moving.</div><input type="text" id="aud-stock" placeholder="Finished, tested modules"></div>
+        <div class="twocol">
+          <div class="fl"><label>What fills it</label><textarea id="aud-in" rows="2" placeholder="Summer build hours"></textarea></div>
+          <div class="fl"><label>What drains it</label><textarea id="aud-out" rows="2" placeholder="Restructures that send finished work back"></textarea></div>
+        </div>
+        <div class="fl"><label>The delay</label><div class="hintline">How long between acting and seeing the result? Leave blank if you genuinely do not know &mdash; that is a finding.</div><input type="text" id="aud-delay" placeholder="Unknown &mdash; no one outside has seen it"></div>
+        <div class="fl"><label>What I am currently doing about it</label><textarea id="aud-doing" rows="2" placeholder="Rewriting the module structure again"></textarea></div>
+        <div class="fl"><label>Which lever that is</label>
+          <select id="aud-lever">
+            <option value="">&mdash; choose &mdash;</option>
+            <option value="12">12 &middot; Numbers and parameters</option>
+            <option value="11">11 &middot; Buffers</option>
+            <option value="10">10 &middot; Physical structure</option>
+            <option value="9">9 &middot; Delays</option>
+            <option value="8">8 &middot; Balancing loops</option>
+            <option value="7">7 &middot; Reinforcing loops</option>
+            <option value="6">6 &middot; Information flows</option>
+            <option value="5">5 &middot; Rules</option>
+            <option value="4">4 &middot; Self-organization</option>
+            <option value="3">3 &middot; Goals</option>
+            <option value="2">2 &middot; Paradigm</option>
+            <option value="1">1 &middot; Transcending paradigms</option>
+          </select></div>
+        <div class="fl"><label>Direction check</label><div class="hintline">If what you are doing worked perfectly, what happens to the loop that keeps producing the problem?</div>
+          <select id="aud-dir">
+            <option value="">&mdash; choose &mdash;</option>
+            <option value="slow">It slows or breaks that loop</option>
+            <option value="none">It treats the symptom; the loop is untouched</option>
+            <option value="speed">It probably feeds that loop</option>
+            <option value="unsure">Not sure</option>
+          </select></div>
+        <div class="toolbar"><button class="sbtn" onclick="saveAud()">Save &amp; analyse</button><button class="sbtn ghost" onclick="clearForm('aud',true)">Clear</button></div>
+        <div class="analysis" id="a-aud"></div>
+        <div class="hist" id="h-aud"></div>
+      </div>
+    </div>
+
+    <!-- 2 missing meter -->
+    <div class="tool teal" id="t2">
+      <div class="tool-head" onclick="toggleTool('t2')"><div class="tn">2</div><div class="tt">Missing meter</div><div class="cnt" id="c-met"></div><div class="chev">&#9656;</div></div>
+      <div class="tool-body">
+        <div class="why">Lever 6, the cheap one. <b>Find the information that would change a decision if you saw it daily</b>, and where it lives now. Basement or front hall?</div>
+        <div class="fl"><label>The decision or behaviour</label><input type="text" id="met-dec" placeholder="What I build next for the course"></div>
+        <div class="fl"><label>The information that would change it</label><textarea id="met-info" rows="2" placeholder="Whether five real people finish Module 1, and where they stall"></textarea></div>
+        <div class="fl"><label>Where it lives now</label>
+          <select id="met-where">
+            <option value="">&mdash; choose &mdash;</option>
+            <option value="none">Nowhere &mdash; nobody collects it</option>
+            <option value="basement">It exists, but I have to go looking</option>
+            <option value="late">It reaches me, but too late to act on</option>
+            <option value="hall">Already in the front hall</option>
+          </select></div>
+        <div class="fl"><label>How to put it in the front hall</label><div class="hintline">The place where the decision is actually made, in a form that compels.</div><textarea id="met-how" rows="2" placeholder=""></textarea></div>
+        <div class="toolbar"><button class="sbtn" onclick="saveMet()">Save &amp; analyse</button><button class="sbtn ghost" onclick="clearForm('met',true)">Clear</button></div>
+        <div class="analysis" id="a-met"></div>
+        <div class="hist" id="h-met"></div>
+      </div>
+    </div>
+
+    <!-- 3 goal from behaviour -->
+    <div class="tool violet" id="t3">
+      <div class="tool-head" onclick="toggleTool('t3')"><div class="tn">3</div><div class="tt">Goal from behaviour</div><div class="cnt" id="c-gol"></div><div class="chev">&#9656;</div></div>
+      <div class="tool-body">
+        <div class="why">Lever 3. <b>State the goal, then list where the hours went, then say what goal those hours serve</b> &mdash; as if you were watching someone else. Use <a class="inl" href="./count-the-week.html">Count the Week</a> figures if you have them.</div>
+        <div class="fl"><label>Stated goal</label><input type="text" id="gol-said" placeholder="More time with my family"></div>
+        <div class="fl"><label>Where the discretionary hours actually went</label><div class="hintline">Past week or fortnight. Numbers if you have them.</div><textarea id="gol-hours" rows="4" placeholder="Building pages ~6h, course rewrite 2h, kids' practice 3h&hellip;"></textarea></div>
+        <div class="fl"><label>The goal those hours serve, read cold</label><textarea id="gol-read" rows="2" placeholder=""></textarea></div>
+        <div class="fl"><label>Match?</label>
+          <select id="gol-match">
+            <option value="">&mdash; choose &mdash;</option>
+            <option value="yes">Mostly the same goal</option>
+            <option value="part">Partly</option>
+            <option value="no">Different goal</option>
+          </select></div>
+        <div class="toolbar"><button class="sbtn" onclick="saveGol()">Save &amp; analyse</button><button class="sbtn ghost" onclick="clearForm('gol',true)">Clear</button></div>
+        <div class="analysis" id="a-gol"></div>
+        <div class="hist" id="h-gol"></div>
+      </div>
+    </div>
+    <div class="foot">Leverage Points &middot; Work</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h1 style="font-size:20px;">Name the lever</h1>
+    <div class="sub">Recognition, not recall. A situation from your week. Name which lever is being pushed &mdash; and whether it is being pushed the wrong way &mdash; before revealing. Ten per round, shuffled.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Done</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn ghost" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  document.getElementById('read').style.display  = (m==='read')  ? 'block' : 'none';
+  document.getElementById('work').style.display  = (m==='work')  ? 'block' : 'none';
+  document.getElementById('drill').style.display = (m==='drill') ? 'block' : 'none';
+  document.getElementById('tab-read').className  = (m==='read')  ? 'on' : '';
+  document.getElementById('tab-work').className  = (m==='work')  ? 'on' : '';
+  document.getElementById('tab-drill').className = (m==='drill') ? 'on' : '';
+  if(m==='drill'){ restart(); }
+  if(m==='work'){ renderAll(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- ladder overview ---------------- */
+var LEVERS = {
+  12:{n:'Numbers and parameters', r:1, up:'Is this number near a threshold? If not, what is the buffer or structure behind it?'},
+  11:{n:'Buffers', r:1, up:'Is the buffer the wrong size, or is the work scheduled as if it were lake-time when it is river-time?'},
+  10:{n:'Physical structure', r:1, up:'When is the next moment this structure is cheap to change &mdash; and what delay or loop runs through it now?'},
+  9: {n:'Delays', r:2, up:'Can the delay be shortened? If not, can you slow your own rate of change to match it?'},
+  8: {n:'Balancing loops', r:2, up:'Is the brake weak, or is a reinforcing loop driving harder than any brake can? Lower that gain instead.'},
+  7: {n:'Reinforcing loops', r:2, up:'What information would make this loop visible where the decision is made?'},
+  6: {n:'Information flows', r:3, up:'Is there a rule that would force this information into view, or route effort by it?'},
+  5: {n:'Rules', r:3, up:'Who writes this rule &mdash; and could the system learn to change its own rules (an action-research cycle)?'},
+  4: {n:'Self-organization', r:4, up:'What goal is the self-organizing serving? Read it from behaviour, not intent.'},
+  3: {n:'Goals', r:4, up:'What assumption would have to be true for this goal to be the right one?'},
+  2: {n:'Paradigm', r:5, up:'Hold it lightly: which paradigm would serve the purpose better here?'},
+  1: {n:'Transcending paradigms', r:5, up:'Nothing above this. Practise it, do not engineer it.'}
+};
+var RUNG = {1:'Physical',2:'Timing &amp; loops',3:'Information &amp; rules',4:'Design &amp; goals',5:'Mind'};
+var RCOL = {1:'rgba(234,244,255,.45)',2:'#3fd0c0',3:'#7fbfff',4:'#b48cff',5:'#d4bcff'};
+function paintLadder(){
+  var h='';
+  for(var k=12;k>=1;k--){
+    var L=LEVERS[k];
+    h+='<div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-top:1px solid var(--line);font-size:13.5px;">'
+      +'<span style="flex:0 0 26px;font-weight:800;color:'+RCOL[L.r]+';">'+k+'</span>'
+      +'<span style="flex:1;">'+L.n+'</span>'
+      +'<span style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:'+RCOL[L.r]+';">'+RUNG[L.r]+'</span></div>';
+  }
+  h+='<div class="note">Weakest at the top of this list, strongest at the bottom. Roughly 99% of attention goes to the first three.</div>';
+  document.getElementById('ladder').innerHTML=h;
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-leverage-points';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- work store ---------------- */
+var WKEY='forge-leverage-points-work';
+function store(){ try{ var v=JSON.parse(localStorage.getItem(WKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function put(s){ try{ localStorage.setItem(WKEY, JSON.stringify(s)); }catch(e){ alert('Could not save on this device.'); } }
+function list(k){ var s=store(); return Array.isArray(s[k])?s[k]:[]; }
+function push(k,rec){ var s=store(); if(!Array.isArray(s[k])) s[k]=[]; rec.d=new Date().toISOString(); rec.id=Date.now()+'-'+Math.floor(Math.random()*1e4); s[k].unshift(rec); put(s); }
+function drop(k,id){ var s=store(); if(!Array.isArray(s[k])) return; s[k]=s[k].filter(function(r){ return r.id!==id; }); put(s); renderAll(); }
+function val(id){ var e=document.getElementById(id); return e?(e.value||'').trim():''; }
+function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fdate(iso){ try{ var d=new Date(iso); return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}); }catch(e){ return ''; } }
+function toggleTool(id){ var el=document.getElementById(id); el.className = el.className.indexOf('open')>-1 ? el.className.replace(' open','') : el.className+' open'; }
+var FORMS={ aud:['aud-prob','aud-stock','aud-in','aud-out','aud-delay','aud-doing','aud-lever','aud-dir'],
+  met:['met-dec','met-info','met-where','met-how'], gol:['gol-said','gol-hours','gol-read','gol-match'] };
+function clearForm(p, hideAnalysis){
+  (FORMS[p]||[]).forEach(function(i){ var e=document.getElementById(i); if(e) e.value=''; });
+  if(hideAnalysis){ var a=document.getElementById('a-'+p); if(a) a.className='analysis'; }
+}
+function showA(p, html){ var a=document.getElementById('a-'+p); a.innerHTML=html; a.className='analysis on'; }
+function ah(t){ return '<div class="ah">'+t+'</div>'; }
+function aq(t){ return '<div class="aq">'+t+'</div>'; }
+function flag(t,ok){ return '<div class="flag'+(ok?' ok':'')+'">'+t+'</div>'; }
+
+/* ---------------- 1 lever audit ---------------- */
+function saveAud(){
+  var rec={prob:val('aud-prob'),stock:val('aud-stock'),inn:val('aud-in'),out:val('aud-out'),delay:val('aud-delay'),
+    doing:val('aud-doing'),lever:val('aud-lever'),dir:val('aud-dir')};
+  if(!rec.prob){ alert('Name the stuck problem first.'); return; }
+  push('aud',rec);
+  var h=ah('Now the analysis'), lv=parseInt(rec.lever,10), L=LEVERS[lv];
+  if(!rec.stock) h+=flag('No stock named. Without the thing that accumulates, you are describing activity, not a system. What would you measure to know it got better?');
+  if(!rec.delay) h+=flag('No delay noted. If you genuinely don&rsquo;t know how long feedback takes, <b>that is the finding</b> &mdash; you may be turning the tap before the water arrives (lever 9).');
+  if(!L) h+=flag('No lever chosen. Pick the closest one &mdash; naming the rung is the whole instrument.');
+  else {
+    if(lv>=10) h+=flag('Lever '+lv+' &mdash; '+L.n+'. The physical rung, where Meadows says least changes. Not wrong; just check you are not on your third pass at it.');
+    else if(lv>=7) h+=flag('Lever '+lv+' &mdash; '+L.n+'. Timing and loops: real leverage, usually slower to show than you expect.',true);
+    else h+=flag('Lever '+lv+' &mdash; '+L.n+'. High on the list. Expect resistance &mdash; it means you are close, not wrong.',true);
+    h+=aq('<b>One rung up:</b> '+L.up);
+  }
+  if(rec.dir==='speed') h+=flag('<b>Pushing backwards.</b> Forrester&rsquo;s warning: the right point, pushed the wrong way. What would the opposite move look like?');
+  if(rec.dir==='none') h+=aq('It treats the symptom. <b>Which loop keeps refilling this?</b> Name it as &ldquo;the more ___, the more ___&rdquo;.');
+  if(rec.dir==='unsure'||!rec.dir) h+=aq('Direction unchecked. <b>If this worked perfectly, would the problem be gone &mdash; or back next term in a new shape?</b>');
+  if(rec.dir==='slow') h+=flag('Aimed at the loop, not the symptom. Now check the delay: when will you know it worked?',true);
+  if(rec.out && rec.inn) h+=aq('You named both flows. <b>Which is cheaper to change</b> &mdash; slowing the drain, or opening the faucet? People nearly always push the faucet.');
+  h+=aq('Do you need to act on this today? Naming the rung is enough for the Sunday review.');
+  showA('aud',h); clearForm('aud'); renderAll();
+}
+
+/* ---------------- 2 missing meter ---------------- */
+function saveMet(){
+  var rec={dec:val('met-dec'),info:val('met-info'),where:val('met-where'),how:val('met-how')};
+  if(!rec.dec||!rec.info){ alert('Name the decision and the information.'); return; }
+  push('met',rec);
+  var h=ah('Now the analysis');
+  if(rec.where==='none') h+=flag('Nobody collects it. This is the commonest cause of a broken system, and the cheapest to fix &mdash; far cheaper than rebuilding anything.');
+  if(rec.where==='basement') h+=flag('Basement meter. It exists but has to be fetched &mdash; so it is fetched rarely, and never at the moment of decision.');
+  if(rec.where==='late') h+=flag('Arrives too late: this is a delay (lever 9) as much as a missing flow. Look for a smaller, earlier version of the same signal &mdash; an exit ticket, not a report card.');
+  if(rec.where==='hall') h+=flag('Already in view. Then ask why behaviour has not moved: the information may be visible but not <b>compelling</b>.',true);
+  if(!rec.how) h+=aq('You left the &ldquo;how&rdquo; blank. One concrete placement: <b>where are you standing when this decision gets made?</b> Put it there.');
+  else h+=aq('Check it compels: would seeing it <b>cost you something</b> if you ignored it? The intake pipe goes downstream of the outflow.');
+  h+=aq('Is the information about <b>you</b>, or about the people the decision affects? Self-data is rarely the missing meter.');
+  showA('met',h); clearForm('met'); renderAll();
+}
+
+/* ---------------- 3 goal from behaviour ---------------- */
+function saveGol(){
+  var rec={said:val('gol-said'),hours:val('gol-hours'),read:val('gol-read'),match:val('gol-match')};
+  if(!rec.said||!rec.hours){ alert('State the goal and where the hours went.'); return; }
+  push('gol',rec);
+  var h=ah('Now the analysis');
+  if(!/\d/.test(rec.hours)) h+=flag('No numbers in the hours. Memory of where time went is itself a story &mdash; <b>Count the Week</b> exists for exactly this.');
+  if(!rec.read) h+=flag('You did not write the goal the hours serve. That blank is the instrument &mdash; write it badly rather than not at all.');
+  if(rec.match==='no') h+=flag('A different goal. This is lever 3, the highest one where one person moves the whole system &mdash; and you are that person. Restate the real goal out loud this week.');
+  if(rec.match==='part') h+=aq('Partly. <b>Which single block of hours</b> serves the other goal &mdash; and what would replace it?');
+  if(rec.match==='yes') h+=flag('Matching. Keep the record &mdash; a match you can show is worth more than one you feel.',true);
+  h+=aq('Is your stated goal the end, or a means to it? <b>What else would deliver the end?</b>');
+  showA('gol',h); clearForm('gol'); renderAll();
+}
+
+/* ---------------- history + pattern ---------------- */
+function histHTML(k, rows, fmt){
+  if(!rows.length) return '<div class="hist-k">History</div><div class="empty">No entries yet.</div>';
+  var h='<div class="hist-k">History &middot; '+rows.length+'</div>';
+  rows.forEach(function(r){
+    h+='<div class="entry"><div class="edate"><span>'+fdate(r.d)+'</span><span class="del" onclick="if(confirm(\'Delete this entry?\'))drop(\''+k+'\',\''+r.id+'\')">&times;</span></div>'+fmt(r)+'</div>';
+  });
+  return h;
+}
+function er(l,t){ return t?'<div class="erow"><span class="el">'+l+'</span>'+esc(t)+'</div>':''; }
+function renderAll(){
+  var A=list('aud'), M=list('met'), G=list('gol');
+  document.getElementById('c-aud').textContent=A.length?A.length:'';
+  document.getElementById('c-met').textContent=M.length?M.length:'';
+  document.getElementById('c-gol').textContent=G.length?G.length:'';
+  document.getElementById('h-aud').innerHTML=histHTML('aud',A,function(r){
+    var L=LEVERS[parseInt(r.lever,10)];
+    return er('Problem',r.prob)+er('Stock',r.stock)+er('Delay',r.delay)+er('Doing',r.doing)+(L?er('Lever',r.lever+' · '+L.n):'')+er('Direction',r.dir);
+  });
+  document.getElementById('h-met').innerHTML=histHTML('met',M,function(r){ return er('Decision',r.dec)+er('Information',r.info)+er('Lives',r.where)+er('Front hall',r.how); });
+  document.getElementById('h-gol').innerHTML=histHTML('gol',G,function(r){ return er('Stated',r.said)+er('Hours',r.hours)+er('Read cold',r.read)+er('Match',r.match); });
+  var p=document.getElementById('pattern');
+  var counts={1:0,2:0,3:0,4:0,5:0}, n=0, back=0;
+  A.forEach(function(r){ var L=LEVERS[parseInt(r.lever,10)]; if(L){ counts[L.r]++; n++; } if(r.dir==='speed') back++; });
+  if(n<3){ p.innerHTML='<b>Your default rung</b> appears here after three audits with a lever chosen. '+(n?('So far: '+n+'.'):''); return; }
+  var top=1; for(var r=2;r<=5;r++){ if(counts[r]>counts[top]) top=r; }
+  var h='<b>Your default rung:</b> '+RUNG[top]+' &mdash; '+counts[top]+' of '+n+' audits.';
+  if(top===1) h+=' Mostly the physical rung. That is the bottom of the list; the next audit, deliberately try one rung up.';
+  if(back) h+='<br><b>Pushed backwards:</b> '+back+' time'+(back===1?'':'s')+'.';
+  p.innerHTML=h;
+}
+
+/* ---------------- drill ---------------- */
+var POOL = [
+  { prompt:'Third evening adjusting the mushin timer threshold and the reminder time. <b>Which lever?</b>',
+    lines:['<b>12 &mdash; a parameter.</b> And the third pass is the signal.','Pushed twice means redesign. Climb a rung: what would change whether you sit down at all?'] },
+  { prompt:'You schedule a course module rewrite for term-time Tuesday evenings, after night class.',
+    lines:['<b>11 &mdash; a buffer mismatch.</b> River-time scheduled as lake-time.','Continuity work goes to the summer lake. Term gets interruptible pieces.'] },
+  { prompt:'Self-Evidence gets restructured again. No one outside the house has seen the last version.',
+    lines:['<b>9 &mdash; delay.</b> Turning the shower tap before the water arrives. Also a missing <b>6</b>.','Shorten the delay (five real people) or slow the rebuilds. Ideally both.'] },
+  { prompt:'You find out in the November report-card run that a third of the class lost the thread in September.',
+    lines:['<b>9 &mdash; delay.</b> The feedback took two months.','The fix is a shorter loop &mdash; exit tickets &mdash; not harder marking in November.'] },
+  { prompt:'Mid-October, three courses running, and you skip the Sunday review &ldquo;just this week&rdquo; because nothing is on fire.',
+    lines:['<b>8 &mdash; stripping a balancing loop.</b> Meadows&rsquo; exact warning: cut because it looks costly and rarely fires.','Protect it hardest exactly when it seems least necessary.'] },
+  { prompt:'Building a project-management page to stop yourself starting too many projects.',
+    lines:['<b>7 &mdash; the build loop, pushed backwards.</b> The fix is another build.','Lower the gain with a rule instead: a new build retires an old one.'] },
+  { prompt:'The same two students answer every question; the quiet ones are further behind each week.',
+    lines:['<b>7 &mdash; success to the successful.</b>','Lower the gain: cold-call, think-pair-share, wait time. Do not just add remedial brakes.'] },
+  { prompt:'Substack stays paused another month while the course gets polished.',
+    lines:['<b>7 &mdash; a reinforcing loop never switched on.</b> The audience loop compounds only once someone outside is in it.','Every month paused is a month of compounding that did not start.'] },
+  { prompt:'You move the exit number onto the morning brief, where you see it every day.',
+    lines:['<b>6 &mdash; a front-hall meter.</b> Information delivered where the decision is made.','This is the lever you already pull well. Where else is the meter still in the basement?'] },
+  { prompt:'You have nightly HRV, sleep and task data &mdash; and zero reactions from anyone the course is for.',
+    lines:['<b>6 &mdash; the missing meter.</b> Rich self-data is not the missing flow.','Ask whose reaction would change the next build, and get it into view.'] },
+  { prompt:'A tally on the board of who has spoken today.',
+    lines:['<b>6 &mdash; information flow.</b> A meter for them and for you.','No rule, no punishment &mdash; just visibility.'] },
+  { prompt:'&ldquo;No new module until five real people have finished Module 1.&rdquo;',
+    lines:['<b>5 &mdash; a rule</b> that forces lever 6 on.','Rules beat effort because they take the decision out of the moment.'] },
+  { prompt:'You let students resubmit a good copy for a higher mark, and drafts get noticeably better.',
+    lines:['<b>5 &mdash; a rule of the system.</b> The grading rule moved behaviour more than any instruction.','Who writes the rules in Room 148? More of them than you think are yours.'] },
+  { prompt:'Every problem this month became a protocol page with a card on the list.',
+    lines:['<b>4 &mdash; a single culture</b> in the self-organizing loop.','Variety is the raw material. Sometimes the answer is a conversation, or not building.'] },
+  { prompt:'Running a four-week cycle on the course where the observations come from five strangers, not your own readings.',
+    lines:['<b>4 &mdash; self-organization done right.</b> Variety plus outside selection.','Action research pointed at the income problem itself.'] },
+  { prompt:'Asked what you want: more family time. A month of your evenings says: build and refine the system.',
+    lines:['<b>3 &mdash; the goal, read from behaviour.</b>','Highest rung one person can move directly. You are that person.'] },
+  { prompt:'&ldquo;Exiting teaching is the only way to get more time with them.&rdquo;',
+    lines:['<b>3 &mdash; a means standing in for the end.</b>','The end is the time. Give other routes a fair hearing.'] },
+  { prompt:'The unit is on track &mdash; every lesson delivered on schedule &mdash; but the paragraphs haven&rsquo;t improved.',
+    lines:['<b>3 &mdash; the goal drifted</b> to &ldquo;get through the material&rdquo;.','Read the unit&rsquo;s goal from what it rewards, not from the plan.'] },
+  { prompt:'A student says &ldquo;I&rsquo;m bad at English&rdquo; and stops trying, which confirms it.',
+    lines:['<b>2 &mdash; a paradigm.</b>','Not a pep talk &mdash; an anomaly: a paragraph of theirs that is undeniably good.'] },
+  { prompt:'The background hum that you are behind, catching up, not yet enough.',
+    lines:['<b>2 &mdash; the paradigm under much of the system.</b>','Kuhn: keep pointing at the anomalies. &ldquo;Not relevant&rdquo; and IMMERSE are two.'] },
+  { prompt:'An optimization thought arrives during time with your daughters. You let it pass without arguing.',
+    lines:['<b>1 &mdash; stepping outside the frame.</b> Denying it authority, not debating it.','Practised, not engineered.'] },
+  { prompt:'You move a due date by one day. The class does about the same.',
+    lines:['<b>12 &mdash; a parameter, nowhere near a threshold.</b>','Fine to do. Not where a stuck class gets unstuck.'] },
+  { prompt:'The marking deadline lands the night before a ringette tournament weekend.',
+    lines:['<b>12 &mdash; but near a threshold.</b> This is the exception where a number matters.','Move it. Then check what structure (10) keeps putting deadlines there.'] },
+  { prompt:'Rearranging the Room 148 desks at the start of a new unit so partners can actually talk.',
+    lines:['<b>10 &mdash; structure, changed at a cheap moment.</b>','Mid-unit it would cost twice as much. Use the starts.'] },
+  { prompt:'You are pushing hard on something and nothing moves. What is the question?',
+    lines:['<b>Which rung am I on &mdash; and can I go up one?</b>','Policy resistance almost always means a parameter, with the cause further up.'] }
+];
+var ROUND=10, STEPS=[], idx=0, revealed=false;
+var ONE = POOL[POOL.length-1];
+function startRound(){
+  var a=POOL.slice(0,POOL.length-1);
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+  STEPS=a.slice(0,ROUND-1); STEPS.push(ONE); idx=0;
+}
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Name the lever &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar"><button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button></div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  startRound();
+  document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display='flex'; document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+var DKEY='forge-leverage-points-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=ymd(new Date()); if(s.last===t) return s;
+  s.streak=(s.last===ymd(new Date(Date.now()-86400000)))?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+paintLadder();
+loadPhoto();
+startRound();
+renderAll();
+</script>
+</body>
+</html>
