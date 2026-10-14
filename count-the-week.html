@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Count the Week</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0; --violet:#b48cff; --red:#ff8a8a; --green:#6fe3a0;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; white-space:nowrap; }
+  .toggle{ display:flex; gap:3px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; flex:0 1 auto; min-width:0; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12px; font-weight:800; letter-spacing:.06em; text-transform:uppercase;
+    padding:8px 12px; border-radius:999px; cursor:pointer; white-space:nowrap; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:14px; line-height:1.5; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:12px 14px; font-size:13.5px; line-height:1.55; margin-bottom:14px; }
+  .band b{ color:var(--gold); }
+  .band.v{ background:rgba(180,140,255,.10); border-left-color:var(--violet); } .band.v b{ color:#cdb4ff; }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:150px; border-radius:16px; overflow:hidden; margin-bottom:16px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; } .photo.set .ph-hint{ display:none; }
+
+  #week, #setup{ display:none; }
+  .k{ font-size:10.5px; letter-spacing:.22em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:14px 0 7px; }
+  .k.work{ color:var(--accent-hi); } .k.home{ color:var(--teal); } .k.self{ color:var(--violet); }
+  .grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
+  .cat{ border:1px solid var(--line); background:rgba(9,36,80,.45); color:var(--ink); font-size:12.5px; font-weight:700; line-height:1.25;
+    padding:10px 8px; border-radius:12px; cursor:pointer; min-height:48px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:3px; }
+  .cat small{ font-size:10.5px; color:var(--ink-quiet); font-weight:800; letter-spacing:.04em; }
+  .cat.on{ background:var(--accent); color:#06264f; border-color:var(--accent); } .cat.on small{ color:#06264f; }
+  .cat.work.on{ background:var(--accent-hi); } .cat.home.on{ background:var(--teal); } .cat.self.on{ background:var(--violet); }
+  .pick{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--gold); border-radius:14px; padding:13px 14px; margin:14px 0; }
+  .pick .nm{ font-size:16px; font-weight:700; margin-bottom:8px; }
+  .pick .nm span{ color:var(--ink-quiet); font-weight:400; font-size:13px; }
+  .chips{ display:grid; grid-template-columns:repeat(6,1fr); gap:6px; }
+  .chip{ border:1px solid var(--line); background:rgba(9,36,80,.55); color:var(--ink); font-size:13px; font-weight:800; min-height:44px; border-radius:10px; cursor:pointer; }
+  .chip:active{ background:var(--gold); color:#06264f; }
+  .row2{ display:flex; gap:8px; margin-top:8px; }
+  .row2 input{ flex:1; min-width:0; background:rgba(9,36,80,.55); border:1px solid var(--line); border-radius:10px; color:var(--ink); font-size:15px; padding:11px 12px; font-family:inherit; -webkit-appearance:none; appearance:none; }
+  .row2 input:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .row2 input.min{ flex:0 0 92px; width:92px; min-width:0; }
+  .ibtn{ border:0; border-radius:999px; padding:11px 18px; font-size:13px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; white-space:nowrap; }
+  .ibtn.ghost{ background:rgba(9,36,80,.55); color:#fff; border:1px solid var(--line); }
+  .ibtn.sm{ padding:9px 13px; font-size:11.5px; }
+  .toast{ position:fixed; left:50%; bottom:calc(24px + env(safe-area-inset-bottom)); transform:translateX(-50%) translateY(20px); background:var(--gold); color:#06264f;
+    font-weight:800; font-size:13px; letter-spacing:.06em; padding:11px 18px; border-radius:999px; opacity:0; transition:opacity .2s, transform .2s; pointer-events:none; z-index:9; }
+  .toast.on{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .stat{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:12px 0 2px; }
+  .stat .box{ background:rgba(9,36,80,.45); border:1px solid var(--line); border-radius:12px; padding:10px 12px; min-width:0; }
+  .stat .box .v{ font-size:22px; font-weight:300; letter-spacing:-.01em; } .stat .box .v small{ font-size:12px; color:var(--ink-quiet); font-weight:700; }
+  .stat .box .l{ font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; margin-top:2px; }
+  .hist{ margin-top:12px; border-top:1px solid var(--line); padding-top:8px; }
+  .hrow{ display:flex; align-items:center; gap:10px; font-size:13.5px; padding:7px 0; border-bottom:1px solid rgba(122,175,255,.10); }
+  .hrow:last-child{ border-bottom:0; }
+  .hrow .d{ flex:0 0 46px; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; }
+  .hrow .c{ flex:1; min-width:0; } .hrow .c i{ color:var(--ink-quiet); font-style:normal; font-size:12.5px; }
+  .hrow .m{ flex:0 0 auto; font-weight:700; color:var(--accent-hi); }
+  .hrow .del{ border:0; background:transparent; color:var(--ink-quiet); font-size:19px; cursor:pointer; line-height:1; min-width:40px; min-height:40px; display:flex; align-items:center; justify-content:center; border-radius:10px; margin:-6px -8px -6px 0; }
+  .empty{ font-size:13px; color:var(--ink-quiet); line-height:1.5; padding:10px 0; }
+
+  /* week */
+  .wnav{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin:4px 0 10px; }
+  .wnav button{ border:1px solid var(--line); background:rgba(9,36,80,.45); color:var(--ink); min-width:44px; min-height:44px; border-radius:12px; font-size:18px; cursor:pointer; }
+  .wnav .t{ font-size:14px; font-weight:700; text-align:center; } .wnav .t small{ display:block; font-size:11px; color:var(--ink-quiet); font-weight:800; letter-spacing:.1em; text-transform:uppercase; margin-top:2px; }
+  .tbl .r{ display:grid; grid-template-columns:1fr 58px 58px 58px; gap:6px; align-items:center; padding:7px 0; border-bottom:1px solid rgba(122,175,255,.10); font-size:13.5px; }
+  .tbl .r.h{ font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; border-bottom:1px solid var(--line); }
+  .tbl .r .n{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .tbl .r .bar{ height:5px; background:rgba(9,36,80,.6); border-radius:999px; margin-top:4px; position:relative; overflow:visible; }
+  .tbl .r .bar i{ position:absolute; left:0; top:0; bottom:0; background:var(--accent); border-radius:999px; }
+  .tbl .r .bar u{ position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--gold); }
+  .tbl .r input{ width:100%; background:rgba(9,36,80,.55); border:1px solid var(--line); border-radius:8px; color:var(--gold); font-size:14px; padding:8px 4px; text-align:center; font-family:inherit; -webkit-appearance:none; appearance:none; min-height:40px; }
+  .tbl .r .a{ text-align:center; font-weight:700; color:var(--accent-hi); }
+  .tbl .r .g{ text-align:center; font-weight:800; font-size:12.5px; }
+  .g.over{ color:var(--red); } .g.under{ color:var(--green); } .g.zero{ color:var(--ink-quiet); }
+  .tbl .r.tot{ border-top:1px solid var(--line); border-bottom:0; font-weight:700; }
+  .tbl .r.tot .a, .tbl .r.tot .g{ font-size:14px; }
+  .four{ margin-top:14px; }
+  .four .r{ display:grid; grid-template-columns:1fr 52px 52px 52px 52px; gap:6px; font-size:12.5px; padding:6px 0; border-bottom:1px solid rgba(122,175,255,.10); align-items:center; }
+  .four .r.h{ font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; }
+  .four .r .n{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .four .r .v{ text-align:center; color:var(--ink-dim); } .four .r .v.now{ color:var(--accent-hi); font-weight:700; }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+
+  /* setup */
+  .srow{ display:flex; gap:8px; align-items:center; padding:7px 0; border-bottom:1px solid rgba(122,175,255,.10); }
+  .srow input.nm{ flex:1; min-width:0; background:rgba(9,36,80,.55); border:1px solid var(--line); border-radius:8px; color:var(--ink); font-size:14px; padding:9px 10px; font-family:inherit; min-height:40px; }
+  .srow select{ flex:0 0 78px; background:rgba(9,36,80,.55); border:1px solid var(--line); border-radius:8px; color:var(--ink); font-size:13px; padding:8px 6px; font-family:inherit; -webkit-appearance:none; appearance:none; min-height:40px; }
+  .srow input.gs{ flex:0 0 58px; width:58px; min-width:0; background:rgba(9,36,80,.55); border:1px solid var(--line); border-radius:8px; color:var(--gold); font-size:14px; padding:8px 4px; text-align:center; font-family:inherit; min-height:40px; -webkit-appearance:none; appearance:none; }
+  .srow .mv{ border:1px solid var(--line); background:rgba(9,36,80,.45); color:var(--ink); min-width:40px; min-height:40px; border-radius:8px; cursor:pointer; font-size:15px; }
+  .srow .del{ border:0; background:transparent; color:var(--ink-quiet); font-size:19px; min-width:40px; min-height:40px; border-radius:8px; cursor:pointer; }
+  .ibtn:focus-visible, .toggle button:focus-visible, .cat:focus-visible, .chip:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; <span>Protocols</span></a>
+    <div class="toggle">
+      <button id="tab-log" class="on" onclick="setMode('log')">Log</button>
+      <button id="tab-week" onclick="setMode('week')">Week</button>
+      <button id="tab-setup" onclick="setMode('setup')">Setup</button>
+    </div>
+  </div>
+
+  <!-- ===================== LOG ===================== -->
+  <div id="log">
+    <h1>Count the Week</h1>
+    <div class="sub">Where the hours actually go. Tap what you just did, tap how long. No plan, no judgement, no right-hand column &mdash; just the number. The guess sits beside it on the Week tab.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="band"><b>The method.</b> One week, every hour, fifteen-minute blocks, counted as it happens or at the end of each day. Then the assumed figure beside the measured one. The gap is the finding; it is usually the only one you need. Skill 1 of <a href="./think-like-boyd.html" style="color:var(--gold);font-weight:800;text-decoration:none">Think Like Boyd</a>; the number behind Work Efficiency.</div>
+
+    <div class="pick" id="pick">
+      <div class="nm" id="pick-nm">Tap a category below</div>
+      <div class="chips" id="chips"></div>
+      <div class="row2">
+        <input id="note" placeholder="Note (optional)" autocomplete="off">
+        <input id="min" class="min" type="number" inputmode="numeric" placeholder="min">
+        <button class="ibtn sm" onclick="saveCustom()">Save</button>
+      </div>
+    </div>
+
+    <div id="cats"></div>
+
+    <div class="stat">
+      <div class="box"><div class="v" id="s-today">0<small>h</small></div><div class="l">Today</div></div>
+      <div class="box"><div class="v" id="s-week">0<small>h</small></div><div class="l">This week</div></div>
+      <div class="box"><div class="v" id="s-n">0</div><div class="l">Entries</div></div>
+    </div>
+    <div class="hist" id="hist"></div>
+  </div>
+
+  <!-- ===================== WEEK ===================== -->
+  <div id="week">
+    <h1>Week</h1>
+    <div class="sub">Assumed beside measured. The gold mark is what you guessed; the bar is what happened. Edit a guess by tapping it; new weeks start from your standing guesses in Setup.</div>
+    <div class="wnav">
+      <button onclick="shiftWeek(-1)" aria-label="Previous week">&lsaquo;</button>
+      <div class="t" id="w-title"></div>
+      <button onclick="shiftWeek(1)" aria-label="Next week">&rsaquo;</button>
+    </div>
+    <div class="stat">
+      <div class="box"><div class="v" id="w-logged">0<small>h</small></div><div class="l">Logged</div></div>
+      <div class="box"><div class="v" id="w-unlogged">168<small>h</small></div><div class="l">Unlogged</div></div>
+      <div class="box"><div class="v" id="w-gap">&ndash;</div><div class="l">Guess error</div></div>
+    </div>
+    <div class="tbl" id="w-tbl"></div>
+    <div class="note">Guess error is the sum of the absolute gaps across categories, in hours. Unlogged is 168 minus everything logged: the week you didn't count.</div>
+    <div class="four" id="w-four"></div>
+    <div class="row2" style="margin-top:14px"><button class="ibtn ghost sm" onclick="exportCSV()">Export CSV</button><button class="ibtn ghost sm" onclick="copyWeekGuess()">Copy standing guesses into this week</button></div>
+  </div>
+
+  <!-- ===================== SETUP ===================== -->
+  <div id="setup">
+    <h1>Setup</h1>
+    <div class="sub">Your typical week. Rename, move, delete, add. The standing guess is hours per week; it pre-fills each new week and you can override it there.</div>
+    <div class="band v"><b>Bands.</b> Work, Home, Self &mdash; they only group the grid so it stays scannable. Nothing is scored by band.</div>
+    <div id="s-list"></div>
+    <div class="row2" style="margin-top:12px">
+      <input id="s-new" placeholder="New category" autocomplete="off">
+      <select id="s-band" style="flex:0 0 90px;background:rgba(9,36,80,.55);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-size:14px;padding:10px 8px;font-family:inherit;-webkit-appearance:none;appearance:none"><option>work</option><option>home</option><option>self</option></select>
+      <button class="ibtn sm" onclick="addCat()">Add</button>
+    </div>
+    <div class="note">Deleting a category keeps its past entries in the export under its old name. Everything on this page stays on this device.</div>
+    <div class="row2" style="margin-top:14px"><button class="ibtn ghost sm" onclick="resetCats()">Restore default categories</button></div>
+  </div>
+
+  <div class="foot">Forge OS &middot; Count the Week &middot; on-device only</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+/* ---------------- defaults ---------------- */
+var DEFAULTS=[
+  ['Teaching blocks','work',19],['Prep','work',5],['Marking','work',6],['Supplemental','work',3],['Night class (incl. drive)','work',6],['Email / admin','work',3],
+  ['Driving','home',5],['Them','home',25],['Kids’ ringette','home',4],['Eating','home',8],
+  ['Sleep','self',45],['Exercise','self',3],['Sauna','self',1],['Hygiene','self',3],['Audiobooks','self',3],['Watching sports','self',3],['TV / movies','self',5],['The two hours (Build)','self',2],['Other','self',0]
+];
+var CHIPS=[15,30,45,60,90,120];
+
+/* ---------------- mode ---------------- */
+function setMode(m){
+  ['log','week','setup'].forEach(function(k){
+    document.getElementById(k).style.display = (m===k) ? 'block' : 'none';
+    document.getElementById('tab-'+k).className = (m===k) ? 'on' : '';
+  });
+  if(m==='log'){ paintCats(); paintLog(); }
+  if(m==='week'){ paintWeek(); }
+  if(m==='setup'){ paintSetup(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-count-the-week';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; } else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- store ---------------- */
+var KEY='forge-count-the-week';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function parse(s){ var p=s.split('-'); return new Date(+p[0], +p[1]-1, +p[2]); }
+function monday(s){ var d=parse(s); var dow=(d.getDay()+6)%7; d.setDate(d.getDate()-dow); return ymd(d); }
+function addDays(s,n){ var d=parse(s); d.setDate(d.getDate()+n); return ymd(d); }
+function uid(){ return 'c'+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-3); }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function defaultCats(){ return DEFAULTS.map(function(d){ return {id:uid(), name:d[0], band:d[1], guess:d[2]}; }); }
+function rd(){
+  var o=null;
+  try{ o=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){ o=null; }
+  if(!o || typeof o!=='object' || Array.isArray(o)) o={};
+  var seeded=false;
+  if(!Array.isArray(o.cats) || !o.cats.length){ o.cats=defaultCats(); seeded=true; }
+  o.cats=o.cats.filter(function(c){ return c && c.id && c.name; }).map(function(c){ if(['work','home','self'].indexOf(c.band)<0) c.band='self'; c.guess=num(c.guess); return c; });
+  if(!o.cats.length){ o.cats=defaultCats(); seeded=true; }
+  if(!Array.isArray(o.entries)) o.entries=[];
+  o.entries=o.entries.filter(function(e){ return e && e.t && e.cat && isFinite(e.min); });
+  if(!o.names || typeof o.names!=='object') o.names={};
+  if(!o.wg || typeof o.wg!=='object') o.wg={};
+  if(seeded) wr(o);   // write the full normalised shape, not a partial one
+  return o;
+}
+function wr(o){ try{ localStorage.setItem(KEY, JSON.stringify(o)); }catch(e){} }
+function num(v){ var n=parseFloat(v); return isFinite(n)&&n>=0 ? n : 0; }
+function catById(o,id){ for(var i=0;i<o.cats.length;i++) if(o.cats[i].id===id) return o.cats[i]; return null; }
+function nameOf(o,id){ var c=catById(o,id); return c ? c.name : (o.names[id] || 'Deleted'); }
+function hrs(min){ var h=min/60; return (Math.round(h*4)/4).toString().replace(/\.0+$/,''); }
+function toast(s){ var t=document.getElementById('toast'); t.textContent=s; t.className='toast on'; clearTimeout(toast._x); toast._x=setTimeout(function(){ t.className='toast'; },1300); }
+
+/* ================= LOG ================= */
+var sel=null;
+function paintCats(){
+  var o=rd(); var el=document.getElementById('cats'); var wk=monday(today());
+  var tot={}; o.entries.forEach(function(e){ if(monday(e.t)===wk) tot[e.cat]=(tot[e.cat]||0)+e.min; });
+  var html='';
+  [['work','Work'],['home','Home'],['self','Self']].forEach(function(b){
+    var cs=o.cats.filter(function(c){ return c.band===b[0]; }); if(!cs.length) return;
+    html+='<div class="k '+b[0]+'">'+b[1]+'</div><div class="grid">'+cs.map(function(c){
+      return '<button class="cat '+c.band+(sel===c.id?' on':'')+'" data-id="'+c.id+'" onclick="pickCat(\''+c.id+'\')">'+esc(c.name)+'<small>'+(tot[c.id]?hrs(tot[c.id])+'h':'&nbsp;')+'</small></button>';
+    }).join('')+'</div>';
+  });
+  el.innerHTML=html;
+  var c=sel?catById(o,sel):null;
+  document.getElementById('pick-nm').innerHTML = c ? esc(c.name)+' <span>&middot; tap a duration</span>' : 'Tap a category below';
+  document.getElementById('chips').innerHTML=CHIPS.map(function(m){ return '<button class="chip" onclick="logMin('+m+')">'+m+'</button>'; }).join('');
+}
+function pickCat(id){ sel=(sel===id)?null:id; paintCats(); if(sel){ try{ document.getElementById('pick').scrollIntoView({block:'start',behavior:'smooth'}); }catch(e){} } }
+function logMin(m){
+  if(!sel){ toast('Pick a category first'); return; }
+  var o=rd(); var note=document.getElementById('note').value.trim();
+  o.entries.unshift({t:today(), ts:Date.now(), cat:sel, min:num(m), note:note});
+  var c=catById(o,sel); if(c) o.names[c.id]=c.name;
+  wr(o); document.getElementById('note').value=''; document.getElementById('min').value='';
+  toast((c?c.name:'')+' · '+m+' min'); paintCats(); paintLog();
+}
+function saveCustom(){ var m=num(document.getElementById('min').value); if(!m){ toast('Enter minutes'); return; } logMin(m); }
+function delEntry(ts){ var o=rd(); o.entries=o.entries.filter(function(e){ return e.ts!==ts; }); wr(o); paintCats(); paintLog(); }
+function paintLog(){
+  var o=rd(), t=today(), wk=monday(t);
+  var td=0, tw=0; o.entries.forEach(function(e){ if(e.t===t) td+=e.min; if(monday(e.t)===wk) tw+=e.min; });
+  document.getElementById('s-today').innerHTML=hrs(td)+'<small>h</small>';
+  document.getElementById('s-week').innerHTML=hrs(tw)+'<small>h</small>';
+  document.getElementById('s-n').textContent=o.entries.length;
+  var rows=o.entries.filter(function(e){ return monday(e.t)===wk; }).slice(0,40);
+  var h=document.getElementById('hist');
+  if(!rows.length){ h.innerHTML='<div class="empty">Nothing logged this week. Tap what you just did.</div>'; return; }
+  h.innerHTML=rows.map(function(e){
+    var d=parse(e.t); var lbl=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][(d.getDay()+6)%7];
+    return '<div class="hrow"><div class="d">'+lbl+'</div><div class="c">'+esc(nameOf(o,e.cat))+(e.note?' <i>&middot; '+esc(e.note)+'</i>':'')+'</div><div class="m">'+e.min+'m</div><button class="del" aria-label="Delete" onclick="delEntry('+e.ts+')">&times;</button></div>';
+  }).join('');
+}
+
+/* ================= WEEK ================= */
+var wkOff=0;
+function curWeek(){ return addDays(monday(today()), 7*wkOff); }
+function shiftWeek(n){ wkOff+=n; if(wkOff>0) wkOff=0; paintWeek(); }
+function weekGuess(o, wk){
+  if(!o.wg[wk]){ var g={}; o.cats.forEach(function(c){ g[c.id]=c.guess; }); o.wg[wk]=g; wr(o); }
+  return o.wg[wk];
+}
+function setGuess(wk,id,v){ var o=rd(); weekGuess(o,wk); o.wg[wk][id]=num(v); wr(o); paintWeek(); }
+function copyWeekGuess(){ var o=rd(); var wk=curWeek(); var g={}; o.cats.forEach(function(c){ g[c.id]=c.guess; }); o.wg[wk]=g; wr(o); paintWeek(); toast('Guesses reset to standing'); }
+function weekTotals(o, wk){ var tot={}; o.entries.forEach(function(e){ if(monday(e.t)===wk) tot[e.cat]=(tot[e.cat]||0)+e.min; }); return tot; }
+function paintWeek(){
+  var o=rd(); var wk=curWeek(); var g=weekGuess(o,wk); var tot=weekTotals(o,wk);
+  var end=addDays(wk,6);
+  document.getElementById('w-title').innerHTML=esc(wk)+' &rarr; '+esc(end.slice(5))+'<small>'+(wkOff===0?'This week':(wkOff===-1?'Last week':(-wkOff)+' weeks ago'))+'</small>';
+  var logged=0, gap=0, anyG=false;
+  var ids=o.cats.map(function(c){ return c.id; }); Object.keys(tot).forEach(function(id){ if(ids.indexOf(id)<0) ids.push(id); });
+  var maxH=1; ids.forEach(function(id){ maxH=Math.max(maxH, (tot[id]||0)/60, num(g[id])); });
+  var html='<div class="r h"><div>Category</div><div style="text-align:center">Guess</div><div style="text-align:center">Actual</div><div style="text-align:center">Gap</div></div>';
+  [['work','Work'],['home','Home'],['self','Self'],['gone','Deleted']].forEach(function(b){
+    var cs = b[0]==='gone' ? ids.filter(function(id){ return !catById(o,id); }).map(function(id){ return {id:id,name:nameOf(o,id),band:'gone'}; }) : o.cats.filter(function(c){ return c.band===b[0]; });
+    if(!cs.length) return;
+    html+='<div class="k '+b[0]+'">'+b[1]+'</div>';
+    cs.forEach(function(c){
+      var a=(tot[c.id]||0)/60, gu=(c.band==='gone')?0:num(g[c.id]); logged+=a;
+      var d=a-gu; if(c.band!=='gone'){ gap+=Math.abs(d); anyG=true; }
+      var cls = Math.abs(d)<0.5 ? 'zero' : (d>0?'over':'under');
+      html+='<div class="r"><div class="n">'+esc(c.name)+'<div class="bar"><i style="width:'+Math.round(100*a/maxH)+'%"></i>'+(c.band!=='gone'?'<u style="left:'+Math.round(100*gu/maxH)+'%"></u>':'')+'</div></div>'+
+        (c.band==='gone'?'<div class="a">&ndash;</div>':'<input type="number" inputmode="decimal" step="0.5" value="'+gu+'" onchange="setGuess(\''+wk+'\',\''+c.id+'\',this.value)" aria-label="Guess hours">')+
+        '<div class="a">'+hrs(a*60)+'</div><div class="g '+cls+'">'+(c.band==='gone'?'':(d>0?'+':'')+hrs(d*60))+'</div></div>';
+    });
+  });
+  var gsum=0; o.cats.forEach(function(c){ gsum+=num(g[c.id]); });
+  html+='<div class="r tot"><div class="n">Total</div><div style="text-align:center;color:var(--gold)">'+hrs(gsum*60)+'</div><div class="a">'+hrs(logged*60)+'</div><div class="g '+(Math.abs(logged-gsum)<0.5?'zero':(logged>gsum?'over':'under'))+'">'+(logged-gsum>0?'+':'')+hrs((logged-gsum)*60)+'</div></div>';
+  document.getElementById('w-tbl').innerHTML=html;
+  document.getElementById('w-logged').innerHTML=hrs(logged*60)+'<small>h</small>';
+  document.getElementById('w-unlogged').innerHTML=hrs(Math.max(0,168-logged)*60)+'<small>h</small>';
+  document.getElementById('w-gap').innerHTML=anyG && logged>0 ? hrs(gap*60)+'<small>h</small>' : '&ndash;';
+  // last four weeks, top categories by this-week hours
+  var weeks=[0,-1,-2,-3].map(function(n){ return addDays(wk,7*n); });
+  var per=weeks.map(function(w){ return weekTotals(o,w); });
+  var top=o.cats.slice().sort(function(a,b){ return (tot[b.id]||0)-(tot[a.id]||0); }).slice(0,8);
+  var any=per.some(function(p){ return Object.keys(p).length; });
+  var f=document.getElementById('w-four');
+  if(!any){ f.innerHTML=''; return; }
+  f.innerHTML='<div class="k">Last four weeks &middot; hours</div><div class="r h"><div>Category</div>'+weeks.map(function(w,i){ return '<div class="v">'+(i===0?'this':w.slice(5)) +'</div>'; }).join('')+'</div>'+
+    top.map(function(c){ return '<div class="r"><div class="n">'+esc(c.name)+'</div>'+per.map(function(p,i){ return '<div class="v'+(i===0?' now':'')+'">'+(p[c.id]?hrs(p[c.id]):'&middot;')+'</div>'; }).join('')+'</div>'; }).join('');
+}
+function csv(){
+  var o=rd();
+  var lines=['date,week,category,minutes,note'];
+  o.entries.slice().sort(function(a,b){ return a.ts-b.ts; }).forEach(function(e){
+    var q=function(s){ return '"'+String(s==null?'':s).replace(/"/g,'""')+'"'; };
+    lines.push([e.t, monday(e.t), q(nameOf(o,e.cat)), e.min, q(e.note||'')].join(','));
+  });
+  return lines.join('\n');
+}
+function exportCSV(){
+  var text=csv();
+  try{
+    var blob=new Blob([text],{type:'text/csv'}); var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='count-the-week.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  }catch(e){ prompt('Copy your CSV:', text); }
+}
+
+/* ================= SETUP ================= */
+function paintSetup(){
+  var o=rd(); var el=document.getElementById('s-list'); var html='';
+  [['work','Work'],['home','Home'],['self','Self']].forEach(function(b){
+    html+='<div class="k '+b[0]+'">'+b[1]+' &middot; guess h/wk</div>';
+    o.cats.forEach(function(c,i){ if(c.band!==b[0]) return;
+      html+='<div class="srow"><input class="nm" value="'+esc(c.name)+'" onchange="renameCat(\''+c.id+'\',this.value)" aria-label="Name">'+
+        '<select onchange="bandCat(\''+c.id+'\',this.value)" aria-label="Band"><option'+(c.band==='work'?' selected':'')+'>work</option><option'+(c.band==='home'?' selected':'')+'>home</option><option'+(c.band==='self'?' selected':'')+'>self</option></select>'+
+        '<input class="gs" type="number" inputmode="decimal" step="0.5" value="'+c.guess+'" onchange="guessCat(\''+c.id+'\',this.value)" aria-label="Standing guess">'+
+        '<button class="mv" onclick="moveCat(\''+c.id+'\',-1)" aria-label="Up">&uarr;</button><button class="mv" onclick="moveCat(\''+c.id+'\',1)" aria-label="Down">&darr;</button>'+
+        '<button class="del" onclick="delCat(\''+c.id+'\')" aria-label="Delete">&times;</button></div>';
+    });
+  });
+  el.innerHTML=html;
+}
+function renameCat(id,v){ var o=rd(); var c=catById(o,id); if(c && v.trim()){ c.name=v.trim(); o.names[id]=c.name; wr(o); } paintSetup(); }
+function bandCat(id,v){ var o=rd(); var c=catById(o,id); if(c){ c.band=v; wr(o); } paintSetup(); }
+function guessCat(id,v){ var o=rd(); var c=catById(o,id); if(c){ c.guess=num(v); wr(o); } paintSetup(); }
+function moveCat(id,n){ var o=rd(); var i=o.cats.findIndex(function(c){ return c.id===id; }); var j=i+n; if(i<0||j<0||j>=o.cats.length) return; var t=o.cats[i]; o.cats[i]=o.cats[j]; o.cats[j]=t; wr(o); paintSetup(); }
+function delCat(id){ var o=rd(); var c=catById(o,id); if(!c) return; if(!confirm('Delete "'+c.name+'"? Past entries stay in the export.')) return; o.names[id]=c.name; o.cats=o.cats.filter(function(x){ return x.id!==id; }); if(sel===id) sel=null; wr(o); paintSetup(); }
+function addCat(){ var v=document.getElementById('s-new').value.trim(); if(!v) return; var o=rd(); o.cats.push({id:uid(), name:v, band:document.getElementById('s-band').value, guess:0}); wr(o); document.getElementById('s-new').value=''; paintSetup(); }
+function resetCats(){ if(!confirm('Restore the default category list? Your entries are kept; guesses reset.')) return; var o=rd(); o.cats.forEach(function(c){ o.names[c.id]=c.name; }); o.cats=defaultCats(); wr(o); sel=null; paintSetup(); }
+
+/* ---------------- init ---------------- */
+loadPhoto(); paintCats(); paintLog();
+</script>
+</body>
+</html>
