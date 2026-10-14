@@ -8,6 +8,7 @@ Pushes 7-day calendar to JSONBin for Evening Debrief.
 """
 
 import os
+import re
 import json
 import caldav
 import vobject
@@ -2370,6 +2371,26 @@ def generate_sitrep(welltory, sleep, calendar_events, weather, reminders=None):
 
     return " ".join(lines)
 
+# ── ringette_oct14: the girls' names in bold blue on the three calendar cards ──
+# The RAMP lines sit in the same <pre> as school and POF events and were easy to
+# miss. Any line carrying the [Ringette] tag gets the name after the time rendered
+# bold and blue; the rest of the line is untouched. The calendar text is inserted
+# into the template unescaped already, so the tag renders.
+RINGETTE_NAME_STYLE = 'font-weight:800; color:#1a5fa8;'
+_RINGETTE_LINE = re.compile(r'^(.*? \u2014 )(\S+)( \u2014 .*\[Ringette\]\s*)$')
+
+def highlight_ringette(text):
+    if not text:
+        return text
+    out = []
+    for line in text.split("\n"):
+        m = _RINGETTE_LINE.match(line)
+        if m:
+            line = '%s<b style="%s">%s</b>%s' % (m.group(1), RINGETTE_NAME_STYLE, m.group(2), m.group(3))
+        out.append(line)
+    return "\n".join(out)
+
+
 def generate_html(welltory, sleep, weather, calendar_events, week_structured=None, body_comp=None):
     now = now_pt()
     day_name = now.strftime("%A")
@@ -2482,7 +2503,7 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
         pool_error_html += f'<div class="pool-error">CALENDAR FEED PROBLEM &mdash; some events may be missing{_crows}</div>' 
 
     cal_json = json.dumps(week_structured or [])
-    cal_today = calendar_events.get("today", "No events today.")
+    cal_today = highlight_ringette(calendar_events.get("today", "No events today."))
     if body_comp is None:
         body_comp = {}
     bc_weight      = body_comp.get("weight")
@@ -2598,8 +2619,8 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
     jlpt = JLPT_WORDS[get_daily_index(len(JLPT_WORDS))]
     jlpt_word = jlpt["word"]; jlpt_level = jlpt["level"]; jlpt_meaning = jlpt["meaning"]
     jlpt_example = jlpt["example"]; jlpt_translation = jlpt["translation"]
-    cal_week = calendar_events.get("week", "No events this week.")
-    cal_month = calendar_events.get("month", "No events this month.")
+    cal_week = highlight_ringette(calendar_events.get("week", "No events this week."))
+    cal_month = highlight_ringette(calendar_events.get("month", "No events this month."))
 
     # Build body comp content
     if bc_has_data:
