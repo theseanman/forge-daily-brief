@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Ledger Protocol</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* read cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .g{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.09em; padding:2px 6px; border-radius:5px;
+    background:rgba(74,157,232,.24); color:var(--accent-hi); margin-left:5px; vertical-align:1px; }
+  .g.w{ background:rgba(245,215,110,.16); color:var(--gold); }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; }
+  .band b{ color:var(--gold); }
+  .seq{ font-size:14px; line-height:1.6; }
+  .seq div{ padding:8px 0; border-bottom:1px solid var(--line); }
+  .seq div:last-child{ border-bottom:none; }
+  .seq b{ color:var(--accent-hi); }
+
+  /* the premise plate */
+  .premise{ background:rgba(245,215,110,.11); border:1px solid rgba(245,215,110,.34); border-radius:16px;
+    padding:20px 18px; margin:18px 0 20px; text-align:center; }
+  .premise .pm-line{ font-size:clamp(19px,5vw,25px); font-weight:300; line-height:1.35; color:var(--gold); }
+  .premise .pm-line b{ font-weight:700; }
+  .premise .pm-k{ font-size:10.5px; letter-spacing:.24em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; margin-bottom:9px; }
+
+  /* exemplar cards */
+  .ex{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--gold); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .ex-name{ font-size:16px; font-weight:700; letter-spacing:.02em; }
+  .ex-src{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; margin:3px 0 11px; }
+  .ex-q{ font-size:16.5px; line-height:1.5; font-weight:300; color:var(--gold); border-left:2px solid rgba(245,215,110,.45);
+    padding-left:12px; margin-bottom:10px; }
+  .tier-tag{ display:inline-block; font-size:9.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:2px 6px; border-radius:5px; background:rgba(245,215,110,.16); color:var(--gold); margin-bottom:8px; }
+  .tier-tag.two{ background:rgba(74,157,232,.22); color:var(--accent-hi); }
+
+  /* the log */
+  .logrow{ border-bottom:1px solid var(--line); padding:11px 0; }
+  .logrow:last-child{ border-bottom:none; }
+  .logrow .ld{ font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); font-weight:800; }
+  .logrow .lt{ font-size:13.5px; line-height:1.5; color:var(--ink-dim); margin-top:3px; }
+  .logrow .lp{ font-size:12.5px; line-height:1.5; color:var(--gold); margin-top:4px; }
+  .logempty{ font-size:13px; color:var(--ink-quiet); line-height:1.55; }
+
+  /* drill */
+  #drill{ display:none; }
+  .d-top{ text-align:center; margin-bottom:10px; }
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(20px,5.4vw,28px); font-weight:300; line-height:1.35; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .btn:focus-visible, .toggle button:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+
+  /* write step */
+  .wr{ width:100%; max-width:600px; text-align:left; margin-top:18px; }
+  .wr label{ display:block; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); font-weight:800; margin-bottom:6px; }
+  .wr textarea{ width:100%; min-height:96px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:12px;
+    color:var(--ink); font-size:14.5px; line-height:1.5; padding:11px 13px; font-family:inherit; resize:vertical; }
+  .wr textarea::placeholder{ color:rgba(234,244,255,.34); }
+  .wr .wnote{ font-size:12px; color:var(--ink-quiet); line-height:1.5; margin-top:7px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-drill" onclick="setMode('drill')">Practice</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>The Ledger Protocol</h1>
+    <div class="sub">What to do with the belief that good conduct earns a return. The ledger is an implicit contract &mdash; treat people well, be respectful, do the work, and receive proportionate treatment back. The other party never signed it.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="premise">
+      <div class="pm-k">The Premise</div>
+      <div class="pm-line">Nothing is owed.<br><b>Waiting to be paid is weakness.</b></div>
+    </div>
+
+    <div class="card">
+      <div class="p-ess" style="font-style:normal; color:var(--ink-dim); margin-bottom:0;">
+        The ledger is not held as an argument, which is why arguing with it does nothing. It is held as an <b style="color:var(--accent-hi)">expectation</b>, running underneath, and it only shows itself when it is violated. Knowing the world is not fair is a proposition. The expectation never heard it.
+      </div>
+    </div>
+
+    <div class="section-k">The Pillars</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">01</span><span class="p-name">The Contract</span></div>
+      <div class="p-ess">A receivable nobody signed for.</div>
+      <div class="move">The pain is not the slight. It is the <b>breach of a contract</b> the other party was never party to. That is why the same feeling shows up across situations that have nothing else in common.</div>
+      <div class="move">It is protective, not stupid. &ldquo;I don&rsquo;t deserve this&rdquo; is a <b>defence of your own worth</b> when something has made you feel small. Seeing its function loosens it; calling it irrational does not.</div>
+      <div class="move">It never closes. The claim is filed with a judge who is not there, so the case <b>reopens every time</b>. The loop is the cost, not the slight.</div>
+      <div class="note">Grade: Weak-to-moderate. Psychological entitlement predicts more anger and perceived injustice after impersonal bad luck (Zitek &amp; Jordan, <i>Personality and Individual Differences</i>). Honest caveat from the same work: when people recalled being treated unfairly <i>by a specific person</i>, entitlement did not change how angry they got. So this bites hardest where there is nobody to blame &mdash; traffic, circumstance, the way things fell.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">02</span><span class="p-name">Tier One &middot; Nothing Survives The Night</span></div>
+      <div class="p-ess">Traffic. The slight in the hallway. The tone in the email.</div>
+      <div class="move">Fire the handle: <b>Nothing is owed.</b> One beat. Do not argue with the ledger &mdash; deny its authority.</div>
+      <div class="move">Put attention on <b>one sense channel</b> immediately. Hands on the wheel, the sound of the room. Two seconds, not a procedure.</div>
+      <div class="move">Scope it. It fires on <b>the ledger only</b>. It is not a general silencer &mdash; some internal signal is load-bearing.</div>
+      <div class="note">This is the same mechanic as &ldquo;not relevant&rdquo;, which already works for you: it concedes the thought exists and denies it authority, rather than trying to stop it existing. Same grammar, different target. If a phrase stops landing after a few weeks, that is data about the phrase, not about you &mdash; change it.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">03</span><span class="p-name">Tier Two &middot; Consequential, In Front Of You</span></div>
+      <div class="p-ess">The last-minute request that lands after the work is already done.</div>
+      <div class="move">Drop the demand, keep the preference. <b>&ldquo;I&rsquo;d rather this hadn&rsquo;t landed&rdquo;</b> is true and passes. <b>&ldquo;This shouldn&rsquo;t have landed, I don&rsquo;t deserve it&rdquo;</b> is the loop. You lose nothing by the swap &mdash; you still want the thing, you have only dropped the claim that you were owed it.</div>
+      <div class="move">Then the only question that pays: <b>what does this actually change about what I do next?</b></div>
+      <div class="move">Answer the request <b>on its merits</b>, not on the balance of the account. The account is not evidence about whether to say yes.</div>
+      <div class="note">Grade: Moderate. The demand-to-preference move is Ellis&rsquo;s. A 2017 systematic review and meta-analysis of fifty years of REBT found medium effects both on outcomes and on irrational beliefs themselves (David et al., <i>Journal of Clinical Psychology</i>; 68 studies in the between-group analysis). The therapy package is better evidenced than the specific demandingness mechanism isolated on its own &mdash; graded on the package, applied as the mechanism.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">04</span><span class="p-name">Tier Three &middot; It Actually Matters</span></div>
+      <div class="p-ess">Do not reach for the handle here.</div>
+      <div class="move"><b>Let it land.</b> The hurt is the correct response to a loss, not a malfunction to be managed down.</div>
+      <div class="move">Name it precisely. Not &ldquo;I&rsquo;m upset&rdquo; but the specific thing &mdash; what happened, in front of whom, and what it threatened. <b>Precision is what does the work</b>; vague naming does not.</div>
+      <div class="move">Set the desert question aside <b>explicitly</b>. &ldquo;Did I deserve this&rdquo; cannot be settled from inside your own head and does not converge. &ldquo;What do I do tomorrow&rdquo; can be answered.</div>
+      <div class="move">For the distancing move &mdash; your own name, second person, zooming out in time &mdash; use <b>The Resilience Protocol, Pillar 04</b>. It is already built and graded there. Do not run a second version of it here.</div>
+      <div class="note">The reason the tiers exist: using the Tier One handle on something that genuinely hurts is suppression, not strength, and suppression is reliably worse than reappraisal on most outcomes. A single universal move either trivialises the big cases or over-processes the small ones.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">05</span><span class="p-name">The Scope</span></div>
+      <div class="p-ess">Where the premise stops.</div>
+      <div class="move">The premise is about <b>strangers, work, and the world</b>. It is not about your children.</div>
+      <div class="move"><b>Obligations between a father and his children are real.</b> A version of this that teaches you to expect nothing there would cost you something you actually want.</div>
+      <div class="move">The tell: if the ledger is running on someone <b>in your own house</b>, the problem is the account, not the person. They cannot see the accounting from outside, but they can feel it.</div>
+      <div class="note">The second guard: a premise this hard, pointed at a person rather than at the world, turns into contempt without much help. Contempt reliably closes doors you are trying to keep open.</div>
+    </div>
+
+    <div class="section-k">The Exemplars</div>
+
+    <div class="ex">
+      <div class="ex-name">Miyamoto Musashi</div>
+      <div class="ex-src">Dokk&#333;d&#333;, 1645 &middot; written days before his death</div>
+      <div class="tier-tag">Tier 1 &middot; his words, in translation</div>
+      <div class="ex-q">Resentment and complaint are appropriate neither for oneself nor others.</div>
+      <div class="note" style="margin-top:0;">Precept nine of twenty-one. Translator not established &mdash; the widely circulated English text is unattributed, so treat the wording as a translation rather than as his exact phrasing.</div>
+      <div class="tier-tag two" style="margin-top:12px;">Tier 2 &middot; the gloss (Clyde)</div>
+      <div class="move">He does not argue that the complaint is <i>incorrect</i>. He rules it out as a move. That is the whole difference between understanding the ledger and being free of it.</div>
+      <div class="move">Most of the twenty-one are renunciations of expected return &mdash; including one that says to respect the gods without counting on their help. He kept the conduct and dropped the account.</div>
+    </div>
+
+    <div class="ex">
+      <div class="ex-name">John Boyd</div>
+      <div class="ex-src">The fork in the road &middot; recorded in Robert Coram&rsquo;s biography</div>
+      <div class="tier-tag">Tier 1 &middot; his spoken words, as recorded</div>
+      <div class="ex-q">To be somebody or to do something.</div>
+      <div class="note" style="margin-top:0;">Said to the young officers he mentored. Recollected speech from Coram&rsquo;s <i>Boyd: The Fighter Pilot Who Changed the Art of War</i>, not a line from one of his briefings &mdash; tagged so the two are never confused.</div>
+      <div class="tier-tag two" style="margin-top:12px;">Tier 2 &middot; the gloss (Clyde)</div>
+      <div class="move">The fork <i>is</i> the ledger. To be somebody is to collect the return. To do something is to do the work and renounce the account.</div>
+      <div class="move">He took the second and it cost him assignments, promotions and the favour of his superiors. He knew the price before he chose. That is what makes it a renunciation rather than a consolation.</div>
+    </div>
+
+    <div class="section-k">Where This Ends</div>
+    <div class="band">
+      <b>Scoped against The Resilience Protocol.</b> That page owns pressure and composure &mdash; appraisal of arousal, the breath, the aperture, self-distancing, rehearsal, recovery. This page owns one thing it does not address: <b>owed-ness</b>. The belief that good conduct creates a receivable. Where they touch &mdash; Tier Three&rsquo;s naming and distancing &mdash; this page points there rather than restating it.
+    </div>
+
+    <div class="section-k">The Ledger</div>
+    <div class="card" id="logcard">
+      <div class="logempty" id="logbody">Entries from the practice appear here.</div>
+    </div>
+    <div class="note" style="text-align:center;">On-device only. Never synced, never committed.</div>
+
+  </div>
+
+  <!-- ===================== PRACTICE ===================== -->
+  <div id="drill">
+    <div class="d-top">
+      <div class="section-k" style="margin:6px 0 0;">Daily Practice</div>
+      <div class="progress" id="progress"></div>
+    </div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Entered.</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar" style="margin-top:22px;">
+        <button class="btn" onclick="restart()">Again</button>
+        <button class="btn ghost" onclick="setMode('read')">Read</button>
+      </div>
+    </div>
+    <div class="foot">Say each aloud before revealing.</div>
+  </div>
+
+</div>
+
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  var read = m === 'read';
+  document.getElementById('read').style.display  = read ? '' : 'none';
+  document.getElementById('drill').style.display = read ? 'none' : 'block';
+  document.getElementById('tab-read').className  = read ? 'on' : '';
+  document.getElementById('tab-drill').className = read ? '' : 'on';
+  if(read){ paintLog(); }
+  else { idx=0; pending={}; document.getElementById('done').className='done-view';
+         document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity='';
+         renderStep(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-ledger';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+/* long-press to remove */
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- the two exemplar lines ---------------- */
+var EXEMPLARS = [
+  { who:'Musashi', src:'Dokk&#333;d&#333;, precept nine &middot; translation',
+    line:'Resentment and complaint are appropriate neither for oneself nor others.',
+    gloss:'He does not argue that the complaint is incorrect. He rules it out as a move.' },
+  { who:'Boyd', src:'the fork in the road &middot; recorded by Coram',
+    line:'To be somebody or to do something.',
+    gloss:'To be somebody is to collect the return. To do something is to renounce the account and work anyway.' }
+];
+function exToday(){
+  var n=new Date(), start=new Date(n.getFullYear(),0,0);
+  var doy=Math.floor((n-start)/86400000);
+  return EXEMPLARS[doy % EXEMPLARS.length];
+}
+
+/* ---------------- practice steps ---------------- */
+var STEPS = [
+  { prompt:'State <b>the premise</b>.',
+    lines:['<b>Nothing is owed. Waiting to be paid is weakness.</b>',
+           'Feeling the pull is not the weakness. Standing there with the invoice is.'] },
+
+  { ex:true, prompt:'Today&rsquo;s line.',
+    lines:[] },
+
+  { prompt:'Someone cuts you off. Nothing about it survives the night. <b>Which tier, and what is the move?</b>',
+    lines:['<b>Tier one.</b> Fire the handle &mdash; <b>nothing is owed</b> &mdash; one beat, no argument.',
+           'Then attention onto one sense channel. Two seconds. Do not debate it.'] },
+
+  { prompt:'A last-minute request lands after you have already done the work. <b>Which tier, and what is the move?</b>',
+    lines:['<b>Tier two.</b> Drop the demand, keep the preference.',
+           'Then the only question that pays: <b>what does this change about what I do next?</b>',
+           'Answer it on its merits, not on the balance of the account.'] },
+
+  { prompt:'Something that genuinely matters has gone against you. <b>Which tier, and what is the move?</b>',
+    lines:['<b>Tier three.</b> Not the handle. <b>Let it land.</b>',
+           'Name it precisely &mdash; the specific thing, not &ldquo;I&rsquo;m upset&rdquo;.',
+           'Set the desert question aside: it does not converge. &ldquo;What do I do tomorrow&rdquo; does.'] },
+
+  { prompt:'When is the <b>tier one handle the wrong move</b>?',
+    lines:['When it actually matters. Used there it is <b>suppression</b>, not strength.',
+           'It would train you out of feeling what warrants feeling.'] },
+
+  { prompt:'Where does <b>the premise not apply</b>?',
+    lines:['<b>Your family.</b> Obligations between a father and his children are real.',
+           'If the ledger is running on someone in your own house, the problem is the account, not the person.'] },
+
+  { write:{ id:'entry', label:'The entry &mdash; where did the ledger fire today?',
+            ph:'What happened, and what did the ledger claim you were owed&hellip;',
+            note:'What it claimed, not whether you were right. The claim is the thing to see.' },
+    prompt:'<b>Where did the ledger fire today?</b>',
+    lines:[] },
+
+  { write:{ id:'plan', label:'The pre-load &mdash; one if-then for tomorrow',
+            ph:'If &hellip; then I will say: nothing is owed.',
+            note:'Pre-deciding the response moves it out of the moment. Best-evidenced item on this page.' },
+    prompt:'Name <b>tomorrow&rsquo;s likely firing</b>, and your response to it.',
+    lines:[] }
+];
+
+var idx=0, revealed=false, pending={};
+
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  var last=(idx===STEPS.length-1);
+
+  if(st.write){
+    var prev = pending[st.write.id] || '';
+    b+='<div class="prompt">'+st.prompt+'</div>';
+    b+='<div class="wr"><label for="wf">'+st.write.label+'</label>'
+     + '<textarea id="wf" placeholder="'+st.write.ph+'">'+esc(prev)+'</textarea>'
+     + '<div class="wnote">'+st.write.note+'</div></div>';
+    b+='<div class="bar"><button class="btn" onclick="next()">'+(last?'Finish':'Next')+'</button></div>';
+    stage.innerHTML=b; revealed=true; paintProgress(); return;
+  }
+
+  if(st.ex){
+    var e=exToday();
+    b+='<div class="prompt">'+st.prompt+'</div>';
+    b+='<div class="hint">Say it aloud &middot; then reveal</div>';
+    b+='<div class="reveal-wrap" id="rw"><div class="reveal">'
+     + '<div class="line"><b>'+e.line+'</b></div>'
+     + '<div class="line" style="font-size:13px;opacity:.72;">'+e.who+' &middot; '+e.src+'</div>'
+     + '<div class="line">'+e.gloss+'</div>'
+     + '</div></div>';
+    b+='<div class="bar">'
+     + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+     + '<button class="btn" id="nextBtn" onclick="next()" disabled>Next</button>'
+     + '</div>';
+    stage.innerHTML=b; revealed=false; paintProgress(); return;
+  }
+
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Say it aloud &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(last?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+
+function stash(){
+  var st=STEPS[idx];
+  if(!st.write) return;
+  var el=document.getElementById('wf');
+  if(el) pending[st.write.id]=String(el.value||'').slice(0,600);
+}
+
+function next(){
+  stash();
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Practice streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+
+function restart(){
+  idx=0; pending={};
+  document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+
+/* ---------------- state: streak (count-up only) + the log ---------------- */
+var DKEY='forge-ledger-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function blank(){ return { last:'', streak:0, log:[] }; }
+function rd(){
+  var s;
+  try{ s=JSON.parse(localStorage.getItem(DKEY)||'null'); }catch(e){ s=null; }
+  if(!s || typeof s!=='object' || Array.isArray(s)) return blank();
+  var b=blank();
+  for(var k in b){ if(!(k in s)) s[k]=b[k]; }
+  if(!Array.isArray(s.log)) s.log=[];
+  if(typeof s.streak!=='number' || !isFinite(s.streak) || s.streak<0) s.streak=0;
+  if(typeof s.last!=='string') s.last='';
+  return s;
+}
+function wr(s){ try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){} }
+
+function markDone(){
+  var s=rd(), t=today();
+  var note=String(pending.entry||'').slice(0,600);
+  var plan=String(pending.plan||'').slice(0,600);
+  if(note || plan){
+    s.log.unshift({ d:t, note:note, plan:plan });
+    s.log=s.log.slice(0,120);
+  }
+  if(s.last!==t){ s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t; }
+  wr(s);
+  return s;
+}
+
+function paintLog(){
+  var s=rd(), el=document.getElementById('logbody');
+  if(!el) return;
+  if(!s.log.length){
+    el.className='logempty';
+    el.innerHTML='Entries from the practice appear here. Nothing yet.';
+    return;
+  }
+  el.className='';
+  var b='', n=Math.min(s.log.length, 8);
+  for(var i=0;i<n;i++){
+    var r=s.log[i];
+    b+='<div class="logrow"><div class="ld">'+esc(r.d)+'</div>';
+    if(r.note) b+='<div class="lt">'+esc(r.note)+'</div>';
+    if(r.plan) b+='<div class="lp">'+esc(r.plan)+'</div>';
+    b+='</div>';
+  }
+  if(s.log.length>n) b+='<div class="note">'+(s.log.length-n)+' older entr'+((s.log.length-n)===1?'y':'ies')+' kept on this device.</div>';
+  el.innerHTML=b;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+paintLog();
+</script>
+</body>
+</html>
