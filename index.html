@@ -154,7 +154,7 @@
     <div class="date-block">
       <div class="date-main">Wednesday</div>
       <div style="font-size:11px; color:var(--muted);">October 14, 2026</div>
-      <div class="date-time" id="live-clock">07:37 AM</div>
+      <div class="date-time" id="live-clock">10:31 AM</div>
     </div>
   </div>
 
@@ -298,6 +298,38 @@
     <input type="file" id="pimg-file" accept="image/*" style="display:none;" onchange="pimgLoad(event)">
   </div>
 
+  <div class="card" id="pred-card">
+    <div class="card-header"><span class="card-icon">&#x1F52E;&#x1F334;</span><span>Prediction of the Day</span></div>
+    <div class="mini-card">
+      <div class="mini-title" id="pred-group" style="color:var(--text-light); opacity:0.8;">Loading&hellip;</div>
+      <div class="mini-detail" id="pred-q" style="font-size:15px; line-height:1.45; margin:6px 0 8px;"></div>
+      <div class="mini-detail" id="pred-status" style="font-size:12px; opacity:0.8;"></div>
+      <a href="./think-like-boyd.html" id="pred-link" style="display:block; text-align:center; margin-top:10px; padding:10px; border-radius:10px; background:rgba(74,157,232,0.28); border:1px solid rgba(74,157,232,0.55); color:#eaf4ff; font-weight:800; letter-spacing:0.06em; text-decoration:none; font-size:13px;">Write it before it happens &rarr;</a>
+    </div>
+  </div>
+  <script src="./tlb-prompts.js"></script>
+  <script>
+  (function(){
+    function ymd(d){ return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2); }
+    function go(){
+      var P=window.TLB_PROMPTS; var g=document.getElementById("pred-group"), q=document.getElementById("pred-q"), st=document.getElementById("pred-status");
+      if(!P){ g.textContent="Prompt pool unavailable"; return; }
+      var o={}; try{ o=JSON.parse(localStorage.getItem(P.KEY)||"{}")||{}; }catch(e){ o={}; }
+      if(typeof o!=="object"||Array.isArray(o)) o={}; if(!Array.isArray(o.preds)) o.preds=[];
+      var t=ymd(new Date()); var r=P.pick(t,o);
+      if(!r.pinned){ P.pin(o,t,r.idx); try{ localStorage.setItem(P.KEY, JSON.stringify(o)); }catch(e){} }
+      var TL={say:"what they’ll say",happen:"what will happen",howlong:"how long",who:"who or which"};
+      g.textContent=P.GLABEL[r.p.g]+" · "+TL[r.p.t];
+      q.textContent=r.p.q;
+      var n=P.loggedOn(o,t), due=P.dueBy(o,t).length, weak=P.weakestType(o);
+      st.textContent=(n?"✓ "+n+" logged today":"Nothing logged yet today")+(due?" · "+due+" due to score tonight":"")+(weak?" · leaning on "+TL[weak]+", your weakest":"");
+      var a=document.getElementById("pred-link"); if(due && n){ a.textContent="Score the ones due →"; }
+    }
+    go();  /* the card markup is above this script; no need to wait for DOMContentLoaded */
+  })();
+  </script>
+
+
   <div class="card">
     <div class="card-header"><span class="card-icon">&#x2694;&#xFE0F;&#x1F334;</span><span>Three Modes — Daily Triad</span></div>
     <div class="triad-mode">
@@ -325,7 +357,7 @@
 
   <div class="card">
     <div class="card-header"><span class="card-icon">🌤️🌴</span><span>Richmond Weather</span></div>
-    <div class="mini-card" style="padding:4px 12px;"><div style="padding:9px 2px 10px;border-bottom:1px solid rgba(13,13,13,0.18);"><div style="display:flex;align-items:baseline;gap:8px;"><span style="flex:0 0 48px;font-size:15px;font-weight:800;color:var(--text-bright);">Today</span><span style="font-size:18px;font-weight:800;color:var(--text-bright);">17°</span><span style="font-size:14px;color:var(--muted);">/ 11°</span><span style="flex:1 1 auto;"></span><span style="font-size:15px;font-weight:700;color:#1a5fa8;">💧 79%</span></div><div style="margin-left:56px;margin-top:2px;font-size:13px;color:var(--text-light);">Rain <span style="color:var(--muted);">· 11 km/h ENE</span></div></div><div style="padding:9px 2px 10px;border-bottom:1px solid rgba(13,13,13,0.18);"><div style="display:flex;align-items:baseline;gap:8px;"><span style="flex:0 0 48px;font-size:15px;font-weight:700;color:var(--text-bright);">Thu</span><span style="font-size:18px;font-weight:800;color:var(--text-bright);">20°</span><span style="font-size:14px;color:var(--muted);">/ 8°</span><span style="flex:1 1 auto;"></span><span style="font-size:15px;font-weight:700;color:#1a5fa8;">💧 0%</span></div><div style="margin-left:56px;margin-top:2px;font-size:13px;color:var(--text-light);">Fog <span style="color:var(--muted);">· 7 km/h NW</span></div></div><div style="padding:9px 2px 10px;border-bottom:1px solid rgba(13,13,13,0.18);"><div style="display:flex;align-items:baseline;gap:8px;"><span style="flex:0 0 48px;font-size:15px;font-weight:700;color:var(--text-bright);">Fri</span><span style="font-size:18px;font-weight:800;color:var(--text-bright);">18°</span><span style="font-size:14px;color:var(--muted);">/ 13°</span><span style="flex:1 1 auto;"></span><span style="font-size:15px;font-weight:700;color:#1a5fa8;">💧 8%</span></div><div style="margin-left:56px;margin-top:2px;font-size:13px;color:var(--text-light);">Light drizzle <span style="color:var(--muted);">· 12 km/h ESE</span></div></div><div style="padding:9px 2px 10px;border-bottom:1px solid rgba(13,13,13,0.18);"><div style="display:flex;align-items:baseline;gap:8px;"><span style="flex:0 0 48px;font-size:15px;font-weight:700;color:var(--text-bright);">Sat</span><span style="font-size:18px;font-weight:800;color:var(--text-bright);">15°</span><span style="font-size:14px;color:var(--muted);">/ 10°</span><span style="flex:1 1 auto;"></span><span style="font-size:15px;font-weight:700;color:#1a5fa8;">💧 86%</span></div><div style="margin-left:56px;margin-top:2px;font-size:13px;color:var(--text-light);">Rain showers <span style="color:var(--muted);">· 18 km/h WSW</span></div></div><div style="padding:9px 2px 10px;border-bottom:1px solid rgba(13,13,13,0.18);"><div style="display:flex;align-items:baseline;gap:8px;"><span style="flex:0 0 48px;font-size:15px;font-weight:700;color:var(--text-bright);">Sun</span><span style="font-size:18px;font-weight:800;color:var(--text-bright);">13°</span><span style="font-size:14px;color:var(--muted);">/ 9°</span><span style="flex:1 1 auto;"></span><span style="font-size:15px;font-weight:700;color:#1a5fa8;">💧 8%</span></div><div style="margin-left:56px;margin-top:2px;font-size:13px;color:var(--text-light);">Overcast <span style="color:var(--muted);">· 14 km/h NW</span></div></div><div style="padding:9px 2px 10px;border-bottom:1px solid rgba(13,13,13,0.18);"><div style="display:flex;align-items:baseline;gap:8px;"><span style="flex:0 0 48px;font-size:15px;font-weight:700;color:var(--text-bright);">Mon</span><span style="font-size:18px;font-weight:800;color:var(--text-bright);">13°</span><span style="font-size:14px;color:var(--muted);">/ 8°</span><span style="flex:1 1 auto;"></span><span style="font-size:15px;font-weight:700;color:#1a5fa8;">💧 30%</span></div><div style="margin-left:56px;margin-top:2px;font-size:13px;color:var(--text-light);">Overcast <span style="color:var(--muted);">· 6 km/h ENE</span></div></div><div style="padding:9px 2px 10px;"><div style="display:flex;align-items:baseline;gap:8px;"><span style="flex:0 0 48px;font-size:15px;font-weight:700;color:var(--text-bright);">Tue</span><span style="font-size:18px;font-weight:800;color:var(--text-bright);">13°</span><span style="font-size:14px;color:var(--muted);">/ 8°</span><span style="flex:1 1 auto;"></span><span style="font-size:15px;font-weight:700;color:#1a5fa8;">💧 18%</span></div><div style="margin-left:56px;margin-top:2px;font-size:13px;color:var(--text-light);">Overcast <span style="color:var(--muted);">· 10 km/h NW</span></div></div></div>
+    <div class="mini-card" style="padding:4px 12px;"><div style="padding:9px 2px 10px;border-bottom:1px solid rgba(13,13,13,0.18);"><div style="display:flex;align-items:baseline;gap:8px;"><span style="flex:0 0 48px;font-size:15px;font-weight:800;color:var(--text-bright);">Today</span><span style="font-size:18px;font-weight:800;color:var(--text-bright);">16°</span><span style="font-size:14px;color:var(--muted);">/ 9°</span><span style="flex:1 1 auto;"></span><span style="font-size:15px;font-weight:700;color:#1a5fa8;">💧 79%</span></div><div style="margin-left:56px;margin-top:2px;font-size:13px;color:var(--text-light);">Rain <span style="color:var(--muted);">· 11 km/h NE</span></div></div><div style="padding:9px 2px 10px;border-bottom:1px solid rgba(13,13,13,0.18);"><div style="display:flex;align-items:baseline;gap:8px;"><span style="flex:0 0 48px;font-size:15px;font-weight:700;color:var(--text-bright);">Thu</span><span style="font-size:18px;font-weight:800;color:var(--text-bright);">21°</span><span style="font-size:14px;color:var(--muted);">/ 8°</span><span style="flex:1 1 auto;"></span><span style="font-size:15px;font-weight:700;color:#1a5fa8;">💧 0%</span></div><div style="margin-left:56px;margin-top:2px;font-size:13px;color:var(--text-light);">Overcast <span style="color:var(--muted);">· 10 km/h N</span></div></div><div style="padding:9px 2px 10px;border-bottom:1px solid rgba(13,13,13,0.18);"><div style="display:flex;align-items:baseline;gap:8px;"><span style="flex:0 0 48px;font-size:15px;font-weight:700;color:var(--text-bright);">Fri</span><span style="font-size:18px;font-weight:800;color:var(--text-bright);">18°</span><span style="font-size:14px;color:var(--muted);">/ 13°</span><span style="flex:1 1 auto;"></span><span style="font-size:15px;font-weight:700;color:#1a5fa8;">💧 11%</span></div><div style="margin-left:56px;margin-top:2px;font-size:13px;color:var(--text-light);">Light drizzle <span style="color:var(--muted);">· 12 km/h ESE</span></div></div><div style="padding:9px 2px 10px;border-bottom:1px solid rgba(13,13,13,0.18);"><div style="display:flex;align-items:baseline;gap:8px;"><span style="flex:0 0 48px;font-size:15px;font-weight:700;color:var(--text-bright);">Sat</span><span style="font-size:18px;font-weight:800;color:var(--text-bright);">15°</span><span style="font-size:14px;color:var(--muted);">/ 10°</span><span style="flex:1 1 auto;"></span><span style="font-size:15px;font-weight:700;color:#1a5fa8;">💧 92%</span></div><div style="margin-left:56px;margin-top:2px;font-size:13px;color:var(--text-light);">Rain showers <span style="color:var(--muted);">· 18 km/h WSW</span></div></div><div style="padding:9px 2px 10px;border-bottom:1px solid rgba(13,13,13,0.18);"><div style="display:flex;align-items:baseline;gap:8px;"><span style="flex:0 0 48px;font-size:15px;font-weight:700;color:var(--text-bright);">Sun</span><span style="font-size:18px;font-weight:800;color:var(--text-bright);">13°</span><span style="font-size:14px;color:var(--muted);">/ 9°</span><span style="flex:1 1 auto;"></span><span style="font-size:15px;font-weight:700;color:#1a5fa8;">💧 5%</span></div><div style="margin-left:56px;margin-top:2px;font-size:13px;color:var(--text-light);">Overcast <span style="color:var(--muted);">· 14 km/h NW</span></div></div><div style="padding:9px 2px 10px;border-bottom:1px solid rgba(13,13,13,0.18);"><div style="display:flex;align-items:baseline;gap:8px;"><span style="flex:0 0 48px;font-size:15px;font-weight:700;color:var(--text-bright);">Mon</span><span style="font-size:18px;font-weight:800;color:var(--text-bright);">13°</span><span style="font-size:14px;color:var(--muted);">/ 8°</span><span style="flex:1 1 auto;"></span><span style="font-size:15px;font-weight:700;color:#1a5fa8;">💧 25%</span></div><div style="margin-left:56px;margin-top:2px;font-size:13px;color:var(--text-light);">Overcast <span style="color:var(--muted);">· 6 km/h ENE</span></div></div><div style="padding:9px 2px 10px;"><div style="display:flex;align-items:baseline;gap:8px;"><span style="flex:0 0 48px;font-size:15px;font-weight:700;color:var(--text-bright);">Tue</span><span style="font-size:18px;font-weight:800;color:var(--text-bright);">13°</span><span style="font-size:14px;color:var(--muted);">/ 8°</span><span style="flex:1 1 auto;"></span><span style="font-size:15px;font-weight:700;color:#1a5fa8;">💧 25%</span></div><div style="margin-left:56px;margin-top:2px;font-size:13px;color:var(--text-light);">Overcast <span style="color:var(--muted);">· 10 km/h NW</span></div></div></div>
   </div>
 
   <div class="card" data-newscan>
@@ -344,7 +376,7 @@ Wed Oct 14 — 6:30pm PAC Meeting (all day) [Richmond Secondary]
 
 Wed Oct 14 — A-PLT-BCD (all day) [Richmond Secondary]
 
-Wed Oct 14 · 7:30 PM — Layna — U12A Practice · Richmond Ice Centre Garage · Power Skating 75min. Share ice with U12B. [Ringette]</pre></div></div>
+Wed Oct 14 · 7:30 PM — Layna — U12A Practice · Richmond Ice Centre Garage · NRL development 75min. Share ice with U12B. [Ringette]</pre></div></div>
   </div>
 
   <div class="card" data-newscan>
@@ -371,7 +403,7 @@ Wed Oct 14 — 6:30pm PAC Meeting (all day) [Richmond Secondary]
 
 Wed Oct 14 — A-PLT-BCD (all day) [Richmond Secondary]
 
-Wed Oct 14 · 7:30 PM — Layna — U12A Practice · Richmond Ice Centre Garage · Power Skating 75min. Share ice with U12B. [Ringette]
+Wed Oct 14 · 7:30 PM — Layna — U12A Practice · Richmond Ice Centre Garage · NRL development 75min. Share ice with U12B. [Ringette]
 
 Thu Oct 15 — Lunch: UVic Visit (all day) [Richmond Secondary]
 
@@ -397,15 +429,17 @@ Sun Oct 18 · 8:00 AM — Layna — U12A Practice · Richmond Ice Centre Pond [R
 
 Sun Oct 18 · 12:00 PM — Bunter Nachmittag - AVC Melody Choir [Austria Vancouver]
 
+Sun Oct 18 · 12:00 PM — Kayla — U16 Practice · Richmond Ice Centre Igloo [Ringette]
+
 Mon Oct 19 — EFGH (all day) [Richmond Secondary]
 
 Mon Oct 19 — Grade 10 Yearbook Photos (all day) [Richmond Secondary]
 
-Tue Oct 20 — Lunch: University of Calgary Visit (all day) [Richmond Secondary]
-
 Tue Oct 20 — ABCD (all day) [Richmond Secondary]
 
-Tue Oct 20 — Dussehra (all day) [Richmond Secondary]</pre></div></div>
+Tue Oct 20 — Dussehra (all day) [Richmond Secondary]
+
+Tue Oct 20 — Lunch: University of Calgary Visit (all day) [Richmond Secondary]</pre></div></div>
   </div>
 
   <div class="card">
@@ -460,7 +494,7 @@ Wed Oct 14 — 6:30pm PAC Meeting (all day) [Richmond Secondary]
 
 Wed Oct 14 — A-PLT-BCD (all day) [Richmond Secondary]
 
-Wed Oct 14 · 7:30 PM — Layna — U12A Practice · Richmond Ice Centre Garage · Power Skating 75min. Share ice with U12B. [Ringette]
+Wed Oct 14 · 7:30 PM — Layna — U12A Practice · Richmond Ice Centre Garage · NRL development 75min. Share ice with U12B. [Ringette]
 
 Thu Oct 15 — Lunch: UVic Visit (all day) [Richmond Secondary]
 
@@ -486,15 +520,17 @@ Sun Oct 18 · 8:00 AM — Layna — U12A Practice · Richmond Ice Centre Pond [R
 
 Sun Oct 18 · 12:00 PM — Bunter Nachmittag - AVC Melody Choir [Austria Vancouver]
 
+Sun Oct 18 · 12:00 PM — Kayla — U16 Practice · Richmond Ice Centre Igloo [Ringette]
+
 Mon Oct 19 — EFGH (all day) [Richmond Secondary]
 
 Mon Oct 19 — Grade 10 Yearbook Photos (all day) [Richmond Secondary]
 
-Tue Oct 20 — Lunch: University of Calgary Visit (all day) [Richmond Secondary]
-
 Tue Oct 20 — ABCD (all day) [Richmond Secondary]
 
 Tue Oct 20 — Dussehra (all day) [Richmond Secondary]
+
+Tue Oct 20 — Lunch: University of Calgary Visit (all day) [Richmond Secondary]
 
 Wed Oct 21 — E-PLT-FGH (all day) [Richmond Secondary]
 
@@ -516,9 +552,9 @@ Mon Oct 26 · 12:00 AM — Austrian National Day [Austria Vancouver]
 
 Mon Oct 26 — EFGH (all day) [Richmond Secondary]
 
-Tue Oct 27 — ABCD (all day) [Richmond Secondary]
-
 Tue Oct 27 — Photo Retake Day (AM) (all day) [Richmond Secondary]
+
+Tue Oct 27 — ABCD (all day) [Richmond Secondary]
 
 Wed Oct 28 — E-PLT-FGH (all day) [Richmond Secondary]
 
@@ -540,9 +576,9 @@ Fri Oct 30 · 6:00 PM — Family Night [Austria Vancouver]
 
 Sat Oct 31 · 5:00 PM — UFC Fight Night: Moicano vs Nolan [UFC Events]
 
-Mon Nov 2 — ABCD (all day) [Richmond Secondary]
-
 Mon Nov 2 — GNA 10 Assessment (all day) [Richmond Secondary]
+
+Mon Nov 2 — ABCD (all day) [Richmond Secondary]
 
 Tue Nov 3 — EFGH (all day) [Richmond Secondary]
 
@@ -554,9 +590,9 @@ Wed Nov 4 — GLA 10 Assessment (if needed) (all day) [Richmond Secondary]
 
 Wed Nov 4 — Gr. 9 Take Our Kids to Work Day (all day) [Richmond Secondary]
 
-Thu Nov 5 — E-PLT-FGH (all day) [Richmond Secondary]
-
 Thu Nov 5 — SD38 Support Staff Day of Recognition (all day) [Richmond Secondary]
+
+Thu Nov 5 — E-PLT-FGH (all day) [Richmond Secondary]
 
 Fri Nov 6 — ABCD (all day) [Richmond Secondary]
 
@@ -680,7 +716,7 @@ Thu Nov 12 — E-PLT-FGH (all day) [Richmond Secondary]</pre></div>
   <div class="card"><div class="card-header"><span class="card-icon">🎸🌴</span><span>Upcoming Metal Shows</span></div><div class="mini-card"><div class="mini-detail">No upcoming shows.</div></div></div>
 
 
-  <div class="footer">🌴 FORGE OS · OCTOBER 14, 2026 · 07:37 AM · theseanman.github.io/forge-daily-brief<span id="sync-state"></span></div>
+  <div class="footer">🌴 FORGE OS · OCTOBER 14, 2026 · 10:31 AM · theseanman.github.io/forge-daily-brief<span id="sync-state"></span></div>
 
 </div>
 
@@ -803,7 +839,7 @@ function tick() {
     el.textContent = now.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
   }
 }
-window.FORGE_CALENDAR = [{"date": "Mon Oct 12", "time": "All day", "title": "POF W1 \u2014 Baseline (habitual training)"}, {"date": "Wed Oct 14", "time": "06:30 AM", "title": "POF \u2014 Morning reading"}, {"date": "Wed Oct 14", "time": "07:00 AM", "title": "POF \u2014 Step test + orthostatic test"}, {"date": "Wed Oct 14", "time": "09:41 AM", "title": "Mark: ELL 3 \u2014 DRAFT READ L10 \u2014 back before L12"}, {"date": "Wed Oct 14", "time": "01:54 PM", "title": "Mark: English 8 \u2014 QUICK READ L6 Part B from duotangs (CC10)"}, {"date": "Thu Oct 15", "time": "09:41 AM", "title": "Mark: Interim \u2014 Interim entries \u2014 second pass"}, {"date": "Fri Oct 16", "time": "12:30 AM", "title": "Richmond secondary flea clinic"}, {"date": "Sun Oct 18", "time": "07:00 PM", "title": "POF \u2014 Weekly deviations log"}, {"date": "Tue Oct 20", "time": "01:39 PM", "title": "Mark: ELL 1/2 \u2014 MARK the good copy \u2014 composition rubric"}, {"date": "Wed Oct 14", "time": "All day", "title": "6:30pm PAC Meeting"}, {"date": "Wed Oct 14", "time": "All day", "title": "A-PLT-BCD"}, {"date": "Wed Oct 14", "time": "07:30 PM", "title": "Layna \u2014 U12A Practice \u00b7 Richmond Ice Centre Garage \u00b7 Power Skating 75min. Share ice with U12B."}, {"date": "Thu Oct 15", "time": "All day", "title": "Lunch: UVic Visit"}, {"date": "Thu Oct 15", "time": "All day", "title": "E-PLT-FGH"}, {"date": "Thu Oct 15", "time": "06:30 PM", "title": "Layna \u2014 U12A Practice \u00b7 Richmond Ice Centre Coliseum \u00b7 Share ice with U12B"}, {"date": "Thu Oct 15", "time": "08:00 PM", "title": "Kayla \u2014 U16 Practice \u00b7 Richmond Ice Centre Forum \u00b7 Share ice with U19"}, {"date": "Fri Oct 16", "time": "All day", "title": "ABCD"}, {"date": "Fri Oct 16", "time": "04:30 AM", "title": "ONE Friday Fights 175 & The Inner Circle 35"}, {"date": "Fri Oct 16", "time": "06:00 PM", "title": "Family Night"}, {"date": "Sat Oct 17", "time": "12:00 AM", "title": "ONE Samurai 4"}, {"date": "Sat Oct 17", "time": "08:30 AM", "title": "Layna \u2014 U12A Practice \u00b7 Kitsilano Ice Rink (Vancouver) \u00b7 Scrimmage with VRA-A"}, {"date": "Sat Oct 17", "time": "05:00 PM", "title": "UFC Fight Night: Buckley vs Malott"}, {"date": "Sun Oct 18", "time": "08:00 AM", "title": "Layna \u2014 U12A Practice \u00b7 Richmond Ice Centre Pond"}, {"date": "Sun Oct 18", "time": "12:00 PM", "title": "Bunter Nachmittag - AVC Melody Choir"}, {"date": "Mon Oct 19", "time": "All day", "title": "EFGH"}, {"date": "Mon Oct 19", "time": "All day", "title": "Grade 10 Yearbook Photos"}, {"date": "Tue Oct 20", "time": "All day", "title": "Lunch: University of Calgary Visit"}, {"date": "Tue Oct 20", "time": "All day", "title": "ABCD"}, {"date": "Tue Oct 20", "time": "All day", "title": "Dussehra"}];
+window.FORGE_CALENDAR = [{"date": "Mon Oct 12", "time": "All day", "title": "POF W1 \u2014 Baseline (habitual training)"}, {"date": "Wed Oct 14", "time": "06:30 AM", "title": "POF \u2014 Morning reading"}, {"date": "Wed Oct 14", "time": "07:00 AM", "title": "POF \u2014 Step test + orthostatic test"}, {"date": "Wed Oct 14", "time": "09:41 AM", "title": "Mark: ELL 3 \u2014 DRAFT READ L10 \u2014 back before L12"}, {"date": "Wed Oct 14", "time": "01:54 PM", "title": "Mark: English 8 \u2014 QUICK READ L6 Part B from duotangs (CC10)"}, {"date": "Thu Oct 15", "time": "09:41 AM", "title": "Mark: Interim \u2014 Interim entries \u2014 second pass"}, {"date": "Fri Oct 16", "time": "12:30 AM", "title": "Richmond secondary flea clinic"}, {"date": "Sun Oct 18", "time": "07:00 PM", "title": "POF \u2014 Weekly deviations log"}, {"date": "Tue Oct 20", "time": "01:39 PM", "title": "Mark: ELL 1/2 \u2014 MARK the good copy \u2014 composition rubric"}, {"date": "Wed Oct 14", "time": "All day", "title": "6:30pm PAC Meeting"}, {"date": "Wed Oct 14", "time": "All day", "title": "A-PLT-BCD"}, {"date": "Wed Oct 14", "time": "07:30 PM", "title": "Layna \u2014 U12A Practice \u00b7 Richmond Ice Centre Garage \u00b7 NRL development 75min. Share ice with U12B."}, {"date": "Thu Oct 15", "time": "All day", "title": "Lunch: UVic Visit"}, {"date": "Thu Oct 15", "time": "All day", "title": "E-PLT-FGH"}, {"date": "Thu Oct 15", "time": "06:30 PM", "title": "Layna \u2014 U12A Practice \u00b7 Richmond Ice Centre Coliseum \u00b7 Share ice with U12B"}, {"date": "Thu Oct 15", "time": "08:00 PM", "title": "Kayla \u2014 U16 Practice \u00b7 Richmond Ice Centre Forum \u00b7 Share ice with U19"}, {"date": "Fri Oct 16", "time": "All day", "title": "ABCD"}, {"date": "Fri Oct 16", "time": "04:30 AM", "title": "ONE Friday Fights 175 & The Inner Circle 35"}, {"date": "Fri Oct 16", "time": "06:00 PM", "title": "Family Night"}, {"date": "Sat Oct 17", "time": "12:00 AM", "title": "ONE Samurai 4"}, {"date": "Sat Oct 17", "time": "08:30 AM", "title": "Layna \u2014 U12A Practice \u00b7 Kitsilano Ice Rink (Vancouver) \u00b7 Scrimmage with VRA-A"}, {"date": "Sat Oct 17", "time": "05:00 PM", "title": "UFC Fight Night: Buckley vs Malott"}, {"date": "Sun Oct 18", "time": "08:00 AM", "title": "Layna \u2014 U12A Practice \u00b7 Richmond Ice Centre Pond"}, {"date": "Sun Oct 18", "time": "12:00 PM", "title": "Bunter Nachmittag - AVC Melody Choir"}, {"date": "Sun Oct 18", "time": "12:00 PM", "title": "Kayla \u2014 U16 Practice \u00b7 Richmond Ice Centre Igloo"}, {"date": "Mon Oct 19", "time": "All day", "title": "EFGH"}, {"date": "Mon Oct 19", "time": "All day", "title": "Grade 10 Yearbook Photos"}, {"date": "Tue Oct 20", "time": "All day", "title": "ABCD"}, {"date": "Tue Oct 20", "time": "All day", "title": "Dussehra"}, {"date": "Tue Oct 20", "time": "All day", "title": "Lunch: University of Calgary Visit"}];
 window.FORGE_GEN_DATE = "2026-10-14";
 window.onload = function() {
   pimgPaint(); pimgPull(); setInterval(tick, 1000);
