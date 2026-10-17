@@ -100,6 +100,85 @@
   .done-view.on{ display:block; }
   .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
   .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+
+  /* four-tab toggle fits a phone */
+  .toggle button{ padding:8px 11px; font-size:11.5px; letter-spacing:.08em; }
+  #bag, #quiz{ display:none; }
+
+  /* ---------- BAG ---------- */
+  .subtog{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:14px; padding:4px; margin:4px 0 16px; }
+  .subtog button{ flex:1; border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.08em;
+    text-transform:uppercase; padding:11px 6px; border-radius:10px; cursor:pointer; }
+  .subtog button.on{ background:linear-gradient(135deg,#4a9de8,#7b6cf0); color:#fff; }
+  .bview{ display:none; } .bview.on{ display:block; }
+  .rule{ background:linear-gradient(135deg,rgba(123,108,240,.22),rgba(74,157,232,.16)); border:1px solid rgba(160,150,255,.35);
+    border-radius:14px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:16px; }
+  .rule b{ color:#c8c0ff; }
+  .meter{ display:flex; align-items:center; gap:10px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:var(--ink-dim); margin-bottom:10px; }
+  .meter .track{ flex:1; height:6px; background:rgba(255,255,255,.12); border-radius:4px; overflow:hidden; }
+  .meter .fill{ height:100%; background:linear-gradient(90deg,#4a9de8,#a78bfa); border-radius:4px; transition:width .4s; }
+  .dcard{ background:linear-gradient(160deg,rgba(30,90,168,.45),rgba(13,53,114,.55)); border:1px solid rgba(127,191,255,.35);
+    border-radius:18px; padding:18px 17px; margin-bottom:16px; }
+  .dk{ font-size:11px; letter-spacing:.2em; text-transform:uppercase; font-weight:800; color:var(--accent-hi); }
+  .dk.fw{ color:#8fd6ad; }
+  .dname{ font-size:24px; font-weight:700; margin:3px 0 4px; }
+  .dwhen{ font-size:14px; color:var(--ink-dim); font-style:italic; margin-bottom:12px; line-height:1.5; }
+  .seq-ol{ list-style:none; counter-reset:s; margin:0 0 12px; }
+  .seq-ol li{ counter-increment:s; position:relative; padding:9px 10px 9px 42px; margin-bottom:6px; background:rgba(6,28,64,.55);
+    border:1px solid var(--line); border-radius:11px; font-size:15.5px; line-height:1.45; }
+  .seq-ol li:before{ content:counter(s); position:absolute; left:10px; top:8px; width:23px; height:23px; border-radius:50%;
+    background:#4a9de8; color:#06264f; font-size:12.5px; font-weight:800; display:flex; align-items:center; justify-content:center; }
+  .seq-ol li.ex:before{ content:'\2192'; background:#3fae6b; color:#04231a; }
+  .focus{ font-size:13.5px; line-height:1.55; color:var(--ink-dim); border-left:3px solid #a78bfa; padding:3px 0 3px 11px; margin-bottom:14px; }
+  .focus b{ color:#c8c0ff; }
+  .reps{ display:flex; gap:8px; justify-content:center; margin:6px 0 4px; }
+  .rep{ width:30px; height:30px; border-radius:50%; border:2px solid rgba(127,191,255,.45); }
+  .rep.on{ background:#3fae6b; border-color:#3fae6b; box-shadow:0 0 12px rgba(63,174,107,.6); }
+  .reps-k{ text-align:center; font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; margin-bottom:12px; }
+  .btn.clean{ background:#3fae6b; color:#04231a; }
+  .btn.notyet{ background:rgba(224,96,58,.85); color:#fff; }
+  .earned{ display:none; text-align:center; background:rgba(63,174,107,.16); border:1px solid #3fae6b; border-radius:12px; padding:12px; margin-top:12px; font-size:14.5px; }
+  .earned.on{ display:block; }
+  .earned b{ color:#8fd6ad; }
+  .dl{ display:flex; align-items:center; gap:11px; padding:11px 12px; border:1px solid var(--line); border-radius:12px; margin-bottom:7px;
+    background:rgba(9,36,80,.35); cursor:pointer; font-size:14.5px; }
+  .dl .n{ width:26px; height:26px; flex:none; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800;
+    background:rgba(255,255,255,.12); color:var(--ink-dim); }
+  .dl.done .n{ background:#3fae6b; color:#04231a; }
+  .dl.cur{ border-color:#a78bfa; background:rgba(123,108,240,.18); }
+  .dl.cur .n{ background:#a78bfa; color:#1a1040; }
+  .dl.locked{ opacity:.42; cursor:default; }
+  .dl .t{ flex:1; } .dl .s{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; }
+  .speed{ display:flex; gap:6px; margin-bottom:14px; }
+  .speed button{ flex:1; border:1px solid var(--line); background:rgba(9,36,80,.45); color:var(--ink-dim); border-radius:10px; padding:10px 4px;
+    font-size:12px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; }
+  .speed button.on{ border-color:#a78bfa; color:#fff; background:rgba(123,108,240,.3); }
+  .cuebox{ min-height:210px; border-radius:18px; border:1px solid rgba(127,191,255,.35); background:radial-gradient(ellipse at 50% 0%,rgba(74,157,232,.3),rgba(6,28,64,.7));
+    display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px 16px; margin-bottom:14px; }
+  .cuebox.hot{ background:radial-gradient(ellipse at 50% 0%,rgba(224,60,90,.45),rgba(40,10,40,.75)); border-color:#e0506e; }
+  .cuebox.stop{ background:radial-gradient(ellipse at 50% 0%,rgba(63,174,107,.45),rgba(6,40,30,.75)); border-color:#3fae6b; }
+  .cue{ font-size:clamp(26px,7.5vw,40px); font-weight:800; line-height:1.2; }
+  .cue-sub{ font-size:14px; color:var(--ink-dim); margin-top:10px; line-height:1.45; }
+  .rstats{ display:flex; justify-content:space-around; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; margin-bottom:14px; }
+  .rstats span b{ display:block; font-size:22px; color:var(--ink); letter-spacing:0; }
+  .opp{ margin-bottom:13px; }
+  .lean{ font-size:12.5px; color:#c8c0ff; margin-top:8px; font-weight:700; }
+
+  /* ---------- QUIZ ---------- */
+  .tbar{ height:8px; background:rgba(255,255,255,.12); border-radius:5px; overflow:hidden; margin:6px 0 16px; }
+  .tfill{ height:100%; width:100%; background:linear-gradient(90deg,#e0506e,#a78bfa,#4a9de8); border-radius:5px; }
+  .qmeta{ display:flex; justify-content:space-between; font-size:12px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:var(--ink-dim); }
+  .qprompt{ font-size:clamp(19px,5vw,24px); font-weight:500; line-height:1.4; margin:4px 0 16px; }
+  .opt{ display:block; width:100%; text-align:left; border:1px solid var(--line); background:rgba(9,36,80,.5); color:var(--ink);
+    border-radius:13px; padding:14px 15px; font-size:15px; line-height:1.4; margin-bottom:9px; cursor:pointer; }
+  .opt.right{ background:rgba(63,174,107,.28); border-color:#3fae6b; }
+  .opt.wrong{ background:rgba(224,80,110,.25); border-color:#e0506e; }
+  .opt:disabled{ cursor:default; }
+  .why{ display:none; font-size:14px; line-height:1.55; color:var(--ink-dim); border-left:3px solid #a78bfa; padding:4px 0 4px 11px; margin:6px 0 14px; }
+  .why.on{ display:block; }
+  .qbig{ font-size:48px; font-weight:200; text-align:center; margin:18px 0 4px; }
+  .qsmall{ text-align:center; font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  .qv{ display:none; } .qv.on{ display:block; }
 </style>
 </head>
 <body>
@@ -108,8 +187,60 @@
   <div class="topbar">
     <a href="./" class="back">&larr; Brief</a>
     <div class="toggle">
+      <button id="tab-bag" onclick="setMode('bag')">Bag</button>
       <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
       <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+      <button id="tab-quiz" onclick="setMode('quiz')">Quiz</button>
+    </div>
+  </div>
+
+  <!-- ===================== BAG ===================== -->
+  <div id="bag">
+    <h1>Bag Work</h1>
+    <div class="sub">Bursts, footwork and reaction on Bob. Learn one drill until it is clean three times running, then React mixes in only the drills you have earned.</div>
+
+    <div class="rule"><b>Leave if you can.</b> Once it is on: <b>burst</b> &mdash; continuous strikes until he no longer can or will fight. Then <b>stop, scan, exit</b>. Stopping early leaves you exposed; going past the stop signal is what s.34 punishes.</div>
+
+    <div class="subtog">
+      <button id="bt-learn" class="on" onclick="bagView('learn')">Learn</button>
+      <button id="bt-react" onclick="bagView('react')">React</button>
+      <button id="bt-opp" onclick="bagView('opp')">Opponents</button>
+    </div>
+
+    <!-- LEARN -->
+    <div class="bview on" id="bv-learn">
+      <div class="meter"><span id="bg-count">0 of 14 earned</span><div class="track"><div class="fill" id="bg-fill" style="width:0%"></div></div></div>
+      <div class="dcard" id="bg-card"></div>
+      <div class="section-k">All drills</div>
+      <div id="bg-list"></div>
+      <div class="note">Why one at a time: practising a single skill in a block builds it fastest, and mixing skills randomly afterwards is what makes them stick and transfer (the contextual-interference effect, Shea &amp; Morgan 1979). Learn is the block; React is the mix. The app cannot see you &mdash; &ldquo;clean&rdquo; is your honest call on each rep.</div>
+      <div class="note" style="margin-top:12px;"><button class="how-btn" onclick="bagReset()">Reset progress</button></div>
+    </div>
+
+    <!-- REACT -->
+    <div class="bview" id="bv-react">
+      <div class="note" style="margin:0 0 10px;">Your phone calls a situation at random; you respond on Bob immediately. After a burst call, a second call tells you whether he is <b>still coming</b> (keep going) or <b>done</b> (stop, scan, exit). It keeps calling until you press Stop.</div>
+      <div class="speed" id="bg-speed">
+        <button data-s="slow" onclick="setSpeed('slow')">Steady<br>12&ndash;25 s</button>
+        <button data-s="std" class="on" onclick="setSpeed('std')">Standard<br>8&ndash;20 s</button>
+        <button data-s="fast" onclick="setSpeed('fast')">Fast<br>5&ndash;12 s</button>
+      </div>
+      <div class="cuebox" id="bg-cuebox"><div class="cue" id="bg-cue">Ready</div><div class="cue-sub" id="bg-cuesub">Set a shoe or cone 2 m to one side of Bob &mdash; that is your exit and your second attacker.</div></div>
+      <div class="rstats"><span>Time<b id="bg-time">0:00</b></span><span>Calls<b id="bg-calls">0</b></span><span>In pool<b id="bg-pool">0</b></span></div>
+      <div class="bar"><button class="btn clean" id="bg-start" onclick="reactStart()">Start</button><button class="btn ghost" id="bg-stop" onclick="reactStop()" disabled>Stop</button></div>
+      <div class="note" style="margin-top:14px;">Keep the page open with the sound up &mdash; phones pause speech when the screen locks. The page asks the phone to stay awake while it runs.</div>
+    </div>
+
+    <!-- OPPONENTS -->
+    <div class="bview" id="bv-opp">
+      <div class="note" style="margin:0 0 12px;">Read these <b>before</b> contact, while you are still talking and positioning. They adjust one plan &mdash; they are not separate plans to choose between once it starts.</div>
+      <div id="bg-opp"></div>
+      <div class="card red">
+        <div class="p-head"><span class="p-name">What Bob cannot train</span></div>
+        <div class="move r"><b>Weapon control and disarms</b> need a partner with a training knife. Practising them alone on a bag grooves motions that fail against a moving arm. On Bob, weapon calls train <b>the run</b>.</div>
+        <div class="move r"><b>Movement against a live second attacker</b> &mdash; the marker stands in for him, but nothing on it moves.</div>
+        <div class="move">Both come back when you return to class. Until then: recognition here, bursts and footwork on Bob.</div>
+      </div>
     </div>
   </div>
 
@@ -154,7 +285,7 @@
     <div class="card">
       <div class="p-head"><span class="p-name">Reasonable force, then stop</span></div>
       <div class="p-ess">Canada has no &ldquo;stand your ground.&rdquo; s.34 is lawful only if all three hold: you reasonably believe force/threat is on you or another; you act to defend; the act is reasonable in the circumstances.</div>
-      <div class="move"><b>Proportionality is the whole game</b> &mdash; only the force needed to stop the harm. It stops the instant you can escape; continued force turns you into the aggressor.</div>
+      <div class="move"><b>Proportionality is the whole game</b> &mdash; the force needed to stop the threat, and it stops the instant the threat ends or you can escape. Continued force past that point turns you into the aggressor.</div>
       <div class="move"><b>Defending family/friends is inside s.34</b> &mdash; covered, not extra legal risk.</div>
       <div class="move"><b>Your training raises the bar</b> &mdash; a court weighs your Krav skill (R v Khill). A reasonable <i>trained</i> person controls with less. Skill is a reason for restraint, not a licence.</div>
       <div class="note"><b>Weapons trap:</b> you cannot carry anything for self-defense. Pepper spray is a prohibited weapon; a knife or bear spray carried to defend yourself is an offence. The lawful answer to a known threat is police + a peace bond, never a blade in your pocket.</div>
@@ -184,7 +315,7 @@
         <text x="70" y="144" fill="#eaf4ff" font-size="13.5" font-weight="600">Pre-assault (2+ cues) &mdash; hands up, move to exit</text>
         <rect x="16" y="170" width="528" height="46" rx="10" fill="rgba(236,138,60,.12)" stroke="#ec8a3c" stroke-width="1.3"/>
         <circle cx="44" cy="193" r="13" fill="#ec8a3c"/><text x="44" y="198" text-anchor="middle" fill="#06264f" font-size="14" font-weight="800">3</text>
-        <text x="70" y="198" fill="#eaf4ff" font-size="13.5" font-weight="600">Imminent &mdash; one decisive action, then escape</text>
+        <text x="70" y="198" fill="#eaf4ff" font-size="13.5" font-weight="600">Imminent &mdash; burst until he stops, then escape</text>
         <rect x="16" y="224" width="528" height="46" rx="10" fill="rgba(224,96,58,.13)" stroke="#e0603a" stroke-width="1.3"/>
         <circle cx="44" cy="247" r="13" fill="#e0603a"/><text x="44" y="252" text-anchor="middle" fill="#fff" font-size="14" font-weight="800">4</text>
         <text x="70" y="252" fill="#eaf4ff" font-size="13.5" font-weight="600">Weapon / multiple / underway &mdash; extract or comply, escape</text>
@@ -199,7 +330,7 @@
       <div class="move"><b>Command word</b> &mdash; a pre-agreed phrase = <i>go now, to the rally point.</i> Decide the word and the point today. Highest-leverage item on this page.</div>
       <div class="move"><b>Interpose + loud boundary</b> &mdash; body between threat and them; &ldquo;Back up. Stay back.&rdquo; Creates space and witnesses.</div>
       <div class="move"><b>Extract as a unit</b> &mdash; you between threat and family, moving to the exit.</div>
-      <div class="move r"><b>Force only if the gap closes</b> &mdash; one opening, then resume extraction. Never pursue.</div>
+      <div class="move r"><b>Force only if the gap closes</b> &mdash; burst until he stops, then resume extraction. Never pursue.</div>
     </div>
     <div class="card">
       <div class="p-head"><span class="p-num">B</span><span class="p-name">Self or friends</span></div>
@@ -207,7 +338,7 @@
       <div class="move"><b>Leave</b> &mdash; early, before it sets. The whole strategy most of the time.</div>
       <div class="move"><b>De-escalate</b> &mdash; open hands (a guard that also reads as calm to witnesses), even voice, give him a face-saving exit.</div>
       <div class="move"><b>Boundary + distance</b> &mdash; &ldquo;I don&rsquo;t want trouble &mdash; back up.&rdquo;</div>
-      <div class="move r"><b>Force only if forced</b> &mdash; minimum to break contact, then leave and <i>you</i> call police first.</div>
+      <div class="move r"><b>Force only if forced</b> &mdash; burst until he no longer can or will fight, then stop, leave, and <i>you</i> call police first.</div>
     </div>
 
     <div class="fig">
@@ -240,15 +371,17 @@
 
     <div class="section-k">When escape is gone &middot; respond &amp; train</div>
 
+    <div class="rule">The bursts and footwork for every situation below are drilled in the <b>Bag</b> tab &mdash; <a href="#bag" onclick="setMode('bag');return false;" style="color:#c8c0ff;font-weight:800;">open it &rarr;</a></div>
+
     <div class="card">
       <div class="p-head"><span class="p-name">Sucker punch / haymaker</span></div>
       <div class="p-ess">The most common real attack &mdash; an ambush strike from talking range.</div>
-      <div class="move"><b>Respond</b> &mdash; from the hands-up stance: cover/deflect while off-lining, one counter to buy space, disengage.</div>
+      <div class="move"><b>Respond</b> &mdash; from the hands-up stance: cover/deflect while off-lining, then <b>burst</b> &mdash; continuous strikes until he stops &mdash; then disengage.</div>
       <div class="move"><b>Train</b> &mdash; partner throws from conversational range, telegraphed then surprise timing; drill at elevated heart rate; every rep ends moving to an exit.</div>
-      <div class="move r"><b>If no opening</b> &mdash; continuous defensive action only until one appears, then leave.</div>
+      <div class="move r"><b>The stop signal</b> &mdash; hands drop, he turns away, covers up or goes down: stop, scan for a second man, exit. Drill it in the Bag tab.</div>
       <div class="how">
-        <button class="how-btn" onclick="toggleHow(this)"><span class="chev">&#9656;</span> The one counter</button>
-        <div class="how-body"><div class="hb">Keep it gross-motor &mdash; fine motor vanishes under adrenaline, so one simple thing beats a combination. From hands-up, the highest-percentage counter is a <b>straight strike forward to the face</b>: shortest distance to travel, puts him on his heels, buys the half-second. Already chest-to-chest? The space-maker is a <b>knee to the midsection</b> to fold him. Throw <b>one</b> thing to make the gap, then leave &mdash; no follow-up, no chasing.</div></div>
+        <button class="how-btn" onclick="toggleHow(this)"><span class="chev">&#9656;</span> The burst</button>
+        <div class="how-body"><div class="hb">Krav&rsquo;s answer is <b>continuous attack</b>, not a single counter: one strike rarely stops a determined attacker, it just hands him the next move. Keep every strike gross-motor &mdash; adrenaline strips fine control. From hands-up, lead with <b>straight punches driving forward to the face</b>; already chest-to-chest, switch to <b>elbows and knees</b>. No pause to admire a hit. Keep firing until the <b>stop signal</b> &mdash; hands drop, he turns away, covers up or goes down &mdash; then <span class="warn">stop</span>, scan for a second man, and leave. No chasing. The bursts for each situation are in the Bag tab.</div></div>
       </div>
     </div>
 
@@ -266,7 +399,7 @@
       <div class="move"><b>Train</b> &mdash; mechanics slow first, then progressive resistance on the clear-and-counter; controlled airway-pressure reps with a safety word; rear version from a startle.</div>
       <div class="how">
         <button class="how-btn" onclick="toggleHow(this)"><span class="chev">&#9656;</span> Defend the airway</button>
-        <div class="how-body"><div class="hb">Two jobs at once. <b>Clear the grip:</b> your hands drive up-and-out against his thumbs/wrists to peel the hands off your throat, while you <b>tuck your chin down</b> to shield the windpipe. <b>Simultaneously counter</b> (the straight strike, or drive forward into him) so he has to deal with something other than choking you. Sequence: chin down &rarr; clear &rarr; counter &rarr; space &rarr; leave. <span class="warn">Airway first, always</span> &mdash; a choke can put you out in seconds, so nothing else happens until the pressure is off your neck.</div></div>
+        <div class="how-body"><div class="hb">Two jobs at once. <b>Clear the grip:</b> your hands drive up-and-out against his thumbs/wrists to peel the hands off your throat, while you <b>tuck your chin down</b> to shield the windpipe. <b>Simultaneously counter</b> (the straight strike, or drive forward into him) so he has to deal with something other than choking you. Sequence: chin down &rarr; clear &rarr; counter-burst &rarr; stop signal &rarr; leave. <span class="warn">Airway first, always</span> &mdash; a choke can put you out in seconds, so nothing else happens until the pressure is off your neck.</div></div>
       </div>
     </div>
 
@@ -313,7 +446,7 @@
     <div class="card">
       <div class="p-head"><span class="p-name">Defending family while engaged</span></div>
       <div class="p-ess">You&rsquo;re in contact and they need to move.</div>
-      <div class="move"><b>Respond</b> &mdash; interpose, one decisive action to make space, then extract. Fight only enough to move them.</div>
+      <div class="move"><b>Respond</b> &mdash; interpose, burst until he stops, then extract. Fight only enough to move them.</div>
       <div class="move"><b>Train</b> &mdash; partner is the threat, another plays family; reps are command-interpose-extract, ending with family at the exit. Never pursue.</div>
     </div>
 
@@ -354,17 +487,48 @@
     <div class="foot">Say each aloud before revealing.</div>
   </div>
 
+  <!-- ===================== QUIZ ===================== -->
+  <div id="quiz">
+    <div class="qv on" id="qz-intro">
+      <h1>Read and React</h1>
+      <div class="sub">Ten situations, ten seconds each. Pick the right response before the bar runs out &mdash; faster answers score more.</div>
+      <div class="qbig" id="qz-best">0</div>
+      <div class="qsmall">Best score</div>
+      <div class="bar" style="margin-top:22px;"><button class="btn" onclick="qzStart()">Start</button></div>
+    </div>
+    <div class="qv" id="qz-play">
+      <div class="qmeta"><span id="qz-n">1 / 10</span><span id="qz-score">0 pts</span></div>
+      <div class="tbar"><div class="tfill" id="qz-t"></div></div>
+      <div class="qprompt" id="qz-q"></div>
+      <div id="qz-opts"></div>
+      <div class="why" id="qz-why"></div>
+      <div class="bar"><button class="btn" id="qz-next" onclick="qzNext()" style="display:none">Next</button></div>
+    </div>
+    <div class="qv" id="qz-end">
+      <div class="qbig" id="qz-final">0</div>
+      <div class="qsmall" id="qz-endk">Points</div>
+      <div class="note" id="qz-endnote" style="text-align:center;margin-top:12px;"></div>
+      <div class="bar" style="margin-top:22px;"><button class="btn" onclick="qzStart()">Again</button><button class="btn ghost" onclick="setMode('bag')">Bag</button></div>
+    </div>
+  </div>
+
 </div>
 
 <script>
 /* ---------------- mode ---------------- */
+var MODES=['bag','read','drill','quiz'], TKEY='forge-selfdefense-tab';
 function setMode(m){
-  var read = m === 'read';
-  document.getElementById('read').style.display  = read ? '' : 'none';
-  document.getElementById('drill').style.display = read ? 'none' : 'block';
-  document.getElementById('tab-read').className  = read ? 'on' : '';
-  document.getElementById('tab-drill').className = read ? '' : 'on';
-  if(!read){ idx=0; document.getElementById('done').className='done-view'; document.getElementById('stage').style.display=''; renderStep(); }
+  if(MODES.indexOf(m)<0) m='read';
+  for(var i=0;i<MODES.length;i++){
+    var k=MODES[i];
+    document.getElementById(k).style.display = (k===m) ? 'block' : 'none';
+    document.getElementById('tab-'+k).className = (k===m) ? 'on' : '';
+  }
+  if(m==='drill'){ idx=0; document.getElementById('done').className='done-view'; document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity=''; renderStep(); }
+  if(m==='quiz'){ qzIntro(); } else { qzHalt(); }
+  if(m!=='bag'){ reactStop(); }
+  try{ localStorage.setItem(TKEY, m); }catch(e){}
+  try{ history.replaceState(null,'', m==='bag' ? '#bag' : location.pathname + location.search); }catch(e){}
   window.scrollTo(0,0);
 }
 
@@ -400,14 +564,14 @@ document.getElementById('photo').addEventListener('touchend', function(){ if(lpT
 /* ---------------- drill ---------------- */
 var STEPS = [
   { prompt:'State the <b>s.34 test</b> in one line.', lines:['Reasonable belief of a threat + a defensive purpose + a response <b>reasonable in the circumstances</b>.'] },
-  { prompt:'The <b>proportionality</b> rule.', lines:['Only the force needed to escape &mdash; and it <b>stops the instant you can leave</b>.'] },
+  { prompt:'The <b>proportionality</b> rule.', lines:['The force needed to stop the threat &mdash; and it <b>stops the instant the threat ends</b> or you can leave.'] },
   { prompt:'The <b>weapons</b> rule.', lines:['Carry <b>nothing</b> for self-defense. Police + peace bond, never a blade.'] },
   { prompt:'The <b>priority order</b>.', lines:['<b>Avoid &rarr; de-escalate &rarr; escape &rarr; force.</b> Force is last.'] },
   { prompt:'<b>Family</b> posture &mdash; three beats.', lines:['<b>Command word &rarr; interpose + boundary &rarr; extract.</b> Never pursue.'] },
   { prompt:'<b>Self / friends</b> posture.', lines:['<b>Leave.</b> Ego is the enemy; a fight you could have left is a loss.'] },
   { prompt:'Name <b>three pre-assault cues</b>.', lines:['Hidden hands / closing after you stepped back / target stare after agitation.','(also: blading the body, the &ldquo;interview&rdquo;)'] },
   { prompt:'The <b>multiple-attacker</b> rule.', lines:['<b>Never surrounded, never the ground.</b> Keep them on one line and leave.'] },
-  { prompt:'Core response when <b>contact is forced</b>.', lines:['Defend + counter &rarr; <b>one opening</b> &rarr; escape.','Continuous action only <i>until</i> the opening.'] },
+  { prompt:'Core response when <b>contact is forced</b>.', lines:['Defend &rarr; <b>burst</b> until the stop signal &rarr; scan &rarr; escape.','Stop signal: hands drop, turns away, covers up, goes down.'] },
   { prompt:'The <b>choke</b> response.', lines:['<b>Airway first</b> &mdash; clear the hands, counter to release, make space, escape.'] },
   { prompt:'<b>Weapon-when-cornered</b> order.', lines:['<b>Distance / give up property / run</b> first.','Control-and-escape only if truly cornered.'] },
   { prompt:'<b>After</b> the incident.', lines:['Stop when you can leave. <b>You call 911 first.</b> Lawyer before a detailed statement.'] }
@@ -464,8 +628,322 @@ function markDone(){
   return s;
 }
 
+/* =================== BAG =================== */
+/* Ladder order = unlock order. fw = footwork drill (no strikes). */
+var BAG=[
+ {id:'f1', fw:1, name:'Stance and shuffle', when:'Every session starts here.',
+  seq:['Fence stance: hands up and open in front of your face, chin down, feet shoulder-width, lead foot forward','Shuffle forward four times','Shuffle back four times','Shuffle left four, then right four'],
+  exit:'Finish in the fence, eyes on Bob',
+  focus:'<b>Never cross your feet</b> &mdash; the foot nearest the direction of travel moves first. Knees soft, weight on the balls of the feet, hands never drop.'},
+ {id:'f2', fw:1, name:'Off-line step', when:'Getting your head off his centreline.',
+  seq:['From the fence, step forward and outside at 45&deg;','Pivot on the lead foot to square up to Bob from the new angle','Back to centre, then the other side &mdash; alternate'],
+  exit:'Finish facing Bob from the outside angle',
+  focus:'<b>The head moves with the step</b>, not after it. If your head is still where it started, his punch still lands.'},
+ {id:'b1', name:'Straight burst', when:'Sucker-punch range: he is in front of you, at talking distance, and swings or closes.',
+  seq:['From the fence: straight punch left, right, left, right &mdash; at least six, without a pause','Walk forward through Bob as you punch &mdash; every strike drives him back','Stop signal: stop, scan left and right'],
+  exit:'Shuffle back to your exit marker, guard up',
+  focus:'<b>Hips behind every punch</b>, chin down, rear hand returns to the face. The burst is one continuous stream, not single shots.'},
+ {id:'f3', fw:1, name:'Burst in, burst out', when:'Closing the distance and leaving again, fast.',
+  seq:['Explode two steps into Bob, hands up','Touch him with two straight punches','Drive straight back to your exit marker, guard up, eyes on Bob the whole way'],
+  exit:'Leaving is a sprint, not a stroll',
+  focus:'<b>Leaving is as fast as arriving.</b> The same drill trains the weapon response: when a call says &ldquo;pocket&rdquo; or &ldquo;blade&rdquo;, you do only the burst <i>out</i>.'},
+ {id:'b2', name:'Palm and elbows', when:'Too close to punch: he is nose to nose, in your face.',
+  seq:['Palm heel up under the chin','Horizontal elbow, rear side','Horizontal elbow, lead side','As he backs off, straight punches driving forward'],
+  exit:'Off-line step, then to the exit',
+  focus:'<b>Turn the hips into each elbow</b> &mdash; the power comes from rotation, not the arm. Elbows are for when there is no room to punch.'},
+ {id:'b4', name:'Groin kick entry', when:'He is squared up about a leg&rsquo;s length away, hands low or loading.',
+  seq:['Front kick up into the groin line (the lowest part of Bob&rsquo;s torso)','Land forward, not back','Straight, straight','Elbow as you arrive'],
+  exit:'Off-line step, then to the exit',
+  focus:'<b>Kick up, not into</b> &mdash; shin or instep travelling upward. Bob has no legs, so the target line is approximate. The kick closes the distance for the hands.'},
+ {id:'b3', name:'Clinch knees', when:'He has grabbed your shirt, or you are chest to chest.',
+  seq:['Both hands behind Bob&rsquo;s head and neck, pull down hard','Knee into the body &mdash; three, alternating or same side','Shove off with both hands','Straight, straight'],
+  exit:'Back to the exit, guard up',
+  focus:'<b>Pull the head into the knee</b> while the hips drive up. Not against a much stronger man &mdash; see Opponents.'},
+ {id:'b7', name:'Off-line counter', when:'A wide swing or haymaker is coming, or he is left-handed.',
+  seq:['Off-line step outside at 45&deg;, guard covering the side of your head','Elbow or hook from the outside angle','Straight punches driving into Bob','Keep him turning to find you'],
+  exit:'Exit along the outside line, away from his power hand',
+  focus:'<b>You end up beside him, not in front of him.</b> From the outside he has to turn before he can hit you again.'},
+ {id:'b6', name:'Choke counter', when:'His hands are on your throat.',
+  seq:['Start with your own hands at your throat &mdash; that is the cue','Pluck: both hands drive up and out against the thumbs, chin tucks','Instantly knee into Bob','Straight burst'],
+  exit:'Stop signal, scan, exit',
+  focus:'<b>Airway first.</b> The pluck and the counter happen together &mdash; never pluck, pause, then hit.'},
+ {id:'b5', name:'Hammerfists down', when:'He is bent over, ducking, or shooting for your legs.',
+  seq:['Sprawl the hips back, base low','Hammerfists down to the head, four, alternating','Knee','Push him away'],
+  exit:'Shuffle out to the exit',
+  focus:'<b>Bend the knees, not the back</b> &mdash; reaching down with your spine puts you on the ground with him.'},
+ {id:'f4', fw:1, name:'Pivot and stack', when:'Footwork for two attackers.',
+  seq:['Place a shoe or cone 2 m to one side of Bob &mdash; that is attacker two','Pivot so Bob sits between you and the marker','Shuffle so they stay on one line as you move toward the exit','Switch the marker to the other side and repeat'],
+  exit:'End at the exit with both on one line in front of you',
+  focus:'<b>Nearest man between you and the rest</b>, always. If you can see both without turning your head, you are stacked.'},
+ {id:'b8', name:'Burst and stack', when:'Two of them.',
+  seq:['Short burst on Bob &mdash; three or four strikes','Pivot so Bob is between you and the marker','Shuffle to the exit, keeping them on one line','Never clinch, never stay'],
+  exit:'Out the exit, eyes on both',
+  focus:'<b>The burst is short with two men.</b> Every second you spend on one is a second the other spends reaching you.'},
+ {id:'b9', name:'Cornered', when:'A wall or door at your back, distance gone.',
+  seq:['Stand one step in front of a wall or door, Bob in front of you','Off-line pivot so the wall ends up beside you','Straight burst into Bob','Exit along the open lane'],
+  exit:'Out the lane, not back toward the wall',
+  focus:'<b>Move first, strike second.</b> While your spine is on the wall line you are absorbing everything.'},
+ {id:'b10', name:'Ground to feet', when:'You have been knocked down.',
+  seq:['Sit on the floor beside Bob, guard up','Technical stand-up: post one hand behind you, plant the opposite foot, lift the hips, slide the trailing leg back','Guard up the moment you are standing','Two straights if he is closing, then move'],
+  exit:'Standing and leaving, facing him',
+  focus:'<b>Face Bob the whole time</b> &mdash; never turn your back to get up. The rep ends standing and moving away.'}
+];
+/* React calls per drill; a burst call is followed by "still coming" or a stop signal */
+var CUES={
+ f1:[['Fence up!','Hands up, open, chin down.'],['Shuffle back!',''],['Shuffle left!',''],['Shuffle right!','']],
+ f2:[['Off-line right!','45 degrees, pivot to face.'],['Off-line left!','45 degrees, pivot to face.']],
+ b1:[['He swings from talking range!','Straight burst.'],['Sucker punch coming!','Straight burst.']],
+ f3:[['Burst in, burst out!','Two straights, then back to the exit.'],['Hand in his pocket &mdash; distance!','Burst OUT only. Run to the exit.'],['Blade! Run!','No strikes. Out the exit.']],
+ b2:[['He is right in your face!','Palm and elbows.']],
+ b4:[['He squares up, a leg away!','Groin kick entry.']],
+ b3:[['He grabbed your shirt!','Clinch knees.']],
+ b7:[['Wide swing coming!','Off-line counter.'],['Lefty, right foot forward &mdash; he swings!','Off-line to your left, away from his left hand.']],
+ b6:[['Hands on your throat!','Pluck and knee.']],
+ b5:[['He is shooting for your legs!','Sprawl, hammerfists down.']],
+ f4:[['Second man, left!','Pivot and stack.'],['Second man, right!','Pivot and stack.']],
+ b8:[['Two of them &mdash; go!','Short burst, stack, exit.']],
+ b9:[['Wall at your back!','Off-line first, then burst.']],
+ b10:[['You are down!','Technical stand-up, facing him.']]
+};
+var STOPS=[['He is covering up &mdash; STOP!','Scan both sides, then exit.'],['Hands down, he is turning away &mdash; STOP!','Scan, then exit.'],['He is down &mdash; STOP!','Do not follow him. Scan, exit.']];
+var GOES=[['Still coming &mdash; keep going!',''],['He is still swinging &mdash; keep going!','']];
+var NEED=3, BKEY='forge-selfdefense-bag';
+function bRead(){ try{ var v=JSON.parse(localStorage.getItem(BKEY)||'{}'); if(v&&typeof v==='object'&&!Array.isArray(v)){ v.done=v.done||{}; v.run=v.run||{}; v.clean=v.clean||{}; return v; } }catch(e){} return {done:{},run:{},clean:{}}; }
+function bSave(s){ try{ localStorage.setItem(BKEY, JSON.stringify(s)); }catch(e){} }
+var BS=bRead(), bJustEarned=null;
+function bIndex(id){ for(var i=0;i<BAG.length;i++) if(BAG[i].id===id) return i; return -1; }
+function bUnlocked(i){ return i===0 || !!BS.done[BAG[i-1].id] || !!BS.done[BAG[i].id]; }
+function bFirstOpen(){ for(var i=0;i<BAG.length;i++) if(!BS.done[BAG[i].id]) return i; return BAG.length-1; }
+function bCur(){ var i=bIndex(BS.cur||''); return (i>=0 && bUnlocked(i)) ? i : bFirstOpen(); }
+function bEarnedCount(){ var n=0; for(var i=0;i<BAG.length;i++) if(BS.done[BAG[i].id]) n++; return n; }
+
+function bagView(v){
+  var vs=['learn','react','opp'];
+  for(var i=0;i<vs.length;i++){
+    document.getElementById('bv-'+vs[i]).className = 'bview' + (vs[i]===v ? ' on' : '');
+    document.getElementById('bt-'+vs[i]).className = (vs[i]===v ? 'on' : '');
+  }
+  if(v!=='react') reactStop();
+  if(v==='react') paintPool();
+}
+function renderBag(){
+  var ci=bCur(), d=BAG[ci], run=BS.run[d.id]||0, n=bEarnedCount();
+  document.getElementById('bg-count').textContent = n+' of '+BAG.length+' earned';
+  document.getElementById('bg-fill').style.width = Math.round(100*n/BAG.length)+'%';
+  var h='<div class="dk'+(d.fw?' fw':'')+'">'+(ci+1)+' &middot; '+(d.fw?'Footwork':'Burst')+(BS.done[d.id]?' &middot; earned':'')+'</div>';
+  h+='<div class="dname">'+d.name+'</div><div class="dwhen">'+d.when+'</div><ol class="seq-ol">';
+  for(var i=0;i<d.seq.length;i++) h+='<li>'+d.seq[i]+'</li>';
+  h+='<li class="ex">'+d.exit+'</li></ol><div class="focus">'+d.focus+'</div>';
+  h+='<div class="reps">'; for(var r=0;r<NEED;r++) h+='<div class="rep'+(r<run?' on':'')+'"></div>'; h+='</div>';
+  h+='<div class="reps-k">'+(BS.done[d.id] ? 'Earned &middot; '+(BS.clean[d.id]||0)+' clean reps total' : NEED+' clean in a row to earn it')+'</div>';
+  h+='<div class="bar"><button class="btn notyet" id="bg-notyet" onclick="bagRep(false)">Not yet</button><button class="btn clean" id="bg-clean" onclick="bagRep(true)">Clean</button></div>';
+  var ej = bJustEarned!==null ? BAG[bJustEarned] : null;
+  h+='<div class="earned'+(ej?' on':'')+'" id="bg-earned">'+(ej ? '<b>Earned: '+ej.name+'.</b> '+(bJustEarned+1<BAG.length ? 'Next up: '+BAG[bJustEarned+1].name+'. It is also in React now.' : 'All fourteen earned. React now calls every drill.') : '')+'</div>';
+  document.getElementById('bg-card').innerHTML=h;
+  var L='';
+  for(var j=0;j<BAG.length;j++){
+    var b=BAG[j], un=bUnlocked(j), cls='dl'+(BS.done[b.id]?' done':'')+(j===ci?' cur':'')+(un?'':' locked');
+    L+='<div class="'+cls+'"'+(un?' onclick="bagPick('+j+')"':'')+'><div class="n">'+(BS.done[b.id]?'&#10003;':(j+1))+'</div><div class="t">'+b.name+'</div><div class="s">'+(b.fw?'Footwork':'Burst')+(un?'':' &middot; locked')+'</div></div>';
+  }
+  document.getElementById('bg-list').innerHTML=L;
+  paintPool();
+}
+function bagPick(i){ if(!bUnlocked(i)) return; BS.cur=BAG[i].id; bJustEarned=null; bSave(BS); renderBag(); window.scrollTo(0,0); }
+function bagRep(ok){
+  var ci=bCur(), d=BAG[ci];
+  bJustEarned=null;
+  if(ok){
+    BS.clean[d.id]=(BS.clean[d.id]||0)+1;
+    BS.run[d.id]=(BS.run[d.id]||0)+1;
+    if(BS.run[d.id]>=NEED){
+      BS.run[d.id]=0;
+      if(!BS.done[d.id]){ BS.done[d.id]=1; bJustEarned=ci; if(ci+1<BAG.length) BS.cur=BAG[ci+1].id; }
+    }
+  } else { BS.run[d.id]=0; }
+  bSave(BS); renderBag();
+  if(bJustEarned!==null){ var e=document.getElementById('bg-earned'); if(e && e.scrollIntoView) e.scrollIntoView({block:'center'}); }
+}
+function bagReset(){
+  if(!confirm('Reset all Bag progress? Earned drills will lock again.')) return;
+  BS={done:{},run:{},clean:{}}; bJustEarned=null; bSave(BS); renderBag(); paintPool();
+}
+
+/* ---- opponents ---- */
+var OPP=[
+ {n:'Taller, longer reach', e:'The edge of his reach is where he wins.', m:['<b>Do not stand at his range</b> &mdash; either leave, or close hard.','<b>Burst in behind straight punches</b> and work inside, where his long arms are a liability: elbows, knees.','Groin kick entry closes the gap in one move.'], d:['b4','b2','b3','f3']},
+ {n:'Shorter, stocky', e:'Expect him to come forward low &mdash; a tackle or a rush.', m:['<b>Hold range with straights and the front kick</b>; do not let him into the clinch.','If he ducks or shoots: <b>sprawl the hips back, hammerfists down</b>.','Never go to the ground with him.'], d:['b1','b4','b5']},
+ {n:'Left-handed (right foot forward)', e:'His power hand is the one on your right side.', m:['<b>Move to your left</b> &mdash; away from his left hand, toward his weaker side.','Keep your lead foot outside his lead foot.','Off-line counter from the outside angle.'], d:['f2','b7']},
+ {n:'Much stronger, heavily muscled', e:'Strength wins grappling. Do not give him a grappling fight.', m:['<b>Never clinch, never wrestle, never trade</b>.','Strike targets strength does not protect: groin, throat line, face.','<b>Short burst, early exit.</b> The window closes fast.'], d:['b4','b1','b7','f3']},
+ {n:'Heavy, out of condition', e:'Big early, gone in thirty seconds.', m:['Do not absorb his first rush &mdash; <b>off-line</b> and make him turn.','Burst, then move; make him chase.','Avoid being pinned under his weight on the ground.'], d:['b7','f2','b10']},
+ {n:'Drunk or wild', e:'Unpredictable, wide, telegraphed.', m:['<b>Leaving is usually easy</b> &mdash; do it.','If he swings: off-line, then burst from the outside.','Expect him to fall; do not follow him down.'], d:['b7','f3']},
+ {n:'Two or more', e:'The fight you cannot win standing still.', m:['<b>Stack them</b> on one line and move to the exit.','Bursts are short &mdash; three or four strikes, then move.','Never clinch, never the ground.'], d:['f4','b8']},
+ {n:'Weapon shown or suspected', e:'Hidden hand, waistband check, pocket.', m:['<b>Distance and run</b> &mdash; first, always. Give up property.','On Bob this is the burst-<i>out</i> only.','Control-and-escape needs a partner and a training knife &mdash; class, not the bag.'], d:['f3'], red:1}
+];
+function renderOpp(){
+  var h='';
+  for(var i=0;i<OPP.length;i++){
+    var o=OPP[i]; h+='<div class="card opp'+(o.red?' red':'')+'"><div class="p-head"><span class="p-name">'+o.n+'</span></div><div class="p-ess">'+o.e+'</div>';
+    for(var k=0;k<o.m.length;k++) h+='<div class="move'+(o.red?' r':'')+'">'+o.m[k]+'</div>';
+    var nm=[]; for(var k2=0;k2<o.d.length;k2++){ var j=bIndex(o.d[k2]); if(j>=0) nm.push((j+1)+' '+BAG[j].name); }
+    h+='<div class="lean">Drills to lean on: '+nm.join(' &middot; ')+'</div></div>';
+  }
+  document.getElementById('bg-opp').innerHTML=h;
+}
+
+/* ---- react ---- */
+var SPEEDS={slow:[12,25], std:[8,20], fast:[5,12]}, SKEY='forge-selfdefense-speed';
+var speed='std'; try{ var _s=localStorage.getItem(SKEY); if(SPEEDS[_s]) speed=_s; }catch(e){}
+var rOn=false, rTimers=[], rT0=0, rCalls=0, rClock=null, wakeLock=null, actx=null;
+function setSpeed(s){ if(!SPEEDS[s]) return; speed=s; try{ localStorage.setItem(SKEY,s); }catch(e){}
+  var bs=document.getElementById('bg-speed').getElementsByTagName('button');
+  for(var i=0;i<bs.length;i++) bs[i].className = (bs[i].getAttribute('data-s')===s ? 'on' : ''); }
+function pool(){
+  var p=[];
+  for(var i=0;i<BAG.length;i++){ var id=BAG[i].id; if(BS.done[id]){ var c=CUES[id]||[]; for(var k=0;k<c.length;k++) p.push({id:id, burst:!BAG[i].fw, t:c[k][0], s:c[k][1]}); } }
+  return p;
+}
+function paintPool(){
+  var n=0; for(var i=0;i<BAG.length;i++) if(BS.done[BAG[i].id]) n++;
+  document.getElementById('bg-pool').textContent=n;
+  if(!rOn){
+    if(n===0){ showCue('Nothing earned yet','Earn drill 1 in Learn and React starts calling it.',''); document.getElementById('bg-start').disabled=true; }
+    else { showCue('Ready','Set a shoe or cone 2 m to one side of Bob &mdash; that is your exit and your second attacker.',''); document.getElementById('bg-start').disabled=false; }
+  }
+}
+function strip(h){ var d=document.createElement('div'); d.innerHTML=h; return d.textContent||''; }
+function showCue(t,s,mode){
+  document.getElementById('bg-cue').innerHTML=t; document.getElementById('bg-cuesub').innerHTML=s||'';
+  document.getElementById('bg-cuebox').className='cuebox'+(mode?' '+mode:'');
+}
+function beep(){ try{ if(!actx) return; var o=actx.createOscillator(), g=actx.createGain(); o.frequency.value=880; g.gain.value=.15;
+  o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime+.12); }catch(e){} }
+function say(t){ try{ if(!window.speechSynthesis) return; speechSynthesis.cancel(); var u=new SpeechSynthesisUtterance(strip(t)); u.rate=1.05; u.pitch=1; speechSynthesis.speak(u); }catch(e){} }
+function call(t,s,mode){ rCalls++; document.getElementById('bg-calls').textContent=rCalls; showCue(t,s,mode); beep(); say(t); }
+function later(fn,ms){ rTimers.push(setTimeout(function(){ if(rOn) fn(); }, ms)); }
+function rnd(a,b){ return a+Math.random()*(b-a); }
+function scheduleNext(){ var r=SPEEDS[speed]; later(fire, rnd(r[0],r[1])*1000); }
+function fire(){
+  var p=pool(); if(!p.length){ reactStop(); return; }
+  var c=p[Math.floor(Math.random()*p.length)];
+  var weapon=/pocket|Blade/.test(c.t);
+  call(c.t, c.s, c.burst||weapon ? 'hot' : '');
+  if(c.burst){ followUp(0); } else { later(function(){ showCue('&hellip;','Reset to the fence. Next call is random.',''); }, 3500); scheduleNext(); }
+}
+function followUp(n){
+  later(function(){
+    if(n<2 && Math.random()<0.45){ var g=GOES[Math.floor(Math.random()*GOES.length)]; call(g[0],g[1],'hot'); followUp(n+1); }
+    else { var s=STOPS[Math.floor(Math.random()*STOPS.length)]; call(s[0],s[1],'stop');
+      later(function(){ showCue('&hellip;','Back to the fence. Next call is random.',''); }, 3500); scheduleNext(); }
+  }, rnd(4,7)*1000);
+}
+function tick(){ var s=Math.floor((Date.now()-rT0)/1000); document.getElementById('bg-time').textContent=Math.floor(s/60)+':'+('0'+(s%60)).slice(-2); }
+function reactStart(){
+  if(rOn || !pool().length) return;
+  rOn=true; rCalls=0; rT0=Date.now(); document.getElementById('bg-calls').textContent='0';
+  try{ var AC=window.AudioContext||window.webkitAudioContext; if(AC && !actx) actx=new AC(); if(actx && actx.resume) actx.resume(); }catch(e){}
+  try{ if(navigator.wakeLock && navigator.wakeLock.request){ navigator.wakeLock.request('screen').then(function(l){ wakeLock=l; }).catch(function(){}); } }catch(e){}
+  document.getElementById('bg-start').disabled=true; document.getElementById('bg-stop').disabled=false;
+  rClock=setInterval(tick,500); tick();
+  showCue('Fence up','First call is coming &mdash; random timing.',''); say('Fence up. Starting.');
+  later(fire, rnd(3,6)*1000);
+}
+function reactStop(){
+  var was=rOn; rOn=false;
+  for(var i=0;i<rTimers.length;i++) clearTimeout(rTimers[i]); rTimers=[];
+  if(rClock){ clearInterval(rClock); rClock=null; }
+  try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(e){}
+  try{ if(wakeLock){ wakeLock.release(); wakeLock=null; } }catch(e){}
+  var st=document.getElementById('bg-start'), sp=document.getElementById('bg-stop');
+  if(st) st.disabled = !pool().length; if(sp) sp.disabled=true;
+  if(was) showCue('Stopped', rCalls+' calls this session. Earn more drills in Learn to widen the pool.','');
+}
+
+/* =================== QUIZ =================== */
+var QZ=[
+ {q:'He is <b>taller, with long arms</b>, standing just at the edge of his reach.', a:'Burst in behind straight punches and work inside &mdash; elbows, knees', w:['Stay at range and kick','Circle at the edge of his reach','Wait for him to come to you'], y:'The edge of his reach is where he wins. Close hard or leave.'},
+ {q:'He is <b>left-handed, right foot forward</b>. Which way do you move?', a:'To your left, away from his left hand', w:['To your right','Straight back','Straight in at him'], y:'His power hand is on your right. Moving left takes you toward his weaker side.'},
+ {q:'He is <b>much stronger</b> and grabs you with both hands.', a:'Do not grapple &mdash; burst to the targets strength does not protect, then get out', w:['Clinch and knee him','Wrestle him to the ground','Trade punches until he tires'], y:'Strength wins grappling. Short burst, early exit.'},
+ {q:'Mid-burst, <b>his hands drop and he turns away</b>.', a:'Stop, scan both sides, exit', w:['Two more strikes to be sure','Follow him to finish it','Hold him down until police arrive'], y:'That is the stop signal. Force past it is what s.34 punishes.'},
+ {q:'He <b>ducks low and drives toward your legs</b>.', a:'Sprawl the hips back, hammerfists down, push away', w:['Bend over and grab him','Kick at his face','Jump back and wait'], y:'Hammerfists down: bend the knees, not the back.'},
+ {q:'<b>Hands on your throat.</b> First move?', a:'Pluck the hands, chin down &mdash; airway first, counter at once', w:['Punch his face','Pull straight back','Grab his wrists and hold'], y:'Airway first. The pluck and the counter happen together.'},
+ {q:'<b>Two men.</b> One talks to you; the other drifts to your left.', a:'Move so they stack on one line, toward the exit', w:['Hit the talker immediately','Watch the talker and ignore the other','Back up against a wall'], y:'Never be surrounded. Nearest man between you and the rest.'},
+ {q:'His hand goes to <b>his pocket</b>. He is 3 m away and the exit is open.', a:'Distance &mdash; run now', w:['Close fast and burst','Ask what is in his pocket','Stand your ground, hands up'], y:'Weapon suspected plus an open exit: you leave.'},
+ {q:'<b>Your family is with you</b>; he is posturing 4 m away.', a:'Command word, interpose, extract', w:['Step forward and warn him','Strike first','Send them ahead and stay'], y:'You are a barrier and an extractor, not a fighter.'},
+ {q:'<b>Wall at your back</b>, he is closing.', a:'Off-line pivot first, then burst', w:['Burst straight ahead','Cover up and wait','Push him away and stay put'], y:'Move first, strike second. Get the wall beside you.'},
+ {q:'You are <b>knocked down</b>; he is standing over you.', a:'Guard up, technical stand-up facing him', w:['Grab his legs','Turn your back and crawl away','Stay down and cover'], y:'Get up facing him. Never turn your back to rise.'},
+ {q:'He is <b>shorter and stocky</b>, leaning forward.', a:'Hold range with straights and the front kick; sprawl if he shoots', w:['Clinch with him','Go to the ground first','Drop your hands to catch a tackle'], y:'Expect a rush or a tackle. Keep him out of the clinch.'},
+ {q:'A <b>wide haymaker</b> is coming.', a:'Off-line outside, elbow from the angle, burst', w:['Step straight back','Block and stand still','Duck and grab his waist'], y:'From the outside he has to turn before he can hit you again.'},
+ {q:'He is <b>nose to nose</b>, too close to punch.', a:'Palm heel, then elbows', w:['Step back to punching range first','Headbutt','Front kick'], y:'Elbows are for when there is no room to punch.'},
+ {q:'He is <b>squared up a leg&rsquo;s length away</b>, hands low.', a:'Groin kick entry, then straights', w:['Wait for him to swing','Clinch him','Circle away slowly'], y:'The kick closes the distance for the hands.'},
+ {q:'He has <b>grabbed your shirt</b>, chest to chest, and he is not bigger than you.', a:'Clinch knees, shove off, exit', w:['Try to unbutton the grip','Punch from where you are, arms extended','Pull away'], y:'At that range the knee from the clinch is the gross-motor tool.'},
+ {q:'Why <b>bursts</b> instead of one good punch?', a:'One strike rarely stops a determined attacker; continuous strikes overwhelm him', w:['A combination looks better to witnesses','Single strikes are illegal in Canada','Bursts are less tiring'], y:'One strike hands him the next move. Krav attacks continuously.'},
+ {q:'How long does <b>the burst</b> go?', a:'Until he no longer can or will fight &mdash; then stop', w:['Exactly four strikes','Until he is unconscious','Until you are tired'], y:'Stop at the stop signal: not before, not after.'},
+ {q:'After shouting, he goes <b>suddenly calm with a fixed stare</b>.', a:'The attack is next &mdash; hands up, move to the exit or act first', w:['He has calmed down','Turn and walk away slowly with your back to him','Keep talking him down'], y:'Sudden calm after agitation is a pre-assault cue: the decision is made.'},
+ {q:'It is over and you are safe. <b>Who calls 911?</b>', a:'You do, first', w:['A witness','Whoever was hurt more','Nobody, if he left'], y:'You call first and report that you were attacked.'},
+ {q:'He is <b>heavy and out of condition</b> and rushes you.', a:'Off-line, make him turn, burst, keep moving', w:['Absorb the rush and clinch','Go to the ground with him','Stand and trade'], y:'He is strongest in the first seconds. Do not be in front of the rush.'},
+ {q:'React calls &ldquo;<b>Still coming!</b>&rdquo;', a:'Keep bursting', w:['Stop and scan','Run to the exit','Switch to a kick'], y:'He has not given the stop signal. Keep firing.'}
+];
+var QN=10, QSEC=10, QKEY='forge-selfdefense-quiz';
+var qOrder=[], qi=0, qScore=0, qRight=0, qT0=0, qTimer=null, qLocked=false, qCurOpts=[];
+function qRead(){ try{ var v=JSON.parse(localStorage.getItem(QKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function qShow(id){ var vs=['qz-intro','qz-play','qz-end']; for(var i=0;i<vs.length;i++) document.getElementById(vs[i]).className='qv'+(vs[i]===id?' on':''); }
+function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)), t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function qzHalt(){ if(qTimer){ clearInterval(qTimer); qTimer=null; } }
+function qzIntro(){ qzHalt(); document.getElementById('qz-best').textContent=(qRead().best||0); qShow('qz-intro'); }
+function qzStart(){
+  var ix=[]; for(var i=0;i<QZ.length;i++) ix.push(i);
+  qOrder=shuffle(ix).slice(0,QN); qi=0; qScore=0; qRight=0; qShow('qz-play'); qzAsk(); window.scrollTo(0,0);
+}
+function qzAsk(){
+  var it=QZ[qOrder[qi]]; qLocked=false;
+  document.getElementById('qz-n').textContent=(qi+1)+' / '+qOrder.length;
+  document.getElementById('qz-score').textContent=qScore+' pts';
+  document.getElementById('qz-q').innerHTML=it.q;
+  qCurOpts=shuffle([it.a].concat(it.w));
+  var h=''; for(var i=0;i<qCurOpts.length;i++) h+='<button class="opt" onclick="qzPick('+i+')">'+qCurOpts[i]+'</button>';
+  document.getElementById('qz-opts').innerHTML=h;
+  var w=document.getElementById('qz-why'); w.className='why'; w.innerHTML='';
+  document.getElementById('qz-next').style.display='none';
+  document.getElementById('qz-t').style.width='100%';
+  qT0=Date.now(); qzHalt();
+  qTimer=setInterval(function(){
+    var left=QSEC-(Date.now()-qT0)/1000;
+    document.getElementById('qz-t').style.width=Math.max(0,100*left/QSEC)+'%';
+    if(left<=0) qzPick(-1);
+  },100);
+}
+function qzPick(i){
+  if(qLocked) return; qLocked=true; qzHalt();
+  var it=QZ[qOrder[qi]], secs=(Date.now()-qT0)/1000, ok=(i>=0 && qCurOpts[i]===it.a);
+  if(ok){ qRight++; qScore+=100+Math.round(Math.max(0,QSEC-secs)*5); }
+  var bs=document.getElementById('qz-opts').getElementsByTagName('button');
+  for(var k=0;k<bs.length;k++){ bs[k].disabled=true; if(qCurOpts[k]===it.a) bs[k].className='opt right'; else if(k===i) bs[k].className='opt wrong'; }
+  var w=document.getElementById('qz-why'); w.innerHTML=(ok?'<b>Right.</b> ':(i<0?'<b>Time.</b> ':'<b>Not that.</b> '))+it.y; w.className='why on';
+  document.getElementById('qz-score').textContent=qScore+' pts';
+  var nb=document.getElementById('qz-next'); nb.textContent=(qi===qOrder.length-1?'Finish':'Next'); nb.style.display='';
+}
+function qzNext(){
+  if(qi<qOrder.length-1){ qi++; qzAsk(); window.scrollTo(0,0); return; }
+  var s=qRead(), newBest=qScore>(s.best||0); if(newBest) s.best=qScore; s.last=qScore; s.rounds=(s.rounds||0)+1;
+  try{ localStorage.setItem(QKEY, JSON.stringify(s)); }catch(e){}
+  document.getElementById('qz-final').textContent=qScore;
+  document.getElementById('qz-endk').textContent=(newBest?'New best':'Points')+' · '+qRight+' / '+qOrder.length+' right';
+  document.getElementById('qz-endnote').textContent=newBest?'Previous best beaten.':'Best: '+(s.best||0);
+  qShow('qz-end');
+}
+
 /* ---------------- boot ---------------- */
 loadPhoto();
+renderBag(); renderOpp(); setSpeed(speed); paintPool();
+(function(){
+  var m='';
+  if(location.hash==='#bag') m='bag';
+  else { try{ m=localStorage.getItem(TKEY)||''; }catch(e){} }
+  setMode(MODES.indexOf(m)>=0 ? m : 'read');
+})();
+window.addEventListener('hashchange', function(){ if(location.hash==='#bag') setMode('bag'); });
+/* #bag would otherwise jump past the tab row */
+window.addEventListener('load', function(){ setTimeout(function(){ window.scrollTo(0,0); }, 0); });
 </script>
 </body>
 </html>
