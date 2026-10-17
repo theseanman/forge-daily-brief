@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cheng (Surfaces) · Ch'i (Gaps)</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0; --red:#ff8a8a; --violet:#b48cff;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 13px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+  a.inl{ color:var(--accent-hi); }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.teal{ border-left-color:var(--teal); background:rgba(63,208,192,.08); }
+  .card.gold{ border-left-color:var(--gold); background:rgba(245,215,110,.08); }
+  .card.red{ border-left-color:var(--red); background:rgba(255,138,138,.08); }
+  .card.violet{ border-left-color:var(--violet); background:rgba(180,140,255,.09); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .trig{ font-size:13px; line-height:1.5; margin:4px 0 8px; color:var(--ink-dim); }
+  .trig b{ color:var(--gold); font-weight:800; letter-spacing:.04em; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .card.teal .move b{ color:#8ff0e4; } .card.teal .move:before{ color:var(--teal); }
+  .card.red .move b{ color:#ffc0c0; } .card.red .move:before{ color:var(--red); }
+  .card.violet .move b{ color:#d4bcff; } .card.violet .move:before{ color:var(--violet); }
+  .ex{ margin-top:11px; padding-top:10px; border-top:1px solid var(--line); }
+  .ex-row{ font-size:13.5px; line-height:1.55; margin:6px 0; }
+  .ex-row .tag{ display:inline-block; min-width:78px; font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .group-k{ font-size:12.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--teal); font-weight:800; margin:16px 0 6px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .band.warn{ background:rgba(255,138,138,.10); border-left-color:var(--red); }
+  .band.warn b{ color:var(--red); }
+  .band.vio{ background:rgba(180,140,255,.11); border-left-color:var(--violet); }
+  .band.vio b{ color:#d4bcff; }
+  .para{ font-size:14px; line-height:1.6; margin:7px 0; }
+  .para b{ color:var(--accent-hi); }
+  .card.teal .para b{ color:#8ff0e4; }
+  .card.red .para b{ color:#ffc0c0; }
+  .q{ font-size:14px; line-height:1.55; margin:6px 0 6px 4px; padding-left:12px; border-left:2px solid var(--gold); }
+  .step{ display:flex; gap:11px; font-size:14px; line-height:1.55; margin:9px 0; }
+  .step .n{ flex:0 0 22px; height:22px; border-radius:50%; background:rgba(74,157,232,.22); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:800; color:var(--accent-hi); margin-top:1px; }
+  .step b{ color:var(--accent-hi); }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+  .ev.x{ background:rgba(255,138,138,.16); color:#ffb3b3; border-color:rgba(255,138,138,.4); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+
+  /* ---------- WORK tab ---------- */
+  #work{ display:none; }
+  #drill{ display:none; }
+  .tool{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; margin-bottom:13px; overflow:hidden; }
+  .tool.teal{ border-left-color:var(--teal); background:rgba(63,208,192,.07); }
+  .tool.violet{ border-left-color:var(--violet); background:rgba(180,140,255,.08); }
+  .tool.gold{ border-left-color:var(--gold); background:rgba(245,215,110,.07); }
+  .tool-head{ display:flex; align-items:center; gap:10px; padding:14px 16px; cursor:pointer; }
+  .tool-head .tn{ flex:0 0 24px; height:24px; border-radius:50%; background:rgba(74,157,232,.22); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:800; color:var(--accent-hi); }
+  .tool-head .tt{ flex:1; font-size:16px; font-weight:700; line-height:1.3; }
+  .tool-head .cnt{ font-size:10.5px; font-weight:800; letter-spacing:.1em; color:var(--ink-quiet); }
+  .tool-head .chev{ color:var(--ink-quiet); font-size:15px; transition:transform .25s; }
+  .tool.open .tool-head .chev{ transform:rotate(90deg); }
+  .tool-body{ display:none; padding:0 16px 16px; }
+  .tool.open .tool-body{ display:block; }
+  .why{ font-size:13px; line-height:1.55; color:var(--ink-dim); border-top:1px solid var(--line); padding-top:11px; margin-bottom:12px; }
+  .why b{ color:var(--gold); }
+  .fl{ margin-bottom:11px; }
+  .fl label{ display:block; font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:var(--accent-hi); margin-bottom:5px; }
+  .fl .hintline{ font-size:12px; color:var(--ink-quiet); line-height:1.45; margin-bottom:6px; }
+  textarea, input[type=text], select{ width:100%; background:rgba(5,22,52,.55); border:1px solid var(--line); border-radius:10px;
+    color:var(--ink); font-size:14.5px; line-height:1.5; padding:10px 12px; font-family:inherit; resize:vertical; }
+  textarea:focus, input[type=text]:focus, select:focus{ outline:2px solid var(--accent); outline-offset:0; border-color:transparent; }
+  textarea::placeholder, input::placeholder{ color:rgba(234,244,255,.3); }
+  select{ appearance:none; -webkit-appearance:none; background-image:linear-gradient(45deg,transparent 50%,var(--accent-hi) 50%),linear-gradient(135deg,var(--accent-hi) 50%,transparent 50%);
+    background-position:calc(100% - 17px) 18px, calc(100% - 12px) 18px; background-size:5px 5px,5px 5px; background-repeat:no-repeat; padding-right:34px; }
+  select option{ background:#0b2547; color:#eaf4ff; }
+  .twocol{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (max-width:520px){ .twocol{ grid-template-columns:1fr; } }
+  .colhd{ font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; margin-bottom:5px; }
+  .colhd.l{ color:var(--red); } .colhd.r{ color:var(--accent-hi); }
+  .rung{ display:flex; gap:9px; align-items:flex-start; margin-bottom:8px; }
+  .rung .rn{ flex:0 0 20px; height:20px; border-radius:50%; background:rgba(180,140,255,.2); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:10.5px; font-weight:800; color:#d4bcff; margin-top:9px; }
+  .rung .rl{ flex:1; }
+  .rung .rl .rlab{ font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); margin-bottom:3px; }
+  .chk{ display:flex; align-items:flex-start; gap:10px; font-size:14px; line-height:1.5; margin:9px 0; cursor:pointer; }
+  .chk input{ flex:0 0 19px; width:19px; height:19px; margin-top:1px; accent-color:var(--accent); }
+  .chk span b{ color:var(--accent-hi); }
+  .toolbar{ display:flex; gap:9px; margin-top:13px; flex-wrap:wrap; }
+  .sbtn{ border:0; border-radius:999px; padding:11px 20px; font-size:13px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; }
+  .sbtn.ghost{ background:rgba(9,36,80,.6); color:#fff; border:1px solid var(--line); }
+  .sbtn.danger{ background:rgba(255,138,138,.16); color:#ffb3b3; border:1px solid rgba(255,138,138,.4); }
+  .sbtn:disabled{ opacity:.35; cursor:default; }
+  .analysis{ display:none; margin-top:13px; background:rgba(245,215,110,.09); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; }
+  .analysis.on{ display:block; }
+  .analysis .ah{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800; color:var(--gold); margin-bottom:8px; }
+  .analysis .aq{ font-size:14px; line-height:1.55; margin:8px 0; padding-left:14px; position:relative; }
+  .analysis .aq:before{ content:'\2192'; position:absolute; left:0; color:var(--gold); font-weight:700; }
+  .analysis .aq b{ color:var(--gold); }
+  .flag{ font-size:13.5px; line-height:1.55; margin:8px 0; padding:9px 11px; border-radius:9px; background:rgba(255,138,138,.12); border-left:3px solid var(--red); }
+  .flag b{ color:#ffc0c0; }
+  .flag.ok{ background:rgba(63,208,192,.11); border-left-color:var(--teal); }
+  .flag.ok b{ color:#8ff0e4; }
+  .hist{ margin-top:14px; border-top:1px solid var(--line); padding-top:11px; }
+  .hist-k{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); margin-bottom:8px; }
+  .entry{ background:rgba(5,22,52,.4); border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin-bottom:8px; }
+  .entry .edate{ font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; color:var(--accent-hi); margin-bottom:5px;
+    display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .entry .edate .del{ color:var(--ink-quiet); cursor:pointer; font-size:15px; line-height:1; padding:0 4px; }
+  .entry .erow{ font-size:13px; line-height:1.5; color:var(--ink-dim); margin:4px 0; white-space:pre-wrap; }
+  .entry .erow .el{ font-size:10px; letter-spacing:.1em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); display:block; }
+  .empty{ font-size:12.5px; color:var(--ink-quiet); font-style:italic; }
+  .pattern{ background:rgba(63,208,192,.09); border-left:4px solid var(--teal); border-radius:12px; padding:13px 15px; margin-bottom:13px; font-size:13.5px; line-height:1.6; }
+  .pattern b{ color:#8ff0e4; }
+
+  /* drill */
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(19px,5vw,26px); font-weight:300; line-height:1.4; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .btn:focus-visible, .toggle button:focus-visible, .sbtn:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+  .ev.doc{ background:rgba(180,140,255,.16); color:#d4bcff; border-color:rgba(180,140,255,.4); }
+  #log{ display:none; }
+  /* three questions */
+  .qs{ background:linear-gradient(135deg, rgba(74,157,232,.20), rgba(180,140,255,.20)); border:1px solid rgba(180,140,255,.38);
+    border-radius:16px; padding:16px 16px 10px; margin-bottom:16px; }
+  .qs-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#d4bcff; font-weight:800; margin-bottom:8px; }
+  .bigq{ display:flex; gap:12px; align-items:flex-start; margin:0 0 12px; }
+  .bigq .qn{ flex:0 0 30px; height:30px; border-radius:50%; background:linear-gradient(135deg,#4a9de8,#b48cff); color:#061c40;
+    display:flex; align-items:center; justify-content:center; font-weight:900; font-size:15px; margin-top:2px; }
+  .bigq .qt{ font-size:clamp(20px,5.6vw,25px); font-weight:800; line-height:1.25; letter-spacing:-.01em;
+    background:linear-gradient(90deg,#eaf4ff 0%,#9fd0ff 55%,#d4bcff 100%); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .core{ font-size:15px; line-height:1.55; padding:12px 14px; border-radius:12px; background:rgba(255,92,122,.12); border-left:4px solid #ff5c7a; margin-bottom:13px; }
+  .core b{ color:#ff9db0; }
+  /* level bands + domain cards */
+  .lvl{ display:flex; align-items:baseline; gap:10px; margin:22px 0 9px; }
+  .lvl .ln{ font-size:13px; letter-spacing:.2em; text-transform:uppercase; font-weight:900; }
+  .lvl .ld{ font-size:12.5px; color:var(--ink-quiet); }
+  .lvl.P .ln{ color:var(--teal); } .lvl.M .ln{ color:var(--accent-hi); } .lvl.X .ln{ color:#d4bcff; }
+  .dom{ border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:13px; margin-bottom:9px; overflow:hidden; background:rgba(74,157,232,.10); }
+  .dom.P{ border-left-color:var(--teal); background:rgba(63,208,192,.09); }
+  .dom.X{ border-left-color:var(--violet); background:rgba(180,140,255,.10); }
+  .dom.ne{ border:1px solid rgba(255,92,122,.5); border-left:4px solid #ff5c7a; background:rgba(255,92,122,.10); }
+  .dom-h{ display:flex; align-items:center; gap:11px; padding:13px 14px; cursor:pointer; width:100%; background:transparent; border:0; color:inherit; text-align:left; font:inherit; }
+  .dom-h .dn{ flex:0 0 26px; height:26px; border-radius:50%; border:1px solid var(--line); background:rgba(5,22,52,.45);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:800; color:var(--ink-dim); }
+  .dom-h .dt{ flex:1; min-width:0; }
+  .dom-h .dname{ font-size:16.5px; font-weight:700; display:block; }
+  .dom-h .ddef{ font-size:13px; color:var(--ink-dim); line-height:1.4; display:block; margin-top:2px; }
+  .dom-h .chev{ color:var(--ink-quiet); font-size:15px; transition:transform .25s; }
+  .dom.open .dom-h .chev{ transform:rotate(90deg); }
+  .dom-b{ display:none; padding:0 14px 14px; }
+  .dom.open .dom-b{ display:block; }
+  .ds{ border-top:1px solid var(--line); padding-top:10px; margin-top:10px; }
+  .ds-k{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800; margin-bottom:5px; }
+  .ds-k.them{ color:#ff9db0; } .ds-k.you{ color:#8ff0e4; } .ds-k.cost{ color:#d4bcff; } .ds-k.lose{ color:var(--red); } .ds-k.look{ color:var(--accent-hi); } .ds-k.ctr{ color:var(--ink-dim); }
+  .ds p{ font-size:14px; line-height:1.55; margin:4px 0; }
+  .ds li{ font-size:14px; line-height:1.5; margin:5px 0 5px 18px; }
+  .chips{ display:flex; flex-wrap:wrap; gap:7px; margin-top:4px; }
+  .chip{ border:1px solid var(--line); background:rgba(5,22,52,.5); color:var(--ink); font-size:12.5px; font-weight:700; padding:7px 12px; border-radius:999px; cursor:pointer; font-family:inherit; }
+  .chip:focus-visible, .dom-h:focus-visible, .pick:focus-visible{ outline:2px solid var(--violet); outline-offset:2px; }
+  .world .wrow{ font-size:13.5px; line-height:1.55; margin:8px 0; }
+  .world .wrow b{ color:var(--accent-hi); }
+  .world .wd{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:#d4bcff; margin-left:4px; }
+  .ev.rsn{ background:rgba(63,208,192,.14); color:#8ff0e4; border-color:rgba(63,208,192,.4); }
+  /* log */
+  .seg{ display:flex; gap:6px; flex-wrap:wrap; }
+  .seg button{ flex:1; min-width:90px; border:1px solid var(--line); background:rgba(5,22,52,.55); color:var(--ink-dim); border-radius:10px; padding:10px 8px;
+    font-size:13px; font-weight:800; letter-spacing:.05em; cursor:pointer; font-family:inherit; }
+  .seg button.on{ background:var(--violet); color:#1a0b3a; border-color:transparent; }
+  .tally-row{ display:flex; align-items:center; gap:9px; font-size:13px; margin:6px 0; }
+  .tally-row .tn{ flex:0 0 130px; color:var(--ink-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .tally-row .tb{ flex:1; height:10px; background:rgba(255,255,255,.07); border-radius:6px; overflow:hidden; }
+  .tally-row .tb i{ display:block; height:100%; border-radius:6px; background:linear-gradient(90deg,#4a9de8,#b48cff); }
+  .tally-row .tc{ flex:0 0 26px; text-align:right; font-weight:800; color:var(--accent-hi); }
+  .split{ display:flex; height:14px; border-radius:7px; overflow:hidden; margin:8px 0 4px; background:rgba(255,255,255,.07); }
+  .split .c{ background:var(--teal); } .split .d{ background:#ff5c7a; }
+  .legend{ font-size:12px; color:var(--ink-dim); display:flex; gap:14px; flex-wrap:wrap; }
+  .legend i{ display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px; }
+  /* drill */
+  .scorebar{ display:flex; justify-content:space-between; gap:8px; margin:6px 0 4px; }
+  .sb{ flex:1; text-align:center; background:rgba(5,22,52,.45); border:1px solid var(--line); border-radius:12px; padding:8px 4px; }
+  .sb .sv{ font-size:22px; font-weight:800; color:var(--ink); line-height:1.1; }
+  .sb .sl{ font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); margin-top:2px; }
+  .sb.hot .sv{ color:#ff9db0; }
+  .situ{ font-size:clamp(18px,4.8vw,22px); font-weight:400; line-height:1.45; text-align:left; margin:14px 0 6px; }
+  .askk{ font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:900; color:#d4bcff; margin:16px 0 8px; }
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+  .pick{ border:1px solid var(--line); background:rgba(5,22,52,.55); color:var(--ink); border-radius:10px; padding:11px 8px; font-size:13.5px; font-weight:700;
+    cursor:pointer; font-family:inherit; line-height:1.25; min-height:46px; }
+  .pick.ok{ background:rgba(63,208,192,.25); border-color:var(--teal); color:#c8fff7; }
+  .pick.bad{ background:rgba(255,92,122,.22); border-color:#ff5c7a; color:#ffd0d9; }
+  .pick.want{ border:2px solid var(--teal); }
+  .pick:disabled{ cursor:default; }
+  .pick.fade{ opacity:.4; }
+  .verdict{ margin-top:12px; font-size:14.5px; line-height:1.55; padding:12px 14px; border-radius:12px; background:rgba(74,157,232,.14); border-left:4px solid var(--accent); display:none; }
+  .verdict.on{ display:block; }
+  .verdict b{ color:var(--accent-hi); }
+  .verdict .vk{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:900; margin-bottom:5px; }
+  .verdict .vk.y{ color:#8ff0e4; } .verdict .vk.n{ color:#ff9db0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-log" onclick="setMode('log')">Log</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>Cheng (Surfaces) · Ch’i (Gaps)</h1>
+    <div class="sub">Don’t fight on their strength. Find the domain the contest is really being decided in &mdash; and choose a better one.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="qs">
+      <div class="qs-k">Ask, every time</div>
+      <div class="bigq"><span class="qn">1</span><span class="qt">Which domain is this being fought in?</span></div>
+      <div class="bigq"><span class="qn">2</span><span class="qt">Did I choose it, or drift into it?</span></div>
+      <div class="bigq"><span class="qn">3</span><span class="qt">Which domain am I leaving unused?</span></div>
+    </div>
+
+    <div class="core"><b>Before you commit:</b> what is this person strong at &mdash; and what did that strength cost them?</div>
+
+    <div class="section-k">The idea</div>
+    <div class="card violet">
+      <div class="p-head"><span class="p-name">Surfaces and gaps</span><span class="ev doc">DOCTRINE</span></div>
+      <div class="para"><b>Cheng</b> is the expected force: it meets the opponent’s <b>surfaces</b> &mdash; their strengths &mdash; and holds them. <b>Ch’i</b> is the unexpected force that goes through the <b>gaps</b>. Sun Tzu named the pair; Boyd built it into <i>Patterns of Conflict</i>, and maneuver-warfare writers turned it into “avoid surfaces, exploit gaps.”</div>
+      <div class="para">Every strength is paid for with something. The gap is usually <b>whatever the opponent spent to build their surface</b>. The left-wing lock took away space; teams that beat it stopped fighting for space and won on time &mdash; countering at speed before the lock could set.</div>
+      <div class="para">Boyd sorted conflict into three levels &mdash; <b>physical, mental and moral</b> &mdash; and ranked the moral level highest. The sixteen domains below sit inside those three.</div>
+    </div>
+
+    <div class="band vio"><b>Who is across from you?</b> With a genuine counterparty &mdash; a seller, a dispute, a competitor &mdash; use all of it. With your daughters, your students, your family, the other person is not an enemy: use the domains to pick the ground where <b>a good outcome for both of you</b> becomes reachable, never to beat them. Your Patterns of Conflict page draws the same line. “Where to look for their weakness” is for counterparties only.</div>
+
+    <div class="section-k">The sixteen domains &middot; tap to open</div>
+    <div id="domains"></div>
+
+    <div class="section-k">Seen in the world</div>
+    <div class="card world">
+      <div class="wrow"><b>Hockey, late 1990s.</b> The left-wing lock and the trap took away neutral-zone space. Counter-attacking teams moved the puck through before the structure set. Space &rarr; time. <span class="ev rsn">VERIFIED, IN OUTLINE</span></div>
+      <div class="wrow"><b>Korea, F-86 vs MiG-15.</b> The MiG climbed and turned better; the F-86’s hydraulic controls let it change manoeuvres faster. Boyd’s seed for tempo. <span class="ev d">DEBATED</span></div>
+      <div class="wrow"><b>Kinshasa, 1974.</b> Ali let Foreman punch himself out on the ropes. Power &rarr; energy.</div>
+      <div class="wrow"><b>Thermopylae.</b> A narrow pass made Persian numbers irrelevant. Resources &rarr; space.</div>
+      <div class="wrow"><b>Midway.</b> Codebreakers told the weaker fleet where and when. Strength &rarr; information.</div>
+      <div class="wrow"><b>Inchon.</b> MacArthur landed where the tides made a landing look impossible. Defence &rarr; expectation.</div>
+      <div class="wrow"><b>Sherman’s march.</b> Threatening two cities at once, so the defender guarded both and arrived at neither in strength. Liddell Hart’s “horns of a dilemma.” Attention.</div>
+      <div class="wrow"><b>Fabius vs Hannibal.</b> Refused the pitched battles Hannibal was best at; time wore down an army far from home. Not engaging + patience.</div>
+      <div class="wrow"><b>Cannae.</b> Hannibal let Rome’s aggressive centre push forward into its own encirclement. Their will became their weakness.</div>
+      <div class="wrow"><b>Moneyball.</b> Oakland bought on-base percentage while the market paid for batting average. Resources &rarr; information.</div>
+      <div class="wrow"><b>Drone war.</b> A cheap drone forces a missile worth far more. The defender wins the exchange and loses the cost war.</div>
+      <div class="note">From general knowledge, not looked up for this page. The pattern drawn from them is reasoning, not research.</div>
+    </div>
+
+    <div class="section-k">How to grade this page</div>
+    <div class="card">
+      <div class="key"><span class="ev doc">DOCTRINE</span> Boyd, Sun Tzu and maneuver-warfare doctrine &mdash; a way of seeing, not a tested finding. <span class="ev rsn">REASONING</span> the sixteen-domain list and the costs and counters inside each card are reasoned, written for your life, and meant to be revised. There is no controlled research behind a domain list like this; treat your Log as the evidence.</div>
+    </div>
+
+    <div class="band"><b>The one thing.</b> When you’re losing on their surface, stop pushing &mdash; and look for their gap.</div>
+  </div>
+
+  <!-- ===================== LOG ===================== -->
+  <div id="log">
+    <h1>Log</h1>
+    <div class="sub">After any small contest &mdash; a negotiation at home, a student pushing a boundary, a stranger, a seller. Thirty seconds.</div>
+
+    <div class="tool open" id="t-log">
+      <div class="tool-body" style="display:block;padding-top:16px;">
+        <div class="fl"><label for="lg-sit">What happened</label><input type="text" id="lg-sit" placeholder="One line"></div>
+        <div class="fl"><label for="lg-who">Who was across from you</label>
+          <select id="lg-who"><option value="">Choose&hellip;</option><option value="family">Family</option><option value="student">Student</option><option value="stranger">Stranger</option><option value="counterparty">Counterparty (seller, dispute, competitor)</option><option value="other">Other</option></select></div>
+        <div class="fl"><label for="lg-dom">1 &middot; Which domain was it fought in?</label><select id="lg-dom"></select></div>
+        <div class="fl"><label>2 &middot; Did you choose it, or drift into it?</label>
+          <div class="seg" id="lg-cd"><button type="button" data-v="chose" onclick="seg('lg-cd',this)">Chose it</button><button type="button" data-v="drifted" onclick="seg('lg-cd',this)">Drifted into it</button></div></div>
+        <div class="fl"><label for="lg-un">3 &middot; Which domain did you leave unused?</label><select id="lg-un"></select></div>
+        <div class="fl"><label>How did it go?</label>
+          <div class="seg" id="lg-out"><button type="button" data-v="good" onclick="seg('lg-out',this)">Went well</button><button type="button" data-v="mixed" onclick="seg('lg-out',this)">Mixed</button><button type="button" data-v="poor" onclick="seg('lg-out',this)">Went badly</button></div></div>
+        <div class="fl"><label for="lg-note">Note (optional)</label><textarea id="lg-note" rows="2" placeholder="What you’d try next time"></textarea></div>
+        <div class="toolbar"><button class="sbtn" onclick="saveLog()">Save entry</button><button class="sbtn ghost" onclick="clearLog(true)">Clear</button></div>
+        <div class="analysis" id="a-log"></div>
+      </div>
+    </div>
+
+    <div class="section-k">Your patterns</div>
+    <div id="tally"></div>
+
+    <div class="section-k">Entries</div>
+    <div id="entries"></div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h1>Drill</h1>
+    <div class="sub">Read the situation. Name the domain it’s being fought in, then the domain to switch to &mdash; each from all sixteen, shuffled every time. Two points a situation.</div>
+    <div class="scorebar">
+      <div class="sb"><div class="sv" id="d-score">0</div><div class="sl">Score</div></div>
+      <div class="sb"><div class="sv" id="d-best">&ndash;</div><div class="sl">Best round</div></div>
+      <div class="sb hot"><div class="sv" id="d-streak">0</div><div class="sl">Streak</div></div>
+      <div class="sb"><div class="sv" id="d-bstreak">0</div><div class="sl">Best streak</div></div>
+    </div>
+    <div class="progress" id="progress"></div>
+    <div id="stage">
+      <div class="situ" id="d-situ"></div>
+      <div class="askk" id="d-ask"></div>
+      <div class="grid" id="d-grid"></div>
+      <div class="verdict" id="d-verdict"></div>
+      <div class="bar"><button class="btn" id="d-next" onclick="nextStep()" disabled>Next</button></div>
+    </div>
+    <div class="done-view" id="done">
+      <div class="big" id="d-final"></div>
+      <div class="streak" id="d-msg"></div>
+      <div class="bar"><button class="btn" onclick="restart()">Another round</button></div>
+    </div>
+    <div class="foot">Streak = situations in a row with both answers right. It carries across rounds.</div>
+  </div>
+
+</div>
+<script>
+/* ---------------- domains ---------------- */
+var LV = { P:['Physical','what you can do, with what, and when'], M:['Mental','what each side knows, expects and attends to'], X:['Moral','trust, will and standing &mdash; Boyd ranked this highest'] };
+var D = [
+ {id:'tempo',l:'P',n:'Time and tempo',d:'Who acts first and who sets the pace.',
+  looks:['A student stalls on a task until the bell solves it for them.','A salesperson: “this price is only good today.”','The kids open the negotiation the moment you walk in the door.'],
+  them:'Fast operators commit early and hate a pause. Look for what they skipped to be quick &mdash; the check, the second option, the preparation.',
+  ctr:['patience','info','rules'],
+  you:'Decide your default answers in advance so speed costs you no thinking. Keep your moves small so changing direction is cheap.',
+  cost:'Speed breeds a shallow read: you act on the first picture. People who live fast tend to lose patience contests and skip information.',
+  lose:'You’re answering before you’ve thought. The pace feels like theirs. You’re agreeing to things you would normally sleep on.'},
+ {id:'patience',l:'P',n:'Patience and endurance',d:'Who can hold out longer.',
+  looks:['A ten-year-old asking for the twentieth time, slightly reworded.','A phone queue designed to make you give up.','A student who waits you out on a missing assignment.'],
+  them:'Endurance players win by repetition, so they rarely adapt. Change the clock &mdash; a time when the answer will be given &mdash; or change the question so their persistence is aimed at something no longer on the table.',
+  ctr:['rules','tempo','framing'],
+  you:'Pre-decide the answer and the one line you’ll repeat. Endurance is cheap once the decision is already made.',
+  cost:'Patience slides into passivity. The patient side often misses the moment to act and loses tempo contests.',
+  lose:'You give in “just this once” from fatigue, not judgment. The same request keeps coming back.'},
+ {id:'energy',l:'P',n:'Energy',d:'Who is fresher right now.',
+  looks:['A bedtime argument after both your jobs.','The last block on a Friday.','A complaint raised as your night class is packing up.'],
+  them:'Someone running hot spends fast. Keep the exchange short so their energy has nothing to push against, or let it pass and return when it has gone.',
+  ctr:['tempo','patience','disengage'],
+  you:'Put the hard conversations in your high-energy hours. Protect sleep &mdash; it is the stock this domain draws on.',
+  cost:'High-energy people overcommit and fade over long contests. Leaning on energy loses to endurance.',
+  lose:'You’re fighting at the hour you’re weakest. Your tone slips before your argument does.'},
+ {id:'space',l:'P',n:'Space and environment',d:'Where it happens, and who controls the setting.',
+  looks:['Room 148’s layout deciding what behaviour is even possible.','A talk in the car (side by side) versus across the kitchen table.','A dispute at their counter versus on neutral ground.'],
+  them:'Home-ground advantage depends on the ground. Move it: a walk, a different room, after class instead of in front of everyone, a written channel instead of a live one.',
+  ctr:['tempo','rules','relationship'],
+  you:'Arrange the setting before the contest &mdash; privacy, seating, who stands and who sits.',
+  cost:'Owning the ground makes you rigid. You defend the setting rather than the goal, and when the venue changes you’re lost.',
+  lose:'You’re on their turf, in public when it should be private, standing while they sit.'},
+ {id:'resources',l:'P',n:'Resources and cost',d:'Who can afford to keep going.',
+  looks:['Your two hours a week against a full-time competitor.','A company that can outspend you on ads.','A cheap drone forcing an expensive missile.'],
+  them:'Rich opponents spend inefficiently and decide slowly. Make each exchange expensive for them and cheap for you, and choose contests where volume doesn’t decide.',
+  ctr:['expertise','info','framing'],
+  you:'Count the real cost of each exchange. Stop any contest that costs more than it can return.',
+  cost:'Abundance breeds waste and slow decisions; the resource-rich side rarely innovates.',
+  lose:'You’re matching their spending. The contest has become a stamina test of money or hours, not quality.'},
+ {id:'info',l:'M',n:'Information',d:'Who knows more about the situation.',
+  looks:['Knowing a student’s home context before the conversation.','Reading reviews and prices before the dealership.','Midway: the codebreakers chose the battle.'],
+  them:'Their picture is only as good as its source and its age. Ask what they’re assuming and haven’t checked; change the facts after they’ve formed their picture.',
+  ctr:['expect','framing','tempo'],
+  you:'Ask one more question than feels needed before acting. Keep your sources honest &mdash; verified or vibe.',
+  cost:'Information-rich people over-gather and act late. Knowing starts to stand in for doing.',
+  lose:'They keep surprising you with facts. You’re arguing from what you assume.'},
+ {id:'expertise',l:'M',n:'Expertise',d:'Whose skill set the contest rewards.',
+  looks:['An argument about grammar (you win) versus one about TikTok (they do).','A mechanic quoting repairs you can’t check.','A student who knows the game rules better than you.'],
+  them:'Experts are strong inside their frame and blind at its edges. Move the contest to a question their expertise doesn’t cover &mdash; what outcome is needed, what it costs, what a second expert says.',
+  ctr:['framing','info','rules'],
+  you:'Keep the contest on the questions your skill answers. Say plainly, “this is the part I know.”',
+  cost:'Expertise breeds rigidity and overconfidence. Experts get beaten by outsiders who change the question &mdash; Moneyball.',
+  lose:'Jargon you can’t follow. You’re deferring because they sound sure.'},
+ {id:'framing',l:'M',n:'Framing',d:'Who defines what the disagreement is about.',
+  looks:['“Is it fair?” versus “What happens if we do this?”','A student framing a late mark as your mistake.','A headline that has decided the story before the facts.'],
+  them:'A frame hides as much as it shows. Name what their frame leaves out, and offer a better question.',
+  ctr:['info','legit','emotion'],
+  you:'Name the question at the start: “What we’re deciding is…”.',
+  cost:'Clever framers get distrusted. Once a frame is seen as spin, legitimacy drains.',
+  lose:'You’re defending a question you would never have asked.'},
+ {id:'expect',l:'M',n:'Expectation',d:'Doing what the other side hasn’t prepared for.',
+  looks:['Agreeing at once with someone braced for a fight.','A student expecting a lecture getting a question instead.','Inchon.'],
+  them:'The well-prepared are prepared for something specific. Find what their preparation assumes, and do the other thing.',
+  ctr:['info','patience','rules'],
+  you:'Keep two plans ready so you can play whichever they didn’t expect.',
+  cost:'Surprise needs unpredictability, which costs trust. People who live on it become hard to rely on.',
+  lose:'Every move you make seems anticipated. You’re running the script they planned for you.'},
+ {id:'attention',l:'M',n:'Attention',d:'Overloading the other side, or refusing to be overloaded.',
+  looks:['Two acceptable choices for a reluctant student.','A request timed for while you’re cooking.','A hard sell with ten features and one price.'],
+  them:'Someone focused on one threat can’t hold a second. Offer two real options &mdash; Sherman’s horns &mdash; or take it one item at a time so their pile loses its force.',
+  ctr:['tempo','emotion','disengage'],
+  you:'Handle one thing at a time, and say so out loud: “one at a time.”',
+  cost:'Splitting others’ attention splits your own. Multitaskers lose to focus.',
+  lose:'You’re answering three things at once and doing none of them well.'},
+ {id:'rules',l:'M',n:'Rules and structure',d:'Whose rules apply, and who wrote them.',
+  looks:['A classroom policy set in September.','A family screen-time rule written while everyone was calm.','“That’s not something our policy allows.”'],
+  them:'Rules have edges and exceptions their writers forget. Ask which rule decides this, whether it actually covers this case, and who can make the exception.',
+  ctr:['legit','patience','relationship'],
+  you:'Write rules in calm, before the contest, and apply them the same way every time.',
+  cost:'Rule reliance is brittle when the case isn’t covered, and “that’s the rule” with no reason spends relationship.',
+  lose:'You’re arguing inside their policy. Every route ends at “that’s not how it works.”'},
+ {id:'relationship',l:'X',n:'Relationship and trust',d:'Who has goodwill in the bank.',
+  looks:['A student who likes you does the work for you.','A neighbour you’ve helped who’ll lend the trailer.','A friend’s referral opening a door.'],
+  them:'Goodwill rests on consistency, and a gap between what someone says and does drains it. With a counterparty, don’t let charm stand in for the terms &mdash; put it in writing.',
+  ctr:['rules','will','framing'],
+  you:'Make deposits outside the contest: small, consistent, unconditional.',
+  cost:'Relationship reliance makes you avoid necessary conflict. You trade the outcome to protect the bond.',
+  lose:'Every chat ends warmly and nothing changes. Or you’re asking for something with no credit built.'},
+ {id:'legit',l:'X',n:'Legitimacy',d:'Who looks reasonable to the people watching.',
+  looks:['The class watching how you handle a defiant student.','The other parent, hearing both sides later.','A queue of customers watching a refund dispute.'],
+  them:'Legitimacy is lost by overreaching. Stay proportionate and let a strong but aggressive opponent overreach in front of the audience.',
+  ctr:['emotion','space','relationship'],
+  you:'Be proportionate and give your reasons. Audiences judge fairness, not winning.',
+  cost:'Guarding appearances makes you slow and cautious, and you play to the gallery instead of the problem.',
+  lose:'The watchers are siding with them. You’re defending your tone, not your point.'},
+ {id:'emotion',l:'X',n:'Emotional control',d:'Who stays calm.',
+  looks:['A teenager working for a reaction.','A tailgater flashing their lights.','A heated parent email, cc’ing admin.'],
+  them:'People who push with heat have few moves once the heat doesn’t land. Lower your voice, slow down, ask a question.',
+  ctr:['tempo','space','disengage'],
+  you:'Pre-load one line for heat. Breathe before replying. Name the feeling, not the person.',
+  cost:'Over-control reads as cold and can spend relationship. It can also hide what you actually care about.',
+  lose:'You’re louder than you meant to be. You’re replaying it an hour later.'},
+ {id:'will',l:'X',n:'Will and stakes',d:'Who cares more.',
+  looks:['A student who cares about this mark far more than you do.','A kid desperate for one sleepover.','A stranger fighting you for a parking spot.'],
+  them:'High-will opponents fight hard for one thing. Meet the real need partly and they often let go of the rest &mdash; or ask whether the stakes are worth it to you at all.',
+  ctr:['disengage','framing','relationship'],
+  you:'Know what you actually care about before you start, and spend will only there.',
+  cost:'High will becomes stubbornness. You fight for everything, and lose relationship and legitimacy doing it.',
+  lose:'You’re fighting harder than the outcome is worth to you &mdash; or they plainly care more and you’re grinding.'},
+ {id:'disengage',l:'X',n:'Not engaging',d:'Declining the contest entirely.',
+  looks:['Fabius refusing Hannibal’s battles.','Your “not relevant” practice.','Letting an eye-roll pass; not answering a provocation online.'],
+  them:'Some opponents need the fight to exist &mdash; refusing removes their whole strength. What beats a refuser is a deadline or a rule that forces engagement.',
+  ctr:['tempo','rules'],
+  you:'Decide in advance which contests don’t count.',
+  cost:'Overused, it becomes avoidance: real problems compound while you step aside.',
+  lose:'The same problem comes back bigger. You’re “not engaging” with something that matters.'}
+];
+var BY={}; D.forEach(function(x,i){ x.num=i+1; BY[x.id]=x; });
+
+function paintDomains(){
+  var h='', last='';
+  D.forEach(function(x){
+    if(x.l!==last){ h+='<div class="lvl '+x.l+'"><span class="ln">'+LV[x.l][0]+'</span><span class="ld">'+LV[x.l][1]+'</span></div>'; last=x.l; }
+    h+='<div class="dom '+x.l+(x.id==='disengage'?' ne':'')+'" id="dom-'+x.id+'">'
+      +'<button class="dom-h" onclick="openDom(\''+x.id+'\')" aria-expanded="false"><span class="dn">'+x.num+'</span><span class="dt"><span class="dname">'+x.n+'</span><span class="ddef">'+x.d+'</span></span><span class="chev">&rsaquo;</span></button>'
+      +'<div class="dom-b">'
+      +'<div class="ds"><div class="ds-k look">Looks like</div><ul>'+x.looks.map(function(t){return '<li>'+t+'</li>';}).join('')+'</ul></div>'
+      +'<div class="ds"><div class="ds-k them">If it’s their strength &mdash; where to look</div><p>'+x.them+'</p></div>'
+      +'<div class="ds"><div class="ds-k ctr">Usually countered from</div><div class="chips">'+x.ctr.map(function(c){return '<button class="chip" onclick="jumpDom(\''+c+'\')">'+BY[c].n+'</button>';}).join('')+'</div></div>'
+      +'<div class="ds"><div class="ds-k you">If it’s your strength &mdash; reinforce</div><p>'+x.you+'</p></div>'
+      +'<div class="ds"><div class="ds-k cost">What building it costs you</div><p>'+x.cost+'</p></div>'
+      +'<div class="ds"><div class="ds-k lose">Signs you’re losing here</div><p>'+x.lose+'</p></div>'
+      +'</div></div>';
+  });
+  document.getElementById('domains').innerHTML=h;
+}
+function openDom(id){
+  var el=document.getElementById('dom-'+id), on=el.className.indexOf(' open')>-1;
+  el.className = on ? el.className.replace(' open','') : el.className+' open';
+  el.querySelector('.dom-h').setAttribute('aria-expanded', on?'false':'true');
+}
+function jumpDom(id){
+  var el=document.getElementById('dom-'+id);
+  if(el.className.indexOf(' open')<0) openDom(id);
+  if(el.scrollIntoView) el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ---------------- mode ---------------- */
+function setMode(m){
+  document.getElementById('read').style.display  = (m==='read')  ? 'block' : 'none';
+  document.getElementById('log').style.display   = (m==='log')   ? 'block' : 'none';
+  document.getElementById('drill').style.display = (m==='drill') ? 'block' : 'none';
+  document.getElementById('tab-read').className  = (m==='read')  ? 'on' : '';
+  document.getElementById('tab-log').className   = (m==='log')   ? 'on' : '';
+  document.getElementById('tab-drill').className = (m==='drill') ? 'on' : '';
+  if(m==='drill'){ restart(); }
+  if(m==='log'){ renderLog(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-cheng-chi';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- log ---------------- */
+var LKEY='forge-cheng-chi-log';
+function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function entries(){ try{ var v=JSON.parse(localStorage.getItem(LKEY)||'[]'); return Array.isArray(v)?v:[]; }catch(e){ return []; } }
+function putEntries(a){ try{ localStorage.setItem(LKEY, JSON.stringify(a)); }catch(e){ alert('Could not save on this device.'); } }
+function fdate(iso){ try{ var d=new Date(iso); return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}); }catch(e){ return ''; } }
+function fillSelects(){
+  var o='<option value="">Choose&hellip;</option>', last='';
+  D.forEach(function(x){
+    if(x.l!==last){ if(last) o+='</optgroup>'; o+='<optgroup label="'+LV[x.l][0]+'">'; last=x.l; }
+    o+='<option value="'+x.id+'">'+x.n+'</option>';
+  });
+  o+='</optgroup>';
+  document.getElementById('lg-dom').innerHTML=o;
+  document.getElementById('lg-un').innerHTML=o.replace('Choose&hellip;','Choose&hellip; (or leave blank)');
+}
+function seg(group, btn){
+  var bs=document.getElementById(group).querySelectorAll('button');
+  for(var i=0;i<bs.length;i++) bs[i].className = (bs[i]===btn && btn.className!=='on') ? 'on' : '';
+}
+function segVal(group){ var b=document.getElementById(group).querySelector('button.on'); return b?b.getAttribute('data-v'):''; }
+function clearLog(hide){
+  ['lg-sit','lg-who','lg-dom','lg-un','lg-note'].forEach(function(i){ document.getElementById(i).value=''; });
+  ['lg-cd','lg-out'].forEach(function(g){ var bs=document.getElementById(g).querySelectorAll('button'); for(var i=0;i<bs.length;i++) bs[i].className=''; });
+  if(hide) document.getElementById('a-log').className='analysis';
+}
+function saveLog(){
+  var rec={sit:document.getElementById('lg-sit').value.trim(), who:document.getElementById('lg-who').value,
+    dom:document.getElementById('lg-dom').value, cd:segVal('lg-cd'), un:document.getElementById('lg-un').value,
+    out:segVal('lg-out'), note:document.getElementById('lg-note').value.trim()};
+  if(!rec.dom){ alert('Question 1 first: which domain was it fought in?'); return; }
+  if(!rec.cd){ alert('Question 2: did you choose it, or drift into it?'); return; }
+  rec.d=new Date().toISOString(); rec.id=Date.now()+'-'+Math.floor(Math.random()*1e4);
+  var a=entries(); a.unshift(rec); putEntries(a);
+  var dm=BY[rec.dom], h='<div class="ah">Now look at it</div>';
+  if(rec.cd==='drifted') h+='<div class="flag">You drifted into <b>'+dm.n+'</b>. Next time, ask question 1 before your first move, not after.</div>';
+  else h+='<div class="flag ok">You chose <b>'+dm.n+'</b>. That is the habit this page exists to build.</div>';
+  if(rec.un && rec.un===rec.dom) h+='<div class="aq">The domain you left unused is the one you fought in &mdash; did you mean a different one?</div>';
+  else if(rec.un) h+='<div class="aq">Unused: <b>'+BY[rec.un].n+'</b>. What would the first move there have been?</div>';
+  else h+='<div class="aq">No unused domain named. Open <b>'+dm.n+'</b> on the Read tab &mdash; it lists where it is usually countered from.</div>';
+  if(rec.out==='poor') h+='<div class="aq">It went badly in <b>'+dm.n+'</b>. Was that their surface? If so, the gap is usually what they spent to build it.</div>';
+  if(rec.who==='family'||rec.who==='student') h+='<div class="aq">Someone on your side. The aim was a good outcome for both of you &mdash; did the domain you chose make that easier?</div>';
+  var A=document.getElementById('a-log'); A.innerHTML=h; A.className='analysis on';
+  clearLog(false); renderLog();
+}
+function delEntry(id){ if(!confirm('Delete this entry?')) return; putEntries(entries().filter(function(r){ return r.id!==id; })); renderLog(); }
+function renderLog(){
+  var a=entries(), T=document.getElementById('tally'), E=document.getElementById('entries');
+  if(!a.length){ T.innerHTML='<div class="empty">No entries yet. Your patterns appear here after the first one.</div>'; E.innerHTML='<div class="empty">Nothing logged yet.</div>'; return; }
+  var fought={}, unused={}, ch=0, dr=0;
+  a.forEach(function(r){ if(BY[r.dom]) fought[r.dom]=(fought[r.dom]||0)+1; if(BY[r.un]) unused[r.un]=(unused[r.un]||0)+1; if(r.cd==='chose') ch++; else if(r.cd==='drifted') dr++; });
+  function bars(obj, title){
+    var ks=Object.keys(obj).sort(function(x,y){ return obj[y]-obj[x]; }); if(!ks.length) return '';
+    var mx=obj[ks[0]], h='<div class="group-k">'+title+'</div>';
+    ks.slice(0,6).forEach(function(k){ h+='<div class="tally-row"><span class="tn">'+BY[k].n+'</span><span class="tb"><i style="width:'+Math.round(obj[k]/mx*100)+'%"></i></span><span class="tc">'+obj[k]+'</span></div>'; });
+    return h;
+  }
+  var tot=ch+dr, pc=tot?Math.round(ch/tot*100):0;
+  var h='<div class="card">'
+    +'<div class="group-k" style="margin-top:0">Chose vs drifted &middot; '+a.length+' entr'+(a.length===1?'y':'ies')+'</div>'
+    +'<div class="split"><div class="c" style="width:'+pc+'%"></div><div class="d" style="width:'+(tot?100-pc:0)+'%"></div></div>'
+    +'<div class="legend"><span><i style="background:var(--teal)"></i>Chose '+ch+'</span><span><i style="background:#ff5c7a"></i>Drifted '+dr+'</span></div>'
+    +bars(fought,'Fought in most')+bars(unused,'Left unused most');
+  var top=Object.keys(fought).sort(function(x,y){ return fought[y]-fought[x]; })[0];
+  if(a.length>=5 && top && fought[top]/a.length>=0.4) h+='<div class="note">'+Math.round(fought[top]/a.length*100)+'% of your contests are fought in <b>'+BY[top].n+'</b>. That is your default ground &mdash; worth asking whether you choose it or it chooses you.</div>';
+  T.innerHTML=h+'</div>';
+  var OUT={good:'Went well',mixed:'Mixed',poor:'Went badly'}, WHO={family:'Family',student:'Student',stranger:'Stranger',counterparty:'Counterparty',other:'Other'};
+  E.innerHTML=a.map(function(r){
+    return '<div class="entry"><div class="edate"><span>'+fdate(r.d)+(r.who?' &middot; '+WHO[r.who]:'')+'</span><span class="del" onclick="delEntry(\''+r.id+'\')" title="Delete">&times;</span></div>'
+      +(r.sit?'<div class="erow">'+esc(r.sit)+'</div>':'')
+      +'<div class="erow"><span class="el">Fought in</span>'+(BY[r.dom]?BY[r.dom].n:'')+' &middot; '+(r.cd==='chose'?'chose it':'drifted')+'</div>'
+      +(BY[r.un]?'<div class="erow"><span class="el">Left unused</span>'+BY[r.un].n+'</div>':'')
+      +(r.out?'<div class="erow"><span class="el">Outcome</span>'+OUT[r.out]+'</div>':'')
+      +(r.note?'<div class="erow"><span class="el">Note</span>'+esc(r.note)+'</div>':'')+'</div>';
+  }).join('');
+}
+
+/* ---------------- drill ---------------- */
+var POOL = [
+ {s:'Your ten-year-old has asked for a sleepover six times since dinner, each time slightly reworded.', f:['patience'], w:['rules','tempo','framing'],
+  e:'She’s winning on <b>patience</b> &mdash; repetition wears you down. Switch to <b>tempo</b> (“I’ll give you an answer at eight”) or a <b>rule</b> you set in calm, and her persistence has nothing left to push on.'},
+ {s:'A car salesperson tells you the price is only good if you sign today.', f:['tempo'], w:['patience','info','disengage'],
+  e:'He’s setting the <b>tempo</b>. Slow it down: sleep on it (<b>patience</b>), get a second quote (<b>information</b>), or walk (<b>not engaging</b>). A deadline he invented only binds you if you accept it.'},
+ {s:'It’s 10 p.m. after both your jobs, and your teenager starts the curfew argument again.', f:['energy'], w:['tempo','patience'],
+  e:'This is being fought on <b>energy</b>, and you have none left. Change the <b>tempo</b>: “Good question &mdash; breakfast.” Nothing is lost by deciding fresh.'},
+ {s:'A stranger replies to your post with a sneering one-liner, clearly fishing for a reaction.', f:['emotion'], w:['disengage'],
+  e:'They want an <b>emotional</b> contest, because that is where they win. <b>Not engaging</b> removes their whole strength.'},
+ {s:'The phone-company rep keeps repeating: “That’s not something our policy allows.”', f:['rules'], w:['info','patience','disengage'],
+  e:'You’re inside their <b>rules</b>. Bring <b>information</b> (a competitor’s price, the retention department’s name), outlast the script and escalate (<b>patience</b>), or cancel (<b>not engaging</b>).'},
+ {s:'A student who genuinely likes you hasn’t handed anything in. Every chat ends with a laugh and a promise.', f:['relationship'], w:['rules','tempo'],
+  e:'The contest is running on <b>relationship</b>, and it’s quietly costing the outcome. Keep the warmth and add a <b>rule</b> &mdash; a dated deadline &mdash; or change the <b>tempo</b>: the work starts now, in class, with you.'},
+ {s:'A parent sends a heated email at 9 p.m. and copies the administration.', f:['emotion','legit'], w:['tempo','space'],
+  e:'It’s heat and audience &mdash; <b>emotional control</b> and <b>legitimacy</b>. Change the <b>tempo</b> (answer tomorrow, calm) or the <b>space</b> (“Could we talk by phone?”). Both take the heat out without conceding anything.'},
+ {s:'“It’s not fair &mdash; she got to stay up later when she was my age.”', f:['framing'], w:['info','rules','relationship'],
+  e:'Your daughter has <b>framed</b> it as fairness. Check the <b>information</b> (was it actually true?), point to the <b>rule</b> you set, or step out of the fight onto <b>relationship</b> &mdash; what does she actually want the extra time for?'},
+ {s:'A competitor with a full-time team publishes every day. You have two hours a week.', f:['resources'], w:['expertise','info','framing'],
+  e:'They win on <b>resources</b>, so don’t match volume. Go where your <b>expertise</b> &mdash; twenty years in classrooms &mdash; can’t be bought, or <b>frame</b> a smaller question they aren’t answering.'},
+ {s:'After a rude comment, a student stares at you, waiting to see what you do.', f:['emotion','legit'], w:['disengage','tempo','space'],
+  e:'They’re testing <b>emotional control</b> in front of an audience. Take away the show: let it pass for now (<b>not engaging</b>), deal with it later (<b>tempo</b>), or after class (<b>space</b>).'},
+ {s:'A fantasy trade partner floods you with five complicated multi-player offers in an hour.', f:['attention'], w:['patience','tempo','info'],
+  e:'Overload is an <b>attention</b> play. Take one offer at a time on your own clock (<b>tempo</b>, <b>patience</b>) and value each with real numbers (<b>information</b>).'},
+ {s:'The other team clogs the neutral zone with a trap, and every entry dies at the blue line.', f:['space'], w:['tempo'],
+  e:'The textbook case. They own the <b>space</b>. Beat them on <b>time</b>: counter before the structure sets.'},
+ {s:'A contractor arrives with a long list of technical reasons the job will cost double.', f:['expertise'], w:['info','patience'],
+  e:'You’re on his <b>expertise</b>. Get a second quote (<b>information</b>) and don’t decide on the spot (<b>patience</b>).'},
+ {s:'Your older daughter has prepared a full case for a later curfew &mdash; points, examples, a friend’s parents’ rules.', f:['info'], w:['expect','rules'],
+  e:'She’s come with <b>information</b> and is braced for a debate. Do what she hasn’t prepared for (<b>expectation</b>): agree to a trial with conditions. Or set the <b>rules</b> of the trial together.'},
+ {s:'An adult student in your night class, a lawyer, challenges your mark with a precise, well-built argument.', f:['expertise'], w:['rules','relationship'],
+  e:'Argument is his <b>expertise</b>. Step onto the <b>rules</b> &mdash; the rubric decides, so walk it line by line together &mdash; or onto <b>relationship</b>: what does he want from the course?'},
+ {s:'A driver tailgates you on the highway, flashing their lights.', f:['emotion','will'], w:['disengage'],
+  e:'Their <b>will</b> and heat are far higher than anything this is worth to you. <b>Not engaging</b> &mdash; change lanes &mdash; ends the contest with nothing lost.'},
+ {s:'A student keeps saying “I’ll do it tomorrow,” and you keep asking every day.', f:['patience'], w:['rules','tempo','space'],
+  e:'They’re out-waiting you on <b>patience</b>. A <b>rule</b> with a consequence, starting it <b>now</b> in class, or a seat next to your desk (<b>space</b>) all take away the clock they’re using.'},
+ {s:'A store refuses a return. The manager is polite but firm, and a line of customers is watching.', f:['rules'], w:['legit','patience'],
+  e:'They’re standing on <b>rules</b>. Stay calm and reasonable in front of the line (<b>legitimacy</b>) and ask who can make the exception &mdash; or come back later (<b>patience</b>).'},
+ {s:'A neighbour you’ve helped many times asks a favour you’d rather not do.', f:['relationship'], w:['will','framing'],
+  e:'The pull is <b>relationship</b>. Decide what you actually care about first (<b>will and stakes</b>), then <b>frame</b> what you can do instead of what you can’t.'},
+ {s:'A telemarketer starts a fast, rehearsed pitch the second you answer.', f:['tempo'], w:['disengage'],
+  e:'A script runs on <b>tempo</b>. The cheapest switch is <b>not engaging</b>: “No thanks,” and hang up.'},
+ {s:'“You can’t make me,” says a student, loudly, in front of everyone.', f:['will','legit'], w:['space','expect','rules'],
+  e:'It’s <b>will</b> with an audience. Move it (<b>space</b> &mdash; a quiet word later), do the unexpected (<b>expectation</b>: “You’re right, I can’t. Here’s what happens next”), or let the <b>rule</b> carry it.'},
+ {s:'Your kids open a request the moment you walk in the door, coat still on.', f:['tempo'], w:['patience','space'],
+  e:'They’ve chosen the <b>tempo</b>: you, unprepared. “Give me ten minutes” (<b>patience</b>), then talk at the table (<b>space</b>).'},
+ {s:'A salesperson rattles through ten features in two minutes and asks which package you want.', f:['attention'], w:['tempo','info'],
+  e:'Ten features at once is an <b>attention</b> play. Slow it down (<b>tempo</b>) and ask the one question that matters to you (<b>information</b>).'},
+ {s:'A student cares enormously about raising a mark that, honestly, matters little to you either way.', f:['will'], w:['relationship','framing'],
+  e:'Their <b>will</b> is far higher. Stop grinding. Meet the real need through the <b>relationship</b>, or <b>frame</b> it as what they could do to earn it.'}
+];
+var DKEY='forge-cheng-chi-drill', ROUND=10;
+var R={q:[], i:0, step:0, score:0, picked:null};
+function dstate(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object')?v:{}; }catch(e){ return {}; } }
+function dsave(s){ try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){} }
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function paintScores(){
+  var s=dstate();
+  document.getElementById('d-score').textContent=R.score+'/'+(ROUND*2);
+  document.getElementById('d-best').innerHTML=(s.best!=null)?(s.best+'/'+(ROUND*2)):'&ndash;';
+  document.getElementById('d-streak').textContent=s.streak||0;
+  document.getElementById('d-bstreak').textContent=s.bestStreak||0;
+}
+function restart(){
+  R={q:shuffle(POOL).slice(0,ROUND), i:0, step:0, score:0, picked:null, full:true};
+  document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display='block';
+  document.getElementById('progress').style.display='flex';
+  paintStep(); window.scrollTo(0,0);
+}
+function paintStep(){
+  var q=R.q[R.i], p='';
+  for(var k=0;k<ROUND;k++) p+='<div class="dot'+(k<R.i?' done':(k===R.i?' on':''))+'"></div>';
+  document.getElementById('progress').innerHTML=p;
+  document.getElementById('d-situ').innerHTML=q.s;
+  document.getElementById('d-ask').textContent = R.step===0 ? 'Step 1 of 2 · Which domain is this being fought in?' : 'Step 2 of 2 · Which domain would you switch to?';
+  var ids=shuffle(D.map(function(x){ return x.id; }));
+  document.getElementById('d-grid').innerHTML=ids.map(function(id){ return '<button class="pick" data-id="'+id+'" onclick="pick(this)">'+BY[id].n+'</button>'; }).join('');
+  var V=document.getElementById('d-verdict'); V.className='verdict'; V.innerHTML='';
+  document.getElementById('d-next').disabled=true;
+  document.getElementById('d-next').textContent='Next';
+  paintScores();
+}
+function pick(btn){
+  if(R.picked) return;
+  var q=R.q[R.i], want = R.step===0 ? q.f : q.w, id=btn.getAttribute('data-id'), ok=want.indexOf(id)>-1;
+  R.picked=id;
+  var bs=document.getElementById('d-grid').querySelectorAll('.pick');
+  for(var i=0;i<bs.length;i++){
+    var b=bs[i], bid=b.getAttribute('data-id'); b.disabled=true;
+    if(bid===id) b.className='pick '+(ok?'ok':'bad');
+    else if(want.indexOf(bid)>-1) b.className='pick want';
+    else b.className='pick fade';
+  }
+  if(ok) R.score++; else R.full=false;
+  var V=document.getElementById('d-verdict'), names=want.map(function(w){ return BY[w].n; }).join(' &middot; ');
+  if(R.step===0){
+    V.innerHTML='<div class="vk '+(ok?'y':'n')+'">'+(ok?'Right':'Not quite')+'</div>Fought in: <b>'+names+'</b>.';
+    document.getElementById('d-next').textContent='Now the switch';
+  } else {
+    var s=dstate();
+    if(R.full){ s.streak=(s.streak||0)+1; if(s.streak>(s.bestStreak||0)) s.bestStreak=s.streak; } else { s.streak=0; }
+    dsave(s);
+    V.innerHTML='<div class="vk '+(ok?'y':'n')+'">'+(ok?'Right':'Not quite')+'</div>Good switches: <b>'+names+'</b>.<div style="margin-top:8px">'+q.e+'</div>';
+    document.getElementById('d-next').textContent = R.i===ROUND-1 ? 'Finish' : 'Next situation';
+  }
+  V.className='verdict on';
+  document.getElementById('d-next').disabled=false;
+  paintScores();
+}
+function nextStep(){
+  R.picked=null;
+  if(R.step===0){ R.step=1; paintStep(); return; }
+  R.step=0; R.full=true; R.i++;
+  if(R.i>=ROUND){ finish(); return; }
+  paintStep(); window.scrollTo(0,0);
+}
+function finish(){
+  var s=dstate(), prev=s.best, isBest=(prev==null||R.score>prev);
+  if(isBest) s.best=R.score; s.rounds=(s.rounds||0)+1; dsave(s);
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.display='none';
+  document.getElementById('d-final').textContent=R.score+' / '+(ROUND*2);
+  document.getElementById('d-msg').textContent = isBest ? (prev==null?'First round on the board':'New best round') : ('Best round: '+prev+' / '+(ROUND*2));
+  document.getElementById('done').className='done-view on';
+  paintScores();
+}
+
+/* ---------------- boot ---------------- */
+paintDomains(); fillSelects(); loadPhoto();
+</script>
+</body>
+</html>
