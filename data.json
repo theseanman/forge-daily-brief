@@ -1,1 +1,159 @@
-{"welltory": {"stress": 51, "energy": 58, "health": 100}, "body_comp": {"weight": 207, "body_fat": 27.3, "muscle_mass": null, "bmi": 29.6, "visceral_fat": null}, "sleep": {"score": null, "duration": null, "hr_range": null, "rem": 121, "core": 258, "deep": 91, "awake": 2, "duration_min": 470, "time_in_bed_min": 516, "computed_score": 97, "computed_score_parts": {"duration": 39.1, "deep": 20, "rem": 20, "efficiency": 18.2}, "capture_method": "health_auto_export_v1", "capture_method_since": "2026-08-13", "stage_source_date": "2026-10-06"}, "notes": "", "updated": "2026-10-22T14:32:10.496Z", "calendar": [{"date": "Mon Oct 12", "time": "All day", "title": "POF W1 \u2014 Baseline (habitual training)"}, {"date": "Thu Oct 22", "time": "06:30 AM", "title": "POF \u2014 Morning reading"}, {"date": "Thu Oct 22", "time": "05:00 PM", "title": "INTERIM #1 DUE in FileMaker"}, {"date": "Fri Oct 23", "time": "07:00 AM", "title": "POF \u2014 Step test + orthostatic test"}, {"date": "Fri Oct 23", "time": "02:00 PM", "title": "Ghoneim will call and I tell her weight and height"}, {"date": "Sun Oct 25", "time": "07:00 PM", "title": "POF \u2014 Weekly deviations log"}, {"date": "Mon Oct 26", "time": "All day", "title": "POF W2 \u2014 Ablation (training stress removed)"}, {"date": "Tue Oct 27", "time": "01:39 PM", "title": "Mark: ELL 3 \u2014 MARK the L12 reflection"}, {"date": "Tue Oct 27", "time": "01:39 PM", "title": "Mark: ELL 1/2 \u2014 Unit test /60 \u2014 Part A on the key, Part B on the rubric"}, {"date": "Thu Oct 22", "time": "All day", "title": "A-PLT-BCD"}, {"date": "Thu Oct 22", "time": "08:00 PM", "title": "Kayla \u2014 U16 Practice \u00b7 Richmond Ice Centre Forum \u00b7 Share ice with U19"}, {"date": "Fri Oct 23", "time": "All day", "title": "School Closed"}, {"date": "Fri Oct 23", "time": "All day", "title": "Professional Development Day"}, {"date": "Fri Oct 23", "time": "06:00 PM", "title": "Family Night"}, {"date": "Sat Oct 24", "time": "11:00 AM", "title": "UFC 333: Volkanovski vs Evloev"}, {"date": "Sat Oct 24", "time": "05:30 PM", "title": "Oktoberfest #3"}, {"date": "Sun Oct 25", "time": "08:00 AM", "title": "Kayla \u2014 U16 at CMRA U16 \u00b7 Poirier Sport & Leisure Complex (Ice 3) (Coquitlam)"}, {"date": "Sun Oct 25", "time": "02:15 PM", "title": "Layna \u2014 U12A at DRA U12 \u00b7 Ladner Leisure Centre (Delta)"}, {"date": "Mon Oct 26", "time": "12:00 AM", "title": "Austrian National Day"}, {"date": "Mon Oct 26", "time": "All day", "title": "EFGH"}, {"date": "Tue Oct 27", "time": "All day", "title": "ABCD"}, {"date": "Tue Oct 27", "time": "All day", "title": "Photo Retake Day (AM)"}, {"date": "Wed Oct 28", "time": "All day", "title": "Grade 11 Yearbook Photos"}, {"date": "Wed Oct 28", "time": "All day", "title": "E-PLT-FGH"}]}
+{
+  "welltory": {
+    "stress": 51,
+    "energy": 58,
+    "health": 100
+  },
+  "body_comp": {
+    "weight": 208.8,
+    "body_fat": 27.5,
+    "muscle_mass": null,
+    "bmi": 29.9,
+    "visceral_fat": null
+  },
+  "sleep": {
+    "score": null,
+    "duration": null,
+    "hr_range": null,
+    "rem": 92,
+    "core": 247,
+    "deep": 110,
+    "awake": 5,
+    "duration_min": 449,
+    "time_in_bed_min": 510,
+    "computed_score": 94,
+    "computed_score_parts": {
+      "duration": 37.4,
+      "deep": 20,
+      "rem": 18.6,
+      "efficiency": 17.6
+    },
+    "capture_method": "health_auto_export_v1",
+    "capture_method_since": "2026-08-13",
+    "stage_source_date": "2026-10-21"
+  },
+  "notes": "",
+  "updated": "2026-10-22T14:32:10.496Z",
+  "calendar": [
+    {
+      "date": "Mon Oct 12",
+      "time": "All day",
+      "title": "POF W1 — Baseline (habitual training)"
+    },
+    {
+      "date": "Thu Oct 22",
+      "time": "06:30 AM",
+      "title": "POF — Morning reading"
+    },
+    {
+      "date": "Thu Oct 22",
+      "time": "05:00 PM",
+      "title": "INTERIM #1 DUE in FileMaker"
+    },
+    {
+      "date": "Fri Oct 23",
+      "time": "07:00 AM",
+      "title": "POF — Step test + orthostatic test"
+    },
+    {
+      "date": "Fri Oct 23",
+      "time": "02:00 PM",
+      "title": "Ghoneim will call and I tell her weight and height"
+    },
+    {
+      "date": "Sun Oct 25",
+      "time": "07:00 PM",
+      "title": "POF — Weekly deviations log"
+    },
+    {
+      "date": "Mon Oct 26",
+      "time": "All day",
+      "title": "POF W2 — Ablation (training stress removed)"
+    },
+    {
+      "date": "Tue Oct 27",
+      "time": "01:39 PM",
+      "title": "Mark: ELL 3 — MARK the L12 reflection"
+    },
+    {
+      "date": "Tue Oct 27",
+      "time": "01:39 PM",
+      "title": "Mark: ELL 1/2 — Unit test /60 — Part A on the key, Part B on the rubric"
+    },
+    {
+      "date": "Thu Oct 22",
+      "time": "All day",
+      "title": "A-PLT-BCD"
+    },
+    {
+      "date": "Thu Oct 22",
+      "time": "08:00 PM",
+      "title": "Kayla — U16 Practice · Richmond Ice Centre Forum · Share ice with U19"
+    },
+    {
+      "date": "Fri Oct 23",
+      "time": "All day",
+      "title": "School Closed"
+    },
+    {
+      "date": "Fri Oct 23",
+      "time": "All day",
+      "title": "Professional Development Day"
+    },
+    {
+      "date": "Fri Oct 23",
+      "time": "06:00 PM",
+      "title": "Family Night"
+    },
+    {
+      "date": "Sat Oct 24",
+      "time": "11:00 AM",
+      "title": "UFC 333: Volkanovski vs Evloev"
+    },
+    {
+      "date": "Sat Oct 24",
+      "time": "05:30 PM",
+      "title": "Oktoberfest #3"
+    },
+    {
+      "date": "Sun Oct 25",
+      "time": "08:00 AM",
+      "title": "Kayla — U16 at CMRA U16 · Poirier Sport & Leisure Complex (Ice 3) (Coquitlam)"
+    },
+    {
+      "date": "Sun Oct 25",
+      "time": "02:15 PM",
+      "title": "Layna — U12A at DRA U12 · Ladner Leisure Centre (Delta)"
+    },
+    {
+      "date": "Mon Oct 26",
+      "time": "12:00 AM",
+      "title": "Austrian National Day"
+    },
+    {
+      "date": "Mon Oct 26",
+      "time": "All day",
+      "title": "EFGH"
+    },
+    {
+      "date": "Tue Oct 27",
+      "time": "All day",
+      "title": "ABCD"
+    },
+    {
+      "date": "Tue Oct 27",
+      "time": "All day",
+      "title": "Photo Retake Day (AM)"
+    },
+    {
+      "date": "Wed Oct 28",
+      "time": "All day",
+      "title": "Grade 11 Yearbook Photos"
+    },
+    {
+      "date": "Wed Oct 28",
+      "time": "All day",
+      "title": "E-PLT-FGH"
+    }
+  ]
+}
