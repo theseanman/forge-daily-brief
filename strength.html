@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Size and Strength</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0; --red:#ff8a8a; --violet:#b48cff;
+    --s-left:#f5d76e; --s-right:#4a9de8;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 13px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+  a.inl{ color:var(--accent-hi); }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.teal{ border-left-color:var(--teal); background:rgba(63,208,192,.08); }
+  .card.gold{ border-left-color:var(--gold); background:rgba(245,215,110,.08); }
+  .card.red{ border-left-color:var(--red); background:rgba(255,138,138,.08); }
+  .card.violet{ border-left-color:var(--violet); background:rgba(180,140,255,.09); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .trig{ font-size:13px; line-height:1.5; margin:4px 0 8px; color:var(--ink-dim); }
+  .trig b{ color:var(--gold); font-weight:800; letter-spacing:.04em; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .card.teal .move b{ color:#8ff0e4; } .card.teal .move:before{ color:var(--teal); }
+  .card.gold .move b{ color:var(--gold); } .card.gold .move:before{ color:var(--gold); }
+  .card.red .move b{ color:#ffc0c0; } .card.red .move:before{ color:var(--red); }
+  .card.violet .move b{ color:#d4bcff; } .card.violet .move:before{ color:var(--violet); }
+  .ex{ margin-top:11px; padding-top:10px; border-top:1px solid var(--line); }
+  .ex-row{ font-size:13.5px; line-height:1.55; margin:6px 0; }
+  .ex-row .tag{ display:inline-block; min-width:78px; font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .group-k{ font-size:12.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--teal); font-weight:800; margin:16px 0 6px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .band.warn{ background:rgba(255,138,138,.10); border-left-color:var(--red); }
+  .band.warn b{ color:var(--red); }
+  .band.vio{ background:rgba(180,140,255,.11); border-left-color:var(--violet); }
+  .band.vio b{ color:#d4bcff; }
+  .para{ font-size:14px; line-height:1.6; margin:7px 0; }
+  .para b{ color:var(--accent-hi); }
+  .card.teal .para b{ color:#8ff0e4; }
+  .card.gold .para b{ color:var(--gold); }
+  .card.red .para b{ color:#ffc0c0; }
+  .q{ font-size:14px; line-height:1.55; margin:6px 0 6px 4px; padding-left:12px; border-left:2px solid var(--gold); }
+  .step{ display:flex; gap:11px; font-size:14px; line-height:1.55; margin:9px 0; }
+  .step .n{ flex:0 0 22px; height:22px; border-radius:50%; background:rgba(74,157,232,.22); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:800; color:var(--accent-hi); margin-top:1px; }
+  .step b{ color:var(--accent-hi); }
+
+  /* session table */
+  .wk{ width:100%; border-collapse:collapse; margin:10px 0 4px; font-size:13.5px; }
+  .wk th{ text-align:left; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; padding:6px 8px 6px 0; border-bottom:1px solid var(--line); }
+  .wk td{ padding:7px 8px 7px 0; border-bottom:1px solid rgba(122,175,255,.1); line-height:1.45; vertical-align:top; }
+  .wk td:first-child{ color:var(--accent-hi); font-weight:700; white-space:nowrap; }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+
+  a.loglink{ color:#06264f; background:var(--accent); text-decoration:none; font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; padding:8px 14px; border-radius:999px; }
+  a.loglink:focus-visible, a.back:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .wk td i{ color:var(--ink-quiet); font-style:normal; font-size:12px; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <a href="https://claude.ai/artifact/CQjzdMrqMxLCUUeWMF4vZz" target="_blank" rel="noopener" class="loglink">Lift Log &rarr;</a>
+  </div>
+
+  <div id="read">
+    <h1>Size and Strength</h1>
+    <div class="sub">Twelve weeks, four lifting days, size first with strength built in, losing fat at the same time. It starts where <a class="inl" href="./return.html">The Return</a> hands off, and for these twelve weeks it replaces the training week in <a class="inl" href="./longevity.html">the Longevity Protocol</a>. Log every set in the <a class="inl" href="https://claude.ai/artifact/CQjzdMrqMxLCUUeWMF4vZz" target="_blank" rel="noopener">Lift Log</a>.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="band"><b>Start line.</b> Begin only once The Return's handoff gate is passed, including its last line: the elbow a non-issue on all pulling. Week 1 is fixed at Monday, November 2, 2026. Log the sessions you do and leave the rest blank.</div>
+
+    <!-- ============ HOW IT WORKS ============ -->
+    <div class="section-k">How the plan works</div>
+    <div class="card">
+      <div class="p-head"><span class="p-name">The week</span></div>
+      <div class="p-ess">Four sessions in the school gym right after school, 50&ndash;60 minutes each. Every muscle is trained twice a week.</div>
+      <table class="wk">
+        <tr><th>Day</th><th>Training</th><th>Lower body</th></tr>
+        <tr><td>Mon</td><td>Chest, triceps, side shoulders</td><td>Leg press, leg extension</td></tr>
+        <tr><td>Tue</td><td>Back, biceps</td><td>Leg curl, hip thrust</td></tr>
+        <tr><td>Wed</td><td>Cardio: bike intervals or Zone&nbsp;2</td><td>&mdash;</td></tr>
+        <tr><td>Thu</td><td>Shoulders, arms</td><td>Romanian deadlift, leg curl</td></tr>
+        <tr><td>Fri</td><td>Chest, back</td><td>Leg press (heavy), leg curl</td></tr>
+        <tr><td>Sat</td><td>Rest</td><td>&mdash;</td></tr>
+        <tr><td>Sun</td><td>Cardio: Zone&nbsp;2</td><td>&mdash;</td></tr>
+      </table>
+      <div class="note">Tuesday and Thursday lifting happens before your evening class, so it does not touch the late-night sleep window The Return protected.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">Four rules that run everything</span></div>
+      <div class="move"><b>Effort.</b> Most growth comes from sets taken close to failure. RIR means reps in reserve: RIR 2 is stopping with two good reps left. <span class="ev b">B</span></div>
+      <div class="move"><b>Double progression.</b> When you hit the top of the rep range on every set, add the smallest weight jump next session and drop back to the bottom of the range. <span class="ev d">D</span></div>
+      <div class="move"><b>Rest.</b> 2&ndash;3 minutes after heavy main lifts, at least 90 seconds after everything else. Under 60 seconds costs growth; past 90 seconds makes little difference. <span class="ev b">B</span></div>
+      <div class="move"><b>Pairs.</b> A1/A2 alternate: a set of A1, rest, a set of A2, rest. Leg and upper-body work don't tire each other, so you fit more good sets into the hour. <span class="ev d">D</span></div>
+      <div class="note">Split versus full body makes no difference once weekly volume is equal, so the pairing is chosen for your ankle and the clock, not because it beats anything. <span class="ev a">A</span></div>
+    </div>
+
+    <!-- ============ 12 WEEKS ============ -->
+    <div class="section-k">The twelve weeks</div>
+    <div class="card teal">
+      <div class="p-ess">Ramp three weeks, build four, deload, build three, retest. Tendons adapt more slowly than muscle, which is why the ramp exists.</div>
+      <table class="wk">
+        <tr><th>Weeks</th><th>Phase</th><th>Sets</th><th>Effort</th></tr>
+        <tr><td>1</td><td>Ramp</td><td>2 on everything</td><td>RIR 3</td></tr>
+        <tr><td>2</td><td>Ramp</td><td>Main lifts 3, rest 2</td><td>RIR 2&ndash;3</td></tr>
+        <tr><td>3</td><td>Ramp</td><td>Main lifts 3, rest 3 (calves 2)</td><td>RIR 2</td></tr>
+        <tr><td>4&ndash;7</td><td>Build</td><td>As written</td><td>Main RIR 1&ndash;2; last set of others RIR 0&ndash;1</td></tr>
+        <tr><td>8</td><td>Deload</td><td>Half the sets, same weights</td><td>RIR 3&ndash;4</td></tr>
+        <tr><td>9&ndash;11</td><td>Build</td><td>As written</td><td>As weeks 4&ndash;7</td></tr>
+        <tr><td>12</td><td>Retest</td><td>Main lifts 1 all-out set; others half</td><td>See below</td></tr>
+      </table>
+      <div class="para">Growth scales with weekly hard sets, flattening past about 20 per muscle. The build weeks sit at roughly 12&ndash;16. <span class="ev a">A</span></div>
+      <div class="para"><b>Week 12 retest.</b> Bench, seated overhead press, heavy leg press and lat pulldown: warm up, then one all-out set of clean reps at your week-11 weight. More reps than week 4 at the same or higher weight means you got stronger. No true one-rep max tests. <span class="ev d">D</span></div>
+      <div class="para"><b>Muscle memory.</b> Muscle built before keeps extra nuclei after you stop, so early progress should come faster than for a true beginner. <span class="ev c">C</span></div>
+    </div>
+
+    <!-- ============ DAYS ============ -->
+    <div class="section-k">The four training days</div>
+    <div class="para" style="margin-bottom:12px">Sets shown are build-week numbers; the Lift Log adjusts them for ramp, deload and retest weeks. Warm up 5&ndash;7 minutes on the bike, then two or three lighter sets of the first exercise. The heavy main lift comes first for strength; everything after it is size work. Both rep ranges build muscle; strength needs the heavy work. <span class="ev a">A</span></div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">MON</span><span class="p-name">Chest, triceps, quads</span></div>
+      <table class="wk">
+        <tr><th></th><th>Exercise</th><th>Sets &times; reps</th><th>Rest</th></tr>
+        <tr><td>A1</td><td>Barbell bench press &middot; <i>main lift</i></td><td>4 &times; 4&ndash;6</td><td>2&ndash;3 min</td></tr>
+        <tr><td>A2</td><td>Leg press, feet high</td><td>3 &times; 8&ndash;12</td><td>in A1's rest</td></tr>
+        <tr><td>B1</td><td>Incline dumbbell press</td><td>3 &times; 8&ndash;12</td><td>90 s</td></tr>
+        <tr><td>B2</td><td>Leg extension</td><td>3 &times; 10&ndash;15</td><td>90 s</td></tr>
+        <tr><td>C1</td><td>Dumbbell fly, flat bench, deep stretch</td><td>3 &times; 10&ndash;15</td><td>90 s</td></tr>
+        <tr><td>C2</td><td>Rope triceps pushdown</td><td>3 &times; 10&ndash;15</td><td>90 s</td></tr>
+        <tr><td>C3</td><td>Cable lateral raise</td><td>3 &times; 12&ndash;15</td><td>90 s</td></tr>
+        <tr><td>D</td><td>Seated calf raise (ankle rules)</td><td>2 &times; 15&ndash;20</td><td>60 s</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">TUE</span><span class="p-name">Back, biceps, hamstrings, glutes</span></div>
+      <table class="wk">
+        <tr><th></th><th>Exercise</th><th>Sets &times; reps</th><th>Rest</th></tr>
+        <tr><td>A1</td><td>Lat pulldown &middot; <i>main lift</i></td><td>4 &times; 5&ndash;8</td><td>2&ndash;3 min</td></tr>
+        <tr><td>A2</td><td>Seated or lying leg curl</td><td>3 &times; 8&ndash;12</td><td>in A1's rest</td></tr>
+        <tr><td>B1</td><td>Chest-supported row</td><td>3 &times; 8&ndash;12</td><td>90 s</td></tr>
+        <tr><td>B2</td><td>Hip thrust</td><td>3 &times; 8&ndash;12</td><td>90 s</td></tr>
+        <tr><td>C1</td><td>Face pull</td><td>3 &times; 12&ndash;15</td><td>90 s</td></tr>
+        <tr><td>C2</td><td>Incline dumbbell curl, arms behind you</td><td>3 &times; 10&ndash;15</td><td>90 s</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">THU</span><span class="p-name">Shoulders, arms, hamstrings</span></div>
+      <table class="wk">
+        <tr><th></th><th>Exercise</th><th>Sets &times; reps</th><th>Rest</th></tr>
+        <tr><td>A1</td><td>Seated overhead press &middot; <i>main lift</i></td><td>4 &times; 4&ndash;6</td><td>2&ndash;3 min</td></tr>
+        <tr><td>A2</td><td>Romanian deadlift, start light</td><td>3 &times; 8&ndash;10</td><td>in A1's rest</td></tr>
+        <tr><td>B1</td><td>Cable lateral raise</td><td>3 &times; 12&ndash;15</td><td>90 s</td></tr>
+        <tr><td>B2</td><td>Seated or lying leg curl</td><td>3 &times; 10&ndash;15</td><td>90 s</td></tr>
+        <tr><td>C1</td><td>Overhead cable triceps extension</td><td>3 &times; 10&ndash;15</td><td>90 s</td></tr>
+        <tr><td>C2</td><td>Hammer curl</td><td>3 &times; 10&ndash;15</td><td>90 s</td></tr>
+        <tr><td>D</td><td>Seated calf raise (ankle rules)</td><td>2 &times; 15&ndash;20</td><td>60 s</td></tr>
+      </table>
+      <div class="note">No heavy rows today: the Romanian deadlift already loads the lower back.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">FRI</span><span class="p-name">Quads, chest, back</span></div>
+      <table class="wk">
+        <tr><th></th><th>Exercise</th><th>Sets &times; reps</th><th>Rest</th></tr>
+        <tr><td>A1</td><td>Leg press, heavy &middot; <i>main lift</i></td><td>4 &times; 6&ndash;8</td><td>2&ndash;3 min</td></tr>
+        <tr><td>A2</td><td>Incline barbell or Smith press</td><td>3 &times; 6&ndash;10</td><td>in A1's rest</td></tr>
+        <tr><td>B1</td><td>Close-grip lat pulldown</td><td>3 &times; 8&ndash;12</td><td>90 s</td></tr>
+        <tr><td>B2</td><td>Seated cable row</td><td>3 &times; 8&ndash;12</td><td>90 s</td></tr>
+        <tr><td>C1</td><td>Leg curl</td><td>3 &times; 10&ndash;15</td><td>90 s</td></tr>
+        <tr><td>C2</td><td>Cable lateral raise</td><td>3 &times; 12&ndash;15</td><td>90 s</td></tr>
+      </table>
+    </div>
+
+    <div class="card violet">
+      <div class="p-head"><span class="p-name">Weekly hard sets, build weeks</span></div>
+      <div class="para">Chest 13 &middot; back 13 plus face pulls &middot; quads 10 &middot; hamstrings 12 plus hip thrusts &middot; side shoulders 9 plus pressing &middot; biceps 6 and triceps 6, plus all the pulling and pressing. Compound lifts give arms and shoulders real indirect work. <span class="ev b">B</span></div>
+      <div class="para"><b>Stretch-position picks.</b> Deep flyes, incline curls, overhead extensions and Romanian deadlifts are deliberate: training a muscle at long length looks like a real growth bonus. <span class="ev c">C</span></div>
+      <div class="para"><b>Swaps.</b> Any exercise can become a machine or cable version that trains the same muscle through a similar range. Keep a swap at least four weeks so progress is measurable. The fly uses dumbbells because the gym has no crossover station and the pec deck can't reach a full stretch where it sits.</div>
+    </div>
+
+    <!-- ============ ANKLE ============ -->
+    <div class="section-k">Ankle rules</div>
+    <div class="card red">
+      <div class="p-ess">Load the ankle gradually and keep it out of balance-heavy positions. Your physio overrides anything here.</div>
+      <div class="move"><b>Pain check.</b> Ankle pain up to 3/10 during or after is acceptable if it has settled by next morning. Higher, or still sore next morning, means drop that exercise's load back one step for a week. <span class="ev b">B</span> <span class="ev d">D</span></div>
+      <div class="move"><b>Leg press.</b> Feet high on the platform means less ankle bend. Lower them a little at a time only while the ankle stays quiet. <span class="ev d">D</span></div>
+      <div class="move"><b>Seated calf raises.</b> Weeks 1&ndash;3 no added weight, slow full range. From week 4, add the smallest plate only after two pain-free weeks at the current load. <span class="ev d">D</span></div>
+      <div class="move"><b>Out for the twelve weeks</b> unless your physio clears them: lunges, split squats, step-ups, jumping, sprinting, heavy standing calf raises. <span class="ev d">D</span></div>
+      <div class="move"><b>Romanian deadlifts.</b> You stand still, so the ankle carries little, but start light in case standing under load bothers it. <span class="ev d">D</span></div>
+      <div class="move"><b>Keep from The Return.</b> Five minutes of single-leg balance most days and knee-to-wall monthly, as that page says to keep permanently.</div>
+    </div>
+
+    <!-- ============ NUTRITION ============ -->
+    <div class="section-k">Nutrition and supplement timing</div>
+    <div class="card gold">
+      <div class="p-ess">155&ndash;190 g of protein a day in four or five servings of 35&ndash;40 g, calories at maintenance or slightly below, 5 g creatine daily. Extended fasts paused for the twelve weeks.</div>
+      <div class="para"><b>Amount.</b> About 1.6 g/kg a day captures most of the benefit, roughly 155 g at your weight. <span class="ev a">A</span> Older muscle needs a bigger dose per meal to respond fully, about 0.4 g/kg, or 35&ndash;40 g. <span class="ev b">B</span> This replaces the Longevity Protocol's 145 g for the twelve weeks.</div>
+      <div class="para"><b>Calories.</b> Building muscle while losing fat works at maintenance or a small deficit when protein is high. <span class="ev b">B</span> Aim to lose 0.5&ndash;1 lb a week on the weekly average. Flat two weeks with no waist change: cut 200&ndash;300 calories a day. Dropping faster than 1 lb a week, or lifts stalled two weeks: add about 200. <span class="ev c">C</span> <span class="ev d">D</span></div>
+      <table class="wk">
+        <tr><th>When</th><th>What</th><th>Protein</th></tr>
+        <tr><td>Breakfast</td><td>Whey shake (food alongside optional)</td><td>35&ndash;40 g</td></tr>
+        <tr><td>~1:00 pm</td><td>Lunch &mdash; your pre-workout meal</td><td>35&ndash;40 g</td></tr>
+        <tr><td>After school</td><td>Train</td><td>&mdash;</td></tr>
+        <tr><td>Within ~2 h</td><td>Dinner, or a whey shake right after training if dinner is later</td><td>35&ndash;40 g</td></tr>
+        <tr><td>Before bed</td><td>Greek yogurt, cottage cheese or casein</td><td>~40 g</td></tr>
+      </table>
+      <div class="note">Spread servings beat one or two large ones in short-term studies <span class="ev b">B</span>; pre-sleep protein raises overnight muscle building, including in older men <span class="ev b">B</span>; total daily protein matters more than exact timing <span class="ev a">A</span>.</div>
+    </div>
+
+    <div class="card gold">
+      <div class="p-head"><span class="p-name">Supplements</span></div>
+      <div class="move"><b>Creatine monohydrate</b>, 3&ndash;5 g every day, any time; plain or micronized monohydrate, not HCl, buffered, ethyl ester or gummies. Start now rather than saving it for a plateau: its water-weight jump then lands inside the ramp, not in the middle of your fat-loss readings. Loading at 20 g a day for 5&ndash;7 days is optional. <span class="ev a">A</span></div>
+      <div class="move"><b>Whey</b>, 35&ndash;40 g at breakfast, and after training if dinner is more than two hours away. Convenience, not magic. <span class="ev a">A</span></div>
+      <div class="move"><b>Casein, Greek yogurt or cottage cheese</b> before bed, about 40 g protein. <span class="ev b">B</span></div>
+      <div class="move"><b>Vitamin D</b> only if a blood test shows you're low; take it with a meal containing fat. <span class="ev d">D</span></div>
+      <div class="move"><b>Caffeine</b> up to about 200 mg, 30&ndash;60 minutes before training; skip it if sleep suffers. <span class="ev a">A</span> <span class="ev d">D</span></div>
+      <div class="note">Look for NSF Certified for Sport, Informed Sport or Creapure; a Canadian NPN means Health Canada licensed the product, not that each batch was tested. Skip BCAAs, testosterone boosters and pre-workout blends beyond their caffeine. <span class="ev b">B</span></div>
+    </div>
+
+    <!-- ============ TRACKING ============ -->
+    <div class="section-k">Tracking progress</div>
+    <div class="card teal">
+      <div class="p-ess">Lifts going up, waist down or holding, bodyweight trending slowly down. The scale alone can't tell fat loss from muscle gain.</div>
+      <table class="wk">
+        <tr><th>Measure</th><th>How often</th><th>Good looks like</th></tr>
+        <tr><td>Lifts</td><td>Every session, in the Lift Log</td><td>Reps or weight up on most exercises every week or two</td></tr>
+        <tr><td>Bodyweight</td><td>Daily, judged by weekly average</td><td>Down 0.5&ndash;1 lb a week</td></tr>
+        <tr><td>Waist</td><td>Every 2 weeks, at the navel</td><td>Down or holding</td></tr>
+        <tr><td>Photos</td><td>Every 4 weeks, same light</td><td>Visible change by week 8&ndash;12</td></tr>
+        <tr><td>Sleep</td><td>Daily, on the Amazfit</td><td>7&ndash;9 hours <span class="ev b">B</span></td></tr>
+      </table>
+      <div class="note">If the main lifts stall two straight weeks outside a deload, check sleep and protein first, then calories. <span class="ev d">D</span></div>
+    </div>
+
+    <div class="band vio"><b>The one thing.</b> Add a rep or a little weight whenever you can, and write it down. Progressive overload is the engine; the log is how you know it is running.</div>
+
+    <div class="section-k">Evidence</div>
+    <div class="key">
+      <span class="ev a">A</span> <b>strong</b> &mdash; meta-analyses or repeated trials.<br>
+      <span class="ev b">B</span> <b>good</b> &mdash; solid support, some inconsistency or short-term only.<br>
+      <span class="ev c">C</span> <b>emerging or conventional</b> &mdash; a handful of studies, animal work, or a standard clinical figure.<br>
+      <span class="ev d">D</span> <b>reasoned</b> &mdash; follows from the evidence but not tested directly; most of the specific numbers here.<br><br>
+      Two findings were re-checked against their papers at build time: rest intervals (Singer et al., 2024) and split versus full body (Ramos-Campo et al., 2024). The other grades come from the published research as recalled, not re-checked. Not medical advice; your physio's word on the ankle wins.
+    </div>
+
+    <div class="foot">Size and Strength &middot; Forge OS</div>
+  </div>
+</div>
+
+<script>
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-strength';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+loadPhoto();
+</script>
+</body>
+</html>
