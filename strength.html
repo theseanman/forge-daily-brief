@@ -99,6 +99,22 @@
   a.loglink{ color:#06264f; background:var(--accent); text-decoration:none; font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; padding:8px 14px; border-radius:999px; }
   a.loglink:focus-visible, a.back:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
   .wk td i{ color:var(--ink-quiet); font-style:normal; font-size:12px; }
+  details.fx{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; margin-bottom:10px; overflow:hidden; }
+  details.fx summary{ list-style:none; cursor:pointer; padding:13px 40px 13px 16px; display:flex; flex-direction:column; gap:2px; position:relative; }
+  details.fx summary::-webkit-details-marker{ display:none; }
+  details.fx summary:after{ content:'\203A'; position:absolute; right:16px; top:50%; transform:translateY(-50%); color:var(--ink-quiet); font-size:22px; transition:transform .2s; }
+  details.fx[open] summary:after{ transform:translateY(-50%) rotate(90deg); }
+  details.fx summary:focus-visible{ outline:2px solid var(--gold); outline-offset:-2px; }
+  .fx-n{ font-size:16px; font-weight:700; }
+  .fx-m{ font-size:12.5px; color:var(--ink-quiet); }
+  .fx-b{ padding:0 16px 14px; }
+  .fx-pics{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:2px 0 10px; }
+  .fx-pics figure{ margin:0; }
+  .fx-pics img{ width:100%; height:auto; border-radius:10px; display:block; background:rgba(9,36,80,.5); }
+  .fx-pics figcaption{ font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); margin-top:4px; }
+  .fx-k{ font-size:11px; letter-spacing:.18em; text-transform:uppercase; font-weight:800; color:var(--teal); margin:10px 0 2px; }
+  .fx-k.bad{ color:var(--red); }
+  .move.x:before{ content:'\2715'; color:var(--red); }
   .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
   @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
 </style>
@@ -171,7 +187,7 @@
 
     <!-- ============ DAYS ============ -->
     <div class="section-k">The four training days</div>
-    <div class="para" style="margin-bottom:12px">Sets shown are build-week numbers; the Lift Log adjusts them for ramp, deload and retest weeks. Warm up 5&ndash;7 minutes on the bike, then two or three lighter sets of the first exercise. The heavy main lift comes first for strength; everything after it is size work. Both rep ranges build muscle; strength needs the heavy work. <span class="ev a">A</span></div>
+    <div class="para" style="margin-bottom:12px">Sets shown are build-week numbers; the Lift Log adjusts them for ramp, deload and retest weeks. Warm up 5&ndash;7 minutes on the bike, then two or three lighter sets of the first exercise. The heavy main lift comes first for strength; everything after it is size work. Both rep ranges build muscle; strength needs the heavy work. <span class="ev a">A</span> New to an exercise? See the <a class="inl" href="#form">form guide</a> below.</div>
 
     <div class="card">
       <div class="p-head"><span class="p-num">MON</span><span class="p-name">Chest, triceps, quads</span></div>
@@ -235,6 +251,351 @@
       <div class="para"><b>Stretch-position picks.</b> Deep flyes, incline curls, overhead extensions and Romanian deadlifts are deliberate: training a muscle at long length looks like a real growth bonus. <span class="ev c">C</span></div>
       <div class="para"><b>Swaps.</b> Any exercise can become a machine or cable version that trains the same muscle through a similar range. Keep a swap at least four weeks so progress is measurable. The fly uses dumbbells because the gym has no crossover station and the pec deck can't reach a full stretch where it sits.</div>
     </div>
+
+    <!-- ============ FORM ============ -->
+    <div class="section-k" id="form">Form guide</div>
+    <div class="para" style="margin-bottom:12px">All 21 exercises, in the order they first appear in the week. Tap one to open it: two photos through the movement, what it trains, the key points and the common mistakes. Leg curl and cable lateral raise appear on more than one day but are covered once.</div>
+    <div class="group-k">First on Monday</div>
+    <details class="fx" id="fx-bench">
+      <summary><span class="fx-n">Barbell bench press</span><span class="fx-m">Chest, front shoulders, triceps</span></summary>
+      <div class="fx-b">
+        <div class="fx-pics"><figure><img src="./img/strength/bench-0.jpg" alt="Barbell bench press, position 1" loading="lazy" width="480" height="320"><figcaption>Position 1</figcaption></figure><figure><img src="./img/strength/bench-1.jpg" alt="Barbell bench press, position 2" loading="lazy" width="480" height="320"><figcaption>Position 2</figcaption></figure></div>
+        <div class="fx-k">Key points</div>
+        <div class="move">Eyes under the bar; feet flat; squeeze your shoulder blades back and down and keep them pinned</div>
+        <div class="move">Grip just outside shoulder width, wrists stacked over elbows</div>
+        <div class="move">Lower under control to the lower chest, elbows about 45–70° from your sides</div>
+        <div class="move">Press up and slightly back toward your face, shoulder blades still pinned</div>
+        <div class="fx-k bad">Common mistakes</div>
+        <div class="move x">Elbows flared straight out at 90°, which loads the front of the shoulder</div>
+        <div class="move x">Bouncing the bar off the chest</div>
+        <div class="move x">Hips or shoulder blades lifting off the bench as the set gets hard</div>
+        <div class="note">Use the safety pins or a spotter on the heavy main sets.</div>
+      </div>
+    </details>
+    <details class="fx" id="fx-legpress">
+      <summary><span class="fx-n">Leg press</span><span class="fx-m">Quads, glutes</span></summary>
+      <div class="fx-b">
+        <div class="fx-pics"><figure><img src="./img/strength/legpress-0.jpg" alt="Leg press, position 1" loading="lazy" width="480" height="320"><figcaption>Position 1</figcaption></figure><figure><img src="./img/strength/legpress-1.jpg" alt="Leg press, position 2" loading="lazy" width="480" height="320"><figcaption>Position 2</figcaption></figure></div>
+        <div class="fx-k">Key points</div>
+        <div class="move">Back and hips flat against the pad the whole set</div>
+        <div class="move">Feet high and shoulder width on the platform: less ankle bend, more glutes</div>
+        <div class="move">Lower until your knees reach about 90°, or until your lower back starts to lift</div>
+        <div class="move">Push through the whole foot; stop just short of locking the knees</div>
+        <div class="fx-k bad">Common mistakes</div>
+        <div class="move x">Lowering so deep the hips curl off the pad</div>
+        <div class="move x">Knees caving inward on the way up</div>
+        <div class="move x">Snapping the knees straight at the top</div>
+        <div class="note">Ankle: start with feet high and lower them only while the ankle stays quiet.</div>
+      </div>
+    </details>
+    <details class="fx" id="fx-incdb">
+      <summary><span class="fx-n">Incline dumbbell press</span><span class="fx-m">Upper chest, front shoulders, triceps</span></summary>
+      <div class="fx-b">
+        <div class="fx-pics"><figure><img src="./img/strength/incdb-0.jpg" alt="Incline dumbbell press, position 1" loading="lazy" width="480" height="320"><figcaption>Position 1</figcaption></figure><figure><img src="./img/strength/incdb-1.jpg" alt="Incline dumbbell press, position 2" loading="lazy" width="480" height="320"><figcaption>Position 2</figcaption></figure></div>
+        <div class="fx-k">Key points</div>
+        <div class="move">Bench at 30–45°; shoulder blades back and down</div>
+        <div class="move">Dumbbells start at chest level, forearms vertical</div>
+        <div class="move">Lower to a stretch at the chest, elbows about 45–60° from your sides</div>
+        <div class="move">Press up and slightly in, without clanking the dumbbells together</div>
+        <div class="fx-k bad">Common mistakes</div>
+        <div class="move x">Bench too steep, which turns it into a shoulder press</div>
+        <div class="move x">Elbows flared straight out</div>
+        <div class="move x">Cutting the bottom of the range short</div>
+        <div class="note">Kick the dumbbells up from your knees one at a time to get into position.</div>
+      </div>
+    </details>
+    <details class="fx" id="fx-legext">
+      <summary><span class="fx-n">Leg extension</span><span class="fx-m">Quads</span></summary>
+      <div class="fx-b">
+        <div class="fx-pics"><figure><img src="./img/strength/legext-0.jpg" alt="Leg extension, position 1" loading="lazy" width="480" height="320"><figcaption>Position 1</figcaption></figure><figure><img src="./img/strength/legext-1.jpg" alt="Leg extension, position 2" loading="lazy" width="480" height="320"><figcaption>Position 2</figcaption></figure></div>
+        <div class="fx-k">Key points</div>
+        <div class="move">Line your knee up with the machine&#x27;s pivot point</div>
+        <div class="move">Pad just above the ankle, on the shin</div>
+        <div class="move">Straighten fully, squeeze one second at the top</div>
+        <div class="move">Lower slowly over two to three seconds</div>
+        <div class="fx-k bad">Common mistakes</div>
+        <div class="move x">Swinging the weight up with momentum</div>
+        <div class="move x">Hips lifting off the seat</div>
+        <div class="move x">Dropping the weight on the way down</div>
+        <div class="note">The pad sits on the shin, so the injured ankle carries no load here.</div>
+      </div>
+    </details>
+    <details class="fx" id="fx-dbfly">
+      <summary><span class="fx-n">Dumbbell fly, flat bench</span><span class="fx-m">Chest</span></summary>
+      <div class="fx-b">
+        <div class="fx-pics"><figure><img src="./img/strength/dbfly-0.jpg" alt="Dumbbell fly, flat bench, position 1" loading="lazy" width="480" height="320"><figcaption>Position 1</figcaption></figure><figure><img src="./img/strength/dbfly-1.jpg" alt="Dumbbell fly, flat bench, position 2" loading="lazy" width="480" height="320"><figcaption>Position 2</figcaption></figure></div>
+        <div class="fx-k">Key points</div>
+        <div class="move">Palms facing each other, a soft bend in the elbows that stays fixed</div>
+        <div class="move">Open the arms in a wide arc until you feel a deep chest stretch</div>
+        <div class="move">Bring the dumbbells back up in the same arc, as if hugging a tree</div>
+        <div class="move">Shoulder blades pinned back the whole time</div>
+        <div class="fx-k bad">Common mistakes</div>
+        <div class="move x">Bending the elbows more as you lower, turning it into a press</div>
+        <div class="move x">Going too heavy; this is a stretch exercise, not a strength test</div>
+        <div class="move x">Dropping the arms below the point where you feel the stretch</div>
+        <div class="note">Go lighter than you think: 10–15 controlled reps with a pause in the stretch.</div>
+      </div>
+    </details>
+    <details class="fx" id="fx-pushdown">
+      <summary><span class="fx-n">Rope triceps pushdown</span><span class="fx-m">Triceps</span></summary>
+      <div class="fx-b">
+        <div class="fx-pics"><figure><img src="./img/strength/pushdown-0.jpg" alt="Rope triceps pushdown, position 1" loading="lazy" width="480" height="320"><figcaption>Position 1</figcaption></figure><figure><img src="./img/strength/pushdown-1.jpg" alt="Rope triceps pushdown, position 2" loading="lazy" width="480" height="320"><figcaption>Position 2</figcaption></figure></div>
+        <div class="fx-k">Key points</div>
+        <div class="move">Stand tall, slight forward lean, elbows pinned to your sides</div>
+        <div class="move">Push down until the arms are straight, then pull the rope ends apart</div>
+        <div class="move">Let the forearms rise only to about parallel, elbows still at your sides</div>
+        <div class="move">Control the way up</div>
+        <div class="fx-k bad">Common mistakes</div>
+        <div class="move x">Elbows drifting forward so the shoulders do the work</div>
+        <div class="move x">Leaning over the rope and pushing with body weight</div>
+        <div class="move x">Short, partial reps</div>
+        <div class="note">Elbow: if the rope bothers it, a straight or V-bar handle often feels better.</div>
+      </div>
+    </details>
+    <details class="fx" id="fx-latraise">
+      <summary><span class="fx-n">Cable lateral raise</span><span class="fx-m">Side shoulders</span></summary>
+      <div class="fx-b">
+        <div class="fx-pics"><figure><img src="./img/strength/latraise-0.jpg" alt="Cable lateral raise, position 1" loading="lazy" width="480" height="320"><figcaption>Position 1</figcaption></figure><figure><img src="./img/strength/latraise-1.jpg" alt="Cable lateral raise, position 2" loading="lazy" width="480" height="320"><figcaption>Position 2</figcaption></figure></div>
+        <div class="fx-k">Key points</div>
+        <div class="move">Cable at the lowest setting; stand side-on or sit between the stacks</div>
+        <div class="move">A slight bend at the elbow; lead with the elbow, not the hand</div>
+        <div class="move">Raise out to the side until the arm is about level with the shoulder</div>
+        <div class="move">Lower slowly; the cable keeps tension at the bottom</div>
+        <div class="fx-k bad">Common mistakes</div>
+        <div class="move x">Shrugging the shoulders up toward the ears</div>
+        <div class="move x">Swinging the torso to throw the weight up</div>
+        <div class="move x">Raising the hand above the elbow</div>
+        <div class="note">The photos show the seated version. Standing one arm at a time works the same muscle.</div>
+      </div>
+    </details>
+    <details class="fx" id="fx-calf">
+      <summary><span class="fx-n">Seated calf raise</span><span class="fx-m">Calves (soleus)</span></summary>
+      <div class="fx-b">
+        <div class="fx-pics"><figure><img src="./img/strength/calf-0.jpg" alt="Seated calf raise, position 1" loading="lazy" width="480" height="320"><figcaption>Position 1</figcaption></figure><figure><img src="./img/strength/calf-1.jpg" alt="Seated calf raise, position 2" loading="lazy" width="480" height="320"><figcaption>Position 2</figcaption></figure></div>
+        <div class="fx-k">Key points</div>
+        <div class="move">Balls of the feet on the platform edge, pad snug on the lower thighs</div>
+        <div class="move">Lower the heels slowly into a full stretch and pause one second</div>
+        <div class="move">Rise as high as you can onto the balls of the feet</div>
+        <div class="move">Slow on the way down, about two seconds</div>
+        <div class="fx-k bad">Common mistakes</div>
+        <div class="move x">Bouncing quick, short reps</div>
+        <div class="move x">Rocking with the upper body</div>
+        <div class="move x">Cutting the stretch short</div>
+        <div class="note">Ankle: weeks 1–3 no added weight. Stop at pain above 3/10 or anything still sore the next morning.</div>
+      </div>
+    </details>
+    <div class="group-k">First on Tuesday</div>
+    <details class="fx" id="fx-pulldown">
+      <summary><span class="fx-n">Lat pulldown</span><span class="fx-m">Lats, upper back, biceps</span></summary>
+      <div class="fx-b">
+        <div class="fx-pics"><figure><img src="./img/strength/pulldown-0.jpg" alt="Lat pulldown, position 1" loading="lazy" width="480" height="320"><figcaption>Position 1</figcaption></figure><figure><img src="./img/strength/pulldown-1.jpg" alt="Lat pulldown, position 2" loading="lazy" width="480" height="320"><figcaption>Position 2</figcaption></figure></div>
+        <div class="fx-k">Key points</div>
+        <div class="move">Thighs locked under the pad; grip just outside shoulder width</div>
+        <div class="move">Lean back slightly, chest up</div>
+        <div class="move">Pull the bar to the upper chest by driving the elbows down and back</div>
+        <div class="move">Control the bar up to a full stretch overhead</div>
+        <div class="fx-k bad">Common mistakes</div>
+        <div class="move x">Leaning way back and turning it into a row</div>
+        <div class="move x">Pulling behind the neck</div>
+        <div class="move x">Letting the weight yank the arms up at the top</div>
+        <div class="note">Elbow: if a straight bar bothers it, use a neutral-grip handle.</div>
+      </div>
+    </details>
+    <details class="fx" id="fx-legcurl">
+      <summary><span class="fx-n">Leg curl (seated or lying)</span><span class="fx-m">Hamstrings</span></summary>
+      <div class="fx-b">
+        <div class="fx-pics"><figure><img src="./img/strength/legcurl-0.jpg" alt="Leg curl (seated or lying), position 1" loading="lazy" width="480" height="320"><figcaption>Position 1</figcaption></figure><figure><img src="./img/strength/legcurl-1.jpg" alt="Leg curl (seated or lying), position 2" loading="lazy" width="480" height="320"><figcaption>Position 2</figcaption></figure></div>
+        <div class="fx-k">Key points</div>
+        <div class="move">Line your knee up with the machine&#x27;s pivot</div>
+        <div class="move">Pad just above the heel, on the back of the lower leg</div>
+        <div class="move">Curl as far as you can and squeeze for one second</div>
+        <div class="move">Lower slowly to full stretch</div>
+        <div class="fx-k bad">Common mistakes</div>
+        <div class="move x">Hips lifting off the seat or bench</div>
+        <div class="move x">Jerking the weight with momentum</div>
+        <div class="move x">Short reps that skip the stretch</div>
+        <div class="note">Seated curls stretch the hamstrings more than lying curls, so prefer seated when both are free.</div>
+      </div>
+    </details>
+    <details class="fx" id="fx-csrow">
+      <summary><span class="fx-n">Chest-supported row</span><span class="fx-m">Mid-back, lats, rear shoulders</span></summary>
+      <div class="fx-b">
+        <div class="fx-pics"><figure><img src="./img/strength/csrow-0.jpg" alt="Chest-supported row, position 1" loading="lazy" width="480" height="320"><figcaption>Position 1</figcaption></figure><figure><img src="./img/strength/csrow-1.jpg" alt="Chest-supported row, position 2" loading="lazy" width="480" height="320"><figcaption>Position 2</figcaption></figure></div>
+        <div class="fx-k">Key points</div>
+        <div class="move">Chest on an incline bench at about 30–45°, feet planted</div>
+        <div class="move">Arms hang straight down from the shoulders</div>
+        <div class="move">Pull the elbows back toward your hips, squeezing the shoulder blades together</div>
+        <div class="move">Lower to a full stretch</div>
+        <div class="fx-k bad">Common mistakes</div>
+        <div class="move x">Lifting the chest off the pad to heave the weight</div>
+        <div class="move x">Shrugging up instead of rowing back</div>
+        <div class="move x">Short reps that never reach the stretch</div>
+        <div class="note">The chest pad takes the lower back out of it, which is why it&#x27;s on the same day as hip thrusts.</div>
+      </div>
+    </details>
+    <details class="fx" id="fx-hipthrust">
+      <summary><span class="fx-n">Hip thrust</span><span class="fx-m">Glutes, hamstrings</span></summary>
+      <div class="fx-b">
+        <div class="fx-pics"><figure><img src="./img/strength/hipthrust-0.jpg" alt="Hip thrust, position 1" loading="lazy" width="480" height="320"><figcaption>Position 1</figcaption></figure><figure><img src="./img/strength/hipthrust-1.jpg" alt="Hip thrust, position 2" loading="lazy" width="480" height="320"><figcaption>Position 2</figcaption></figure></div>
+        <div class="fx-k">Key points</div>
+        <div class="move">Upper back on a bench, bar padded across the hip crease</div>
+        <div class="move">Feet flat, shins vertical at the top</div>
+        <div class="move">Chin tucked; drive through the heels until the hips are level with the knees</div>
+        <div class="move">Squeeze the glutes one second at the top, then lower under control</div>
+        <div class="fx-k bad">Common mistakes</div>
+        <div class="move x">Arching the lower back at the top instead of finishing with the glutes</div>
+        <div class="move x">Feet too far forward, which shifts the work to the hamstrings</div>
+        <div class="move x">Pushing off the toes</div>
+        <div class="note">Ankle: the foot stays flat, so ankle load is low; start light anyway. A hip-thrust machine works the same way.</div>
+      </div>
+    </details>
+    <details class="fx" id="fx-facepull">
+      <summary><span class="fx-n">Face pull</span><span class="fx-m">Rear shoulders, upper back</span></summary>
+      <div class="fx-b">
+        <div class="fx-pics"><figure><img src="./img/strength/facepull-0.jpg" alt="Face pull, position 1" loading="lazy" width="480" height="320"><figcaption>Position 1</figcaption></figure><figure><img src="./img/strength/facepull-1.jpg" alt="Face pull, position 2" loading="lazy" width="480" height="320"><figcaption>Position 2</figcaption></figure></div>
+        <div class="fx-k">Key points</div>
+        <div class="move">Rope at upper-chest to face height; thumbs toward you</div>
+        <div class="move">Pull toward your forehead, splitting the rope apart</div>
+        <div class="move">Finish with the elbows high and the hands beside the ears</div>
+        <div class="move">Slow return</div>
+        <div class="fx-k bad">Common mistakes</div>
+        <div class="move x">Going heavy and leaning back</div>
+        <div class="move x">Elbows dropping, which turns it into a row</div>
+        <div class="move x">Shrugging</div>
+        <div class="note">Light and controlled. This one is for shoulder health and posture.</div>
+      </div>
+    </details>
+    <details class="fx" id="fx-inccurl">
+      <summary><span class="fx-n">Incline dumbbell curl</span><span class="fx-m">Biceps (long head)</span></summary>
+      <div class="fx-b">
+        <div class="fx-pics"><figure><img src="./img/strength/inccurl-0.jpg" alt="Incline dumbbell curl, position 1" loading="lazy" width="480" height="320"><figcaption>Position 1</figcaption></figure><figure><img src="./img/strength/inccurl-1.jpg" alt="Incline dumbbell curl, position 2" loading="lazy" width="480" height="320"><figcaption>Position 2</figcaption></figure></div>
+        <div class="fx-k">Key points</div>
+        <div class="move">Bench at about 45–60°; arms hang straight down behind the body</div>
+        <div class="move">Palms forward; keep the elbows back</div>
+        <div class="move">Curl up without letting the elbows swing forward</div>
+        <div class="move">Lower slowly to a full stretch</div>
+        <div class="fx-k bad">Common mistakes</div>
+        <div class="move x">Elbows drifting forward at the top</div>
+        <div class="move x">Shoulders rolling forward off the bench</div>
+        <div class="move x">Swinging the dumbbells</div>
+        <div class="note">The stretch at the bottom is the point. Expect to use less weight than a standing curl.</div>
+      </div>
+    </details>
+    <div class="group-k">First on Thursday</div>
+    <details class="fx" id="fx-ohp">
+      <summary><span class="fx-n">Seated overhead press</span><span class="fx-m">Front and side shoulders, triceps</span></summary>
+      <div class="fx-b">
+        <div class="fx-pics"><figure><img src="./img/strength/ohp-0.jpg" alt="Seated overhead press, position 1" loading="lazy" width="480" height="320"><figcaption>Position 1</figcaption></figure><figure><img src="./img/strength/ohp-1.jpg" alt="Seated overhead press, position 2" loading="lazy" width="480" height="320"><figcaption>Position 2</figcaption></figure></div>
+        <div class="fx-k">Key points</div>
+        <div class="move">Bench upright or one notch back; back against the pad</div>
+        <div class="move">Dumbbells at shoulder height, palms forward or slightly turned in</div>
+        <div class="move">Press up and slightly in until the arms are straight</div>
+        <div class="move">Lower to about ear or chin height</div>
+        <div class="fx-k bad">Common mistakes</div>
+        <div class="move x">Arching the lower back off the pad</div>
+        <div class="move x">Lowering only a few inches</div>
+        <div class="move x">Elbows flared fully out to the sides</div>
+        <div class="note">Seated keeps the ankle out of it. Palms turned slightly in is easier on the shoulders.</div>
+      </div>
+    </details>
+    <details class="fx" id="fx-rdl">
+      <summary><span class="fx-n">Romanian deadlift</span><span class="fx-m">Hamstrings, glutes, lower back</span></summary>
+      <div class="fx-b">
+        <div class="fx-pics"><figure><img src="./img/strength/rdl-0.jpg" alt="Romanian deadlift, position 1" loading="lazy" width="480" height="320"><figcaption>Position 1</figcaption></figure><figure><img src="./img/strength/rdl-1.jpg" alt="Romanian deadlift, position 2" loading="lazy" width="480" height="320"><figcaption>Position 2</figcaption></figure></div>
+        <div class="fx-k">Key points</div>
+        <div class="move">Stand tall, bar or dumbbells against the thighs, soft knees</div>
+        <div class="move">Push the hips back while the weight slides down the legs</div>
+        <div class="move">Keep the back flat; stop when you feel a strong hamstring stretch, usually mid-shin</div>
+        <div class="move">Drive the hips forward to stand</div>
+        <div class="fx-k bad">Common mistakes</div>
+        <div class="move x">Rounding the lower back to reach lower</div>
+        <div class="move x">Bending the knees too much, which turns it into a squat</div>
+        <div class="move x">Letting the weight drift away from the legs</div>
+        <div class="note">Start light. Straps or dumbbells reduce the grip and elbow load.</div>
+      </div>
+    </details>
+    <details class="fx" id="fx-ohext">
+      <summary><span class="fx-n">Overhead cable triceps extension</span><span class="fx-m">Triceps (long head)</span></summary>
+      <div class="fx-b">
+        <div class="fx-pics"><figure><img src="./img/strength/ohext-0.jpg" alt="Overhead cable triceps extension, position 1" loading="lazy" width="480" height="320"><figcaption>Position 1</figcaption></figure><figure><img src="./img/strength/ohext-1.jpg" alt="Overhead cable triceps extension, position 2" loading="lazy" width="480" height="320"><figcaption>Position 2</figcaption></figure></div>
+        <div class="fx-k">Key points</div>
+        <div class="move">Rope on a low or mid cable; face away from the stack, one foot forward</div>
+        <div class="move">Elbows overhead, pointing forward, close to the head</div>
+        <div class="move">Straighten the arms fully, then lower behind the head into a deep stretch</div>
+        <div class="move">Keep the elbows still</div>
+        <div class="fx-k bad">Common mistakes</div>
+        <div class="move x">Elbows flaring wide</div>
+        <div class="move x">Arching the lower back</div>
+        <div class="move x">Short reps that skip the stretch</div>
+        <div class="note">Elbow: if it complains, try a single-arm version or a lighter load first.</div>
+      </div>
+    </details>
+    <details class="fx" id="fx-hammer">
+      <summary><span class="fx-n">Hammer curl</span><span class="fx-m">Brachialis, forearms, biceps</span></summary>
+      <div class="fx-b">
+        <div class="fx-pics"><figure><img src="./img/strength/hammer-0.jpg" alt="Hammer curl, position 1" loading="lazy" width="480" height="320"><figcaption>Position 1</figcaption></figure><figure><img src="./img/strength/hammer-1.jpg" alt="Hammer curl, position 2" loading="lazy" width="480" height="320"><figcaption>Position 2</figcaption></figure></div>
+        <div class="fx-k">Key points</div>
+        <div class="move">Stand tall, palms facing your thighs</div>
+        <div class="move">Elbows pinned at your sides</div>
+        <div class="move">Curl up keeping the palms facing in</div>
+        <div class="move">Lower slowly</div>
+        <div class="fx-k bad">Common mistakes</div>
+        <div class="move x">Swinging the torso</div>
+        <div class="move x">Elbows drifting forward</div>
+        <div class="move x">Dropping the weight on the way down</div>
+        <div class="note">Neutral grip is usually the most comfortable curl for a sore elbow.</div>
+      </div>
+    </details>
+    <div class="group-k">First on Friday</div>
+    <details class="fx" id="fx-incbar">
+      <summary><span class="fx-n">Incline barbell or Smith press</span><span class="fx-m">Upper chest, front shoulders, triceps</span></summary>
+      <div class="fx-b">
+        <div class="fx-pics"><figure><img src="./img/strength/incbar-0.jpg" alt="Incline barbell or Smith press, position 1" loading="lazy" width="480" height="320"><figcaption>Position 1</figcaption></figure><figure><img src="./img/strength/incbar-1.jpg" alt="Incline barbell or Smith press, position 2" loading="lazy" width="480" height="320"><figcaption>Position 2</figcaption></figure></div>
+        <div class="fx-k">Key points</div>
+        <div class="move">Bench at about 30°; shoulder blades back and down</div>
+        <div class="move">Grip slightly wider than shoulder width</div>
+        <div class="move">Lower to the upper chest, below the collarbone</div>
+        <div class="move">Press straight up</div>
+        <div class="fx-k bad">Common mistakes</div>
+        <div class="move x">Bench too steep</div>
+        <div class="move x">Bouncing the bar off the chest</div>
+        <div class="move x">Hips lifting off the bench</div>
+        <div class="note">The Smith machine is a good choice here: you can rack it safely at any point.</div>
+      </div>
+    </details>
+    <details class="fx" id="fx-cgpull">
+      <summary><span class="fx-n">Close-grip lat pulldown</span><span class="fx-m">Lats, upper back, biceps</span></summary>
+      <div class="fx-b">
+        <div class="fx-pics"><figure><img src="./img/strength/cgpull-0.jpg" alt="Close-grip lat pulldown, position 1" loading="lazy" width="480" height="320"><figcaption>Position 1</figcaption></figure><figure><img src="./img/strength/cgpull-1.jpg" alt="Close-grip lat pulldown, position 2" loading="lazy" width="480" height="320"><figcaption>Position 2</figcaption></figure></div>
+        <div class="fx-k">Key points</div>
+        <div class="move">V-bar or close neutral handle; thighs locked under the pad</div>
+        <div class="move">Slight lean back, chest up</div>
+        <div class="move">Pull the handle to the upper chest, elbows driving down to your sides</div>
+        <div class="move">Control up to a full stretch</div>
+        <div class="fx-k bad">Common mistakes</div>
+        <div class="move x">Leaning way back</div>
+        <div class="move x">Pulling with the arms instead of driving the elbows</div>
+        <div class="move x">Letting it yank you up at the top</div>
+        <div class="note">The photos show a V-bar. A neutral grip is easier on the elbow.</div>
+      </div>
+    </details>
+    <details class="fx" id="fx-cablerow">
+      <summary><span class="fx-n">Seated cable row</span><span class="fx-m">Mid-back, lats, rear shoulders</span></summary>
+      <div class="fx-b">
+        <div class="fx-pics"><figure><img src="./img/strength/cablerow-0.jpg" alt="Seated cable row, position 1" loading="lazy" width="480" height="320"><figcaption>Position 1</figcaption></figure><figure><img src="./img/strength/cablerow-1.jpg" alt="Seated cable row, position 2" loading="lazy" width="480" height="320"><figcaption>Position 2</figcaption></figure></div>
+        <div class="fx-k">Key points</div>
+        <div class="move">Sit tall, knees slightly bent, chest up</div>
+        <div class="move">Pull the handle to your stomach, elbows close to your sides</div>
+        <div class="move">Squeeze the shoulder blades together at the end</div>
+        <div class="move">Let the arms go forward to a full stretch without rounding your back</div>
+        <div class="fx-k bad">Common mistakes</div>
+        <div class="move x">Rocking the torso back and forth to move the weight</div>
+        <div class="move x">Rounding the lower back at the stretch</div>
+        <div class="move x">Shrugging</div>
+        <div class="note">A neutral V-handle is easier on the elbow than a wide bar.</div>
+      </div>
+    </details>
+    <div class="note" style="margin:8px 0 4px">Photos: Free Exercise DB (github.com/yuhonas/free-exercise-db), which its maintainer labels public domain; their original source is not verified. Form points and mistakes are written for this plan.</div>
 
     <!-- ============ ANKLE ============ -->
     <div class="section-k">Ankle rules</div>
