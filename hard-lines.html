@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hard Lines</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --red:#ff5a6e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 13px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  h2{ font-size:22px; font-weight:300; margin:2px 0 4px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* read */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .ifthen{ background:rgba(9,36,80,.45); border-radius:10px; padding:11px 13px; margin:8px 0 6px; font-size:14.5px; line-height:1.55; }
+  .ifthen .k{ font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; font-weight:800; color:var(--gold); }
+  .ifthen b{ color:var(--gold); }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .g{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.09em; padding:2px 6px; border-radius:5px;
+    background:rgba(74,157,232,.24); color:var(--accent-hi); margin-left:5px; vertical-align:1px; }
+  .g.c{ background:rgba(245,215,110,.16); color:var(--gold); }
+  .g.r{ background:rgba(180,140,255,.2); color:#cdb6ff; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .handoff{ font-size:12.5px; line-height:1.5; color:var(--accent-hi); margin-top:8px; }
+  .handoff a{ color:var(--accent-hi); }
+  .premise{ background:rgba(245,215,110,.11); border:1px solid rgba(245,215,110,.34); border-radius:16px;
+    padding:20px 18px; margin:18px 0 20px; text-align:center; }
+  .premise .pm-line{ font-size:clamp(21px,5.6vw,28px); font-weight:300; line-height:1.35; color:var(--gold); }
+  .premise .pm-line b{ font-weight:700; }
+  .premise .pm-k{ font-size:10.5px; letter-spacing:.24em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; margin-bottom:9px; }
+  .premise .pm-say{ font-size:13px; color:var(--ink-dim); margin-top:10px; }
+  .onething{ text-align:center; font-size:clamp(20px,5.2vw,26px); font-weight:300; color:var(--gold); padding:18px 10px; }
+  .keyrow{ font-size:13px; line-height:1.6; color:var(--ink-dim); }
+
+  /* log */
+  #log, #drill{ display:none; }
+  .lg-date{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin:6px 0 14px; }
+  .lg-date button{ border:1px solid var(--line); background:rgba(9,36,80,.5); color:var(--ink); border-radius:999px; width:40px; height:40px; font-size:18px; cursor:pointer; }
+  .lg-date .d{ font-size:17px; font-weight:700; text-align:center; }
+  .lg-date .d small{ display:block; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; }
+  .lrow{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:11px 0; border-bottom:1px solid var(--line); }
+  .lrow:last-child{ border-bottom:none; }
+  .lrow .ln{ font-size:14.5px; font-weight:600; }
+  .lrow .ls{ font-size:11.5px; color:var(--ink-quiet); margin-top:2px; letter-spacing:.04em; }
+  .seg{ display:flex; gap:4px; flex-shrink:0; }
+  .seg button{ border:1px solid var(--line); background:rgba(9,36,80,.5); color:var(--ink-dim); font-size:12px; font-weight:800; letter-spacing:.08em;
+    text-transform:uppercase; padding:9px 11px; border-radius:10px; cursor:pointer; }
+  .seg button.k.on{ background:var(--accent); color:#06264f; border-color:var(--accent); }
+  .seg button.b.on{ background:var(--red); color:#2a0610; border-color:var(--red); }
+  .fld{ margin:10px 0; }
+  .fld label{ display:block; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); font-weight:800; margin-bottom:6px; }
+  .fld input[type=number], .fld textarea{ width:100%; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:10px; color:var(--ink);
+    font-size:15px; padding:10px 12px; font-family:inherit; }
+  .fld textarea{ min-height:70px; resize:vertical; line-height:1.5; }
+  .two{ display:flex; gap:10px; } .two .fld{ flex:1; }
+  .saved{ font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; text-align:right; min-height:16px; }
+  .grid{ width:100%; border-collapse:collapse; margin-top:4px; }
+  .grid td{ padding:3px 1px; text-align:center; }
+  .grid td.nm{ text-align:left; font-size:12px; color:var(--ink-dim); white-space:nowrap; padding-right:6px; }
+  .cell{ display:inline-block; width:15px; height:15px; border-radius:4px; background:rgba(255,255,255,.08); }
+  .cell.k{ background:var(--accent); } .cell.b{ background:var(--red); }
+  .grid .hd{ font-size:9.5px; color:var(--ink-quiet); }
+  .stk{ display:grid; grid-template-columns:1fr auto auto; gap:6px 14px; font-size:13.5px; align-items:center; }
+  .stk .h{ font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; }
+  .stk .n{ font-weight:800; color:var(--accent-hi); text-align:right; }
+  .cmp{ display:flex; gap:10px; }
+  .cmp > div{ flex:1; background:rgba(9,36,80,.45); border-radius:12px; padding:12px; text-align:center; }
+  .cmp .t{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); }
+  .cmp .v{ font-size:22px; font-weight:300; margin-top:4px; }
+  .cmp .s{ font-size:11.5px; color:var(--ink-quiet); margin-top:2px; }
+  .smallbtn{ border:1px solid var(--line); background:rgba(9,36,80,.5); color:var(--ink-dim); font-size:11.5px; font-weight:800; letter-spacing:.12em;
+    text-transform:uppercase; padding:9px 14px; border-radius:999px; cursor:pointer; }
+
+  /* drill */
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(20px,5.4vw,27px); font-weight:300; line-height:1.35; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; max-height:0; overflow:hidden;
+    transition:opacity .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:16px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  .done-view .score{ margin-top:10px; font-size:15px; color:var(--ink-dim); }
+  .judge{ display:none; gap:10px; justify-content:center; margin-top:14px; }
+  .judge.on{ display:flex; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-log" onclick="setMode('log')">Log</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>Hard Lines</h1>
+    <div class="sub">Seven lines that don&rsquo;t get renegotiated. Each one is an if-then that fires at the exact moment you usually lose, under one belief you already hold.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="premise">
+      <div class="pm-k">The Belief</div>
+      <div class="pm-line">I give 100%.<br><b>I&rsquo;m not weak.</b></div>
+      <div class="pm-say">In the moment, say it by name: <b style="color:var(--gold)">&ldquo;Sean, you give 100%.&rdquo;</b></div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">Why this works for you</span><span class="g r">YOUR RECORD</span></div>
+      <div class="move">The belief was already there while you were still drinking. Drinking survived beside it because there was <b>room to argue</b>: &ldquo;it doesn&rsquo;t really affect me.&rdquo;</div>
+      <div class="move">The sleep numbers <b>closed that room</b>. Once the evidence said it cost you, carrying on meant knowingly choosing weakness, and the belief won&rsquo;t allow that.</div>
+      <div class="move">So a line holds when two things are true: it is <b>exact</b> (no grey zone to bargain in) and the <b>evidence is in front of you</b>. The Log tab is the second half. It is not optional.</div>
+      <div class="note">Graded as your own record, not research: it is one case, and it is yours. The general idea that people judge who they are from what they watch themselves do is self-perception theory (Bem), which is well supported.</div>
+    </div>
+
+    <div class="band"><b>Aim it at the choice, never at yourself.</b> When a line breaks, the verdict is &ldquo;that choice was weak,&rdquo; and the next choice is the one that counts. Turned on yourself, the same belief becomes self-contempt, and self-criticism after a lapse tends to make the next lapse more likely, not less.</div>
+
+    <div class="section-k">The Seven Lines</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">01</span><span class="p-name">Edibles</span><span class="g">B</span><span class="g c">C</span></div>
+      <div class="p-ess">What it buys you is switching off. The line has to buy that too, or the evening wins.</div>
+      <div class="ifthen"><span class="k">If</span> I&rsquo;m reaching for one, <span class="k">then</span> I say the line and do the <b>shutdown</b>: tomorrow&rsquo;s open work items on paper so they&rsquo;re out of my head, then one switch-off thing &mdash; hot shower, audiobook, walk.</div>
+      <div class="move">Same routine as line 03. Night prep and the shutdown are <b>one ritual</b>, not two.</div>
+      <div class="move">Read your sleep and HRV trend <b>after the first week</b>, not the first few nights. A few nights of worse sleep and vivid dreams are common when regular cannabis use stops, and they would tell you a false story.</div>
+      <div class="note">Grades: mental detachment from work after hours is consistently linked to better recovery and well-being <span class="g">B</span> &mdash; Sonnentag&rsquo;s research line and meta-analyses, mostly correlational. Writing tomorrow&rsquo;s to-do list at bedtime helped people fall asleep faster than writing about finished tasks <span class="g c">C</span> &mdash; one small study (Scullin et al., 2018, 57 people). Sleep disruption during cannabis withdrawal <span class="g">B</span> &mdash; part of the recognized withdrawal syndrome.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">02</span><span class="p-name">The Gym</span><span class="g">B</span></div>
+      <div class="p-ess">The gym is across the hall. The decision happens at the door of Room 148.</div>
+      <div class="ifthen"><span class="k">If</span> I&rsquo;m about to skip, <span class="k">then</span> I walk across the hall and do <b>one set</b>.</div>
+      <div class="move">One set counts as kept. The floor is set so low that <b>you can&rsquo;t fail it</b>, which is what keeps the line unbroken.</div>
+      <div class="move">Most days, one set turns into the session. On the days it doesn&rsquo;t, the line still holds, and the line is what you&rsquo;re building.</div>
+      <div class="note">Grade: if-then plans (implementation intentions) improve goal attainment with a medium-to-large effect across many studies (Gollwitzer &amp; Sheeran, 2006 meta-analysis) <span class="g">B</span>. The one-set floor itself is reasoning, not a tested claim.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">03</span><span class="p-name">The Night Before</span><span class="g">B</span></div>
+      <div class="p-ess">A plan with no fixed trigger floats. Tie it to something you never skip.</div>
+      <div class="ifthen"><span class="k">If</span> I&rsquo;m heading to bed, <span class="k">then</span> tomorrow gets laid out <b>before I brush my teeth</b>.</div>
+      <div class="move">Paper list of open work (from line 01), clothes, gym bag, whatever tomorrow needs. Done <b>before</b> the teeth, never after.</div>
+      <div class="note">Grade: same if-then evidence as line 02 <span class="g">B</span>. Anchoring to an existing habit is how the trigger becomes automatic.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">04</span><span class="p-name">Temper</span><span class="g c">C</span></div>
+      <div class="p-ess">The line is not &ldquo;don&rsquo;t feel it.&rdquo; It is &ldquo;don&rsquo;t speak from it.&rdquo;</div>
+      <div class="ifthen"><span class="k">If</span> I feel the heat rising &mdash; jaw, voice, chest &mdash; <span class="k">then</span> I <b>stop talking</b> and take one long exhale before I say anything.</div>
+      <div class="move">Kept means you caught it and paused, even if you were already annoyed. <b>Broke</b> means you spoke from the heat.</div>
+      <div class="move">If it happened with the girls, go back first and repair, same day. Short, no &ldquo;but.&rdquo;</div>
+      <div class="handoff">The breath itself lives in <a href="./resilience.html">The Resilience Protocol, Pillar 02</a>. Repair lives in <a href="./father.html">The Father Protocol, Base Layer 4</a>. Neither is repeated here.</div>
+      <div class="note">Grade: the physiological sigh rests on one solid RCT (Balban et al., 2023) <span class="g c">C</span>. Resilience grades it &ldquo;moderate&rdquo;; on this page&rsquo;s scale one trial is a C.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">05</span><span class="p-name">Negative Thoughts</span><span class="g c">C</span></div>
+      <div class="p-ess">You don&rsquo;t have to win the argument with a thought. You just have to stop obeying it.</div>
+      <div class="ifthen"><span class="k">If</span> I catch a spiral, <span class="k">then</span> I label it &mdash; <b>&ldquo;that&rsquo;s a thought, not a fact&rdquo;</b> &mdash; and ask what 100% looks like in the next ten minutes.</div>
+      <div class="move">The label creates distance. The question turns the energy into <b>one action</b>.</div>
+      <div class="move">This is the same grammar as &ldquo;not relevant,&rdquo; which already works for you: concede the thought exists, deny it authority.</div>
+      <div class="note">Grade: thought-labelling (cognitive defusion, from ACT) reduces how believable and distressing a thought feels in lab studies, with modest effects; the full ACT package has broader support <span class="g c">C</span>.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">06</span><span class="p-name">Too Tired for the Girls</span><span class="g">B</span></div>
+      <div class="p-ess">Ten real minutes beat an hour of half-there.</div>
+      <div class="ifthen"><span class="k">If</span> I&rsquo;m too tired to engage, <span class="k">then</span> I give <b>ten fully present minutes</b>, phone in another room. After that, rest is earned.</div>
+      <div class="move">The floor is ten minutes, not the whole evening. Being tired doesn&rsquo;t break the line. <b>Skipping the ten</b> does.</div>
+      <div class="handoff">What to do and say inside those ten minutes is in <a href="./father.html">The Father Protocol</a>. The phone-out-of-the-room rule is its Base Layer 2.</div>
+      <div class="note">Grade: carried from Father &mdash; parental phone use during time with children is consistently linked to worse outcomes, mostly cross-sectional <span class="g">B</span>. The ten-minute floor is reasoning.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">07</span><span class="p-name">Self-Evidence</span><span class="g">B</span><span class="g r">REASONING</span></div>
+      <div class="p-ess">Two hours a week during term. The line guards those two hours, and the nerve to ship.</div>
+      <div class="ifthen"><span class="k">If</span> my building time comes and I want to put it off, <span class="k">then</span> I say the line, open the file, and do <b>one concrete piece</b>, even for 15 minutes.</div>
+      <div class="ifthen"><span class="k">If</span> I&rsquo;m holding back from putting something out there, <span class="k">then</span> I ask <b>&ldquo;is holding back 100%?&rdquo;</b> and ship the smallest public piece.</div>
+      <div class="move">The company is this page&rsquo;s first test case: an identity line, measured with your own data, <b>is the method you are selling</b>.</div>
+      <div class="note">Grade: the first trigger is the if-then evidence again <span class="g">B</span>. &ldquo;Ship the smallest public piece&rdquo; is reasoning.</div>
+    </div>
+
+    <div class="section-k">Making the belief louder</div>
+
+    <div class="card">
+      <div class="move"><b>If-then at the moment of loss</b> <span class="g">B</span> &mdash; the seven lines above. This does most of the work.</div>
+      <div class="move"><b>Evidence that ends the argument</b> <span class="g r">YOUR RECORD</span> &mdash; the Log tab. Without data, a tired mind talks its way around any slogan.</div>
+      <div class="move"><b>Values writing, now and then</b> <span class="g">B</span> &mdash; write a paragraph on why giving 100% matters: the girls, your students, your own standard. Self-affirmation makes people more open to evidence about their own behaviour; some effects have shrunk in replication.</div>
+      <div class="move"><b>Your name, not &ldquo;I&rdquo;</b> <span class="g c">C</span> &mdash; &ldquo;Sean, you give 100%&rdquo; lets you see yourself from a coach&rsquo;s angle rather than from inside the craving (Kross, distanced self-talk).</div>
+      <div class="move"><b>Not daily chanting.</b> Repeating positive statements has a mixed record; in one study it made people with low self-esteem feel worse (Wood et al., 2009).</div>
+    </div>
+
+    <div class="section-k">The One Thing</div>
+    <div class="card"><div class="onething">&ldquo;Is this 100%?&rdquo;</div></div>
+
+    <div class="section-k">Evidence key</div>
+    <div class="card keyrow">
+      <span class="g">A</span> strong, replicated &middot; <span class="g">B</span> good, consistent, often correlational or with caveats &middot; <span class="g c">C</span> limited: one trial, small studies or lab effects &middot; <span class="g c">D</span> weak &middot; <span class="g r">REASONING</span> / <span class="g r">YOUR RECORD</span> not graded on the research scale, and never dressed up as if it were.
+    </div>
+  </div>
+
+  <!-- ===================== LOG ===================== -->
+  <div id="log">
+    <h2>Log</h2>
+    <div class="sub">One tap per line, per day. Kept or broke &mdash; no in-between. The numbers are what end the argument.</div>
+
+    <div class="lg-date">
+      <button onclick="shiftDay(-1)" aria-label="Previous day">&lsaquo;</button>
+      <div class="d" id="lg-day"></div>
+      <button onclick="shiftDay(1)" aria-label="Next day" id="lg-next">&rsaquo;</button>
+    </div>
+
+    <div class="card" id="lg-lines"></div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">This morning</span></div>
+      <div class="p-ess">Logged against last night. Your Amazfit sleep score and Welltory HRV.</div>
+      <div class="lrow" style="border-bottom:none;">
+        <div><div class="ln">Edible last night?</div></div>
+        <div class="seg" id="lg-ed">
+          <button class="b" data-v="y" onclick="setEd('y')">Yes</button>
+          <button class="k" data-v="n" onclick="setEd('n')">No</button>
+        </div>
+      </div>
+      <div class="two">
+        <div class="fld"><label for="lg-sleep">Sleep score</label><input type="number" id="lg-sleep" inputmode="decimal" min="0" max="100"></div>
+        <div class="fld"><label for="lg-hrv">HRV</label><input type="number" id="lg-hrv" inputmode="decimal" min="0" max="300"></div>
+      </div>
+      <div class="fld"><label for="lg-note">Note</label><textarea id="lg-note" placeholder="What happened at the moment a line was tested&hellip;"></textarea></div>
+      <div class="saved" id="lg-saved"></div>
+    </div>
+
+    <div class="section-k">Streaks</div>
+    <div class="card"><div class="stk" id="lg-stk"></div></div>
+
+    <div class="section-k">Edible nights vs clean nights</div>
+    <div class="card">
+      <div class="cmp" id="lg-cmp"></div>
+      <div class="note" id="lg-cmp-note"></div>
+    </div>
+
+    <div class="section-k">Last 14 days</div>
+    <div class="card"><table class="grid" id="lg-grid"></table></div>
+
+    <div style="text-align:center; margin-top:8px;"><button class="smallbtn" onclick="exportCSV()">Export CSV</button></div>
+    <div class="note" style="text-align:center;">Stored on this device only. Export before clearing Safari data.</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h2>Drill</h2>
+    <div class="sub">A situation. Name which line fires and the move, out loud. Then reveal and judge yourself honestly.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Round done</div>
+      <div class="score" id="score"></div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ---------------- mode ---------------- */
+var MODES=['read','log','drill'];
+function setMode(m){
+  for(var i=0;i<MODES.length;i++){
+    var id=MODES[i];
+    document.getElementById(id).style.display = (id===m) ? 'block' : 'none';
+    document.getElementById('tab-'+id).className = (id===m) ? 'on' : '';
+  }
+  if(m==='log'){ renderLog(); }
+  if(m==='drill'){ restart(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-hard-lines';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- log ---------------- */
+var LKEY='forge-hard-lines-log';
+var LINES=[
+  {n:1, name:'Edibles',            short:'Edibles'},
+  {n:2, name:'The gym',            short:'Gym'},
+  {n:3, name:'The night before',   short:'Night prep'},
+  {n:4, name:'Temper',             short:'Temper'},
+  {n:5, name:'Negative thoughts',  short:'Thoughts'},
+  {n:6, name:'Too tired for the girls', short:'The girls'},
+  {n:7, name:'Self-Evidence',      short:'Self-Evidence'}
+];
+function loadLog(){ var o=null; try{ o=JSON.parse(localStorage.getItem(LKEY)||'null'); }catch(e){} if(!o||typeof o!=='object'||!o.days) o={days:{}}; return o; }
+function saveLog(o){ try{ localStorage.setItem(LKEY, JSON.stringify(o)); return true; }catch(e){ return false; } }
+function ymd(d){ var m=d.getMonth()+1, dd=d.getDate(); return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(dd<10?'0':'')+dd; }
+function fromYmd(s){ var p=s.split('-'); return new Date(+p[0], +p[1]-1, +p[2]); }
+function addDays(s,n){ var d=fromYmd(s); d.setDate(d.getDate()+n); return ymd(d); }
+function today(){ return ymd(new Date()); }
+var curDay=today();
+
+function dayRec(o,day){ if(!o.days[day]) o.days[day]={l:{}, ed:'', sleep:'', hrv:'', note:''}; if(!o.days[day].l) o.days[day].l={}; return o.days[day]; }
+function isEmpty(r){ if(!r) return true; for(var k in r.l){ if(r.l[k]) return false; } return !r.ed && r.sleep==='' && r.hrv==='' && !r.note; }
+
+function flash(msg){ var s=document.getElementById('lg-saved'); s.textContent=msg; clearTimeout(flash.t); flash.t=setTimeout(function(){ s.textContent=''; },1400); }
+
+function commit(o){ var r=o.days[curDay]; if(r && isEmpty(r)) delete o.days[curDay]; flash(saveLog(o)?'Saved':'Could not save on this device'); }
+
+function setLine(n,v){
+  var o=loadLog(), r=dayRec(o,curDay);
+  r.l[n] = (r.l[n]===v) ? '' : v;
+  commit(o); renderLog();
+}
+function setEd(v){
+  var o=loadLog(), r=dayRec(o,curDay);
+  r.ed = (r.ed===v) ? '' : v;
+  commit(o); renderLog();
+}
+function numVal(id){ var v=document.getElementById(id).value; if(v===''||v==null) return ''; var x=parseFloat(v); return isFinite(x)?x:''; }
+function saveFields(){
+  var o=loadLog(), r=dayRec(o,curDay);
+  r.sleep=numVal('lg-sleep'); r.hrv=numVal('lg-hrv');
+  r.note=String(document.getElementById('lg-note').value||'').slice(0,800);
+  commit(o); renderStats(o);
+}
+function shiftDay(n){
+  var nd=addDays(curDay,n);
+  if(nd>today()) return;
+  curDay=nd; renderLog();
+}
+
+function streakFor(o,n){
+  var t=today(), d=t, r=o.days[d];
+  if(!(r && r.l && r.l[n]==='k')){
+    if(r && r.l && r.l[n]==='b') return 0;
+    d=addDays(t,-1);
+  }
+  var c=0;
+  while(true){ r=o.days[d]; if(r && r.l && r.l[n]==='k'){ c++; d=addDays(d,-1); } else break; }
+  return c;
+}
+function bestFor(o,n){
+  var keys=Object.keys(o.days).sort(), best=0, run=0, prev=null;
+  for(var i=0;i<keys.length;i++){
+    var r=o.days[keys[i]];
+    if(r.l && r.l[n]==='k'){ run = (prev && addDays(prev,1)===keys[i]) ? run+1 : 1; prev=keys[i]; if(run>best) best=run; }
+    else { run=0; prev=null; }
+  }
+  return best;
+}
+function avg(a){ if(!a.length) return null; var s=0; for(var i=0;i<a.length;i++) s+=a[i]; return s/a.length; }
+function fmt(x){ return x==null ? '&ndash;' : (Math.round(x*10)/10).toString(); }
+
+function compareNights(o){
+  var es=[],eh=[],cs=[],ch=[];
+  for(var k in o.days){ var r=o.days[k];
+    if(r.ed==='y'){ if(r.sleep!=='') es.push(+r.sleep); if(r.hrv!=='') eh.push(+r.hrv); }
+    else if(r.ed==='n'){ if(r.sleep!=='') cs.push(+r.sleep); if(r.hrv!=='') ch.push(+r.hrv); }
+  }
+  return {es:avg(es), eh:avg(eh), cs:avg(cs), ch:avg(ch), ne:Math.max(es.length,eh.length), nc:Math.max(cs.length,ch.length)};
+}
+
+function renderStats(o){
+  var s='<div class="h">Line</div><div class="h">Now</div><div class="h">Best</div>';
+  for(var i=0;i<LINES.length;i++){ var L=LINES[i];
+    s+='<div>'+L.n+' &middot; '+L.short+'</div><div class="n">'+streakFor(o,L.n)+'</div><div class="n" style="color:var(--ink-dim)">'+bestFor(o,L.n)+'</div>'; }
+  document.getElementById('lg-stk').innerHTML=s;
+
+  var c=compareNights(o);
+  document.getElementById('lg-cmp').innerHTML=
+    '<div><div class="t">Edible nights</div><div class="v">'+fmt(c.es)+'</div><div class="s">sleep &middot; HRV '+fmt(c.eh)+'</div><div class="s">'+c.ne+' night'+(c.ne===1?'':'s')+'</div></div>'+
+    '<div><div class="t">Clean nights</div><div class="v">'+fmt(c.cs)+'</div><div class="s">sleep &middot; HRV '+fmt(c.ch)+'</div><div class="s">'+c.nc+' night'+(c.nc===1?'':'s')+'</div></div>';
+  var note;
+  if(c.ne<5 || c.nc<5) note='Not enough nights yet to read anything &mdash; aim for at least five of each before drawing a conclusion. Averages only, so this shows a gap, not its cause.';
+  else note='Averages of every logged night. Skip the first week of clean nights when you read it &mdash; withdrawal can make early clean nights look worse than they are.';
+  document.getElementById('lg-cmp-note').innerHTML=note;
+
+  var g='<tr><td class="nm"></td>';
+  var days=[]; for(var j=13;j>=0;j--) days.push(addDays(today(),-j));
+  for(j=0;j<days.length;j++){ g+='<td class="hd">'+fromYmd(days[j]).getDate()+'</td>'; }
+  g+='</tr>';
+  for(i=0;i<LINES.length;i++){ L=LINES[i]; g+='<tr><td class="nm">'+L.short+'</td>';
+    for(j=0;j<days.length;j++){ var r=o.days[days[j]], v=(r&&r.l)?r.l[L.n]:''; g+='<td><span class="cell'+(v==='k'?' k':(v==='b'?' b':''))+'"></span></td>'; }
+    g+='</tr>'; }
+  document.getElementById('lg-grid').innerHTML=g;
+}
+
+function renderLog(){
+  var o=loadLog(), r=o.days[curDay]||{l:{},ed:'',sleep:'',hrv:'',note:''};
+  var d=fromYmd(curDay), names=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], mons=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var lab = curDay===today() ? 'Today' : (curDay===addDays(today(),-1) ? 'Yesterday' : names[d.getDay()]);
+  document.getElementById('lg-day').innerHTML = mons[d.getMonth()]+' '+d.getDate()+'<small>'+lab+'</small>';
+  document.getElementById('lg-next').disabled = (curDay>=today());
+  var h='';
+  for(var i=0;i<LINES.length;i++){ var L=LINES[i], v=(r.l||{})[L.n]||'';
+    h+='<div class="lrow"><div><div class="ln">'+L.n+' &middot; '+L.name+'</div><div class="ls">streak '+streakFor(o,L.n)+'</div></div>'+
+       '<div class="seg"><button class="k'+(v==='k'?' on':'')+'" onclick="setLine('+L.n+',\'k\')">Kept</button>'+
+       '<button class="b'+(v==='b'?' on':'')+'" onclick="setLine('+L.n+',\'b\')">Broke</button></div></div>'; }
+  document.getElementById('lg-lines').innerHTML=h;
+  var eb=document.getElementById('lg-ed').getElementsByTagName('button');
+  for(i=0;i<eb.length;i++){ var bv=eb[i].getAttribute('data-v'); eb[i].className=(bv==='y'?'b':'k')+(r.ed===bv?' on':''); }
+  document.getElementById('lg-sleep').value = (r.sleep===''||r.sleep==null)?'':r.sleep;
+  document.getElementById('lg-hrv').value   = (r.hrv===''||r.hrv==null)?'':r.hrv;
+  document.getElementById('lg-note').value  = r.note||'';
+  renderStats(o);
+}
+['lg-sleep','lg-hrv','lg-note'].forEach(function(id){ document.getElementById(id).addEventListener('change', saveFields); });
+
+function exportCSV(){
+  var o=loadLog(), keys=Object.keys(o.days).sort();
+  var rows=[['date','edibles','gym','night_prep','temper','thoughts','the_girls','self_evidence','edible_last_night','sleep_score','hrv','note']];
+  for(var i=0;i<keys.length;i++){ var r=o.days[keys[i]], row=[keys[i]];
+    for(var n=1;n<=7;n++){ var v=(r.l||{})[n]; row.push(v==='k'?'kept':(v==='b'?'broke':'')); }
+    row.push(r.ed==='y'?'yes':(r.ed==='n'?'no':'')); row.push(r.sleep); row.push(r.hrv); row.push('"'+String(r.note||'').replace(/"/g,'""')+'"');
+    rows.push(row); }
+  var csv=rows.map(function(x){ return x.join(','); }).join('\n');
+  var a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv); a.download='hard-lines-'+today()+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+/* ---------------- drill ---------------- */
+var DKEY='forge-hard-lines-drill';
+var POOL=[
+  {p:'9:40 pm. Marking done, kids asleep. Your hand is on the cupboard where the edibles are.', a:['<b>Line 01.</b> Say the line, then the shutdown: tomorrow&rsquo;s open work on paper, then one switch-off thing.']},
+  {p:'The bell goes at 3:00. You&rsquo;re tired, and the gym across the hall suddenly feels optional.', a:['<b>Line 02.</b> Walk across the hall and do one set. One set counts as kept.']},
+  {p:'You&rsquo;re walking to the bathroom to brush your teeth. Tomorrow&rsquo;s bag isn&rsquo;t packed.', a:['<b>Line 03.</b> Tomorrow gets laid out before the teeth, never after.']},
+  {p:'A student talks back for the third time and you feel your jaw lock.', a:['<b>Line 04.</b> Stop talking. One long exhale before you say anything.']},
+  {p:'Your youngest won&rsquo;t get in the car for ringette and your voice is starting to rise.', a:['<b>Line 04.</b> Stop talking, one long exhale.','If you already snapped: go back first, same day, short, no &ldquo;but.&rdquo;']},
+  {p:'Driving home: &ldquo;This book is never going to sell. Who am I kidding?&rdquo;', a:['<b>Line 05.</b> &ldquo;That&rsquo;s a thought, not a fact.&rdquo;','Then: what does 100% look like in the next ten minutes?']},
+  {p:'Home after the night class, wrecked. Your oldest wants to show you something on her phone.', a:['<b>Line 06.</b> Ten fully present minutes, your phone in another room. Then rest is earned.']},
+  {p:'Your Self-Evidence block starts in five minutes and you are already reaching for a reason to push it.', a:['<b>Line 07, first trigger.</b> Say the line, open the file, one concrete piece, even 15 minutes.']},
+  {p:'A Substack draft has been &ldquo;almost ready&rdquo; for two weeks.', a:['<b>Line 07, second trigger.</b> &ldquo;Is holding back 100%?&rdquo; Ship the smallest public piece.']},
+  {p:'You did one set and walked out. Kept or broke?', a:['<b>Kept.</b> The floor is one set. The line held; that is what you are building.']},
+  {p:'You paused before snapping, but you were clearly irritated. Kept or broke?', a:['<b>Kept.</b> The line is &ldquo;don&rsquo;t speak from it,&rdquo; not &ldquo;don&rsquo;t feel it.&rdquo;']},
+  {p:'You gave the girls five distracted minutes with the phone on the table. Kept or broke?', a:['<b>Broke.</b> The floor is ten minutes, fully present, phone out of the room. Log it honestly.']},
+  {p:'You broke a line. Your head says, &ldquo;Typical. I&rsquo;m weak.&rdquo; What&rsquo;s the move?', a:['<b>Aim it at the choice.</b> &ldquo;That choice was weak.&rdquo; The next choice is the one that counts.','Self-contempt after a lapse makes the next lapse more likely.']},
+  {p:'Night three without an edible and your sleep score dropped. Conclusion?', a:['<b>None yet.</b> A few rough nights are common when regular use stops.','Read the trend after the first week, with at least five nights of each.']},
+  {p:'&ldquo;It&rsquo;s Friday. One won&rsquo;t hurt.&rdquo; Which line, and what is that thought?', a:['<b>Line 01.</b> That&rsquo;s the negotiation the line exists to stop &mdash; every exception becomes a precedent.','Say the line, run the shutdown.']},
+  {p:'Your heart is pounding before a hard conversation with a parent. Which page owns that?', a:['<b>Resilience.</b> Arousal before a high-stakes moment is its territory &mdash; breathe, reframe, narrow, act.','Line 04 is only for heat that is about to come out of your mouth.']},
+  {p:'Twenty minutes of scrolling, telling yourself you&rsquo;ll do night prep &ldquo;in a sec.&rdquo;', a:['<b>Line 03.</b> The trigger is heading to bed, not a feeling of readiness. Lay it out now.']},
+  {p:'You skipped the gym but went for a long walk instead. Kept or broke?', a:['<b>Broke.</b> The line is one set in the gym. A walk is good; it isn&rsquo;t the line. No grey zone.']},
+  {p:'&ldquo;I&rsquo;ll start these lines properly on Monday.&rdquo;', a:['<b>Line 05.</b> That&rsquo;s a thought, not a fact. What does 100% look like in the next ten minutes?']},
+  {p:'Your brain says the numbers don&rsquo;t matter and you know yourself well enough. What ends that argument?', a:['<b>The Log.</b> Evidence closed the argument on drinking. Without data, a tired mind talks its way around any slogan.']}
+];
+var ONE={p:'The one question under every line?', a:['<b>&ldquo;Is this 100%?&rdquo;</b>']};
+var ROUND=10, deck=[], di=0, revealed=false, hits=0;
+
+function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function restart(){
+  deck=shuffle(POOL.slice()).slice(0,ROUND-1); deck.push(ONE);
+  di=0; hits=0;
+  document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display='';
+  document.getElementById('progress').style.opacity='';
+  renderQ();
+}
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<deck.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<di?' done':(i===di?' on':'')); p.appendChild(d); }
+}
+function renderQ(){
+  var q=deck[di], inner='';
+  for(var i=0;i<q.a.length;i++) inner+='<div class="line">'+q.a[i]+'</div>';
+  document.getElementById('stage').innerHTML=
+    '<div class="prompt">'+q.p+'</div>'+
+    '<div class="hint">Say it aloud &middot; then reveal</div>'+
+    '<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>'+
+    '<div class="bar" id="revealBar"><button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button></div>'+
+    '<div class="judge" id="judge"><button class="btn ghost" onclick="judge(false)">Missed it</button><button class="btn" onclick="judge(true)">Got it</button></div>';
+  revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  revealed=true;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBar').style.display='none';
+  document.getElementById('judge').className='judge on';
+}
+function judge(ok){
+  if(!revealed) return;
+  if(ok) hits++;
+  if(di<deck.length-1){ di++; renderQ(); window.scrollTo(0,0); return; }
+  finish();
+}
+function markDone(){
+  var s={}; try{ s=JSON.parse(localStorage.getItem(DKEY)||'{}')||{}; }catch(e){ s={}; }
+  var t=today();
+  if(s.last!==t){ s.streak = (s.last===addDays(t,-1)) ? (s.streak||0)+1 : 1; s.last=t; }
+  if(!s.best || hits>s.best) s.best=hits;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+function finish(){
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('score').innerHTML=hits+' of '+deck.length+' &middot; best '+(s.best||0);
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+
+loadPhoto();
+</script>
+</body>
+</html>
