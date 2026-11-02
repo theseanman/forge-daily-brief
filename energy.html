@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Energy</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0; --red:#ff8a8a; --violet:#b48cff;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+  a.inl{ color:var(--accent-hi); }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.teal{ border-left-color:var(--teal); background:rgba(63,208,192,.08); }
+  .card.gold{ border-left-color:var(--gold); background:rgba(245,215,110,.08); }
+  .card.red{ border-left-color:var(--red); background:rgba(255,138,138,.08); }
+  .card.violet{ border-left-color:var(--violet); background:rgba(180,140,255,.09); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .trig{ font-size:13px; line-height:1.5; margin:4px 0 8px; color:var(--ink-dim); }
+  .trig b{ color:var(--gold); font-weight:800; letter-spacing:.04em; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .card.teal .move b{ color:#8ff0e4; } .card.teal .move:before{ color:var(--teal); }
+  .card.red .move b{ color:#ffc0c0; } .card.red .move:before{ color:var(--red); }
+  .ex{ margin-top:11px; padding-top:10px; border-top:1px solid var(--line); }
+  .ex-row{ font-size:13.5px; line-height:1.55; margin:6px 0; }
+  .ex-row .tag{ display:inline-block; min-width:78px; font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .group-k{ font-size:12.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--teal); font-weight:800; margin:16px 0 6px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .band.warn{ background:rgba(255,138,138,.10); border-left-color:var(--red); }
+  .band.warn b{ color:var(--red); }
+  .band.vio{ background:rgba(180,140,255,.11); border-left-color:var(--violet); }
+  .band.vio b{ color:#d4bcff; }
+  .para{ font-size:14px; line-height:1.6; margin:7px 0; }
+  .para b{ color:var(--accent-hi); }
+  .card.teal .para b{ color:#8ff0e4; }
+  .card.red .para b{ color:#ffc0c0; }
+
+  /* catalogue rows */
+  .vrow{ font-size:13.5px; line-height:1.5; margin:8px 0; padding-bottom:8px; border-bottom:1px solid rgba(122,175,255,.12); }
+  .vrow:last-child{ border-bottom:0; padding-bottom:0; }
+  .vrow .bk{ font-weight:700; color:var(--ink); }
+  .vrow .au{ color:var(--ink-quiet); }
+  .vrow .vd{ color:var(--ink-dim); }
+  .cost{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:8px; padding-top:8px; border-top:1px solid var(--line); }
+  .cost b{ color:var(--gold); letter-spacing:.04em; }
+  .q{ font-size:14px; line-height:1.55; margin:6px 0 6px 4px; padding-left:12px; border-left:2px solid var(--gold); }
+  .step{ display:flex; gap:11px; font-size:14px; line-height:1.55; margin:9px 0; }
+  .step .n{ flex:0 0 22px; height:22px; border-radius:50%; background:rgba(74,157,232,.22); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:800; color:var(--accent-hi); margin-top:1px; }
+  .step b{ color:var(--accent-hi); }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+  .ev.x{ background:rgba(255,138,138,.16); color:#ffb3b3; border-color:rgba(255,138,138,.4); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+
+  /* drill */
+  #drill{ display:none; }
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(19px,5vw,26px); font-weight:300; line-height:1.4; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .btn:focus-visible, .toggle button:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>Energy</h1>
+    <div class="sub">Two jobs. Keep the everyday level high and still have it at 80. Raise it on purpose when a moment deserves it, then pay it back. Sleep and Longevity own the foundations; this page points to them rather than repeating them.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="section-k">How energy actually works</div>
+
+    <div class="card teal">
+      <div class="p-head"><span class="p-name">Two things share one word</span></div>
+      <div class="para"><b>Capacity</b> is the machinery: your aerobic engine, your muscle, your sleep and the absence of anything medically wrong. It changes over weeks and years.</div>
+      <div class="para"><b>Felt energy</b> is a reading your brain takes, moment to moment, about whether effort is worth spending right now. It changes in minutes, and it responds to movement, light, cold, music, food, meaning and what you tell yourself.</div>
+      <div class="para">The baseline half of this page builds capacity. The surge half moves the reading. The two need different tools, and mixing them up is how people end up using coffee to fix a problem that is really sleep.</div>
+    </div>
+
+    <div class="card red">
+      <div class="p-head"><span class="p-name">Tiredness is not a fuel gauge</span><span class="ev x">X</span></div>
+      <div class="para">The popular model says willpower is a tank that empties as you use it. The largest test of it, a preregistered replication across 23 labs, found an effect of <b>d = 0.04</b>, close to zero. <span class="ev">&check;</span></div>
+      <div class="para">That does not mean fatigue is imaginary. It means the feeling of being spent is partly a forecast, not a measurement. That is why ten minutes of movement can make you less tired than ten minutes on the couch. Treat tiredness as a reading worth checking, not a verdict.</div>
+    </div>
+
+    <div class="card gold">
+      <div class="p-head"><span class="p-name">What to protect for old age</span><span class="ev b">B</span></div>
+      <div class="para">Researchers measure <b>fatigability</b>: how tired a standard task makes you. In 2,906 adults aged 60 and over, those scoring 25 or higher on the Pittsburgh Fatigability Scale were <b>2.3 times</b> more likely to die over about 2.7 years, after adjusting for depression, illness and age. <span class="ev">&check;</span></div>
+      <div class="para">That is observational, so it does not prove fatigability causes death. But it names the target. The goal is not feeling buzzed at 47. It is a body that a walk up a hill, a grandchild or a full day does not flatten at 80, and that is built mostly by the aerobic and muscle work below.</div>
+    </div>
+
+    <!-- ============ BASELINE ============ -->
+    <div class="section-k">Part one &middot; The baseline</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">01</span><span class="p-name">Move most days, mostly easy</span><span class="ev a">A</span></div>
+      <div class="p-ess">The most reliable everyday energy lever there is, and it works faster than fitness does.</div>
+      <div class="para">A meta-analysis of <b>70 randomized trials</b> (6,807 people) found regular exercise raised energy and cut fatigue by <b>0.37 standard deviations</b>; over 90% of the trials pointed the same way. <span class="ev">&check;</span> A follow-up trial in 36 sedentary, chronically tired adults found <b>low-intensity</b> sessions (20 minutes, three times a week, six weeks) cut fatigue by 65%, more than moderate intensity did at 49%, and the gains were not tied to fitness improving. <span class="ev b">B</span> <span class="ev">&check;</span></div>
+      <div class="move"><b>The floor:</b> 20 easy minutes on days you don't lift. Not a workout; a dose.</div>
+      <div class="move"><b>Easy counts.</b> The energy effect does not need you to suffer. Save hard efforts for the plan that asks for them.</div>
+      <div class="move"><b>The training week itself</b> lives in Longevity and Size and Strength. This move is the minimum underneath them, not a replacement.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Room 148</span>Lunch is a 15-minute loop of the halls or the field, not a desk lunch on marking days.</div>
+        <div class="ex-row"><span class="tag">Home</span>An after-dinner walk with whoever will come. It counts as the dose and as family time.</div>
+        <div class="ex-row"><span class="tag">Long day</span>On a Tuesday or Thursday, ten minutes outside between school and the evening class beats ten minutes in the car.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">02</span><span class="p-name">Build the engine you'll need at 80</span><span class="ev b">B</span></div>
+      <div class="p-ess">Mitochondria and muscle are the long-term bank account. Both still respond late in life.</div>
+      <div class="para">In a Mayo Clinic study of 72 adults, high-intensity interval cycling raised muscle mitochondrial capacity by <b>49%</b> in people aged 18&ndash;30 and by <b>69%</b> in people aged 65&ndash;80. <span class="ev">&check;</span> The older muscle had more to recover, and it recovered. It is a small study, so it is graded B.</div>
+      <div class="move"><b>Intervals</b> once a week keep the engine's ceiling high. Your Longevity page already sets the dose.</div>
+      <div class="move"><b>Muscle</b> is reserve: every everyday task costs a smaller share of a bigger capacity, so it feels easier. The Size and Strength plan is doing this job now.</div>
+      <div class="move"><b>Measure it.</b> A yearly stair or hill time, or a VO&#8322;max estimate, tells you whether the engine is holding. Feelings will lie about slow decline.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Training</span>Intervals on a cardio day; lifting on plan days. Neither needs to be added; both need to survive the school year.</div>
+        <div class="ex-row"><span class="tag">Out</span>Take stairs as a test, not a chore. Note how you feel at the top, and compare next year.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">03</span><span class="p-name">Rhythm before tricks</span><span class="ev a">A</span></div>
+      <div class="p-ess">Sleep is the base, and the Sleep page owns it. One point belongs here because it is about energy.</div>
+      <div class="para">In a controlled study, <b>400 mg of caffeine</b> taken six hours before bed cut measured sleep by <b>more than an hour</b>, and the people taking it <b>did not notice</b>. <span class="ev b">B</span> <span class="ev">&check;</span> Caffeine borrowed for energy today is paid back from tomorrow's energy, without you seeing the bill. That is why the 14:00 hard stop on the Sleep page is an energy rule as much as a sleep rule.</div>
+      <div class="move"><b>Fixed wake, morning light, 14:00 caffeine stop.</b> See Sleep for the full version.</div>
+      <div class="move"><b>Dark mornings:</b> from November, daylight before school is thin. Get it at lunch instead of skipping it.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Room 148</span>Lunch outside under the overhang on grey days does the light job the morning can't.</div>
+        <div class="ex-row"><span class="tag">Home</span>Weekend wake within half an hour of the weekday wake. A lie-in feels restoring and leaves Monday flatter.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">04</span><span class="p-name">Fuel steady, drink early</span><span class="ev b">B</span></div>
+      <div class="p-ess">The "sugar rush" is mostly a sugar dip, and thirst arrives late.</div>
+      <div class="para">A meta-analysis of <b>31 studies</b> and about 1,300 adults found that people who had sugar felt <b>more tired and less alert</b> than those who didn't, not more energized. <span class="ev">&check;</span> Separately, in healthy young men, losing about <b>1.6% of body weight</b> in water raised fatigue on a standard mood scale. <span class="ev">&check;</span> At your weight, 1.6% is roughly 3 lb, a deficit you can reach by mid-afternoon of a teaching day without feeling thirsty.</div>
+      <div class="move"><b>No sugar hit before a moment you need to be sharp.</b> Protein with a carbohydrate beats a candy bar or a sweet coffee.</div>
+      <div class="move"><b>A water bottle on the desk, finished by lunch, refilled for the afternoon.</b> Pale urine is the check.</div>
+      <div class="move"><b>Protein targets and meal timing</b> live in Longevity and Size and Strength; this card is about the hour after you eat.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Room 148</span>The staff-room treats on a Friday afternoon are a 30-minute dip, scheduled right before your last block.</div>
+        <div class="ex-row"><span class="tag">Long day</span>Before the evening class: a protein snack and water, not a muffin and a coffee.</div>
+        <div class="ex-row"><span class="tag">Home</span>The late-night snack is fine for the lifting plan. Keep it protein-led so it isn't a sugar spike before bed.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">05</span><span class="p-name">Read the tiredness before obeying it</span><span class="ev c">C</span></div>
+      <div class="p-ess">Most afternoon flatness is under-stimulation or boredom wearing fatigue's clothes.</div>
+      <div class="para">Because felt energy is partly a forecast, the test is cheap: <b>do ten minutes of the thing, or ten minutes of movement, then check again.</b> If you are still flat, the tiredness was real and the right answer is rest or an early night. If you've lifted, it was a forecast. The rule is reasoning built on the findings above, not a tested intervention, so it is graded C.</div>
+      <div class="move"><b>Name it:</b> sleepy (eyes heavy, yawning), drained (body heavy after real effort) or bored (restless, reaching for the phone). Each wants a different fix.</div>
+      <div class="move"><b>Sleepy</b> &rarr; nap or earlier bed. <b>Drained</b> &rarr; food, water, easy movement. <b>Bored</b> &rarr; change the task or raise the stakes.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Building</span>Flat at the desk at 20:30. Ten minutes on the smallest piece of the build, then decide. Often the decision makes itself.</div>
+        <div class="ex-row"><span class="tag">Home</span>Too tired to play with the girls. Start with five minutes of whatever they're doing. Bored-tired lifts; sleepy-tired doesn't, and then you say so honestly.</div>
+        <div class="ex-row"><span class="tag">Room 148</span>Marking at the end of the day feels impossible. A lap of the hallway first, then the first three papers only.</div>
+      </div>
+    </div>
+
+    <div class="card red">
+      <div class="p-head"><span class="p-num">06</span><span class="p-name">Find the drain</span><span class="ev b">B</span></div>
+      <div class="p-ess">If fatigue lasts more than a few weeks with the basics in place, stop optimizing and get checked.</div>
+      <div class="para">Longevity already lists the yearly labs. These are the ones a doctor looks at specifically for <b>persistent fatigue</b>. Ask for them by name:</div>
+      <div class="move"><b>Complete blood count and ferritin.</b> Low iron in a man is uncommon and needs a reason found, not just a supplement. Iron overload is the other direction and causes fatigue too. Never take iron without a test; see Longevity.</div>
+      <div class="move"><b>TSH</b> (thyroid), <b>B12</b>, <b>vitamin D</b> and <b>A1c</b>.</div>
+      <div class="move"><b>Morning testosterone</b> if fatigue comes with low drive or lost strength. It has to be a morning draw to mean anything.</div>
+      <div class="move"><b>Mood.</b> Low energy is one of the core signs of depression. A two-minute questionnaire (PHQ-9) is a normal part of a fatigue workup, not an accusation.</div>
+      <div class="move"><b>Sleep apnea.</b> In one US estimate, <b>82% of men with sleep apnea are undiagnosed</b>, and a 10% rise in body weight was linked to a sixfold rise in moderate-to-severe apnea. <span class="ev">&check;</span> The STOP-Bang screen asks about snoring, tiredness, observed pauses in breathing, blood pressure, BMI over 35, age over 50, neck size and male sex. Being male already scores one point. Ask whoever shares your room whether you snore or stop breathing. Three or more points means asking your doctor about a sleep study.</div>
+      <div class="band warn"><b>Go now, don't wait for the routine visit:</b> fatigue with unexplained weight loss, breathlessness, chest pain, night sweats, or a low mood that won't lift.</div>
+      <div class="note">In the one strong trial of iron for unexplained fatigue (198 women with ferritin under 50), iron cut fatigue about 19 percentage points more than placebo. <span class="ev">&check;</span> That was women. It is a reason to test, not a reason for a man to supplement.</div>
+    </div>
+
+    <!-- ============ SURGE ============ -->
+    <div class="section-k">Part two &middot; The surge</div>
+
+    <div class="band"><b>Every surge is borrowed.</b> The tools below raise the reading for an hour or two. Most of them cost something later: sleep, tolerance or recovery. So the first move is choosing where the surge goes, and the last move is paying it back. A surge every day stops being a surge.</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">S1</span><span class="p-name">Caffeine, dosed and timed</span><span class="ev a">A</span></div>
+      <div class="p-ess">The best-evidenced surge there is, and the easiest one to misuse.</div>
+      <div class="para">The sports-nutrition position stand puts the effective range at <b>about 3&ndash;6 mg per kg</b>, with no added benefit at 9 mg/kg or more. <span class="ev">&check;</span> At about 95 kg, 3 mg/kg is roughly 285 mg, about two strong coffees, and that is the ceiling for a physical effort. For mental sharpness, a smaller dose of about 100 mg usually does the job. <span class="ev b">B</span></div>
+      <div class="move"><b>Take it 30&ndash;60 minutes before</b> the moment, not when you feel the dip.</div>
+      <div class="move"><b>Not after 14:00.</b> That makes caffeine a morning and early-afternoon tool. On a Tuesday or Thursday, it is <b>not</b> the tool for the evening class.</div>
+      <div class="move"><b>Keep it special.</b> Regular heavy use blunts the lift. How fast tolerance builds is genuinely debated <span class="ev c">C</span>, but a lower everyday dose leaves more room for the days that matter.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Room 148</span>Report-card day or a parent meeting at 11:00: one coffee at 10:15, not three across the morning.</div>
+        <div class="ex-row"><span class="tag">Training</span>A heavy Monday lift after school: about 200 mg at 13:30 is the latest that respects the 14:00 stop.</div>
+        <div class="ex-row"><span class="tag">Building</span>A Saturday build block: the one coffee goes in right before you sit down, not with breakfast an hour earlier.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">S2</span><span class="p-name">The ten-minute nap</span><span class="ev b">B</span></div>
+      <div class="p-ess">Shorter than you think, and the length is the whole trick.</div>
+      <div class="para">After a short night, people napped at 15:00 for 5, 10, 20 or 30 minutes. The <b>10-minute</b> nap worked best: benefits started immediately and some lasted <b>up to 155 minutes</b>. A 20-minute nap took about 35 minutes to start helping. A 30-minute nap left people groggy at first. Five minutes did little. <span class="ev">&check;</span> It is a small lab study.</div>
+      <div class="move"><b>Set the timer for 15 minutes in total</b>, which allows a few minutes to fall asleep.</div>
+      <div class="move"><b>Before 16:00</b>, so it doesn't eat into the night.</div>
+      <div class="move"><b>Lying still with your eyes closed</b> still helps if sleep doesn't come. Don't fight it.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Long day</span>Between school and the evening class, parked in the car with the seat back: ten minutes, then walk in. This is the evening-class tool caffeine can't be.</div>
+        <div class="ex-row"><span class="tag">Home</span>A weekend afternoon before the girls' ringette games: a short nap, not a long one that leaves you groggy at the rink.</div>
+        <div class="ex-row"><span class="tag">Room 148</span>A prep block after a short night: door closed, eyes shut, timer on.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">S3</span><span class="p-name">Move first</span><span class="ev b">B</span></div>
+      <div class="p-ess">The fastest legal lift with no bill attached.</div>
+      <div class="para">A single bout of aerobic exercise, even 10 minutes, reliably raises energized, positive feelings for a while afterward. This is the acute side of the 70-trial finding in move 01. <span class="ev b">B</span> It costs nothing later and can be done at any hour.</div>
+      <div class="move"><b>Ten minutes, brisk enough to breathe harder.</b> Stairs, a fast walk, a few rounds on the bag.</div>
+      <div class="move"><b>Before you decide you're too tired</b> (move 05), not instead of deciding.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Room 148</span>Before the last block: two flights of stairs, then back to the room.</div>
+        <div class="ex-row"><span class="tag">Home</span>Flat on a Sunday afternoon: three rounds on the BOB, then the thing you were avoiding.</div>
+        <div class="ex-row"><span class="tag">Out</span>Parking at the far end of the lot before a long errand day is a free dose.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">S4</span><span class="p-name">Cold, briefly</span><span class="ev c">C</span></div>
+      <div class="p-ess">A real chemical jolt. The step from chemistry to better performance is the weak link.</div>
+      <div class="para">In an hour of head-out immersion at 14&deg;C, noradrenaline rose about <b>530%</b> and dopamine about <b>250%</b>. <span class="ev">&check;</span> That physiology is solid. Whether a short cold shower makes you <b>perform</b> better is much less tested, so it is graded C. Use it as a wake-up, not a performance drug.</div>
+      <div class="move"><b>30&ndash;60 seconds</b> of cold at the end of a shower, or cold water on the face and wrists.</div>
+      <div class="move"><b>Not straight after lifting</b>; your rule already covers this. Know your blood pressure first (Longevity), because cold spikes it.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Long day</span>Cold water on the face in the washroom before the evening class.</div>
+        <div class="ex-row"><span class="tag">Home</span>A cold finish to the morning shower on a day you need to be switched on early.</div>
+        <div class="ex-row"><span class="tag">Training</span>An ocean dip on a cardio day, never a lifting day.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">S5</span><span class="p-name">Music with a pulse</span><span class="ev a">A</span></div>
+      <div class="p-ess">Well tested, cheap, and it works on mood more than on muscle.</div>
+      <div class="para">A meta-analysis of <b>139 studies</b> found music improved how good exercise felt (<b>g = 0.48</b>), physical performance (<b>0.31</b>) and perceived effort (<b>0.22</b>). <span class="ev">&check;</span> The mood lift is the biggest effect, which is why it works outside the gym too.</div>
+      <div class="move"><b>Fast, loud, familiar,</b> and chosen by you. Build one short playlist for "switch on" and keep it only for that.</div>
+      <div class="move"><b>Use it in the run-up,</b> not during work that needs language. Lyrics compete with reading and writing.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Long day</span>Three tracks in the car before walking into the evening class.</div>
+        <div class="ex-row"><span class="tag">Training</span>The switch-on playlist for the first working set only, so it keeps its edge.</div>
+        <div class="ex-row"><span class="tag">Home</span>Music on while cooking after a draining day changes the room for everyone, not just you.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">S6</span><span class="p-name">Fuel the moment</span><span class="ev b">B</span></div>
+      <div class="p-ess">What you eat in the hour before matters more than what you ate yesterday.</div>
+      <div class="move"><b>No sugar hit</b> in the hour before; move 04 explains why.</div>
+      <div class="move"><b>Water first.</b> Half a litre 30&ndash;60 minutes out is the cheapest fix on the page.</div>
+      <div class="move"><b>For an hour-long hard physical effort,</b> rinsing a sports drink around your mouth and spitting it out has improved performance in several trials, most clearly when fasted. <span class="ev b">B</span> It is a niche tool, but it is legitimate.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Long day</span>Greek yogurt or a protein shake at 16:30 before the evening class, with water.</div>
+        <div class="ex-row"><span class="tag">Out</span>A long errand day: eat something with protein before you go, not a coffee-shop pastry halfway through.</div>
+      </div>
+    </div>
+
+    <div class="card violet">
+      <div class="p-head"><span class="p-num">S7</span><span class="p-name">Name the arousal as readiness</span><span class="ev c">C</span></div>
+      <div class="p-ess">The last 60 seconds before a moment are decided in your head.</div>
+      <div class="para">A racing heart before something big feels like nerves, and nerves feel like a drain. Studies that told people to read that arousal as <b>the body getting ready</b> found better performance and steadier stress responses. Motivational self-talk has its own supportive literature. <span class="ev c">C</span> Both effects are modest and have not been re-checked for this page. Use them as finishers, not foundations.</div>
+      <div class="move"><b>One line, said once:</b> "This is fuel." Or your own warrior image of the job ahead.</div>
+      <div class="move"><b>If you need to come down, not up,</b> use five minutes of cyclic sighing (two inhales through the nose, one long exhale). It beat mindfulness for mood in a one-month randomized study. <span class="ev b">B</span> <span class="ev">&check;</span> The Breathing Room carries the timer.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Room 148</span>Walking to a tough class: "This is fuel," then the first instruction in a strong voice.</div>
+        <div class="ex-row"><span class="tag">Out</span>A hard conversation with a stranger, a contractor or a ref: one long exhale before you speak.</div>
+        <div class="ex-row"><span class="tag">Training</span>Before a heavy set: the warrior image, then lift.</div>
+      </div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><span class="p-num">S8</span><span class="p-name">Pay it back</span><span class="ev d">D</span></div>
+      <div class="p-ess">Reasoning, not a study: the debt is real even when the research on repaying it is thin.</div>
+      <div class="move"><b>That night:</b> no extra caffeine, lights out on time, no "I earned a late one."</div>
+      <div class="move"><b>Next day:</b> easy movement only. The surge drew on the same reserve your training does.</div>
+      <div class="move"><b>Two surge days in a row</b> is a warning sign. Three means you are covering a baseline problem; go back to Part one.</div>
+    </div>
+
+    <!-- stacks -->
+    <div class="section-k">The surge stack</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">A moment before 14:00</span></div>
+      <div class="step"><div class="n">1</div><div><b>60 minutes out:</b> half a litre of water; a protein snack if you haven't eaten.</div></div>
+      <div class="step"><div class="n">2</div><div><b>45 minutes out:</b> caffeine, 100&ndash;200 mg.</div></div>
+      <div class="step"><div class="n">3</div><div><b>15 minutes out:</b> ten minutes brisk, with the switch-on playlist.</div></div>
+      <div class="step"><div class="n">4</div><div><b>The last minute:</b> one line, then go.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">A moment after 14:00 (the evening class)</span></div>
+      <div class="step"><div class="n">1</div><div><b>Before 16:00:</b> the ten-minute nap, timer set for 15.</div></div>
+      <div class="step"><div class="n">2</div><div><b>Around 16:30:</b> protein and water. No caffeine, no sugar.</div></div>
+      <div class="step"><div class="n">3</div><div><b>20 minutes out:</b> ten minutes outside, brisk.</div></div>
+      <div class="step"><div class="n">4</div><div><b>At the door:</b> cold water on the face, three tracks in the car, one line, go.</div></div>
+      <div class="step"><div class="n">5</div><div><b>Home:</b> lights out on time. That is the payback.</div></div>
+    </div>
+
+    <!-- one thing -->
+    <div class="section-k">The one thing</div>
+    <div class="band vio"><b>Flat? Move for ten minutes before you decide.</b> It builds the baseline, it is the cleanest surge, and it tells you whether the tiredness is real.</div>
+
+    <!-- start -->
+    <div class="section-k">Start this week</div>
+    <div class="card">
+      <div class="step"><div class="n">1</div><div><b>Book the doctor's visit</b> and ask for the fatigue labs in move 06, if they aren't already in the Longevity workup.</div></div>
+      <div class="step"><div class="n">2</div><div><b>Ask whoever shares your room</b> whether you snore or stop breathing at night.</div></div>
+      <div class="step"><div class="n">3</div><div><b>Put a water bottle on the desk</b> in Room 148 and finish it by lunch.</div></div>
+      <div class="step"><div class="n">4</div><div><b>Build the switch-on playlist</b> and keep it for surges only.</div></div>
+      <div class="step"><div class="n">5</div><div><b>Run the after-14:00 stack</b> on Tuesday and Thursday this week, and notice the evening class.</div></div>
+    </div>
+
+    <!-- failure -->
+    <div class="section-k">Failure modes</div>
+    <div class="card red">
+      <div class="move"><b>Coffee covering short sleep.</b> Tomorrow's energy pays today's, and you won't notice the sleep loss.</div>
+      <div class="move"><b>Sugar for a lift.</b> It delivers a dip inside the hour.</div>
+      <div class="move"><b>The 40-minute nap.</b> Grogginess, then a worse night.</div>
+      <div class="move"><b>Surging every day.</b> At that point the baseline is the problem.</div>
+      <div class="move"><b>Optimizing around a medical drain.</b> Weeks of fatigue with the basics in place is a doctor's question.</div>
+      <div class="move"><b>Calling boredom fatigue.</b> Change the task before you give up the evening.</div>
+    </div>
+
+    <!-- evidence key -->
+    <div class="section-k">Evidence key</div>
+    <div class="card">
+      <div class="key"><span class="ev a">A</span> Meta-analyses or consistent trials. <span class="ev b">B</span> Good trials or strong observational data, with limits named. <span class="ev c">C</span> Plausible mechanism, thin or mixed outcome data. <span class="ev d">D</span> Reasoning. <span class="ev x">X</span> A popular claim that failed testing.<br>
+      <span class="ev">&check;</span> marks a figure that was checked against its source when this page was built (Nov 2026). Grades without a check mark were graded from the established literature and not re-fetched.<br>
+      <b>Checked sources:</b> ISSN caffeine position stand (2010); Drake et al. 2013 (caffeine 0/3/6 h before bed); Puetz, O&rsquo;Connor &amp; Dishman 2006 meta-analysis and the 2008 low-intensity trial; Mantantzis et al. 2019 sugar and mood meta-analysis; Armstrong/Ganio mild-dehydration studies; Brooks &amp; Lack 2006 nap durations; &Scaron;r&aacute;mek et al. 2000 cold immersion; Terry et al. 2020 music meta-analysis; Balban et al. 2023 cyclic sighing; Robinson et al. 2017 interval training and mitochondria; Glynn et al. 2022 fatigability and mortality; Hagger et al. 2016 ego-depletion replication; Vaucher et al. 2012 iron trial; Cleveland Clinic Journal of Medicine review of sleep apnea in men.</div>
+    </div>
+
+    <div class="foot">Forge OS &middot; Energy</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h1 style="font-size:20px;">Call the move</h1>
+    <div class="sub">Recognition, not recall. A moment from your week. Name the right move, or the trap, before revealing. Ten per round, shuffled.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Done</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn ghost" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  var read = m === 'read';
+  document.getElementById('read').style.display  = read ? 'block' : 'none';
+  document.getElementById('drill').style.display = read ? 'none' : 'block';
+  document.getElementById('tab-read').className  = read ? 'on' : '';
+  document.getElementById('tab-drill').className = read ? '' : 'on';
+  if(!read){ restart(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-energy';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+/* long-press to remove */
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- drill: 24-situation pool, 10 per round, one-thing last ---------------- */
+var POOL = [
+  { prompt:'Tuesday, 15:40. The evening class starts at 18:00 and you are <b>flat</b>. You reach for a coffee.',
+    lines:['<b>Wrong tool. It is after 14:00.</b>','Run the after-14:00 stack: a ten-minute nap before 16:00, protein and water, a brisk ten minutes, then cold water and music at the door.'] },
+  { prompt:'Friday, 14:15. Staff-room cookies, and your <b>last block</b> starts in 20 minutes.',
+    lines:['<b>Sugar dip incoming.</b>','Sugar left people more tired and less alert across 31 studies. Water and a lap of the hallway instead.'] },
+  { prompt:'You nap for <b>40 minutes</b> on Saturday afternoon and wake up foggy, then sleep badly.',
+    lines:['<b>Nap too long.</b>','Ten minutes was the best length tested. Thirty already caused grogginess. Set the timer for 15 in total, before 16:00.'] },
+  { prompt:'20:30, at the desk. You feel <b>too tired to build</b>, and you are deciding whether to quit for the night.',
+    lines:['<b>Read the tiredness first.</b>','Ten minutes on the smallest piece, then decide. If it lifts, it was a forecast. If you are still flat, it was real; go to bed on time.'] },
+  { prompt:'Three weeks of fatigue. Sleep, training and food are all in place. You are <b>researching supplements</b>.',
+    lines:['<b>Find the drain.</b>','Stop optimizing and get checked: CBC and ferritin, TSH, B12, vitamin D, A1c, morning testosterone, mood and sleep apnea.'] },
+  { prompt:'A friend says ferritin is the energy marker, so you plan to <b>start iron</b>.',
+    lines:['<b>Not without a test.</b>','The strong iron trial was in women. In men, low iron needs a cause found, and iron overload also causes fatigue. Test first.'] },
+  { prompt:'Monday heavy lift after school. You want caffeine. <b>When</b>, and how much?',
+    lines:['<b>About 200 mg, no later than about 13:30.</b>','3 mg/kg is the ceiling for a physical effort (about 285 mg for you), and the 14:00 stop still applies.'] },
+  { prompt:'You tell yourself your willpower is <b>used up</b> after a hard day of teaching.',
+    lines:['<b>The fuel-tank model failed testing.</b>','A 23-lab replication found d = 0.04. Tiredness is partly a forecast. Ten minutes of movement, then check again.'] },
+  { prompt:'You have been surging <b>three days running</b>: coffee, music, cold, every day.',
+    lines:['<b>It isn&rsquo;t a surge anymore.</b>','Three surge days in a row means you are covering a baseline problem. Go back to Part one: sleep, daily movement, fuel and the drain check.'] },
+  { prompt:'Sunday afternoon, flat on the couch. The girls want to go out. <b>What first?</b>',
+    lines:['<b>Move first.</b>','Ten brisk minutes, or start with five minutes of their thing. Bored-tired lifts; sleepy-tired doesn&rsquo;t, and then you say so honestly.'] },
+  { prompt:'Your heart is racing before a <b>parent meeting</b>, and it feels like you are losing energy.',
+    lines:['<b>Name it as readiness.</b>','"This is fuel," said once. If you need to come down, five minutes of cyclic sighing.'] },
+  { prompt:'You want the strongest everyday energy lever, and you <b>hate hard workouts</b>.',
+    lines:['<b>Easy movement, most days.</b>','In the low-intensity trial, easy sessions cut fatigue by 65%, more than moderate intensity, and the gains weren&rsquo;t tied to fitness.'] },
+  { prompt:'You finish a heavy lift and head for the <b>ocean dip</b> to wake up.',
+    lines:['<b>Not after lifting.</b>','That is your own standing rule. Cold belongs on a cardio day, and you should know your blood pressure first.'] },
+  { prompt:'It is 15:00 in Room 148 and you have <b>not had a drink of water</b> since breakfast.',
+    lines:['<b>Likely mild dehydration.</b>','About a 1.6% loss raised fatigue in men, roughly 3 lb at your weight. Drink half a litre now and finish the bottle by lunch tomorrow.'] },
+  { prompt:'Someone asks what to protect so you still have energy at <b>80</b>.',
+    lines:['<b>Fatigability: how tired a set task makes you.</b>','High fatigability scores in people over 60 tracked with 2.3&times; mortality. Build the aerobic engine and muscle; measure a yearly stair or hill time.'] },
+  { prompt:'You think you are <b>too old</b> for intervals to change anything inside the muscle.',
+    lines:['<b>The muscle still responds.</b>','Interval training raised mitochondrial capacity by 69% in 65&ndash;80-year-olds, more than in young adults. It was a small study, but the direction is clear.'] },
+  { prompt:'Report-card deadline day. You plan to <b>sip coffee all morning</b>.',
+    lines:['<b>Dose it to the moment.</b>','One coffee, 30&ndash;60 minutes before the hardest stretch. Spreading it out blunts the lift and drifts toward the 14:00 line.'] },
+  { prompt:'You had a coffee at 16:00 and <b>slept fine</b>. You decide late caffeine doesn&rsquo;t affect you.',
+    lines:['<b>You can&rsquo;t feel it.</b>','400 mg six hours before bed cut over an hour of measured sleep, and people didn&rsquo;t notice. Check the Amazfit, not the feeling.'] },
+  { prompt:'You want music to get through an hour of <b>marking essays</b>.',
+    lines:['<b>Music in the run-up, not during.</b>','Lyrics compete with reading. Three tracks before you start, then quiet or instrumental.'] },
+  { prompt:'A long Saturday of errands. You plan a <b>pastry and a latte</b> at the halfway point.',
+    lines:['<b>Fuel steady instead.</b>','Eat something with protein before you leave and drink water. The pastry buys you a dip an hour later.'] },
+  { prompt:'You snore, and your neck feels thick in a collared shirt. You <b>assume tiredness is just age</b>.',
+    lines:['<b>Run the STOP-Bang screen.</b>','Male already scores one point. Snoring, tiredness and neck size add more. Three or more means asking about a sleep study. Most men with apnea are undiagnosed.'] },
+  { prompt:'After a big surge day, it is 22:30 and you feel like <b>you&rsquo;ve earned a late night</b>.',
+    lines:['<b>Pay it back.</b>','Lights out on time, no extra caffeine, and easy movement tomorrow. The surge drew on the same reserve as your training.'] },
+  { prompt:'Grey November mornings with <b>no daylight</b> before school.',
+    lines:['<b>Move the light dose to lunch.</b>','Outside under the overhang at midday. Keep the wake time fixed, including on weekends.'] },
+  { prompt:'Name <b>the one thing</b>.',
+    lines:['<b>Flat? Move for ten minutes before you decide.</b>','It builds the baseline, it is the cleanest surge, and it tells you whether the tiredness is real.'] }
+];
+var ROUND=10, STEPS=[], idx=0, revealed=false;
+var ONE = POOL[POOL.length-1];
+
+function startRound(){
+  var a=POOL.slice(0,POOL.length-1);
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+  STEPS=a.slice(0,ROUND-1); STEPS.push(ONE); idx=0;
+}
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Name it &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  startRound();
+  document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-energy-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+startRound();
+</script>
+</body>
+</html>
