@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cus's Corner</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --red:#ff5a6e; --violet:#b48cff; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 13px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  h2{ font-size:22px; font-weight:300; margin:2px 0 4px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* read */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.red{ border-left-color:var(--red); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .g{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.09em; padding:2px 6px; border-radius:5px;
+    background:rgba(74,157,232,.24); color:var(--accent-hi); margin-left:5px; vertical-align:1px; }
+  .g.c{ background:rgba(245,215,110,.16); color:var(--gold); }
+  .g.d{ background:rgba(255,90,110,.18); color:#ff9aa8; }
+  .g.r{ background:rgba(180,140,255,.2); color:#cdb6ff; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .handoff{ font-size:12.5px; line-height:1.5; color:var(--accent-hi); margin-top:8px; }
+  .handoff a{ color:var(--accent-hi); }
+  .premise{ background:rgba(245,215,110,.11); border:1px solid rgba(245,215,110,.34); border-radius:16px;
+    padding:20px 18px; margin:18px 0 20px; text-align:center; }
+  .premise .pm-line{ font-size:clamp(21px,5.6vw,28px); font-weight:300; line-height:1.35; color:var(--gold); }
+  .premise .pm-line b{ font-weight:700; }
+  .premise .pm-k{ font-size:10.5px; letter-spacing:.24em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; margin-bottom:9px; }
+  .premise .pm-say{ font-size:13px; color:var(--ink-dim); margin-top:10px; line-height:1.5; }
+  .onething{ text-align:center; font-size:clamp(20px,5.2vw,26px); font-weight:300; color:var(--gold); padding:18px 10px; }
+  .keyrow{ font-size:13px; line-height:1.6; color:var(--ink-dim); }
+  .types{ display:flex; gap:8px; flex-wrap:wrap; }
+  .types > div{ flex:1 1 180px; background:rgba(9,36,80,.45); border-radius:12px; padding:12px 13px; }
+  .types .t{ font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; font-weight:800; }
+  .types .t.rel{ color:var(--violet); } .types .t.act{ color:var(--accent-hi); } .types .t.eff{ color:var(--red); }
+  .types .x{ font-size:13.5px; line-height:1.5; color:var(--ink-dim); margin-top:5px; }
+
+  /* cue cards */
+  .cue{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:14px 16px; margin-bottom:12px; }
+  .cue.rel{ border-left-color:var(--violet); } .cue.eff{ border-left-color:var(--red); }
+  .cue .weak{ font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); }
+  .cue .say{ font-size:clamp(22px,6vw,28px); font-weight:300; color:var(--gold); margin:4px 0 6px; line-height:1.25; }
+  .cue .say b{ font-weight:700; }
+  .cue .meta{ display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; margin-bottom:6px; }
+  .cue .kind{ font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; }
+  .cue.act .kind{ color:var(--accent-hi); } .cue.rel .kind{ color:var(--violet); } .cue.eff .kind{ color:var(--red); }
+  .cue .row{ font-size:14px; line-height:1.55; margin:5px 0; }
+  .cue .row .k{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800; color:var(--gold); margin-right:6px; }
+  .cue .home{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; font-weight:800; color:var(--accent-hi); }
+  .cue .home a{ color:var(--accent-hi); }
+  .act-btn{ border:1px solid var(--line); background:rgba(9,36,80,.5); color:var(--ink-dim); font-size:11px; font-weight:800; letter-spacing:.12em;
+    text-transform:uppercase; padding:7px 12px; border-radius:999px; cursor:pointer; }
+  .act-btn.on{ background:var(--gold); color:#2b2200; border-color:var(--gold); }
+  .active-strip{ background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-bottom:14px; }
+  .active-strip .k{ font-size:10.5px; letter-spacing:.2em; text-transform:uppercase; font-weight:800; color:var(--gold); }
+  .active-strip .v{ font-size:15px; line-height:1.6; margin-top:4px; }
+  .active-strip .msg{ font-size:12px; color:var(--red); min-height:15px; margin-top:4px; }
+
+  /* test */
+  #test, #drill{ display:none; }
+  .fld{ margin:10px 0; }
+  .fld label{ display:block; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); font-weight:800; margin-bottom:6px; }
+  .fld input, .fld textarea, .fld select{ width:100%; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:10px; color:var(--ink);
+    font-size:15px; padding:10px 12px; font-family:inherit; }
+  .fld select{ -webkit-appearance:none; appearance:none; }
+  .fld textarea{ min-height:60px; resize:vertical; line-height:1.5; }
+  .two{ display:flex; gap:10px; } .two .fld{ flex:1; }
+  .saved{ font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; text-align:right; min-height:16px; }
+  .phase{ display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .phase .pill{ font-size:12px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; padding:6px 11px; border-radius:999px; }
+  .phase .pill.on{ background:var(--gold); color:#2b2200; } .phase .pill.off{ background:rgba(255,255,255,.12); color:var(--ink-dim); }
+  .phase .txt{ font-size:13.5px; line-height:1.45; color:var(--ink-dim); }
+  .chart{ width:100%; height:auto; display:block; margin-top:6px; }
+  .cmp{ display:flex; gap:10px; margin-top:10px; }
+  .cmp > div{ flex:1; background:rgba(9,36,80,.45); border-radius:12px; padding:12px; text-align:center; }
+  .cmp .t{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); }
+  .cmp .v{ font-size:22px; font-weight:300; margin-top:4px; }
+  .cmp .s{ font-size:11.5px; color:var(--ink-quiet); margin-top:2px; }
+  .verdict{ font-size:14px; line-height:1.55; margin-top:10px; }
+  .verdict b{ color:var(--gold); }
+  .smallbtn{ border:1px solid var(--line); background:rgba(9,36,80,.5); color:var(--ink-dim); font-size:11.5px; font-weight:800; letter-spacing:.12em;
+    text-transform:uppercase; padding:9px 14px; border-radius:999px; cursor:pointer; }
+  .smallbtn.go{ background:var(--accent); color:#06264f; border-color:var(--accent); }
+  .past{ font-size:13.5px; line-height:1.5; padding:9px 0; border-bottom:1px solid var(--line); }
+  .past:last-child{ border-bottom:none; }
+  .past .pc{ color:var(--gold); font-weight:700; }
+  .past .pr{ color:var(--ink-dim); font-size:12.5px; }
+  .past button{ margin-top:5px; }
+
+  /* drill */
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(20px,5.4vw,27px); font-weight:300; line-height:1.35; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; max-height:0; overflow:hidden;
+    transition:opacity .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:16px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  .done-view .score{ margin-top:10px; font-size:15px; color:var(--ink-dim); }
+  .judge{ display:none; gap:10px; justify-content:center; margin-top:14px; }
+  .judge.on{ display:flex; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+      <button id="tab-test" onclick="setMode('test')">Test</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>Cus&rsquo;s Corner</h1>
+    <div class="sub">Between rounds, a fighter gets about a minute and a few words from his corner. This page is your corner: a small bank of two- and three-word cues, each aimed at one weak point, rehearsed until they fire on their own, and tested against a number.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="premise">
+      <div class="pm-k">The Idea</div>
+      <div class="pm-line">Cus put his voice in Tyson&rsquo;s head.<br><b>Put yours in your own.</b></div>
+      <div class="pm-say">A corner that lives inside someone else can be taken away. A corner you built, rehearsed and tested can&rsquo;t.</div>
+    </div>
+
+    <div class="section-k">The Case</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">Fear is fire</span><span class="g r">ATTRIBUTED</span></div>
+      <div class="p-ess">&ldquo;The hero and the coward feel the same thing. It&rsquo;s what they do that&rsquo;s different.&rdquo; &mdash; Cus D&rsquo;Amato, as widely quoted</div>
+      <div class="move">D&rsquo;Amato taught that fear is like fire: it can heat your house or burn it down. The goal was never to stop feeling it. It was to <b>stop being surprised by it</b>.</div>
+      <div class="move">A fighter who knows the dressing-room dread arrives every time can treat it as <b>information</b>, not a verdict on whether he belongs in the ring.</div>
+      <div class="note">The exact wording of both lines varies between sources. The idea is consistent across them.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">How he built Tyson</span><span class="g">VERIFIED</span></div>
+      <div class="move"><b>Hypnosis.</b> Tyson has said he was hypnotized before sparring, training and fights from about 13 or 14 to the end of his career. The hypnotist was John Halpin, and Cus often sat in and spoke to Tyson directly while he was under.</div>
+      <div class="move"><b>Autosuggestion.</b> Biographer Mark Kriegel reports Cus distilled Cou&eacute;&rsquo;s autosuggestion into a repeated mantra about being the best fighter in the world.</div>
+      <div class="move"><b>Numbered punches.</b> Combinations were drilled by number until they fired without a decision. That part is a rehearsed cue system, and it is the part this page keeps.</div>
+      <div class="move"><b>It worked, then it broke.</b> Cus died in 1985, a year before Tyson became the youngest heavyweight champion. The identity had been installed from outside, so it had no way to repair itself once the voice was gone.</div>
+      <div class="note">Hypnosis is from Tyson&rsquo;s own interviews (Joe Rogan, Good Trouble). The mantra and the &ldquo;couldn&rsquo;t tell where the myth ended&rdquo; reading are Kriegel&rsquo;s (<i>Baddest Man</i>), reported second-hand here.</div>
+    </div>
+
+    <div class="band"><b>The lesson for this page.</b> Keep what was rehearsed and specific (the numbered punches). Drop what was installed and global (&ldquo;you&rsquo;re the best God ever made&rdquo;). And make sure the voice is yours.</div>
+
+    <div class="section-k">What Holds Up</div>
+
+    <div class="card">
+      <div class="move"><b>Short self-talk cues improve performance</b> <span class="g">B</span> &mdash; a meta-analysis of 32 studies found a moderate effect (about 0.48). Strongest for fine-motor and newly learned tasks (Hatzigeorgiadis et al., 2011). A 2023 update found the effect still holds, but a decade of research added little understanding.</div>
+      <div class="move"><b>Instructional beats motivational for skill</b> <span class="g">B</span> &mdash; a cue that says what to do (&ldquo;elbow up&rdquo;) beats a pep talk on precision tasks. Motivational cues help more with effort and endurance.</div>
+      <div class="move"><b>Rehearsed beats improvised</b> <span class="g">B</span> &mdash; interventions that trained the self-talk worked better than ones that didn&rsquo;t. That is what the Drill tab is for.</div>
+      <div class="move"><b>Both sides of the record beats a flattering claim</b> <span class="g c">C</span> &mdash; people with low self-esteem who repeated &ldquo;I&rsquo;m a lovable person&rdquo; felt worse. Those who weighed when it was true <i>and</i> when it wasn&rsquo;t came out better (Wood, Perunovic &amp; Lee, 2009). One set of lab studies.</div>
+      <div class="move"><b>&ldquo;Excited&rdquo; beats &ldquo;calm down&rdquo;</b> <span class="g c">C</span> &mdash; saying &ldquo;I am excited&rdquo; before singing, a speech or a math test improved performance versus trying to calm down (Brooks, 2014). Lab studies, modest samples.</div>
+      <div class="move"><b>Hypnosis</b> <span class="g d">D</span> &mdash; reviews find it associated with better athletic performance, but most studies had no control group. Possibly useful, thinly proven, and it needs a practitioner.</div>
+      <div class="move"><b>Global affirmations</b> <span class="g d">AVOID</span> &mdash; &ldquo;I am the greatest&rdquo; can backfire for anyone who doesn&rsquo;t already believe it. The Hard Lines page says the same: not daily chanting.</div>
+    </div>
+
+    <div class="section-k">Three Kinds of Cue</div>
+    <div class="card">
+      <div class="types">
+        <div><div class="t rel">Release</div><div class="x">Drops a thought or feeling&rsquo;s authority. Concedes it exists. &ldquo;Not relevant.&rdquo;</div></div>
+        <div><div class="t act">Action</div><div class="x">Points at the next move. Short and technical. &ldquo;Next sentence only.&rdquo;</div></div>
+        <div><div class="t eff">Effort</div><div class="x">For pushing through, not for precision. &ldquo;Is this 100%?&rdquo;</div></div>
+      </div>
+    </div>
+
+    <div class="section-k">The Rules</div>
+    <div class="card">
+      <div class="move"><b>One trigger per cue.</b> Each cue fires in one named situation. A cue that fires everywhere becomes background noise. &ldquo;Not relevant&rdquo; works partly because it fires only on optimization thoughts.</div>
+      <div class="move"><b>Three in active rotation.</b> Each cue needs its own rehearsal. Mark three as active below; the page won&rsquo;t take a fourth.</div>
+      <div class="move"><b>In the moment, not about the moment.</b> Use the cue live. Review how it went on Sunday. Never run a checklist during a conversation: watching yourself perform is what breaks the performance.</div>
+      <div class="move"><b>Keep it only if the number moves.</b> Test one cue at a time on the Test tab. A cue that changes nothing countable gets retired.</div>
+    </div>
+    <div class="band"><b>The guardrail.</b> Building cues can turn into busy self-improvement that displaces the harder work. If you&rsquo;re polishing this page instead of using it, that&rsquo;s the thought to call <b>not relevant</b>.</div>
+
+    <div class="section-k">Your Corner</div>
+    <div class="active-strip">
+      <div class="k">Active now</div>
+      <div class="v" id="active-list">&mdash;</div>
+      <div class="msg" id="active-msg"></div>
+    </div>
+    <div id="bank"></div>
+
+    <div class="section-k">How to Test a Cue</div>
+    <div class="card">
+      <div class="move">Pick <b>one cue</b> and <b>one countable thing</b> it should move: minutes per paper, redirects per block, words written, times you raised your voice.</div>
+      <div class="move">Run <b>A-B-A-B</b>: a week without the cue, a week with it, a week without, a week with. The page tells you which phase you&rsquo;re in.</div>
+      <div class="move">If the number improves in <b>both</b> B weeks, the cue is earning its place. If it doesn&rsquo;t, retire it and try another. That&rsquo;s a finding, not a failure.</div>
+      <div class="note">This is the same reversal design as Self-Evidence&rsquo;s &ldquo;one variable, then reverse it.&rdquo; Four weeks of one person&rsquo;s data is a reading, not proof.</div>
+    </div>
+
+    <div class="section-k">The One Thing</div>
+    <div class="card"><div class="onething">&ldquo;Be your own corner.&rdquo;</div></div>
+
+    <div class="section-k">Evidence key</div>
+    <div class="card keyrow">
+      <span class="g">A</span> strong, replicated &middot; <span class="g">B</span> good, consistent, often small studies pooled &middot; <span class="g c">C</span> limited: one line of lab studies &middot; <span class="g d">D</span> weak or uncontrolled &middot; <span class="g r">REASONING</span> / <span class="g r">YOURS</span> not graded on the research scale.<br>
+      Sources: Hatzigeorgiadis et al. 2011 (<i>Perspectives on Psychological Science</i>); Corcoran &amp; Steele 2023 preprint; Wood, Perunovic &amp; Lee 2009 (<i>Psychological Science</i>); Brooks 2014 (<i>J. Exp. Psych: General</i>); Mir&oacute; et al. 2025 hypnosis review; Kriegel, <i>Baddest Man</i>.
+    </div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h2>Drill</h2>
+    <div class="sub">A situation. Name the cue out loud, then reveal and judge yourself honestly. Rehearsed cues are the ones that fire under pressure.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Round done</div>
+      <div class="score" id="score"></div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+
+  <!-- ===================== TEST ===================== -->
+  <div id="test">
+    <h2>Test</h2>
+    <div class="sub">One cue, one number, four weeks: off, on, off, on. If the number moves both times the cue is on, keep it.</div>
+
+    <div id="t-new" class="card">
+      <div class="p-head"><span class="p-name">Start a test</span></div>
+      <div class="fld"><label for="t-cue">Cue</label><select id="t-cue"></select></div>
+      <div class="fld"><label for="t-measure">What you&rsquo;ll count each day</label><input id="t-measure" type="text" maxlength="80" placeholder="e.g. minutes per paper"></div>
+      <div class="two">
+        <div class="fld"><label for="t-better">Better is</label><select id="t-better"><option value="down">Lower</option><option value="up">Higher</option></select></div>
+        <div class="fld"><label for="t-len">Days per phase</label><select id="t-len"><option value="7">7</option><option value="5">5 (school days)</option></select></div>
+      </div>
+      <div style="text-align:right;"><button class="smallbtn go" onclick="startTest()">Start</button></div>
+      <div class="saved" id="t-newmsg"></div>
+    </div>
+
+    <div id="t-run" style="display:none;">
+      <div class="card">
+        <div class="p-head"><span class="p-name" id="t-title"></span></div>
+        <div class="phase"><span class="pill" id="t-pill"></span><span class="txt" id="t-phase"></span></div>
+        <div class="two">
+          <div class="fld"><label for="t-val" id="t-vallab">Today</label><input id="t-val" type="number" inputmode="decimal"></div>
+          <div class="fld"><label for="t-day">Day</label><input id="t-day" type="date"></div>
+        </div>
+        <div class="fld"><label for="t-note">Note</label><textarea id="t-note" placeholder="Did the cue fire? What happened?"></textarea></div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <button class="smallbtn" onclick="endTest()">End test</button>
+          <button class="smallbtn go" onclick="saveEntry()">Save</button>
+        </div>
+        <div class="saved" id="t-saved"></div>
+      </div>
+      <div class="section-k">The four weeks</div>
+      <div class="card">
+        <svg class="chart" id="t-chart" viewBox="0 0 320 170" role="img" aria-label="Daily values across the four phases"></svg>
+        <div class="cmp" id="t-cmp"></div>
+        <div class="verdict" id="t-verdict"></div>
+      </div>
+    </div>
+
+    <div class="section-k">Finished tests</div>
+    <div class="card" id="t-past"><div class="note">None yet.</div></div>
+    <div style="text-align:center; margin-top:8px;"><button class="smallbtn" onclick="exportCSV()">Export CSV</button></div>
+    <div class="note" style="text-align:center;">Stored on this device only. Export before clearing Safari data.</div>
+  </div>
+
+</div>
+
+<script>
+/* ---------------- cue bank ---------------- */
+var CUES=[
+  {id:'not-relevant', say:'Not relevant.', kind:'rel', weak:'Optimizing thoughts at the wrong time',
+   trig:'An optimization thought arrives while you are with the girls, or anywhere you have decided to be present.',
+   move:'Concede the thought exists, deny it the floor, and put attention back on the person in front of you.',
+   grade:'<span class="g r">YOURS</span> tested on you in August, immediate effect. Defusion research behind it is <span class="g c">C</span>.',
+   home:'On your morning brief since August'},
+  {id:'check-record', say:'Check the record.', kind:'act', weak:'Self-doubt',
+   trig:'&ldquo;I can&rsquo;t,&rdquo; &ldquo;I&rsquo;m not good at this,&rdquo; or any verdict on yourself before a task.',
+   move:'Name one time it held and one time it didn&rsquo;t. Then act on the record, not the verdict. Never argue with a flattering line.',
+   grade:'<span class="g c">C</span> Wood et al. 2009: weighing both sides beat repeating a positive claim.'},
+  {id:'fear-data', say:'Fear is data.', kind:'rel', weak:'Fear of failure, especially in front of others',
+   trig:'The jolt before speaking up, being watched, or trying something where you might look bad.',
+   move:'Name what the fear is pushing you toward, then do the planned thing anyway. Say &ldquo;I&rsquo;m ready&rdquo; or &ldquo;I&rsquo;m excited,&rdquo; not &ldquo;calm down.&rdquo; Log it that night: what fear wanted, what you did.',
+   grade:'<span class="g r">ATTRIBUTED</span> D&rsquo;Amato. Reappraising arousal as excitement <span class="g c">C</span> (Brooks 2014).'},
+  {id:'let-it-land', say:'Let it land.', kind:'rel', weak:'Pulling back when you&rsquo;re close to winning',
+   trig:'Something is going well and you feel the urge to deflect, undercut it, or change the subject.',
+   move:'Take the win without commentary. Say &ldquo;thank you&rdquo; and stop. Let the result stand long enough to be counted.',
+   grade:'<span class="g d">D</span> &ldquo;Fear of success&rdquo; as a research construct is poorly supported, so this targets the behaviour you named, not a diagnosis. <span class="g r">REASONING</span>'},
+  {id:'finish-it', say:'Finish it.', kind:'eff', weak:'Lack of a killer instinct',
+   trig:'You have the advantage, the yes is close, or the task is 90% done, and you feel yourself easing off.',
+   move:'Make the ask, close the file, finish the set. Ease off after the line, never before it.',
+   grade:'<span class="g r">REASONING</span> The cue is yours to test; motivational self-talk for effort is <span class="g">B</span>.'},
+  {id:'good-enough', say:'Good enough, go.', kind:'act', weak:'Sitting back and overthinking before deciding',
+   trig:'You already have a good-enough picture and you are still gathering, weighing or waiting.',
+   move:'Run the three-tier rule: nothing survives the night &rarr; 3 seconds. In front of you and can&rsquo;t wait &rarr; 7 breaths. Opens a new loop &rarr; Sunday. Most calls are reversible; moving is how you finish the picture.',
+   grade:'<span class="g r">YOURS</span> the three-tier rule. Satisficing over maximizing is <span class="g c">C</span> (Schwartz et al. 2002, correlational).',
+   home:'Three-tier rule &middot; yours since August'},
+  {id:'its-information', say:'It&rsquo;s information.', kind:'rel', weak:'Feeling treated unfairly by some higher sense of justice',
+   trig:'The &ldquo;why does this always happen to me&rdquo; heat: traffic, a last-minute request, a decision that went against you.',
+   move:'Strip the injustice off it and ask what it tells you: about the system, the person, or what to change next time. Then pair it with the line below.',
+   grade:'<span class="g r">YOURS</span> your own phrase from Nov 4.'},
+  {id:'nothing-owed', say:'Nothing is owed.', kind:'rel', weak:'Keeping score and waiting to be paid back',
+   trig:'You did the right thing and the world didn&rsquo;t return it.',
+   move:'Your premise, unchanged: waiting to be paid is weakness. Scoped to strangers, work and the world, never to your children.',
+   grade:'<span class="g r">YOURS</span>',
+   home:'<a href="./ledger.html">Lives on The Grievance Protocol</a>'},
+  {id:'breathe-answer', say:'Breathe, then answer.', kind:'act', weak:'Impatience',
+   trig:'You feel yourself about to cut someone off, rush a student, or answer with an edge.',
+   move:'One long exhale, then speak. Patience is the first thing you said you run out of, so this one fires often.',
+   grade:'<span class="g c">C</span> the physiological sigh rests on one solid RCT; the breath itself lives on Resilience.',
+   home:'<a href="./resilience.html">Breath lives on Resilience</a>'},
+  {id:'one-comment', say:'One comment, next paper.', kind:'act', weak:'Marking eating your time',
+   trig:'You&rsquo;re on a paper and reaching for a second or third comment.',
+   move:'Write the single comment that matters most, enter the mark, pick up the next paper.',
+   grade:'<span class="g r">REASONING</span> Test it: minutes per paper is an easy number.'},
+  {id:'next-sentence', say:'Next sentence only.', kind:'act', weak:'Your two-hour build block',
+   trig:'The block starts and the whole project feels too big to begin.',
+   move:'Open the file and write one sentence. Then the next. The block is measured in sentences, not chapters.',
+   grade:'<span class="g r">REASONING</span> Pairs with Hard Lines line 07.',
+   home:'<a href="./hard-lines.html">Pairs with Hard Lines 07</a>'},
+  {id:'is-100', say:'Is this 100%?', kind:'eff', weak:'Effort when tired',
+   trig:'The moments Hard Lines already names: the gym, tired evenings, the night before.',
+   move:'Ask it, then do the floor the line sets.',
+   grade:'<span class="g r">YOURS</span> from Hard Lines.',
+   home:'<a href="./hard-lines.html">Lives on Hard Lines</a>'}
+];
+var KINDNAME={rel:'Release', act:'Action', eff:'Effort'};
+function cueById(id){ for(var i=0;i<CUES.length;i++) if(CUES[i].id===id) return CUES[i]; return null; }
+
+/* ---------------- mode ---------------- */
+var MODES=['read','drill','test'];
+function setMode(m){
+  for(var i=0;i<MODES.length;i++){
+    var id=MODES[i];
+    document.getElementById(id).style.display = (id===m) ? 'block' : 'none';
+    document.getElementById('tab-'+id).className = (id===m) ? 'on' : '';
+  }
+  if(m==='drill'){ restart(); }
+  if(m==='test'){ renderTest(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-cus-corner';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- active rotation (max 3) ---------------- */
+var AKEY='forge-cus-corner-active', MAXACTIVE=3;
+function loadActive(){ var a=null; try{ a=JSON.parse(localStorage.getItem(AKEY)||'null'); }catch(e){} if(!Array.isArray(a)) a=[];
+  var out=[]; for(var i=0;i<a.length;i++){ if(typeof a[i]==='string' && cueById(a[i]) && out.indexOf(a[i])<0) out.push(a[i]); } return out.slice(0,MAXACTIVE); }
+function saveActive(a){ try{ localStorage.setItem(AKEY, JSON.stringify(a)); }catch(e){} }
+function toggleActive(id){
+  var a=loadActive(), i=a.indexOf(id), msg='';
+  if(i>=0){ a.splice(i,1); }
+  else if(a.length>=MAXACTIVE){ msg='Three is the cap. Retire one before adding another.'; }
+  else { a.push(id); }
+  saveActive(a); renderBank(msg);
+}
+function renderBank(msg){
+  var a=loadActive(), h='';
+  for(var i=0;i<CUES.length;i++){ var c=CUES[i], on=a.indexOf(c.id)>=0;
+    h+='<div class="cue '+c.kind+'" id="cue-'+c.id+'">'+
+       '<div class="meta"><span class="weak">'+c.weak+'</span><button class="act-btn'+(on?' on':'')+'" onclick="toggleActive(\''+c.id+'\')">'+(on?'Active':'Make active')+'</button></div>'+
+       '<div class="say">'+c.say+'</div>'+
+       '<div class="kind">'+KINDNAME[c.kind]+' cue</div>'+
+       '<div class="row"><span class="k">When</span>'+c.trig+'</div>'+
+       '<div class="row"><span class="k">Then</span>'+c.move+'</div>'+
+       '<div class="note">'+c.grade+'</div>'+
+       (c.home?'<div class="home" style="margin-top:6px;">'+c.home+'</div>':'')+
+       '</div>'; }
+  document.getElementById('bank').innerHTML=h;
+  var names=[]; for(i=0;i<a.length;i++){ names.push(cueById(a[i]).say); }
+  document.getElementById('active-list').innerHTML = names.length ? names.join(' &middot; ') : 'None yet &mdash; mark up to three below.';
+  document.getElementById('active-msg').textContent = msg||'';
+}
+
+/* ---------------- dates ---------------- */
+function ymd(d){ var m=d.getMonth()+1, dd=d.getDate(); return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(dd<10?'0':'')+dd; }
+function fromYmd(s){ var p=s.split('-'); return new Date(+p[0], +p[1]-1, +p[2]); }
+function addDays(s,n){ var d=fromYmd(s); d.setDate(d.getDate()+n); return ymd(d); }
+function today(){ return ymd(new Date()); }
+function diffDays(a,b){ return Math.round((fromYmd(b)-fromYmd(a))/86400000); }
+
+/* ---------------- test (ABAB) ---------------- */
+var TKEY='forge-cus-corner-test';
+var PHASES=['A1','B1','A2','B2'];
+function loadT(){ var o=null; try{ o=JSON.parse(localStorage.getItem(TKEY)||'null'); }catch(e){} if(!o||typeof o!=='object') o={};
+  if(!Array.isArray(o.done)) o.done=[]; if(o.cur && (typeof o.cur!=='object' || !o.cur.start || !o.cur.days)) o.cur=null; return o; }
+function saveT(o){ try{ localStorage.setItem(TKEY, JSON.stringify(o)); return true; }catch(e){ return false; } }
+function phaseOf(exp, day){ var i=Math.floor(diffDays(exp.start, day)/exp.len); return (i>=0 && i<4) ? PHASES[i] : null; }
+function flashT(id,msg){ var s=document.getElementById(id); s.textContent=msg; clearTimeout(s._t); s._t=setTimeout(function(){ s.textContent=''; },1600); }
+
+function fillCueSelect(){
+  var s=document.getElementById('t-cue'), h='';
+  for(var i=0;i<CUES.length;i++){ h+='<option value="'+CUES[i].id+'">'+CUES[i].say.replace(/&rsquo;/g,'’')+'</option>'; }
+  s.innerHTML=h;
+}
+function startTest(){
+  var o=loadT(); if(o.cur){ flashT('t-newmsg','A test is already running'); return; }
+  var m=String(document.getElementById('t-measure').value||'').trim();
+  if(!m){ flashT('t-newmsg','Name what you will count'); return; }
+  o.cur={cue:document.getElementById('t-cue').value, measure:m.slice(0,80),
+    better:document.getElementById('t-better').value==='up'?'up':'down',
+    len:document.getElementById('t-len').value==='5'?5:7, start:today(), days:{}};
+  saveT(o); document.getElementById('t-measure').value=''; renderTest();
+}
+function saveEntry(){
+  var o=loadT(); if(!o.cur) return;
+  var day=document.getElementById('t-day').value||today();
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(day) || !phaseOf(o.cur, day)){ flashT('t-saved','That day is outside the test'); return; }
+  if(day>today()){ flashT('t-saved','Not a future day'); return; }
+  var raw=document.getElementById('t-val').value, note=String(document.getElementById('t-note').value||'').slice(0,600);
+  if(raw===''){ if(note){ o.cur.days[day]={v:null, note:note}; } else { delete o.cur.days[day]; } }
+  else { var x=parseFloat(raw); if(!isFinite(x)){ flashT('t-saved','Enter a number'); return; } o.cur.days[day]={v:x, note:note}; }
+  flashT('t-saved', saveT(o)?'Saved':'Could not save on this device'); renderTest();
+}
+function endTest(){
+  var o=loadT(); if(!o.cur) return;
+  if(!confirm('End this test and file it under finished tests?')) return;
+  var s=summarize(o.cur); o.cur.ended=today(); o.cur.result=s.line; o.done.unshift(o.cur); o.cur=null; saveT(o); renderTest();
+}
+function deletePast(i){
+  var o=loadT(); if(!o.done[i]) return; if(!confirm('Delete this finished test?')) return; o.done.splice(i,1); saveT(o); renderTest();
+}
+function avg(a){ if(!a.length) return null; var s=0; for(var i=0;i<a.length;i++) s+=a[i]; return s/a.length; }
+function fmt(x){ return x==null ? '&ndash;' : (Math.round(x*10)/10).toString(); }
+function phaseMeans(exp){
+  var b={A1:[],B1:[],A2:[],B2:[]};
+  for(var d in exp.days){ var r=exp.days[d], p=phaseOf(exp,d); if(p && r && typeof r.v==='number' && isFinite(r.v)) b[p].push(r.v); }
+  return {A1:avg(b.A1),B1:avg(b.B1),A2:avg(b.A2),B2:avg(b.B2), n:{A1:b.A1.length,B1:b.B1.length,A2:b.A2.length,B2:b.B2.length}};
+}
+function better(exp,b,a){ return exp.better==='up' ? b>a : b<a; }
+function summarize(exp){
+  var m=phaseMeans(exp), c=cueById(exp.cue), name=c?c.say:exp.cue, line, short;
+  var pair1 = (m.A1!=null && m.B1!=null), pair2=(m.A2!=null && m.B2!=null);
+  if(!pair1){ line='Not enough data yet. You need entries in at least the first off week and the first on week.'; short='incomplete'; }
+  else if(!pair2){
+    line = better(exp,m.B1,m.A1) ? 'First on-week beat the first off-week. One pair is a hint; run the second pair before deciding.' : 'First on-week did not beat the first off-week. Run the second pair before deciding.';
+    short='one pair only';
+  } else {
+    var w1=better(exp,m.B1,m.A1), w2=better(exp,m.B2,m.A2);
+    if(w1&&w2){ line='<b>Keep it.</b> The number was better in both on-weeks. That&rsquo;s the pattern you&rsquo;d expect if the cue is doing the work.'; short='kept: better in both on-weeks'; }
+    else if(!w1&&!w2){ line='<b>Retire it.</b> The number was not better in either on-week. That&rsquo;s a finding, not a failure &mdash; try another cue.'; short='retired: no change'; }
+    else { line='<b>Mixed.</b> Better in one on-week, not the other. Something else may be moving the number. Run it again or pick a cleaner measure.'; short='mixed'; }
+  }
+  return {m:m, line:line, short:short, name:name};
+}
+function drawChart(exp){
+  var W=320,H=170,L=34,R=8,T=12,B=26, n=exp.len*4, pw=(W-L-R)/n;
+  var vals=[]; for(var d in exp.days){ var r=exp.days[d]; if(phaseOf(exp,d) && r && typeof r.v==='number' && isFinite(r.v)) vals.push(r.v); }
+  var lo=0, hi=1; if(vals.length){ lo=Math.min.apply(null,vals); hi=Math.max.apply(null,vals); if(lo===hi){ lo-=1; hi+=1; } var pad=(hi-lo)*0.12; lo-=pad; hi+=pad; }
+  function y(v){ return T+(H-T-B)*(1-(v-lo)/(hi-lo)); }
+  var s='';
+  for(var p=0;p<4;p++){ var x0=L+p*exp.len*pw, on=(p%2===1);
+    s+='<rect x="'+x0.toFixed(1)+'" y="'+T+'" width="'+(exp.len*pw).toFixed(1)+'" height="'+(H-T-B)+'" fill="'+(on?'rgba(245,215,110,.13)':'rgba(255,255,255,.04)')+'"/>';
+    s+='<text x="'+(x0+exp.len*pw/2).toFixed(1)+'" y="'+(H-8)+'" text-anchor="middle" font-size="10" font-weight="800" fill="'+(on?'#f5d76e':'rgba(234,244,255,.55)')+'">'+PHASES[p]+(on?' &middot; on':' &middot; off')+'</text>'; }
+  s+='<text x="'+(L-5)+'" y="'+(T+8)+'" text-anchor="end" font-size="9" fill="rgba(234,244,255,.55)">'+fmt(hi)+'</text>';
+  s+='<text x="'+(L-5)+'" y="'+(H-B)+'" text-anchor="end" font-size="9" fill="rgba(234,244,255,.55)">'+fmt(lo)+'</text>';
+  var m=phaseMeans(exp);
+  for(p=0;p<4;p++){ var mv=m[PHASES[p]]; if(mv==null) continue; var xa=L+p*exp.len*pw+2, xb=L+(p+1)*exp.len*pw-2;
+    s+='<line x1="'+xa.toFixed(1)+'" x2="'+xb.toFixed(1)+'" y1="'+y(mv).toFixed(1)+'" y2="'+y(mv).toFixed(1)+'" stroke="'+(p%2?'#f5d76e':'#7fbfff')+'" stroke-width="1.5" stroke-dasharray="4 3"/>'; }
+  var pts=[];
+  for(var i=0;i<n;i++){ var day=addDays(exp.start,i), r2=exp.days[day]; if(r2 && typeof r2.v==='number' && isFinite(r2.v)) pts.push([L+(i+0.5)*pw, y(r2.v)]); }
+  if(pts.length>1){ var dpath='M'+pts.map(function(q){ return q[0].toFixed(1)+' '+q[1].toFixed(1); }).join(' L'); s+='<path d="'+dpath+'" fill="none" stroke="rgba(127,191,255,.6)" stroke-width="1.5"/>'; }
+  for(i=0;i<pts.length;i++){ s+='<circle cx="'+pts[i][0].toFixed(1)+'" cy="'+pts[i][1].toFixed(1)+'" r="3" fill="#7fbfff"/>'; }
+  var ti=diffDays(exp.start,today()); if(ti>=0 && ti<n){ var tx=L+(ti+0.5)*pw; s+='<line x1="'+tx.toFixed(1)+'" x2="'+tx.toFixed(1)+'" y1="'+T+'" y2="'+(H-B)+'" stroke="rgba(255,255,255,.35)" stroke-width="1"/>'; }
+  document.getElementById('t-chart').innerHTML=s;
+}
+function loadDay(){
+  var o=loadT(); if(!o.cur) return;
+  var day=document.getElementById('t-day').value||today(), r=o.cur.days[day];
+  document.getElementById('t-val').value = (r && typeof r.v==='number') ? r.v : '';
+  document.getElementById('t-note').value = (r && r.note) || '';
+}
+function renderTest(){
+  fillCueSelectOnce();
+  var o=loadT();
+  document.getElementById('t-new').style.display = o.cur ? 'none' : 'block';
+  document.getElementById('t-run').style.display = o.cur ? 'block' : 'none';
+  if(o.cur){
+    var e=o.cur, c=cueById(e.cue), t=today(), ph=phaseOf(e,t), dayn=diffDays(e.start,t);
+    document.getElementById('t-title').innerHTML=(c?c.say:e.cue);
+    var pill=document.getElementById('t-pill'), txt=document.getElementById('t-phase');
+    if(ph){ var on=ph.charAt(0)==='B'; pill.className='pill '+(on?'on':'off'); pill.textContent=ph+(on?' · cue on':' · cue off');
+      txt.innerHTML = 'Day '+(dayn%e.len+1)+' of '+e.len+'. '+(on?'Use the cue on its trigger.':'Don&rsquo;t use the cue. Just count.'); }
+    else { pill.className='pill off'; pill.textContent='Complete'; txt.innerHTML='All four phases are done. Read the result, then end the test to file it.'; }
+    document.getElementById('t-vallab').textContent=e.measure+(e.better==='up'?' (higher is better)':' (lower is better)');
+    var dEl=document.getElementById('t-day'); dEl.min=e.start; var last=addDays(e.start,e.len*4-1); dEl.max=(last<t?last:t);
+    if(!dEl.value || dEl.value<dEl.min || dEl.value>dEl.max) dEl.value=dEl.max;
+    loadDay(); drawChart(e);
+    var s=summarize(e), m=s.m;
+    document.getElementById('t-cmp').innerHTML=
+      '<div><div class="t">Off weeks</div><div class="v">'+fmt(m.A1)+' / '+fmt(m.A2)+'</div><div class="s">A1 / A2 &middot; '+m.n.A1+' + '+m.n.A2+' days</div></div>'+
+      '<div><div class="t">On weeks</div><div class="v">'+fmt(m.B1)+' / '+fmt(m.B2)+'</div><div class="s">B1 / B2 &middot; '+m.n.B1+' + '+m.n.B2+' days</div></div>';
+    document.getElementById('t-verdict').innerHTML=s.line+' <span style="color:var(--ink-quiet)">One person, four weeks: a reading, not proof.</span>';
+  }
+  var h='';
+  for(var i=0;i<o.done.length;i++){ var x=o.done[i], cc=cueById(x.cue);
+    h+='<div class="past"><div><span class="pc">'+(cc?cc.say:x.cue)+'</span> &middot; '+x.measure+'</div>'+
+       '<div class="pr">'+x.start+' to '+(x.ended||'')+' &middot; '+(x.result||'')+'</div>'+
+       '<button class="smallbtn" onclick="deletePast('+i+')">Delete</button></div>'; }
+  document.getElementById('t-past').innerHTML = h || '<div class="note">None yet.</div>';
+}
+var _filled=false; function fillCueSelectOnce(){ if(!_filled){ fillCueSelect(); _filled=true; } }
+document.getElementById('t-day').addEventListener('change', loadDay);
+
+function exportCSV(){
+  var o=loadT(), rows=[['test','cue','measure','better','phase','date','value','note']], all=[];
+  if(o.cur) all.push(o.cur); for(var i=0;i<o.done.length;i++) all.push(o.done[i]);
+  for(i=0;i<all.length;i++){ var e=all[i], keys=Object.keys(e.days).sort();
+    for(var k=0;k<keys.length;k++){ var r=e.days[keys[k]];
+      rows.push([e.start, e.cue, '"'+String(e.measure).replace(/"/g,'""')+'"', e.better, phaseOf(e,keys[k])||'', keys[k], (r&&typeof r.v==='number')?r.v:'', '"'+String((r&&r.note)||'').replace(/"/g,'""')+'"']); } }
+  var csv=rows.map(function(x){ return x.join(','); }).join('\n');
+  var a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv); a.download='cus-corner-'+today()+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+/* ---------------- drill ---------------- */
+var DKEY='forge-cus-corner-drill';
+var POOL=[
+  {p:'You&rsquo;re building Lego with Layna and your mind drifts to how you could restructure the Self-Evidence course.', a:['<b>&ldquo;Not relevant.&rdquo;</b> An optimization thought during time you chose to be present. Back to the bricks.']},
+  {p:'Before a new unit: &ldquo;I&rsquo;m not a high school teacher. I&rsquo;ve been in elementary too long.&rdquo;', a:['<b>&ldquo;Check the record.&rdquo;</b> One time it held, one time it didn&rsquo;t. Twenty years in classrooms, a curriculum built from scratch in Japan. Act on the record.']},
+  {p:'Your FLA class asks you to read your own paragraph aloud as the model, and your stomach drops.', a:['<b>&ldquo;Fear is data.&rdquo;</b> Name what it&rsquo;s pushing you toward (saying no), then do the planned thing. &ldquo;I&rsquo;m ready,&rdquo; not &ldquo;calm down.&rdquo;']},
+  {p:'A parent emails to say your class turned her son around. You start typing &ldquo;oh, it&rsquo;s really all him&hellip;&rdquo;', a:['<b>&ldquo;Let it land.&rdquo;</b> Thank her and stop. Let the result be counted.']},
+  {p:'Haggling on a used car, the seller is about to fold, and you feel the urge to offer a concession nobody asked for.', a:['<b>&ldquo;Finish it.&rdquo;</b> Make the ask and close. Ease off after the line, never before it.']},
+  {p:'You&rsquo;ve compared three laptops for forty minutes. Any of them would do the job.', a:['<b>&ldquo;Good enough, go.&rdquo;</b> Nothing about it survives the night. Three seconds. Buy one.']},
+  {p:'Your third red light in a row, and you&rsquo;re already late for ringette pickup.', a:['<b>&ldquo;It&rsquo;s information.&rdquo;</b> Not a verdict from the universe: this route at this hour is slow. Then &ldquo;Nothing is owed.&rdquo;']},
+  {p:'You stayed late to cover a supervision and nobody thanked you.', a:['<b>&ldquo;Nothing is owed.&rdquo;</b> Waiting to be paid is weakness. Your premise, unchanged.']},
+  {p:'A student asks the same question a fourth time and you feel the edge coming into your voice.', a:['<b>&ldquo;Breathe, then answer.&rdquo;</b> One long exhale, then speak.']},
+  {p:'You&rsquo;re writing a second paragraph of feedback on a Grade 8 paragraph.', a:['<b>&ldquo;One comment, next paper.&rdquo;</b> The single comment that matters most, the mark, the next paper.']},
+  {p:'Sunday, 8 p.m., your build block. The book feels enormous and you&rsquo;re reorganizing folders.', a:['<b>&ldquo;Next sentence only.&rdquo;</b> Open the file, write one sentence.','Reorganizing folders is the busywork the guardrail warns about.']},
+  {p:'Last set at the gym, tired, and you&rsquo;re thinking of cutting it.', a:['<b>&ldquo;Is this 100%?&rdquo;</b> An effort cue, from Hard Lines. Do the floor.']},
+  {p:'You want a fourth cue in active rotation because they all seem useful.', a:['<b>The cap is three.</b> Each cue needs its own rehearsal. Retire one first.']},
+  {p:'Mid-conversation with a parent, you start running through your cue list in your head.', a:['<b>Stop &mdash; wrong place.</b> Cues fire on their trigger; review is for Sunday. A live checklist is what breaks the performance.']},
+  {p:'You tried &ldquo;One comment, next paper&rdquo; for four weeks. Minutes per paper didn&rsquo;t move either on-week.', a:['<b>Retire it.</b> That&rsquo;s a finding, not a failure. Try a different cue or a different measure.']},
+  {p:'Someone suggests you repeat &ldquo;I am the best teacher in this building&rdquo; every morning.', a:['<b>Skip it.</b> Global affirmations can backfire for anyone who doesn&rsquo;t already believe them. Use &ldquo;Check the record&rdquo; instead.']},
+  {p:'Which kind of cue is &ldquo;Not relevant&rdquo;: release, action or effort?', a:['<b>Release.</b> It concedes the thought exists and denies it authority.']},
+  {p:'Which kind is &ldquo;Next sentence only&rdquo;?', a:['<b>Action.</b> Short, technical, points at the next move. The kind with the best evidence for skill.']},
+  {p:'You&rsquo;re deciding whether to start a new app for the protocols page tonight. It feels urgent.', a:['<b>Three-tier rule: Sunday.</b> It opens a new loop. &ldquo;Good enough, go&rdquo; is for calls already in front of you, not new projects.']},
+  {p:'You catch yourself polishing this page&rsquo;s cue wording for the third evening running.', a:['<b>&ldquo;Not relevant.&rdquo;</b> The guardrail: building the corner has become the escape from using it.']},
+  {p:'Kayla asks you to watch her drill and you&rsquo;re tempted to say you&rsquo;re too tired.', a:['<b>Hard Lines 06 owns this</b> &mdash; ten fully present minutes. The effort cue is &ldquo;Is this 100%?&rdquo;']},
+  {p:'Why did Tyson&rsquo;s belief break after Cus died, in one line?', a:['<b>It was installed, not earned.</b> The voice lived in someone else, so it had no way to repair itself.']}
+];
+var ONE={p:'The one line under every cue on this page?', a:['<b>&ldquo;Be your own corner.&rdquo;</b>']};
+var ROUND=10, deck=[], di=0, revealed=false, hits=0;
+function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function restart(){
+  deck=shuffle(POOL.slice()).slice(0,ROUND-1); deck.push(ONE);
+  di=0; hits=0;
+  document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display='flex';
+  document.getElementById('progress').style.opacity='';
+  renderQ();
+}
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<deck.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<di?' done':(i===di?' on':'')); p.appendChild(d); }
+}
+function renderQ(){
+  var q=deck[di], inner='';
+  for(var i=0;i<q.a.length;i++) inner+='<div class="line">'+q.a[i]+'</div>';
+  document.getElementById('stage').innerHTML=
+    '<div class="prompt">'+q.p+'</div>'+
+    '<div class="hint">Say the cue aloud &middot; then reveal</div>'+
+    '<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>'+
+    '<div class="bar" id="revealBar"><button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button></div>'+
+    '<div class="judge" id="judge"><button class="btn ghost" onclick="judge(false)">Missed it</button><button class="btn" onclick="judge(true)">Got it</button></div>';
+  revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return; revealed=true;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBar').style.display='none';
+  document.getElementById('judge').className='judge on';
+}
+function judge(ok){
+  if(!revealed) return; if(ok) hits++;
+  if(di<deck.length-1){ di++; renderQ(); window.scrollTo(0,0); return; }
+  finish();
+}
+function markDone(){
+  var s={}; try{ s=JSON.parse(localStorage.getItem(DKEY)||'{}')||{}; }catch(e){ s={}; }
+  var t=today();
+  if(s.last!==t){ s.streak = (s.last===addDays(t,-1)) ? (s.streak||0)+1 : 1; s.last=t; }
+  if(!s.best || hits>s.best) s.best=hits;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+function finish(){
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('score').innerHTML=hits+' of '+deck.length+' &middot; best '+(s.best||0);
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+
+loadPhoto();
+renderBank();
+</script>
+</body>
+</html>
