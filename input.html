@@ -119,6 +119,17 @@
       <div class="field"><label>Health %</label><input type="number" id="hrv_health" min="0" max="100" inputmode="numeric" placeholder="20"></div>
     </div>
 
+    <div class="group-label">Fog on waking</div>
+    <div class="seg" id="fog_wake_seg">
+      <div class="opt" data-val="1">1</div>
+      <div class="opt" data-val="2">2</div>
+      <div class="opt" data-val="3">3</div>
+      <div class="opt" data-val="4">4</div>
+      <div class="opt" data-val="5">5</div>
+    </div>
+    <input type="hidden" id="fog_wake">
+    <div class="hint">1 = clear · 5 = can't hold a question. Tap again to clear. Optional.</div>
+
     <div class="group-label">Sleep <span style="font-weight:400;opacity:.72;font-size:.82em">— leave blank if the watch recorded nothing. Do not enter 0.</span></div>
     <div class="field"><label>Sleep score %</label><input type="number" id="sleep_score" min="0" max="100" inputmode="numeric" placeholder="94"></div>
     <div class="field"><label>Duration</label><input type="text" id="sleep_duration" placeholder="7h 15m"></div>
@@ -149,6 +160,13 @@
       <div class="field"><label>Drinks</label><input type="number" step="1" id="alcohol_units" inputmode="numeric" placeholder="0"></div>
       <div class="field"><label>Last drink</label><input type="time" id="alcohol_time"></div>
     </div>
+
+    <div class="group-label">THC</div>
+    <div class="row2">
+      <div class="field"><label>Milligrams</label><input type="number" step="1" id="thc_mg" inputmode="numeric" placeholder="50"></div>
+      <div class="field"><label>Taken at</label><input type="time" id="thc_time"></div>
+    </div>
+    <div class="hint" style="margin-top:-6px;margin-bottom:10px">When you took the capsule, not when it kicked in. Blank = none.</div>
 
     <div class="group-label">Nicotine (snuff)</div>
     <div class="row2">
@@ -251,7 +269,8 @@ function yesterdayKey(){ var d=new Date(); d.setDate(d.getDate()-1); return ymd(
 var DRAFT_FIELDS = ['hrv_stress','hrv_energy','hrv_health','sleep_score','sleep_duration',
   'hr_min','hr_max','bc_weight','bc_fat','bc_muscle','bc_bmi','bc_visceral',
   'alcohol_units','alcohol_time','nicotine_units','nicotine_time',
-  'stress_rating','busyness_rating','training_min','y_note'];
+  'stress_rating','busyness_rating','training_min','y_note',
+  'thc_mg','thc_time','fog_wake'];
 // training_type (hidden), sick, late_meal handled separately (toggles)
 
 function showStatus(msg, color){
@@ -306,6 +325,11 @@ function setSeg(v){
   document.querySelectorAll('#training_seg .opt').forEach(function(o){ o.classList.toggle('on', o.getAttribute('data-val')===v); });
 }
 
+function setFog(v){
+  document.getElementById('fog_wake').value = v||'';
+  document.querySelectorAll('#fog_wake_seg .opt').forEach(function(o){ o.classList.toggle('on', o.getAttribute('data-val')===String(v||'')); });
+}
+
 function saveDraft(){
   var d={ date: todayKey(), values:{}, sick:getToggle('sick'), late_meal:getToggle('late_meal'), training_type:val('training_type'), protocol:getProtocolReps() };
   DRAFT_FIELDS.forEach(function(id){ d.values[id]=val(id); });
@@ -322,6 +346,7 @@ function loadDraft(){
     if(el && d.values && d.values[id]!=null && d.values[id]!==''){ el.value=d.values[id]; any=true; }
   });
   if(d.training_type){ setSeg(d.training_type); any=true; }
+  if(d.values && d.values.fog_wake){ setFog(d.values.fog_wake); }
   if(d.sick){ setToggle('sick',true); any=true; }
   if(d.late_meal){ setToggle('late_meal',true); any=true; }
   if(d.protocol){
@@ -338,7 +363,7 @@ function loadDraft(){
 function clearToday(){
   try{ localStorage.removeItem('forge-log-draft'); }catch(e){}
   DRAFT_FIELDS.forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
-  setSeg(''); setToggle('sick',false); setToggle('late_meal',false);
+  setSeg(''); setFog(''); setToggle('sick',false); setToggle('late_meal',false);
   PROTO_COUNTERS.forEach(function(k){ protoCounts[k]=0; document.getElementById(k+'_v').textContent='0'; });
   PROTO_TOGGLES.forEach(function(k){ setProtoToggle(k,false); });
   document.getElementById('saved-flag').style.display='none';
@@ -378,7 +403,8 @@ function saveProtocolOnly(){
 var CSV_COLS = ['date','hrv_stress','hrv_energy','hrv_health','sleep_score','sleep_duration',
   'hr_range','weight','body_fat','muscle_mass','bmi','visceral_fat',
   'alcohol_units','alcohol_time','nicotine_units','nicotine_time',
-  'stress_rating','busyness_rating','training_type','training_min','sick','late_meal','note'];
+  'stress_rating','busyness_rating','training_type','training_min','sick','late_meal','note',
+  'fog_wake','thc_mg','thc_time'];
 function csvCell(v){
   if(v===null||v===undefined) return '';
   if(v===true) return '1'; if(v===false) return '0';
@@ -482,12 +508,14 @@ function submitData(){
     sleep_score:sleepNum('sleep_score'), sleep_duration:val('sleep_duration'),
     hr_range: (val('hr_min')&&val('hr_max'))? (val('hr_min')+'-'+val('hr_max')) : null,
     weight:num('bc_weight'), body_fat:num('bc_fat'), muscle_mass:num('bc_muscle'),
-    bmi:num('bc_bmi'), visceral_fat:num('bc_visceral')
+    bmi:num('bc_bmi'), visceral_fat:num('bc_visceral'),
+    fog_wake:num('fog_wake')
   });
 
   // Yesterday's inputs → YESTERDAY's record (true-dated)
   mergeInto(history, yesterdayKey(), {
     alcohol_units:num('alcohol_units'), alcohol_time:val('alcohol_time')||null,
+    thc_mg:num('thc_mg'), thc_time:val('thc_time')||null,
     nicotine_units:num('nicotine_units'), nicotine_time:val('nicotine_time')||null,
     stress_rating:num('stress_rating'), busyness_rating:num('busyness_rating'),
     training_type:val('training_type')||null, training_min:num('training_min'),
@@ -537,6 +565,13 @@ function updateCount(){
 window.onload=function(){
   document.querySelectorAll('#training_seg .opt').forEach(function(o){
     o.addEventListener('click', function(){ setSeg(o.getAttribute('data-val')); saveDraft(); document.getElementById('saved-flag').style.display='block'; });
+  });
+  document.querySelectorAll('#fog_wake_seg .opt').forEach(function(o){
+    o.addEventListener('click', function(){
+      var v=o.getAttribute('data-val');
+      setFog(val('fog_wake')===v ? '' : v);
+      saveDraft(); document.getElementById('saved-flag').style.display='block';
+    });
   });
   document.querySelectorAll('.toggle').forEach(function(t){
     t.addEventListener('click', function(){

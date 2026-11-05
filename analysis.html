@@ -70,6 +70,19 @@
     <p class="note">Sleep split is a median split of the shown nights — your better half vs worse half — not a fixed cutoff, so both groups stay populated when data is thin. Alcohol uses the Aug&nbsp;3 tracking start: earlier days count as untracked, not sober. n under ~5 is marked in amber; treat those as anecdotes.</p>
   </div>
 
+  <div class="card">
+    <h2>Fog &amp; THC</h2>
+    <div id="fog-status" class="note" style="margin:-4px 0 8px"></div>
+    <div id="fog-chart"></div>
+    <div class="legend">
+      <span><span class="swatch" style="background:#8a9ad0"></span> Fog on waking</span>
+      <span><span class="swatch" style="background:#e06a6a"></span> Fog during the day</span>
+      <span><span class="swatch" style="background:#5bd6a0;height:8px;width:8px;opacity:.55"></span> THC the night before (bar height = mg)</span>
+    </div>
+    <div id="fog-groups" style="margin-top:14px"></div>
+    <p class="note">Fog is 1 (clear) to 5 (can't hold a question); higher is worse. Each day's fog is paired with the THC taken the <b>night before</b>. "Later dose" means taken at 8:00 p.m. or after. THC is counted from Nov&nbsp;5, 2026: a logged morning with the THC field blank counts as none; a morning not logged at all counts as unknown, not none.</p>
+  </div>
+
   <a class="back" href="./">← Back to brief</a>
 </div>
 
@@ -84,6 +97,9 @@ var K_EVE  = 'forge-evening-log';           /* evening protocol log — typed la
 var BC_HOLIDAYS = ['2026-01-01','2026-02-16','2026-04-03','2026-05-18','2026-07-01',
                    '2026-08-03','2026-09-07','2026-09-30','2026-10-12','2026-11-11','2026-12-25'];
 var TAGS = ['normal','travel','vacation','sick','night out'];
+var TRACK_THC = '2026-11-05';               /* THC + fog logged from here; earlier = untracked */
+var LATE_DOSE = 20*60;                      /* a dose at or after 20:00 counts as "later" */
+var K_HEALTH = 'forge-health-history';      /* the morning log's own on-device copy (same origin) */
 
 /* ---------- storage ---------- */
 function fdRead(k, fb){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):fb; }catch(e){ return fb; } }
@@ -153,6 +169,70 @@ function breatheMinutes(date, blog){
   day.s.forEach(function(x){ if (x && typeof x.sec === 'number' && x.sec > 0) t += x.sec; });
   return Math.round(t / 60);
 }
+/* ---------- fog + THC (pure, unit-tested) ---------- */
+function hm(v){                               /* "HH:MM" -> minutes, or null */
+  if (typeof v !== 'string' || !/^\d{1,2}:\d{2}$/.test(v)) return null;
+  var p = v.split(':'), h = +p[0], m = +p[1];
+  return (h > 23 || m > 59) ? null : h*60 + m;
+}
+function fogVal(v){ v = +v; return (v >= 1 && v <= 5 && Math.round(v) === v) ? v : null; }
+/* THC mg for the NIGHT of `date`: number if logged (blank in a logged record = 0),
+   null if before tracking or the morning after was never logged. */
+function thcFor(date, hist){
+  if (date < TRACK_THC) return null;
+  var rec = hist[date];
+  if (!rec) return null;
+  var v = rec.thc_mg;
+  if (v === undefined || v === null || v === '') return 0;
+  v = +v; return isNaN(v) || v < 0 ? null : v;
+}
+/* cloud /health overlaid with the device copy: a non-empty local value fills a gap,
+   never overwrites a cloud value. Returns {hist, localOnly} where localOnly counts
+   THC/fog values present on this device but missing from the cloud. */
+function mergeHealth(cloud, local){
+  var out = {}, localOnly = 0;
+  Object.keys(cloud || {}).forEach(function(d){ out[d] = Object.assign({}, cloud[d]); });
+  Object.keys(local || {}).forEach(function(d){
+    var l = local[d] || {}, o = out[d] || (out[d] = {date:d});
+    Object.keys(l).forEach(function(k){
+      var lv = l[k], ov = o[k];
+      if (lv === undefined || lv === null || lv === '') return;
+      if (ov === undefined || ov === null || ov === ''){
+        o[k] = lv;
+        /* only a warning if the cloud HAS this day's record but not the field —
+           an offline load (empty cloud) must not raise a false alarm */
+        if ((k === 'thc_mg' || k === 'thc_time' || k === 'fog_wake') && cloud && cloud[d]) localOnly++;
+      }
+    });
+  });
+  return { hist: out, localOnly: localOnly };
+}
+/* one row per date from TRACK_THC to the last date with any fog/THC data */
+function fogDays(log, hist){
+  var dates = {};
+  Object.keys(log || {}).forEach(function(d){ if (d >= TRACK_THC) dates[d] = 1; });
+  Object.keys(hist || {}).forEach(function(d){ if (d >= TRACK_THC) dates[d] = 1; });
+  return Object.keys(dates).sort().map(function(d){
+    var prev = prevDay(d), ph = hist[prev] || {};
+    return {
+      date: d,
+      fogWake: fogVal((hist[d] || {}).fog_wake),
+      fogDay: fogVal(((log || {})[d] || {}).fog),
+      thcPrev: thcFor(prev, hist),
+      thcPrevTime: hm(ph.thc_time),
+      tag: ((log || {})[d] || {}).tag || 'normal'
+    };
+  }).filter(function(x){ return x.fogWake !== null || x.fogDay !== null || x.thcPrev !== null; });
+}
+function fogGroup(days, buckets){
+  return buckets.map(function(b){
+    var inb = days.filter(b.test);
+    var w = inb.map(function(x){ return x.fogWake; }).filter(function(v){ return v !== null; });
+    var dd = inb.map(function(x){ return x.fogDay; }).filter(function(v){ return v !== null; });
+    return { label: b.label, wN: w.length, wAvg: mean(w), dN: dd.length, dAvg: mean(dd) };
+  });
+}
+
 function median(arr){
   var a = arr.filter(function(x){ return typeof x === 'number'; }).sort(function(x,y){ return x-y; });
   if (!a.length) return null;
@@ -204,6 +284,8 @@ function groupBy(days, buckets){
 /* ---------- state ---------- */
 var ALL = [];                 /* full derived series */
 var ACTIVE = {};              /* tag -> included? */
+var FOG = [];                 /* fog + THC series */
+var FOG_LOCAL_ONLY = 0;       /* THC/fog values on this device the cloud does not have */
 
 /* ---------- load ---------- */
 function setStatus(msg){ var s=document.getElementById('status'); if(s) s.textContent = msg; }
@@ -254,6 +336,8 @@ function boot(){
   );
   var eve = fdRead(K_EVE, {});
   var hist = {};
+  var localHealth = fdRead(K_HEALTH, {});
+  if (Array.isArray(localHealth)){ var lh = {}; localHealth.forEach(function(e){ if (e && e.date) lh[e.date] = e; }); localHealth = lh; }
   pulls.push(
     fetch(WORKER + '/health', {method:'GET'})
       .then(function(r){ return r.ok ? r.json() : null; })
@@ -263,6 +347,9 @@ function boot(){
   Promise.all(pulls).then(function(){
     var eves = holidayEveSet(BC_HOLIDAYS);
     ALL = deriveDays(log, hist, eves, blog, eve);
+    var mh = mergeHealth(hist, localHealth);
+    FOG = fogDays(log, mh.hist);
+    FOG_LOCAL_ONLY = mh.localOnly;
     TAGS.forEach(function(t){ ACTIVE[t] = true; });
     var days = Object.keys(log).length;
     var bMin = Object.keys(blog).reduce(function(t,dk){ var a=(blog[dk]&&blog[dk].s)||[]; a.forEach(function(x){ if(x && x.sec>0) t+=x.sec; }); return t; }, 0);
@@ -288,7 +375,81 @@ function renderFilters(){
   });
 }
 
-function renderAll(){ renderTimeSeries(shown()); renderGroups(shown()); }
+function renderAll(){ renderTimeSeries(shown()); renderGroups(shown());
+  renderFog(FOG.filter(function(x){ return ACTIVE[x.tag]; })); }
+
+/* ---------- fog + THC card ---------- */
+function renderFog(days){
+  var st = document.getElementById('fog-status'), host = document.getElementById('fog-chart'),
+      gh = document.getElementById('fog-groups');
+  if (!st || !host || !gh) return;
+  host.innerHTML = ''; gh.innerHTML = '';
+  var msg = days.length ? (days.length + ' day(s) with fog or THC data since Nov 5.')
+                        : 'Nothing logged yet. Rate fog in the morning log and the evening debrief; enter THC in the morning log.';
+  if (FOG_LOCAL_ONLY > 0)
+    msg += ' Warning: ' + FOG_LOCAL_ONLY + ' THC/fog value(s) are on this device but not in the cloud, so the cloud service is not keeping the new fields. Tell Clyde.';
+  st.textContent = msg;
+  if (FOG_LOCAL_ONLY > 0) st.style.color = '#e06a6a';
+  if (days.length >= 2){
+    var W = 700, H = 200, padL = 34, padR = 12, padT = 12, padB = 46, n = days.length;
+    var x = function(i){ return padL + i*(W-padL-padR)/(n-1); };
+    var y = function(v){ return padT + (5-v)*(H-padT-padB)/4; };       /* 5 top, 1 bottom */
+    var maxMg = Math.max.apply(null, days.map(function(d){ return d.thcPrev || 0; }).concat([1]));
+    var svg = ['<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">'];
+    [1,3,5].forEach(function(v){
+      svg.push('<line x1="'+padL+'" y1="'+y(v)+'" x2="'+(W-padR)+'" y2="'+y(v)+'" stroke="#26324a" stroke-width="1"/>');
+      svg.push('<text x="'+(padL-6)+'" y="'+(y(v)+3)+'" fill="#8a97ad" font-size="9" text-anchor="end">'+v+'</text>');
+    });
+    /* THC bars along the bottom band */
+    days.forEach(function(d,i){
+      if (typeof d.thcPrev === 'number' && d.thcPrev > 0){
+        var bh = Math.max(2, 18 * d.thcPrev / maxMg), late = d.thcPrevTime !== null && d.thcPrevTime >= LATE_DOSE;
+        svg.push('<rect x="'+(x(i)-4)+'" y="'+(H-padB+22-bh)+'" width="8" height="'+bh+'" fill="#5bd6a0" opacity="'+(late?'0.95':'0.5')+'"/>');
+      }
+    });
+    function line(key, color){
+      var seg = [], out = [];
+      days.forEach(function(d,i){ var v = d[key];
+        if (v === null){ if (seg.length){ out.push(seg); seg = []; } } else seg.push(x(i)+','+y(v)); });
+      if (seg.length) out.push(seg);
+      out.forEach(function(p){ svg.push('<polyline points="'+p.join(' ')+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linejoin="round"/>'); });
+      days.forEach(function(d,i){ if (d[key] !== null) svg.push('<circle cx="'+x(i)+'" cy="'+y(d[key])+'" r="3" fill="'+color+'"/>'); });
+    }
+    line('fogWake', '#8a9ad0');
+    line('fogDay', '#e06a6a');
+    [0, Math.floor((n-1)/2), n-1].forEach(function(i){
+      svg.push('<text x="'+x(i)+'" y="'+(H-4)+'" fill="#8a97ad" font-size="9" text-anchor="middle">'+days[i].date.slice(5)+'</text>');
+    });
+    svg.push('</svg>');
+    host.innerHTML = svg.join('') + '<div class="note">Brighter bar = later dose (8:00 p.m. or after).</div>';
+  } else if (days.length) {
+    host.innerHTML = '<div class="empty">Need at least two days to plot.</div>';
+  }
+  function f1(v){ return v === null ? '\u2014' : v.toFixed(1); }
+  var html = '';
+  function fblock(title, rows){
+    var real = rows.filter(function(r){ return r.wN || r.dN; });
+    if (!real.length) return;
+    html += '<div class="grp-title">'+title+'</div><table><tr><th>Night before</th><th class="num">Fog on waking</th><th class="num">Fog during day</th></tr>';
+    real.forEach(function(r){
+      html += '<tr><td>'+r.label+'</td><td class="num">'+f1(r.wAvg)+nBadge(r.wN)+'</td><td class="num">'+f1(r.dAvg)+nBadge(r.dN)+'</td></tr>';
+    });
+    html += '</table>';
+  }
+  fblock('By dose time', fogGroup(days, [
+    { label:'Earlier dose (before 8 p.m.)', test:function(x){ return x.thcPrev > 0 && x.thcPrevTime !== null && x.thcPrevTime < LATE_DOSE; } },
+    { label:'Later dose (8 p.m. or after)', test:function(x){ return x.thcPrev > 0 && x.thcPrevTime !== null && x.thcPrevTime >= LATE_DOSE; } },
+    { label:'No THC', test:function(x){ return x.thcPrev === 0; } }
+  ]));
+  var mgs = days.map(function(x){ return x.thcPrev; }).filter(function(v){ return typeof v === 'number' && v > 0; });
+  var mMed = median(mgs);
+  if (mMed !== null) fblock('By dose (median '+mMed+' mg)', fogGroup(days, [
+    { label:'Higher dose', test:function(x){ return typeof x.thcPrev === 'number' && x.thcPrev >= mMed && x.thcPrev > 0; } },
+    { label:'Lower dose',  test:function(x){ return typeof x.thcPrev === 'number' && x.thcPrev < mMed && x.thcPrev > 0; } },
+    { label:'No THC',      test:function(x){ return x.thcPrev === 0; } }
+  ]));
+  gh.innerHTML = html;
+}
 
 /* ---------- time series (hand-rolled SVG) ---------- */
 function renderTimeSeries(days){
@@ -449,7 +610,8 @@ function renderGroups(days){
 /* expose pure fns for tests when loaded under node */
 if (typeof module !== 'undefined' && module.exports){
   module.exports = { prevDay, holidayEveSet, effSleep, completion, keystone, alcoholFor,
-                     breatheMinutes, evTime, hhmm, median, mean, deriveDays, groupBy, mergeCloud, TRACK_ALC };
+                     breatheMinutes, evTime, hhmm, median, mean, deriveDays, groupBy, mergeCloud, TRACK_ALC,
+                     hm, fogVal, thcFor, mergeHealth, fogDays, fogGroup, TRACK_THC, LATE_DOSE };
 }
 
 if (typeof document !== 'undefined' && document.getElementById('status')) boot();

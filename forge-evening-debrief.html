@@ -53,6 +53,8 @@
   .mood-btn { border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 14px; background: transparent; color: var(--muted); font-size: 13px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
   .mood-btn.selected { background: rgba(74,157,232,0.15); border-color: var(--blue); color: var(--blue); font-weight: 600; }
   .tag-btn { border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 14px; background: transparent; color: var(--muted); font-size: 13px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+  .fog-btn { border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 0; min-width: 44px; flex: 1; background: transparent; color: var(--muted); font-size: 14px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+  .fog-btn.selected { background: rgba(138,154,208,0.18); border-color: #8a9ad0; color: #8a9ad0; font-weight: 700; }
   .tag-btn.selected { background: rgba(224,168,84,0.15); border-color: #e0a854; color: #e0a854; font-weight: 600; }
   .todo-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid var(--dim); border-radius: var(--radius); margin-bottom: 8px; cursor: pointer; background: var(--surface); transition: all 0.15s; }
   .todo-item.checked { background: rgba(74,232,160,0.1); border-color: var(--green); }
@@ -219,6 +221,14 @@
         <button class="tag-btn" onclick="selectTag(this,'vacation')">Vacation</button>
         <button class="tag-btn" onclick="selectTag(this,'sick')">Sick</button>
         <button class="tag-btn" onclick="selectTag(this,'night out')">Night out</button>
+      </div>
+      <div class="field-label" style="margin-top:4px;">Fog today <span style="font-weight:400;opacity:.75">— 1 clear · 5 can't hold a question · optional</span></div>
+      <div class="mood-row" id="fog-row">
+        <button class="fog-btn" onclick="selectFog(this,1)">1</button>
+        <button class="fog-btn" onclick="selectFog(this,2)">2</button>
+        <button class="fog-btn" onclick="selectFog(this,3)">3</button>
+        <button class="fog-btn" onclick="selectFog(this,4)">4</button>
+        <button class="fog-btn" onclick="selectFog(this,5)">5</button>
       </div>
       <div class="field">
         <div class="field-label">One-liner (optional)</div>
@@ -580,6 +590,7 @@ const espRatings = {};
 let espCount = 1;
 let selectedMood = '';
 let selectedTag = 'normal';
+let selectedFog = null; /* fog rating 1-5, null = not rated */
 let selectedWorkout = '';
 let reminders = [];
 const todoChecked = {};
@@ -700,6 +711,11 @@ function selectMood(btn, val) {
 function selectTag(btn, val) {
   selectedTag = val;
   document.querySelectorAll('#tag-row .tag-btn').forEach(b => b.classList.toggle('selected', b === btn));
+}
+
+function selectFog(btn, val) {
+  selectedFog = (selectedFog === val) ? null : val; /* tap again to clear */
+  document.querySelectorAll('#fog-row .fog-btn').forEach(b => b.classList.toggle('selected', selectedFog !== null && b === btn));
 }
 
 function selectWorkout(btn, val) {
@@ -2381,6 +2397,7 @@ function collectDaily(){
     d: today,
     mood: selectedMood || '',
     tag: selectedTag || 'normal',
+    fog: selectedFog,
     note: val('day-note'),
     esp: esp,
     workout: { type: selectedWorkout || '', mins: num('workout-duration'),
@@ -2461,7 +2478,7 @@ var CSV_COLS = ['date','mood','sleep_score','sleep_dur','energy','health','stres
                 'workout_type','workout_mins','workout_feel',
                 'calories','protein','carbs','fat',
                 'esp1_event','esp1_effort','esp1_success','esp1_progress',
-                'win','miss','carry','note','tag'];
+                'win','miss','carry','note','tag','fog'];
 
 function csvCell(v){
   if (v === undefined || v === null) return '';
@@ -2489,7 +2506,7 @@ function buildCSV(){
       w.type, w.mins, w.feel,
       nu.cal, nu.protein, nu.carbs, nu.fat,
       e1.event, e1.e, e1.s, e1.p,
-      r.win, r.miss, r.carry, r.note, r.tag
+      r.win, r.miss, r.carry, r.note, r.tag, r.fog
     ].map(csvCell).join(','));
   });
   return rows.join('\n');
