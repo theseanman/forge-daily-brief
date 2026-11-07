@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Be Like Mike</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0; --red:#ff8a8a; --violet:#b48cff;
+    --s-left:#f5d76e; --s-right:#4a9de8;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 13px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+  a.inl{ color:var(--accent-hi); }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.teal{ border-left-color:var(--teal); background:rgba(63,208,192,.08); }
+  .card.gold{ border-left-color:var(--gold); background:rgba(245,215,110,.08); }
+  .card.red{ border-left-color:var(--red); background:rgba(255,138,138,.08); }
+  .card.violet{ border-left-color:var(--violet); background:rgba(180,140,255,.09); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .trig{ font-size:13px; line-height:1.5; margin:4px 0 8px; color:var(--ink-dim); }
+  .trig b{ color:var(--gold); font-weight:800; letter-spacing:.04em; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .card.teal .move b{ color:#8ff0e4; } .card.teal .move:before{ color:var(--teal); }
+  .card.gold .move b{ color:var(--gold); } .card.gold .move:before{ color:var(--gold); }
+  .card.red .move b{ color:#ffc0c0; } .card.red .move:before{ color:var(--red); }
+  .card.violet .move b{ color:#d4bcff; } .card.violet .move:before{ color:var(--violet); }
+  .ex{ margin-top:11px; padding-top:10px; border-top:1px solid var(--line); }
+  .ex-row{ font-size:13.5px; line-height:1.55; margin:6px 0; }
+  .ex-row .tag{ display:inline-block; min-width:78px; font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .group-k{ font-size:12.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--teal); font-weight:800; margin:16px 0 6px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .band.warn{ background:rgba(255,138,138,.10); border-left-color:var(--red); }
+  .band.warn b{ color:var(--red); }
+  .band.vio{ background:rgba(180,140,255,.11); border-left-color:var(--violet); }
+  .band.vio b{ color:#d4bcff; }
+  .para{ font-size:14px; line-height:1.6; margin:7px 0; }
+  .para b{ color:var(--accent-hi); }
+  .card.teal .para b{ color:#8ff0e4; }
+  .card.gold .para b{ color:var(--gold); }
+  .card.red .para b{ color:#ffc0c0; }
+  .q{ font-size:14px; line-height:1.55; margin:6px 0 6px 4px; padding-left:12px; border-left:2px solid var(--gold); }
+  .step{ display:flex; gap:11px; font-size:14px; line-height:1.55; margin:9px 0; }
+  .step .n{ flex:0 0 22px; height:22px; border-radius:50%; background:rgba(74,157,232,.22); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:800; color:var(--accent-hi); margin-top:1px; }
+  .step b{ color:var(--accent-hi); }
+
+  /* session table */
+  .wk{ width:100%; border-collapse:collapse; margin:10px 0 4px; font-size:13.5px; }
+  .wk th{ text-align:left; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; padding:6px 8px 6px 0; border-bottom:1px solid var(--line); }
+  .wk td{ padding:7px 8px 7px 0; border-bottom:1px solid rgba(122,175,255,.1); line-height:1.45; vertical-align:top; }
+  .wk td:first-child{ color:var(--accent-hi); font-weight:700; white-space:nowrap; }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+
+  /* ---------- WORK tab ---------- */
+  #work{ display:none; }
+  #drill{ display:none; }
+  .tool{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; margin-bottom:13px; overflow:hidden; }
+  .tool.teal{ border-left-color:var(--teal); background:rgba(63,208,192,.07); }
+  .tool.gold{ border-left-color:var(--gold); background:rgba(245,215,110,.07); }
+  .tool-head{ display:flex; align-items:center; gap:10px; padding:14px 16px; cursor:pointer; }
+  .tool-head .tn{ flex:0 0 24px; height:24px; border-radius:50%; background:rgba(74,157,232,.22); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:800; color:var(--accent-hi); }
+  .tool-head .tt{ flex:1; font-size:16px; font-weight:700; line-height:1.3; }
+  .tool-head .cnt{ font-size:10.5px; font-weight:800; letter-spacing:.1em; color:var(--ink-quiet); }
+  .tool-head .chev{ color:var(--ink-quiet); font-size:15px; transition:transform .25s; }
+  .tool.open .tool-head .chev{ transform:rotate(90deg); }
+  .tool-body{ display:none; padding:0 16px 16px; }
+  .tool.open .tool-body{ display:block; }
+  .why{ font-size:13px; line-height:1.55; color:var(--ink-dim); border-top:1px solid var(--line); padding-top:11px; margin-bottom:12px; }
+  .why b{ color:var(--gold); }
+  .fl{ margin-bottom:11px; }
+  .fl label{ display:block; font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:var(--accent-hi); margin-bottom:5px; }
+  .fl .hintline{ font-size:12px; color:var(--ink-quiet); line-height:1.45; margin-bottom:6px; }
+  textarea, input[type=text], input[type=number], select{ width:100%; background:rgba(5,22,52,.55); border:1px solid var(--line); border-radius:10px;
+    color:var(--ink); font-size:14.5px; line-height:1.5; padding:10px 12px; font-family:inherit; resize:vertical; }
+  textarea:focus, input:focus, select:focus{ outline:2px solid var(--accent); outline-offset:0; border-color:transparent; }
+  textarea::placeholder, input::placeholder{ color:rgba(234,244,255,.3); }
+  input[type=number]{ -moz-appearance:textfield; }
+  input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+  select{ appearance:none; -webkit-appearance:none; background-image:linear-gradient(45deg,transparent 50%,var(--accent-hi) 50%),linear-gradient(135deg,var(--accent-hi) 50%,transparent 50%);
+    background-position:calc(100% - 17px) 18px, calc(100% - 12px) 18px; background-size:5px 5px,5px 5px; background-repeat:no-repeat; padding-right:34px; }
+  select option{ background:#0b2547; color:#eaf4ff; }
+  .twocol{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .colhd{ font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; margin-bottom:5px; }
+  .colhd.l{ color:var(--gold); } .colhd.r{ color:var(--accent-hi); }
+  .toolbar{ display:flex; gap:9px; margin-top:13px; flex-wrap:wrap; }
+  .sbtn{ border:0; border-radius:999px; padding:11px 20px; font-size:13px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; }
+  .sbtn.ghost{ background:rgba(9,36,80,.6); color:#fff; border:1px solid var(--line); }
+  .sbtn:disabled{ opacity:.35; cursor:default; }
+  .analysis{ display:none; margin-top:13px; background:rgba(245,215,110,.09); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; }
+  .analysis.on{ display:block; }
+  .analysis .ah{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800; color:var(--gold); margin-bottom:8px; }
+  .analysis .aq{ font-size:14px; line-height:1.55; margin:8px 0; padding-left:14px; position:relative; }
+  .analysis .aq:before{ content:'\2192'; position:absolute; left:0; color:var(--gold); font-weight:700; }
+  .analysis .aq b{ color:var(--gold); }
+  .flag{ font-size:13.5px; line-height:1.55; margin:8px 0; padding:9px 11px; border-radius:9px; background:rgba(255,138,138,.12); border-left:3px solid var(--red); }
+  .flag b{ color:#ffc0c0; }
+  .flag.ok{ background:rgba(63,208,192,.11); border-left-color:var(--teal); }
+  .flag.ok b{ color:#8ff0e4; }
+  .hist{ margin-top:14px; border-top:1px solid var(--line); padding-top:11px; }
+  .hist-k{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); margin-bottom:8px; }
+  .entry{ background:rgba(5,22,52,.4); border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin-bottom:8px; }
+  .entry .edate{ font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; color:var(--accent-hi); margin-bottom:5px;
+    display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .entry .edate .del{ color:var(--ink-quiet); cursor:pointer; font-size:15px; line-height:1; padding:0 4px; }
+  .entry .erow{ font-size:13px; line-height:1.5; color:var(--ink-dim); margin:4px 0; }
+  .entry .erow .el{ font-size:10px; letter-spacing:.1em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); display:inline-block; min-width:118px; }
+  .empty{ font-size:12.5px; color:var(--ink-quiet); font-style:italic; }
+
+  /* phase / gates */
+  .phase{ background:rgba(63,208,192,.09); border-left:4px solid var(--teal); border-radius:12px; padding:13px 15px; margin-bottom:13px; }
+  .phase .ph-k{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800; color:#8ff0e4; margin-bottom:6px; }
+  .phase .ph-t{ font-size:18px; font-weight:700; margin-bottom:3px; }
+  .phase .ph-s{ font-size:13px; color:var(--ink-dim); line-height:1.5; }
+  .gate{ display:flex; align-items:flex-start; gap:10px; font-size:13.5px; line-height:1.5; margin:8px 0; }
+  .gate .gm{ flex:0 0 19px; height:19px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:800; margin-top:1px; background:rgba(255,255,255,.08); color:var(--ink-quiet); border:1px solid var(--line); }
+  .gate.met .gm{ background:rgba(63,208,192,.22); color:#8ff0e4; border-color:rgba(63,208,192,.5); }
+  .gate .gt b{ color:var(--accent-hi); }
+  .gate.met .gt b{ color:#8ff0e4; }
+  .gate .gv{ color:var(--ink-quiet); font-size:12.5px; }
+
+  /* charts */
+  .chartbox{ background:rgba(5,22,52,.35); border:1px solid var(--line); border-radius:12px; padding:12px 12px 8px; margin-bottom:11px; }
+  .ch-t{ font-size:13.5px; font-weight:700; margin-bottom:1px; }
+  .ch-s{ font-size:11.5px; color:var(--ink-quiet); margin-bottom:8px; line-height:1.4; }
+  .legend{ display:flex; gap:14px; flex-wrap:wrap; margin-bottom:6px; }
+  .lg{ display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--ink-dim); font-weight:700; }
+  .lg i{ width:13px; height:3px; border-radius:2px; display:inline-block; }
+  .ch-wrap{ position:relative; }
+  .ch-wrap svg{ display:block; width:100%; height:auto; touch-action:pan-y; }
+  .tip{ position:absolute; pointer-events:none; opacity:0; transition:opacity .12s; background:rgba(5,22,52,.95);
+    border:1px solid var(--line); border-radius:9px; padding:7px 10px; font-size:12px; line-height:1.5; color:var(--ink);
+    white-space:nowrap; transform:translate(-50%,-115%); z-index:5; }
+  .tip.on{ opacity:1; }
+  .tip .td{ font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; margin-bottom:3px; }
+  .tip .tr{ display:flex; align-items:center; gap:6px; }
+  .tip .tr i{ width:9px; height:3px; border-radius:2px; }
+
+  /* drill */
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(19px,5vw,26px); font-weight:300; line-height:1.4; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .btn:focus-visible, .toggle button:focus-visible, .sbtn:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  @media (max-width:520px){ .twocol{ grid-template-columns:1fr 1fr; } }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-work" onclick="setMode('work')">Work</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>Be Like Mike</h1>
+    <div class="sub">The peekaboo as D&rsquo;Amato built it and Tyson fought it, 1985&ndash;88, rebuilt for a solo trainer with a BOB, a Quest, medicine balls and kettlebells. Four layers: technique, power, conditioning, the fight mind. The <a class="inl" href="./strength.html">Size and Strength</a> plan is not touched; <a class="inl" href="./cus-corner.html">Cus&rsquo;s Corner</a> keeps the cue bank and the D&rsquo;Amato case study.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="band warn"><b>Two constraints run everything.</b> The ankle rules on the Size and Strength page bar jumping, sprinting, lunges and step-ups for the twelve weeks unless your physio clears them &mdash; so no Tyson bounce yet: footwork is step-and-pivot, power work is planted. And you are 47 and 210 lbs with a day job that needs your hands. The famous Tyson numbers are not the target. The principles are.</div>
+
+    <div class="section-k">The number system</div>
+    <div class="card gold">
+      <div class="p-head"><div class="p-name">Tyson&rsquo;s own version</div></div>
+      <div class="p-ess">The order I gave you first was wrong. This is the one he demonstrates on film. <span class="ev b">B</span></div>
+      <table class="wk">
+        <tr><th>No.</th><th>Punch</th><th>No.</th><th>Punch</th></tr>
+        <tr><td>1</td><td>Left hook, head</td><td>5</td><td>Left hook, body</td></tr>
+        <tr><td>2</td><td>Right hand, head (straight or hook)</td><td>6</td><td>Right hook, body</td></tr>
+        <tr><td>3</td><td>Left uppercut</td><td>7</td><td>Jab, head</td></tr>
+        <tr><td>4</td><td>Right uppercut</td><td>8</td><td>Jab, body</td></tr>
+      </table>
+      <div class="note">Tape the eight numbers onto BOB at their target zones so numbers become places, not names.</div>
+    </div>
+
+    <div class="section-k">Why it is an OODA weapon</div>
+    <div class="card violet">
+      <div class="p-head"><div class="p-name">It attacks Observe and Orient, not Decide and Act</div></div>
+      <div class="p-ess">Most styles try to be faster or hit harder. The peekaboo makes the other man&rsquo;s picture stale. <span class="ev d">D</span></div>
+      <div class="move"><b>The head never stops.</b> He observes a target, orients a punch at it, and by Act the target has moved.</div>
+      <div class="move"><b>Slip and counter are one motion.</b> There is no gap between his miss and your hit for him to re-orient in.</div>
+      <div class="move"><b>Closing speed removes the distance</b> in which his loop can run at all. Tempo, not raw speed &mdash; Boyd&rsquo;s point exactly.</div>
+      <div class="move"><b>The numbers were private.</b> Rooney&rsquo;s calls were real information to Tyson and noise to the opponent. Deception at Observe. <span class="ev b">B</span></div>
+    </div>
+
+    <div class="section-k">What Tyson actually trained</div>
+    <div class="card">
+      <div class="p-head"><div class="p-name">Reported, not verified</div></div>
+      <div class="para">The repeated prime-Tyson day: up at 4 a.m. for a three-mile run, back to bed, oatmeal, technique and ten rounds of sparring around noon, calisthenics in enormous volume (2,000 sit-ups, 500&ndash;800 dips and push-ups, 500 shrugs, ten minutes of neck bridges), then bag, slip bag and mitts. <span class="ev d">D</span></div>
+      <div class="para">Rooney confirms the 4 a.m. run and the oatmeal in at least one account. The calisthenic totals are confirmed by nobody who was there and are quoted with suspicious uniformity &mdash; usually the sign of one source copied many times. D&rsquo;Amato distrusted weights; Tyson&rsquo;s lifting came later and was limited.</div>
+      <div class="move"><b>Take four principles, not the numbers:</b> head movement drilled daily for rounds; the neck as a weapon system; conditioning in rounds because the fight is; and the whole thing structured by someone else.</div>
+    </div>
+
+    <div class="section-k">Layer one &middot; Technique</div>
+
+    <div class="card teal">
+      <div class="p-head"><div class="p-num">STANCE</div><div class="p-name">The frame</div></div>
+      <div class="para">Feet shoulder width, slightly squared, knees bent, weight on the balls of the feet. Hands high at the cheeks, palms in, elbows tight, chin down. The guard is a frame to parry and launch from; the defence is the head and the legs. Your orthodox conventional style will make the squared stance feel wrong for two weeks. <span class="ev d">D</span></div>
+      <div class="move"><b>The old flaw costs more here.</b> The squared stance exposes the right jaw. For two weeks every shadow jab finishes with the right hand consciously touched to the right cheek. The slip bag punishes the drift after that.</div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><div class="p-num">RUNG 1</div><div class="p-name">The slip line</div></div>
+      <div class="p-ess">A rope at chin height across a hallway.</div>
+      <div class="para">Walk it slipping alternately either side of the line, knees and waist doing the work, head moving no more than a fist&rsquo;s width from centre. Then duck under and up the other side, slip, duck, over. Ten minutes a day. <span class="ev d">D</span></div>
+      <div class="move">The measure is <b>boredom</b>. When ten minutes feels like nothing, move up.</div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><div class="p-num">RUNG 2</div><div class="p-name">The slip bag</div></div>
+      <div class="p-ess">A tennis ball in a sock from a doorframe, at head height.</div>
+      <div class="para">Set it swinging, slip, let it return, slip. The head slips; the feet stay under you. Every slip ends with the hands back at the cheeks &mdash; this is where the right-hand fix lives. <span class="ev d">D</span></div>
+      <div class="move"><b>Gate: 20 clean slips each side</b> &rarr; add the counter: slip and shadow-punch past the ball in the same motion. The 2 off an outside slip left, the 1 off an outside slip right.</div>
+      <div class="move"><b>Gate: 20 clean slip-and-counters</b> &rarr; slip with a six-inch step in, so every slip closes distance. Defence and entry become one event.</div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><div class="p-num">RUNG 3</div><div class="p-name">Numbers in shadow</div></div>
+      <div class="para">Three-minute rounds, numbered combinations off a slip or a duck: 1-2-1, 2-3-2, 6-3 off a duck, 7-2-5, 5-2 off a slip. Pairs and threes from a low crouch, head moved after the last punch every time. <span class="ev d">D</span></div>
+      <div class="move">Until you have a caller, <b>write five random three-number strings on a card</b> before each round and read the next as you reset.</div>
+      <div class="move"><b>Gate:</b> any three-number string thrown without a pause to translate &rarr; take the numbers onto BOB.</div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><div class="p-num">RUNG 4</div><div class="p-name">The wall</div></div>
+      <div class="para">A foot from a wall, facing it. Bob, weave and slip for a minute without touching it, then throw combinations without stepping back. <span class="ev d">D</span></div>
+      <div class="move">This is what made Tyson frightening: <b>staying in the pocket after arriving.</b> Most fighters earn the inside and give it back.</div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><div class="p-num">RUNG 5</div><div class="p-name">BOB</div></div>
+      <div class="para">Rounds: slip an imagined jab, step in, 1-2 or 5-2 to the taped numbers, move the head, pivot off at an angle, repeat. Bare-handed on vinyl is acceptable at <b>60&ndash;70% power</b>, straight wrist, first two knuckles; <b>three rounds is the ceiling</b> per session until skin and small joints adapt. Hooks and uppercuts to the head zone bare-handed are the wrist-breakers &mdash; touch power only. <span class="ev d">D</span></div>
+      <div class="move">Krav bursting does not transfer. The peekaboo is <b>three punches and a reposition</b>, not a stream.</div>
+      <div class="move"><b>The one purchase worth making:</b> wraps and 14 oz gloves, roughly $60&ndash;90 CAD. Not required; it lets Rung 5 run at real power, and real power is the only honest test of the mechanics.</div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><div class="p-num">RUNG 6</div><div class="p-name">The Quest</div></div>
+      <div class="para">Good for one thing: a moving target that punches back, which nothing else in the house does. Use it for reading and slipping incoming punches and the timing of the counter. It teaches nothing about distance, weight transfer or the pocket. <b>The reaction drill, not the boxing.</b> <span class="ev d">D</span></div>
+    </div>
+
+    <div class="band"><b>Footwork under the ankle rules.</b> No bounce, no hops. Step-and-pivot only: a short step in behind the slip, a pivot off the lead foot to take an angle after the combination, a step back out. Slower than Tyson&rsquo;s base and correct until the ankle is cleared. His best angles came off the pivot anyway, so you lose less than it seems.</div>
+
+    <div class="section-k">Layer two &middot; Power</div>
+
+    <div class="card">
+      <div class="p-head"><div class="p-name">Where power comes from</div></div>
+      <div class="para">Filimonov (1985): in masters of sport the rear-leg drive gave about <b>38%</b> of punching force and trunk rotation about <b>37%</b>, arm extension only <b>24%</b>. In novices the arm did nearly 38% and the legs under 17%. The difference between a novice&rsquo;s punch and an expert&rsquo;s is almost entirely below the shoulders. <span class="ev c">C</span></div>
+      <div class="para">Loturco et al. (2016): correlations of <b>0.67&ndash;0.85</b> between punching impact and lower-body power in Brazilian national-team boxers; the jump squat shared ~82% of its variance with impact. Loturco (2021): a short lower-body power block transferred to an <b>~8% gain in punch impact</b>, transfer coefficient ~0.8. Bench press power did not move impact. <span class="ev b">B</span></div>
+      <div class="move"><b>Your lifting plan already builds most of it</b> &mdash; leg press, RDLs, hip thrusts, heavy pressing. What it does not build is rotation and rate: hips turning fast against the ground, passed through the trunk to the fist. That is the gap. Eight minutes, twice a week, planted.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><div class="p-num">P1</div><div class="p-name">Rotational medicine-ball throw</div></div>
+      <div class="para">Side-on to a wall two metres away, ball at the hip, feet planted. Drive the rear hip through, turn, release at chest height. The hip starts it, the arms finish it &mdash; same cue as the right hand. <b>3 &times; 5 each side</b>, a light ball you can throw hard, full rest. No wall that will take it? Throw to a lawn and walk. <span class="ev b">B</span> for the class, <span class="ev d">D</span> for the dose.</div>
+    </div>
+    <div class="card">
+      <div class="p-head"><div class="p-num">P2</div><div class="p-name">Overhead slam</div></div>
+      <div class="para">Ball overhead, slam straight down with the trunk, <b>no jump</b>. 3 &times; 5. The vertical trunk snap of the uppercut, feet planted as the ankle rules require. <span class="ev d">D</span></div>
+    </div>
+    <div class="card">
+      <div class="p-head"><div class="p-num">P3</div><div class="p-name">Kettlebell swing</div></div>
+      <div class="para">Two-hand, hard hinge, the bell snapping to chest height off the hips, not the arms. 3 &times; 10. The closest planted movement to the rear-leg drive the research keeps finding. <b>Start a size lighter than you think</b> &mdash; the point is speed. <span class="ev d">D</span></div>
+    </div>
+    <div class="card">
+      <div class="p-head"><div class="p-num">P4</div><div class="p-name">Neck &mdash; isometric and anticipatory</div></div>
+      <div class="para">Soccer studies: stronger necks associate with lower head acceleration on impact, but the 2025 systematic review found traditional neck strengthening alone does not reduce it &mdash; adding <b>neuromuscular bracing</b> does. <span class="ev c">C</span> So: not Tyson&rsquo;s bridges, which at 47 are a cervical-disc gamble you do not need.</div>
+      <div class="move">Hand on forehead, push and resist <b>20 s</b>; back of head; each side. Two rounds. Then one slip-bag round where you tense the neck and tuck the chin a half-second <b>before</b> each slip. Three times a week. Shrugs are already in your lift days. <span class="ev d">D</span></div>
+    </div>
+
+    <div class="band"><b>Where it goes.</b> P1&ndash;P3 as an eight-minute block after the <b>Monday and Friday</b> lifts &mdash; the two days not squeezed before your evening class. I have assumed the balls and bells are at home; if they live at the school gym, the block stays at the end of the session there. P4 attaches to the home technique block Mon/Wed/Fri. Nothing here goes before the lift: power work is done fresh or not done.</div>
+
+    <div class="section-k">Layer three &middot; Conditioning</div>
+
+    <div class="card red">
+      <div class="p-head"><div class="p-name">Wednesday becomes rounds</div></div>
+      <div class="para">A round is three minutes of mixed high-intensity work with a minute off: aerobic across the fight, anaerobic bursts inside each round. High-intensity intervals raise VO2max more than steady work &mdash; about as settled as exercise science gets. <span class="ev a">A</span></div>
+      <div class="move">Replace the bike intervals with <b>BOB and shadow rounds</b>, alternating: a shadow round of head movement and numbers, a BOB round of slip-step-combination at 60&ndash;70%. 3 min on, 1 off.</div>
+      <div class="move"><b>Start at four rounds. Add one a week to eight</b>, then cut the rest to 45 s. The last 30 s of each round should feel like the opening of a fight, not the end of a jog. <span class="ev d">D</span> for the progression.</div>
+      <div class="move"><b>Sunday stays Zone 2.</b> That base is what you recover on between rounds. <span class="ev a">A</span></div>
+      <div class="move"><b>Exhale sharply</b> on every punch and every slip. It braces, it times, and it stops the held-breath-then-gasp every returning boxer does.</div>
+    </div>
+
+    <div class="band warn"><b>Recovery rule.</b> Sauna Tue/Thu stays. No cold water after the Mon/Fri power blocks &mdash; already your rule. New: if Wednesday&rsquo;s rounds leave you unable to hit Thursday&rsquo;s lift at normal loads, <b>the rounds were too many</b>, not the lift too heavy. The lifting plan is primary for twelve weeks; this fits around it.</div>
+
+    <div class="section-k">Layer four &middot; The fight mind</div>
+
+    <div class="card violet">
+      <div class="p-head"><div class="p-name">Bad intentions</div></div>
+      <div class="para">Tyson&rsquo;s phrase for how he threw. Every punch in every drill, including the ones at touch power, is thrown as if meant to end something: the intent lives in the hip turn and the exhale, not in how hard the hand lands. <b>Shadow boxing without intent builds a shadow boxer.</b> <span class="ev d">D</span></div>
+    </div>
+    <div class="card violet">
+      <div class="p-head"><div class="p-name">Rehearsal</div></div>
+      <div class="para">Mental practice improves motor performance when combined with physical practice; strongest for tasks with a cognitive component, which reading and slipping punches is. <span class="ev b">B</span></div>
+      <div class="move"><b>Sixty seconds before each session</b>, eyes closed in the stance: see a jab coming, slip it, feel the 2 land, move the head. Then do it for real.</div>
+    </div>
+    <div class="card violet">
+      <div class="p-head"><div class="p-name">The pocket as a decision</div></div>
+      <div class="para">Staying inside after arriving means accepting you will be hit while you work. Tyson accepted that; most men do not. <b>The decision is made before the round</b>, on the way to BOB, every time. <span class="ev d">D</span></div>
+    </div>
+    <div class="card gold">
+      <div class="p-head"><div class="p-name">The structure lesson</div></div>
+      <div class="para">Under D&rsquo;Amato and Rooney: 35&ndash;0, 31 by knockout. D&rsquo;Amato died in 1985; Rooney was fired in 1988; the slide was visible within two years and the style decayed first &mdash; less head movement, more standing and loading up. <span class="ev b">B</span> for the record; the causal reading is widely shared and partly mine.</div>
+      <div class="move">The peekaboo only works at full commitment, and Tyson&rsquo;s was held in place by structure other people provided. You train solo, so <b>the structure has to be built in</b>: the log, the gates, the fixed slots, and one person you show the log to. Boyd says the same: orientation decays without feedback from outside.</div>
+    </div>
+
+    <div class="section-k">The week</div>
+    <div class="card">
+      <table class="wk">
+        <tr><th>Day</th><th>Already running</th><th>Add</th></tr>
+        <tr><td>Mon</td><td>Lift</td><td>8-min power block after; home technique block + neck</td></tr>
+        <tr><td>Tue</td><td>Lift before class, sauna</td><td>6-min slip line only (home late)</td></tr>
+        <tr><td>Wed</td><td>Cardio</td><td>Rounds instead of bike intervals, 4 &rarr; 8; neck</td></tr>
+        <tr><td>Thu</td><td>Lift before class, sauna</td><td>6-min slip line only</td></tr>
+        <tr><td>Fri</td><td>Lift</td><td>8-min power block after; technique block + neck</td></tr>
+        <tr><td>Sat</td><td>Rest</td><td>Slip bag and shadow if wanted; the Quest counts here</td></tr>
+        <tr><td>Sun</td><td>Zone 2</td><td>Nothing &mdash; leave it</td></tr>
+      </table>
+      <div class="note">Home technique block, 12&ndash;15 min: 2 min rehearsal and stance &middot; 5 min slip line or slip bag at your rung &middot; 5 min numbers in shadow or on BOB &middot; the wall for the last minute. On a bad day, the slip bag and nothing else. The streak is in showing up.</div>
+    </div>
+
+    <div class="section-k">Failure modes</div>
+    <div class="card red">
+      <div class="move">Chasing the Tyson numbers. 2,000 sit-ups was never the protocol; head movement for rounds is.</div>
+      <div class="move">Bouncing because it looks right, on an ankle the rules have not cleared.</div>
+      <div class="move">Bare-handed BOB at full power in week one; three weeks lost to a wrist.</div>
+      <div class="move">Wednesday&rsquo;s rounds eating Thursday&rsquo;s lift.</div>
+      <div class="move">Shadow boxing as cardio, head still, hands loose &mdash; training the opposite of the style.</div>
+      <div class="move">Training the style without the structure, so it fades the way it faded for the man himself.</div>
+    </div>
+
+    <div class="section-k">Honest limits</div>
+    <div class="band">Everything in the technique layer is coaching tradition graded <b>D</b>; nobody has trialled slip bags and nobody will. The power research is real but from small elite samples of young men who already punch well. The neck evidence is from soccer and mixed. And none of this tests the thing that matters most: whether the head movement survives a real punch. That needs a partner, and a partner is out of scope for now. What you can build solo is the rhythm, the slip-as-entry reflex, the planted power and the rounds. <b>Most of the engine. Not the car.</b></div>
+
+    <div class="section-k">The one thing</div>
+    <div class="band vio"><b>Make the slip and the counter one movement.</b> Everything else here exists to make that one movement available, powered and repeatable for eight rounds.</div>
+
+    <div class="section-k">Evidence key</div>
+    <div class="key"><span class="ev a">A</span> <b>strong, replicated research</b> &nbsp; <span class="ev b">B</span> <b>good research, some limits</b> &nbsp; <span class="ev c">C</span> <b>thin, indirect or single-study</b> &nbsp; <span class="ev d">D</span> <b>reasoning, tradition, coaching lore</b>. Sources: Filimonov et al. 1985; Loturco et al. 2016 and 2021 (J Strength Cond Res); Peek et al. 2021 and Blyth et al. 2025 (neck strength and head acceleration); HIIT/VO2max meta-analyses (Milanovi&#263; 2015 and later); Driskell 1994 and later imagery meta-analyses. Tyson&rsquo;s number system from his own filmed demonstration; the daily regimen marked reported.</div>
+  </div>
+
+  <!-- ===================== WORK ===================== -->
+  <div id="work">
+    <h1 style="font-size:20px;">Session log</h1>
+    <div class="sub">One record per session, the one number that matters for the rung you are on. Gates below read the log; nothing advances on a calendar. Stored on this device only.</div>
+
+    <div class="phase" id="phase"></div>
+
+    <div class="tool open" id="t1">
+      <div class="tool-head" onclick="toggleTool('t1')"><div class="tn">1</div><div class="tt">Log a session</div><div class="cnt" id="c-log"></div><div class="chev">&#9656;</div></div>
+      <div class="tool-body">
+        <div class="why"><b>Why.</b> The structure Tyson had from other people, you have to build. This is it.</div>
+        <div class="twocol">
+          <div class="fl"><label>Type</label>
+            <select id="ty" onchange="showFields()">
+              <option value="tech">Technique</option>
+              <option value="rounds">Rounds</option>
+              <option value="power">Power block</option>
+              <option value="neck">Neck</option>
+            </select></div>
+          <div class="fl"><label>Minutes</label><input type="number" inputmode="numeric" id="mins" placeholder="12"></div>
+        </div>
+
+        <div id="f-tech">
+          <div class="fl"><label>Rung</label>
+            <select id="rung">
+              <option value="1">1 &middot; Slip line</option>
+              <option value="2">2 &middot; Slip bag</option>
+              <option value="3">3 &middot; Numbers in shadow</option>
+              <option value="4">4 &middot; The wall</option>
+              <option value="5">5 &middot; BOB</option>
+              <option value="6">6 &middot; Quest</option>
+            </select></div>
+          <div class="fl"><label>Longest clean slip run</label>
+            <div class="hintline">Slip bag: consecutive slips without a touch. Leave blank on other rungs.</div>
+            <div class="twocol">
+              <div><div class="colhd l">Left</div><input type="number" inputmode="numeric" id="sl-l" placeholder="14"></div>
+              <div><div class="colhd r">Right</div><input type="number" inputmode="numeric" id="sl-r" placeholder="11"></div>
+            </div></div>
+          <div class="fl"><label>Right hand stayed home on the jab?</label>
+            <select id="rh"><option value="">&mdash;</option><option value="y">Yes</option><option value="n">No, drifted</option></select></div>
+        </div>
+
+        <div id="f-rounds">
+          <div class="twocol">
+            <div class="fl"><label>Rounds completed</label><input type="number" inputmode="numeric" id="rd-n" placeholder="4"></div>
+            <div class="fl"><label>Rest (s)</label><input type="number" inputmode="numeric" id="rd-rest" placeholder="60"></div>
+          </div>
+          <div class="fl"><label>Form held in the last 30 s of the last round?</label>
+            <select id="rd-form"><option value="">&mdash;</option><option value="y">Yes</option><option value="n">No</option></select></div>
+          <div class="fl"><label>Heart rate</label>
+            <div class="hintline">End of the last round, then one minute later. The gap is your recovery.</div>
+            <div class="twocol">
+              <div><div class="colhd l">At the bell</div><input type="number" inputmode="numeric" id="hr-end" placeholder="168"></div>
+              <div><div class="colhd r">One minute later</div><input type="number" inputmode="numeric" id="hr-1" placeholder="140"></div>
+            </div></div>
+        </div>
+
+        <div id="f-power">
+          <div class="twocol">
+            <div class="fl"><label>Ball weight (lb)</label><input type="number" inputmode="decimal" step="0.5" id="pw-ball" placeholder="8"></div>
+            <div class="fl"><label>Bell weight (lb)</label><input type="number" inputmode="decimal" step="0.5" id="pw-kb" placeholder="35"></div>
+          </div>
+          <div class="fl"><label>Did it move fast?</label>
+            <select id="pw-fast"><option value="">&mdash;</option><option value="y">Yes, every set</option><option value="n">No, it got slow</option></select></div>
+        </div>
+
+        <div id="f-neck">
+          <div class="fl"><label>Isometric hold (s)</label><input type="number" inputmode="numeric" id="nk-hold" placeholder="20"></div>
+        </div>
+
+        <div class="fl"><label>Note</label><input type="text" id="nt" placeholder="What broke, what held."></div>
+        <div class="toolbar">
+          <button class="sbtn" onclick="saveLog()">Save</button>
+          <button class="sbtn ghost" onclick="clearForm(true)">Clear</button>
+        </div>
+        <div class="analysis" id="a-log"></div>
+      </div>
+    </div>
+
+    <div id="charts"></div>
+
+    <div class="tool" id="t2">
+      <div class="tool-head" onclick="toggleTool('t2')"><div class="tn">2</div><div class="tt">All sessions</div><div class="cnt" id="c-hist"></div><div class="chev">&#9656;</div></div>
+      <div class="tool-body">
+        <div class="hist" id="hist"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h1 style="font-size:20px;">Call it</h1>
+    <div class="sub">Recognition, not recall. A moment from the program &mdash; say what you would actually do, out loud, before revealing. Ten per round, shuffled.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Done</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn ghost" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  document.getElementById('read').style.display  = (m==='read')  ? 'block' : 'none';
+  document.getElementById('work').style.display  = (m==='work')  ? 'block' : 'none';
+  document.getElementById('drill').style.display = (m==='drill') ? 'block' : 'none';
+  document.getElementById('tab-read').className  = (m==='read')  ? 'on' : '';
+  document.getElementById('tab-work').className  = (m==='work')  ? 'on' : '';
+  document.getElementById('tab-drill').className = (m==='drill') ? 'on' : '';
+  if(m==='drill'){ restart(); }
+  if(m==='work'){ renderAll(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-be-like-mike';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- store ---------------- */
+var WKEY='forge-be-like-mike-work';
+function store(){ try{ var v=JSON.parse(localStorage.getItem(WKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function put(s){ try{ localStorage.setItem(WKEY, JSON.stringify(s)); }catch(e){ alert('Could not save on this device.'); } }
+function list(){ var s=store(); return Array.isArray(s.log)?s.log:[]; }
+function push(rec){ var s=store(); if(!Array.isArray(s.log)) s.log=[]; rec.d=new Date().toISOString(); rec.id=Date.now()+'-'+Math.floor(Math.random()*1e4); s.log.unshift(rec); put(s); }
+function drop(id){ var s=store(); if(!Array.isArray(s.log)) return; s.log=s.log.filter(function(r){ return r.id!==id; }); put(s); renderAll(); }
+function num(id){ var e=document.getElementById(id); if(!e) return null; var v=(e.value||'').trim(); if(v==='') return null; var n=parseFloat(v); return isFinite(n)?n:null; }
+function val(id){ var e=document.getElementById(id); return e?(e.value||'').trim():''; }
+function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fdate(iso){ try{ var d=new Date(iso); return d.toLocaleDateString(undefined,{month:'short',day:'numeric'}); }catch(e){ return ''; } }
+function fdatetime(iso){ try{ var d=new Date(iso); return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}); }catch(e){ return ''; } }
+function toggleTool(id){ var el=document.getElementById(id); el.className = el.className.indexOf('open')>-1 ? el.className.replace(' open','') : el.className+' open'; }
+
+var TYPES={tech:'Technique',rounds:'Rounds',power:'Power block',neck:'Neck'};
+var RUNGS={1:'Slip line',2:'Slip bag',3:'Numbers in shadow',4:'The wall',5:'BOB',6:'Quest'};
+function showFields(){
+  var t=val('ty');
+  ['tech','rounds','power','neck'].forEach(function(k){ document.getElementById('f-'+k).style.display = (k===t)?'block':'none'; });
+}
+var FIELDS=['mins','sl-l','sl-r','rh','rd-n','rd-rest','rd-form','hr-end','hr-1','pw-ball','pw-kb','pw-fast','nk-hold','nt'];
+function clearForm(hideAnalysis){
+  FIELDS.forEach(function(i){ var e=document.getElementById(i); if(e) e.value=''; });
+  if(hideAnalysis){ var a=document.getElementById('a-log'); if(a) a.className='analysis'; }
+}
+function showA(html){ var a=document.getElementById('a-log'); a.innerHTML=html; a.className='analysis on'; }
+function ah(t){ return '<div class="ah">'+t+'</div>'; }
+function aq(t){ return '<div class="aq">'+t+'</div>'; }
+function flag(t,ok){ return '<div class="flag'+(ok?' ok':'')+'">'+t+'</div>'; }
+
+/* ---------------- save + analyse ---------------- */
+function saveLog(){
+  var t=val('ty');
+  var r={ ty:t, mins:num('mins'), nt:val('nt') };
+  if(t==='tech'){ r.rung=parseInt(val('rung'),10)||1; r.slL=num('sl-l'); r.slR=num('sl-r'); r.rh=val('rh'); }
+  if(t==='rounds'){ r.rdN=num('rd-n'); r.rdRest=num('rd-rest'); r.rdForm=val('rd-form'); r.hrEnd=num('hr-end'); r.hr1=num('hr-1'); }
+  if(t==='power'){ r.ball=num('pw-ball'); r.kb=num('pw-kb'); r.fast=val('pw-fast'); }
+  if(t==='neck'){ r.hold=num('nk-hold'); }
+
+  var any=r.mins!==null || ['slL','slR','rdN','hrEnd','ball','kb','hold'].some(function(k){ return r[k]!=null; }) || r.rh || r.rdForm || r.fast;
+  if(!any){ alert('Enter at least the minutes.'); return; }
+
+  var prevSame=list().filter(function(x){ return x.ty===t; })[0]||null;
+  push(r);
+
+  var h=ah('This session');
+  if(t==='tech'){
+    if(r.rung===2 && r.slL!==null && r.slR!==null){
+      var lo=Math.min(r.slL,r.slR), side=(r.slL<r.slR)?'left':'right';
+      if(lo>=20) h+=flag('<b>'+r.slL+' / '+r.slR+' clean.</b> Both sides past twenty &mdash; the gate is open. Next session, add the counter: slip and punch past the ball in one motion.',true);
+      else h+=flag('Longest clean run <b>'+r.slL+' left, '+r.slR+' right</b>. The '+side+' side is the limiter at '+lo+'. Twenty each side opens the counter; until then, more slips, not harder ones.');
+      if(Math.abs(r.slL-r.slR)>=6) h+=aq('A gap of '+Math.abs(r.slL-r.slR)+' between sides. Start every set on the weaker side while you are fresh.');
+    }
+    if(r.rh==='n') h+=flag('<b>Right hand drifted.</b> For the next two weeks every shadow jab finishes with the right glove touched to the right cheek before anything else. The squared stance makes this flaw cost more than it used to.');
+    else if(r.rh==='y') h+=flag('Right hand stayed home. That is the old flaw losing.',true);
+    if(r.rung>=5) h+=aq('BOB rung: three rounds is the bare-hand ceiling per session, 60&ndash;70% power, hooks and uppercuts to the head zone at touch power.');
+    if(r.rung===1 && r.mins!==null && r.mins>=10) h+=aq('Ten minutes on the line. When it feels like nothing, that is the signal to move to the slip bag &mdash; not a date.');
+  }
+  if(t==='rounds'){
+    if(r.rdN!==null){
+      if(r.rdN>=8 && (r.rdRest===null||r.rdRest>45)) h+=flag('<b>Eight rounds.</b> The volume gate is met; the next step is shorter rest &mdash; 45 s &mdash; not more rounds.',true);
+      else if(r.rdN>=8) h+=flag('<b>Eight rounds at '+r.rdRest+' s rest.</b> That is the full Wednesday. Hold it and let the heart-rate gap do the talking.',true);
+      else h+=aq('<b>'+r.rdN+' rounds.</b> One more next week, if Thursday&rsquo;s lift goes at normal loads. If it does not, the rounds were too many.');
+    }
+    if(r.rdForm==='n') h+=flag('Form went in the last 30 s. That round count is one too many for now &mdash; repeat it next week rather than adding.');
+    if(r.hrEnd!==null && r.hr1!==null){
+      var gap=r.hrEnd-r.hr1;
+      h+=aq('Recovery gap <b>'+gap+' bpm</b> in the first minute. This is the number to watch across weeks; it should widen as the base builds.');
+      if(prevSame && prevSame.hrEnd!=null && prevSame.hr1!=null){ var pg=prevSame.hrEnd-prevSame.hr1; if(gap>pg) h+=flag('Wider than '+fdate(prevSame.d)+' ('+pg+' bpm). Recovery is improving.',true); }
+    }
+  }
+  if(t==='power'){
+    if(r.fast==='n') h+=flag('<b>It got slow.</b> Drop the weight a size next time. Power work that is slow is strength work done badly &mdash; and your lifts already cover strength.');
+    else if(r.fast==='y') h+=flag('Fast every set. Hold this weight two more sessions before moving up; the point is rate, not load.',true);
+    h+=aq('Done after the lift, never before. Fresh or not done.');
+  }
+  if(t==='neck'){
+    if(r.hold!==null) h+=aq('Hold <b>'+r.hold+' s</b> per direction. Add the anticipatory piece: tense and tuck a half-second <b>before</b> each slip for one slip-bag round. The bracing is what the evidence supports; the strength alone is not enough.');
+  }
+  if(!prevSame) h+=flag('First '+TYPES[t].toLowerCase()+' session logged. The absolute numbers matter less than the direction they move.',true);
+  h+=aq('Check the gate panel at the top. <b>Nothing advances on a calendar.</b>');
+  showA(h); clearForm(false); renderAll();
+}
+
+/* ---------------- gates ---------------- */
+function latest(ty){ return list().filter(function(x){ return x.ty===ty; })[0]||null; }
+function maxSlip(side){ var m=null; list().forEach(function(x){ if(x.ty==='tech'&&x.rung===2&&x[side]!=null){ if(m===null||x[side]>m) m=x[side]; } }); return m; }
+function renderPhase(){
+  var L=list(), el=document.getElementById('phase');
+  var sl=maxSlip('slL'), sr=maxSlip('slR'), rd=latest('rounds'), tech=latest('tech');
+  var rung=tech?tech.rung:1;
+  var gates=[
+    { t:'Slip bag: <b>20 clean each side</b> &rarr; add the counter', met:(sl!==null&&sr!==null&&sl>=20&&sr>=20), v:(sl!==null||sr!==null)?((sl===null?'&mdash;':sl)+' / '+(sr===null?'&mdash;':sr)):'not logged' },
+    { t:'Rounds: <b>eight</b> at 3 min &rarr; cut rest to 45 s', met:(rd&&rd.rdN!=null&&rd.rdN>=8), v:rd&&rd.rdN!=null?rd.rdN+' rounds'+(rd.rdRest!=null?' at '+rd.rdRest+' s':''):'not logged' },
+    { t:'Right hand <b>stays home</b> on the jab, three sessions running', met:(function(){ var t=L.filter(function(x){ return x.ty==='tech'&&x.rh; }).slice(0,3); return t.length===3&&t.every(function(x){ return x.rh==='y'; }); })(), v:(function(){ var t=L.filter(function(x){ return x.ty==='tech'&&x.rh; }).slice(0,3); return t.length?t.map(function(x){ return x.rh==='y'?'home':'drift'; }).join(' &middot; '):'not logged'; })() }
+  ];
+  var h='<div class="ph-k">Where you are</div><div class="ph-t">Rung '+rung+' &middot; '+RUNGS[rung]+'</div><div class="ph-s">'+(L.length?L.length+' session'+(L.length===1?'':'s')+' logged. ':'Nothing logged yet. ')+'Gates read the log; move up when they are green and not before.</div>';
+  gates.forEach(function(g){ h+='<div class="gate'+(g.met?' met':'')+'"><div class="gm">'+(g.met?'&#10003;':'&middot;')+'</div><div class="gt">'+g.t+'<br><span class="gv">'+g.v+'</span></div></div>'; });
+  el.innerHTML=h;
+}
+
+/* ---------------- charts ---------------- */
+function chart(title,sub,series){
+  var pts=[]; series.forEach(function(s){ s.p.forEach(function(q){ pts.push(q); }); });
+  if(pts.length<2) return '';
+  var W=600,H=200,L=34,R=46,T=14,B=26;
+  var ys=pts.map(function(q){ return q.v; }), ymin=Math.min.apply(null,ys), ymax=Math.max.apply(null,ys);
+  if(ymax===ymin){ ymax+=1; ymin-=1; } var pad=(ymax-ymin)*0.12; ymin-=pad; ymax+=pad;
+  var xs=pts.map(function(q){ return q.t; }), xmin=Math.min.apply(null,xs), xmax=Math.max.apply(null,xs); if(xmax===xmin){ xmax+=1; }
+  function X(t){ return L+(t-xmin)/(xmax-xmin)*(W-L-R); } function Y(v){ return T+(1-(v-ymin)/(ymax-ymin))*(H-T-B); }
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+esc(title)+'">';
+  for(var g=0;g<4;g++){ var gy=T+g*(H-T-B)/3; svg+='<line x1="'+L+'" y1="'+gy.toFixed(1)+'" x2="'+(W-R)+'" y2="'+gy.toFixed(1)+'" stroke="rgba(122,175,255,.16)"/>'; var gv=ymax-(ymax-ymin)*g/3; svg+='<text x="'+(L-6)+'" y="'+(gy+4).toFixed(1)+'" font-size="10" text-anchor="end" fill="rgba(234,244,255,.5)">'+Math.round(gv)+'</text>'; }
+  var ends=[];
+  series.forEach(function(s){
+    if(!s.p.length) return;
+    var d=''; s.p.forEach(function(q,i){ d+=(i?'L':'M')+X(q.t).toFixed(1)+' '+Y(q.v).toFixed(1)+' '; });
+    svg+='<path d="'+d+'" fill="none" stroke="'+s.c+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+    s.p.forEach(function(q){ svg+='<circle cx="'+X(q.t).toFixed(1)+'" cy="'+Y(q.v).toFixed(1)+'" r="3.2" fill="'+s.c+'"/>'; });
+    var last=s.p[s.p.length-1]; ends.push({ y:Y(last.v), v:last.v, c:s.c });
+  });
+  ends.sort(function(a,b){ return a.y-b.y; });
+  for(var i=1;i<ends.length;i++){ if(ends[i].y-ends[i-1].y<13) ends[i].y=ends[i-1].y+13; }
+  for(var j=ends.length-1;j>=0;j--){ if(ends[j].y>H-B-2) ends[j].y=H-B-2; if(j<ends.length-1 && ends[j+1].y-ends[j].y<13) ends[j].y=ends[j+1].y-13; }
+  ends.forEach(function(e){ svg+='<text x="'+(W-R+6)+'" y="'+(e.y+4).toFixed(1)+'" font-size="11" font-weight="700" fill="'+e.c+'">'+Math.round(e.v)+'</text>'; });
+  var fx=pts.slice().sort(function(a,b){ return a.t-b.t; });
+  svg+='<text x="'+L+'" y="'+(H-8)+'" font-size="10" fill="rgba(234,244,255,.5)">'+fdate(fx[0].d)+'</text><text x="'+(W-R)+'" y="'+(H-8)+'" font-size="10" text-anchor="end" fill="rgba(234,244,255,.5)">'+fdate(fx[fx.length-1].d)+'</text>';
+  svg+='</svg>';
+  var leg=''; if(series.length>1){ leg='<div class="legend">'; series.forEach(function(s){ leg+='<div class="lg"><i style="background:'+s.c+'"></i>'+s.n+'</div>'; }); leg+='</div>'; }
+  return '<div class="chartbox"><div class="ch-t">'+title+'</div><div class="ch-s">'+sub+'</div>'+leg+'<div class="ch-wrap">'+svg+'</div></div>';
+}
+function series(filter,key){ var out=[]; list().slice().reverse().forEach(function(x){ if(filter(x)&&x[key]!=null) out.push({ t:new Date(x.d).getTime(), v:x[key], d:x.d }); }); return out; }
+function renderCharts(){
+  var h='';
+  h+=chart('Slip bag &middot; longest clean run','Rung 2 sessions. Twenty each side opens the counter.',[
+    { n:'Left', c:'var(--s-left)', p:series(function(x){ return x.ty==='tech'&&x.rung===2; },'slL') },
+    { n:'Right', c:'var(--s-right)', p:series(function(x){ return x.ty==='tech'&&x.rung===2; },'slR') } ]);
+  h+=chart('Rounds completed','Wednesdays. Four to eight, then shorter rest.',[ { n:'Rounds', c:'var(--s-right)', p:series(function(x){ return x.ty==='rounds'; },'rdN') } ]);
+  var rec=[]; list().slice().reverse().forEach(function(x){ if(x.ty==='rounds'&&x.hrEnd!=null&&x.hr1!=null) rec.push({ t:new Date(x.d).getTime(), v:x.hrEnd-x.hr1, d:x.d }); });
+  h+=chart('Recovery gap','Heart rate at the bell minus one minute later, in bpm. Should widen.',[ { n:'Gap', c:'var(--teal)', p:rec } ]);
+  h+=chart('Neck hold','Seconds per direction.',[ { n:'Hold', c:'var(--violet)', p:series(function(x){ return x.ty==='neck'; },'hold') } ]);
+  document.getElementById('charts').innerHTML=h;
+}
+
+/* ---------------- history ---------------- */
+function row(l,v){ return '<div class="erow"><span class="el">'+l+'</span>'+v+'</div>'; }
+function renderHist(){
+  var L=list(), el=document.getElementById('hist');
+  document.getElementById('c-hist').textContent=L.length?L.length+' saved':'';
+  document.getElementById('c-log').textContent='';
+  if(!L.length){ el.innerHTML='<div class="empty">Nothing logged yet.</div>'; return; }
+  var h='';
+  L.forEach(function(x){
+    h+='<div class="entry"><div class="edate"><span>'+fdatetime(x.d)+' &middot; '+TYPES[x.ty]+(x.ty==='tech'&&x.rung?' &middot; rung '+x.rung:'')+'</span><span class="del" title="Delete" onclick="drop(\''+x.id+'\')">&times;</span></div>';
+    if(x.mins!=null) h+=row('Minutes',x.mins);
+    if(x.ty==='tech'){ if(x.slL!=null||x.slR!=null) h+=row('Clean run L / R',(x.slL==null?'&mdash;':x.slL)+' / '+(x.slR==null?'&mdash;':x.slR)); if(x.rh) h+=row('Right hand',x.rh==='y'?'stayed home':'drifted'); }
+    if(x.ty==='rounds'){ if(x.rdN!=null) h+=row('Rounds',x.rdN+(x.rdRest!=null?' at '+x.rdRest+' s rest':'')); if(x.rdForm) h+=row('Form last 30 s',x.rdForm==='y'?'held':'went'); if(x.hrEnd!=null||x.hr1!=null) h+=row('HR bell / +1 min',(x.hrEnd==null?'&mdash;':x.hrEnd)+' / '+(x.hr1==null?'&mdash;':x.hr1)+(x.hrEnd!=null&&x.hr1!=null?' (gap '+(x.hrEnd-x.hr1)+')':'')); }
+    if(x.ty==='power'){ if(x.ball!=null) h+=row('Ball',x.ball+' lb'); if(x.kb!=null) h+=row('Bell',x.kb+' lb'); if(x.fast) h+=row('Speed',x.fast==='y'?'fast every set':'got slow'); }
+    if(x.ty==='neck'){ if(x.hold!=null) h+=row('Hold',x.hold+' s'); }
+    if(x.nt) h+=row('Note',esc(x.nt));
+    h+='</div>';
+  });
+  el.innerHTML=h;
+}
+function renderAll(){ renderPhase(); renderCharts(); renderHist(); showFields(); }
+
+/* ---------------- drill ---------------- */
+var ROUND=10;
+var POOL=[
+  { prompt:'Rooney shouts <b>&ldquo;2&rdquo;</b>. What do you throw?',
+    lines:['<b>Right hand to the head</b> &mdash; straight or hook, whichever the range allows.','1 is the left hook to the head. Hooks to the body are 5 and 6. The order I first gave you was wrong; this one is Tyson&rsquo;s.'] },
+  { prompt:'Day one. You set up in the peekaboo stance and it feels <b>slow and exposed</b> compared with your old bladed guard.',
+    lines:['<b>Expected. Two weeks.</b> The squared stance and palms-in guard feel slower than they are.','The defence is the head and the legs, not the hands. Give the frame time before judging it.'] },
+  { prompt:'Shadow round. You notice your <b>right hand drifting off your cheek</b> on the jab, the old flaw.',
+    lines:['<b>Every jab finishes by touching the right glove to the right cheek</b> before anything else, for two weeks.','The squared stance exposes the right jaw more than a bladed one did, so this flaw costs more now. The slip bag will punish it for you after that.'] },
+  { prompt:'Slip bag. Left side: 23 clean. Right side: <b>9 clean</b>.',
+    lines:['<b>The gate is not open.</b> Twenty each side, and the right is the limiter.','Start every set on the weaker side while you are fresh. More slips, not harder ones.'] },
+  { prompt:'Slip bag. Twenty-plus clean on <b>both sides</b>, three sessions running.',
+    lines:['<b>Add the counter.</b> Slip and shadow-punch past the ball in one motion: the 2 off an outside slip left, the 1 off an outside slip right.','The slip and the counter becoming one movement is the whole protocol.'] },
+  { prompt:'You feel good and start <b>bouncing on your toes</b> like the Tyson footage.',
+    lines:['<b>Stop. The ankle rules bar it</b> for the twelve weeks unless your physio clears it.','Step-and-pivot only. His best angles came off the pivot anyway.'] },
+  { prompt:'BOB session, week one, no gloves. You want to <b>sit down on the hooks</b> to the head zone.',
+    lines:['<b>Touch power on head hooks and uppercuts bare-handed.</b> Those are the wrist-breakers.','60&ndash;70% on straights, straight wrist, first two knuckles, three rounds maximum. Or buy wraps and gloves.'] },
+  { prompt:'On BOB you fall into <b>Krav bursting</b> &mdash; a continuous stream of strikes.',
+    lines:['<b>Wrong system.</b> The peekaboo is three punches and a reposition.','Slip, step in, 1-2 or 5-2, move the head, pivot off. Then again.'] },
+  { prompt:'Wednesday. You did <b>six rounds</b> and felt great. Thursday the lift is <b>down two steps</b> on every set.',
+    lines:['<b>The rounds were too many, not the lift too heavy.</b> Back to five next Wednesday.','The lifting plan is the main program for twelve weeks. This one fits around it.'] },
+  { prompt:'Wednesday, eight rounds completed at 60 s rest, form held to the bell.',
+    lines:['<b>Cut the rest to 45 s.</b> Not more rounds.','Eight is the Wednesday. The heart-rate gap is what improves from here.'] },
+  { prompt:'Rounds: heart rate <b>170 at the bell, 165 one minute later</b>.',
+    lines:['<b>A 5 bpm gap is the number to watch, not to panic over.</b> Log it and let it widen across weeks.','If it does not widen by week six, Sunday&rsquo;s Zone 2 is the lever, not more rounds.'] },
+  { prompt:'Power block. By the third set of swings the bell is <b>moving slowly</b>.',
+    lines:['<b>Drop a size next time.</b> Slow power work is strength work done badly, and the lifts already cover strength.','The point is rate &mdash; the hip snapping the bell up, not the arms lifting it.'] },
+  { prompt:'You are short on time Monday and think about doing the <b>medicine-ball block before the lift</b> to get it in.',
+    lines:['<b>No.</b> Power work is done fresh, after, or not at all.','If there is no time after, it is a technique-only day. The block comes back Friday.'] },
+  { prompt:'A video shows Tyson doing <b>neck bridges</b> and you want them in.',
+    lines:['<b>Not at 47.</b> Isometrics and anticipatory bracing instead; the evidence favours the bracing, not raw strength, and bridges are a cervical-disc gamble you do not need.','Hand on forehead, 20 s each direction, two rounds; then tense-and-tuck before each slip for one slip-bag round.'] },
+  { prompt:'Someone sends you the <b>2,000 sit-ups, 500 dips</b> Tyson day and says that is the real program.',
+    lines:['<b>Reported, not verified</b> &mdash; quoted with suspicious uniformity, confirmed by nobody who was there.','The principles transfer: head movement for rounds, the neck as a weapon, conditioning in rounds, structure from outside. The numbers do not.'] },
+  { prompt:'You find yourself <b>shadow boxing as cardio</b> &mdash; head still, hands loose, arms moving.',
+    lines:['<b>Stop the round.</b> That trains the opposite of the style.','Head moves after every combination. Every punch with bad intentions, even at touch power. Shadow boxing without intent builds a shadow boxer.'] },
+  { prompt:'The Quest session went well and you want to <b>count it as the boxing</b> for the week.',
+    lines:['<b>It is the reaction drill, not the boxing.</b> It gives you a target that punches back; it teaches nothing about distance, weight transfer or the pocket.','Good on a Saturday. It does not replace BOB, the slip bag or the wall.'] },
+  { prompt:'Wall drill. You keep <b>stepping back</b> to throw.',
+    lines:['<b>That is the drill catching you doing what most fighters do</b> &mdash; earning the inside and giving it back.','A foot from the wall, throw without retreating. Staying in the pocket is a decision made before the round, not during it.'] },
+  { prompt:'Rung 3. You are throwing combinations off a card, but there is a <b>pause while you translate</b> &ldquo;7-2-5&rdquo; into punches.',
+    lines:['<b>Not ready for BOB yet.</b> The gate is any string thrown without a pause.','Tape the numbers onto BOB so they become places. More rounds off the card.'] },
+  { prompt:'You are on a Tuesday, home after 21:30, and the full technique block is <b>not going to happen</b>.',
+    lines:['<b>Six minutes on the slip line, and that is a full Tuesday.</b>','On a bad day, the slip bag and nothing else. The streak is in showing up, not the volume.'] },
+  { prompt:'Six weeks in. It is going well and you have <b>stopped logging</b> because you know where you are.',
+    lines:['<b>This is the structure lesson arriving.</b> Tyson&rsquo;s commitment was held by other people; yours is held by the log and one person who sees it.','The style decayed first when the structure went. Log the session.'] },
+  { prompt:'You want to know whether your head movement <b>would survive a real punch</b>.',
+    lines:['<b>Nothing in this protocol can tell you.</b> That needs a partner, and a partner is out of scope for now.','What you can build solo is the rhythm, the slip-as-entry reflex, planted power and the rounds. Most of the engine, not the car.'] },
+  { prompt:'Thinking in Boyd&rsquo;s terms: which step of the <b>opponent&rsquo;s OODA loop</b> does constant head movement attack?',
+    lines:['<b>Observe and Orient.</b> He observes a target and orients a punch at it; by Act the target has moved.','Most styles fight at Decide and Act &mdash; faster, harder. The peekaboo makes his picture stale instead.'] }
+];
+var ONE={ prompt:'The whole protocol in one line.',
+  lines:['<b>Make the slip and the counter one movement.</b>','Everything else exists to make that one movement available, powered and repeatable for eight rounds.'] };
+
+var STEPS=[], idx=0, revealed=false;
+function startRound(){
+  var a=POOL.slice(0);
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+  STEPS=a.slice(0,ROUND-1); STEPS.push(ONE); idx=0;
+}
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Call it &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  startRound();
+  document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-be-like-mike-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+startRound();
+renderAll();
+</script>
+</body>
+</html>
