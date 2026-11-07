@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Inoculation</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0; --red:#ff8a8a; --violet:#b48cff;
+    --s-left:#f5d76e; --s-right:#4a9de8;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 13px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+  a.inl{ color:var(--accent-hi); }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.teal{ border-left-color:var(--teal); background:rgba(63,208,192,.08); }
+  .card.gold{ border-left-color:var(--gold); background:rgba(245,215,110,.08); }
+  .card.red{ border-left-color:var(--red); background:rgba(255,138,138,.08); }
+  .card.violet{ border-left-color:var(--violet); background:rgba(180,140,255,.09); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .trig{ font-size:13px; line-height:1.5; margin:4px 0 8px; color:var(--ink-dim); }
+  .trig b{ color:var(--gold); font-weight:800; letter-spacing:.04em; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .card.teal .move b{ color:#8ff0e4; } .card.teal .move:before{ color:var(--teal); }
+  .card.gold .move b{ color:var(--gold); } .card.gold .move:before{ color:var(--gold); }
+  .card.red .move b{ color:#ffc0c0; } .card.red .move:before{ color:var(--red); }
+  .card.violet .move b{ color:#d4bcff; } .card.violet .move:before{ color:var(--violet); }
+  .ex{ margin-top:11px; padding-top:10px; border-top:1px solid var(--line); }
+  .ex-row{ font-size:13.5px; line-height:1.55; margin:6px 0; }
+  .ex-row .tag{ display:inline-block; min-width:78px; font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .group-k{ font-size:12.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--teal); font-weight:800; margin:16px 0 6px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .band.warn{ background:rgba(255,138,138,.10); border-left-color:var(--red); }
+  .band.warn b{ color:var(--red); }
+  .band.vio{ background:rgba(180,140,255,.11); border-left-color:var(--violet); }
+  .band.vio b{ color:#d4bcff; }
+  .para{ font-size:14px; line-height:1.6; margin:7px 0; }
+  .para b{ color:var(--accent-hi); }
+  .card.teal .para b{ color:#8ff0e4; }
+  .card.gold .para b{ color:var(--gold); }
+  .card.red .para b{ color:#ffc0c0; }
+  .q{ font-size:14px; line-height:1.55; margin:6px 0 6px 4px; padding-left:12px; border-left:2px solid var(--gold); }
+  .step{ display:flex; gap:11px; font-size:14px; line-height:1.55; margin:9px 0; }
+  .step .n{ flex:0 0 22px; height:22px; border-radius:50%; background:rgba(74,157,232,.22); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:800; color:var(--accent-hi); margin-top:1px; }
+  .step b{ color:var(--accent-hi); }
+
+  /* session table */
+  .wk{ width:100%; border-collapse:collapse; margin:10px 0 4px; font-size:13.5px; }
+  .wk th{ text-align:left; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; padding:6px 8px 6px 0; border-bottom:1px solid var(--line); }
+  .wk td{ padding:7px 8px 7px 0; border-bottom:1px solid rgba(122,175,255,.1); line-height:1.45; vertical-align:top; }
+  .wk td:first-child{ color:var(--accent-hi); font-weight:700; white-space:nowrap; }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+
+  /* ---------- WORK tab ---------- */
+  #work{ display:none; }
+  #drill{ display:none; }
+  .tool{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; margin-bottom:13px; overflow:hidden; }
+  .tool.teal{ border-left-color:var(--teal); background:rgba(63,208,192,.07); }
+  .tool.gold{ border-left-color:var(--gold); background:rgba(245,215,110,.07); }
+  .tool-head{ display:flex; align-items:center; gap:10px; padding:14px 16px; cursor:pointer; }
+  .tool-head .tn{ flex:0 0 24px; height:24px; border-radius:50%; background:rgba(74,157,232,.22); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:800; color:var(--accent-hi); }
+  .tool-head .tt{ flex:1; font-size:16px; font-weight:700; line-height:1.3; }
+  .tool-head .cnt{ font-size:10.5px; font-weight:800; letter-spacing:.1em; color:var(--ink-quiet); }
+  .tool-head .chev{ color:var(--ink-quiet); font-size:15px; transition:transform .25s; }
+  .tool.open .tool-head .chev{ transform:rotate(90deg); }
+  .tool-body{ display:none; padding:0 16px 16px; }
+  .tool.open .tool-body{ display:block; }
+  .why{ font-size:13px; line-height:1.55; color:var(--ink-dim); border-top:1px solid var(--line); padding-top:11px; margin-bottom:12px; }
+  .why b{ color:var(--gold); }
+  .fl{ margin-bottom:11px; }
+  .fl label{ display:block; font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:var(--accent-hi); margin-bottom:5px; }
+  .fl .hintline{ font-size:12px; color:var(--ink-quiet); line-height:1.45; margin-bottom:6px; }
+  textarea, input[type=text], input[type=number], select{ width:100%; background:rgba(5,22,52,.55); border:1px solid var(--line); border-radius:10px;
+    color:var(--ink); font-size:14.5px; line-height:1.5; padding:10px 12px; font-family:inherit; resize:vertical; }
+  textarea:focus, input:focus, select:focus{ outline:2px solid var(--accent); outline-offset:0; border-color:transparent; }
+  textarea::placeholder, input::placeholder{ color:rgba(234,244,255,.3); }
+  input[type=number]{ -moz-appearance:textfield; }
+  input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+  select{ appearance:none; -webkit-appearance:none; background-image:linear-gradient(45deg,transparent 50%,var(--accent-hi) 50%),linear-gradient(135deg,var(--accent-hi) 50%,transparent 50%);
+    background-position:calc(100% - 17px) 18px, calc(100% - 12px) 18px; background-size:5px 5px,5px 5px; background-repeat:no-repeat; padding-right:34px; }
+  select option{ background:#0b2547; color:#eaf4ff; }
+  .twocol{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .colhd{ font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; margin-bottom:5px; }
+  .colhd.l{ color:var(--gold); } .colhd.r{ color:var(--accent-hi); }
+  .toolbar{ display:flex; gap:9px; margin-top:13px; flex-wrap:wrap; }
+  .sbtn{ border:0; border-radius:999px; padding:11px 20px; font-size:13px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; }
+  .sbtn.ghost{ background:rgba(9,36,80,.6); color:#fff; border:1px solid var(--line); }
+  .sbtn:disabled{ opacity:.35; cursor:default; }
+  .analysis{ display:none; margin-top:13px; background:rgba(245,215,110,.09); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; }
+  .analysis.on{ display:block; }
+  .analysis .ah{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800; color:var(--gold); margin-bottom:8px; }
+  .analysis .aq{ font-size:14px; line-height:1.55; margin:8px 0; padding-left:14px; position:relative; }
+  .analysis .aq:before{ content:'\2192'; position:absolute; left:0; color:var(--gold); font-weight:700; }
+  .analysis .aq b{ color:var(--gold); }
+  .flag{ font-size:13.5px; line-height:1.55; margin:8px 0; padding:9px 11px; border-radius:9px; background:rgba(255,138,138,.12); border-left:3px solid var(--red); }
+  .flag b{ color:#ffc0c0; }
+  .flag.ok{ background:rgba(63,208,192,.11); border-left-color:var(--teal); }
+  .flag.ok b{ color:#8ff0e4; }
+  .hist{ margin-top:14px; border-top:1px solid var(--line); padding-top:11px; }
+  .hist-k{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); margin-bottom:8px; }
+  .entry{ background:rgba(5,22,52,.4); border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin-bottom:8px; }
+  .entry .edate{ font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; color:var(--accent-hi); margin-bottom:5px;
+    display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .entry .edate .del{ color:var(--ink-quiet); cursor:pointer; font-size:15px; line-height:1; padding:0 4px; }
+  .entry .erow{ font-size:13px; line-height:1.5; color:var(--ink-dim); margin:4px 0; }
+  .entry .erow .el{ font-size:10px; letter-spacing:.1em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); display:inline-block; min-width:118px; }
+  .empty{ font-size:12.5px; color:var(--ink-quiet); font-style:italic; }
+
+  /* phase / gates */
+  .phase{ background:rgba(63,208,192,.09); border-left:4px solid var(--teal); border-radius:12px; padding:13px 15px; margin-bottom:13px; }
+  .phase .ph-k{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800; color:#8ff0e4; margin-bottom:6px; }
+  .phase .ph-t{ font-size:18px; font-weight:700; margin-bottom:3px; }
+  .phase .ph-s{ font-size:13px; color:var(--ink-dim); line-height:1.5; }
+  .gate{ display:flex; align-items:flex-start; gap:10px; font-size:13.5px; line-height:1.5; margin:8px 0; }
+  .gate .gm{ flex:0 0 19px; height:19px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:800; margin-top:1px; background:rgba(255,255,255,.08); color:var(--ink-quiet); border:1px solid var(--line); }
+  .gate.met .gm{ background:rgba(63,208,192,.22); color:#8ff0e4; border-color:rgba(63,208,192,.5); }
+  .gate .gt b{ color:var(--accent-hi); }
+  .gate.met .gt b{ color:#8ff0e4; }
+  .gate .gv{ color:var(--ink-quiet); font-size:12.5px; }
+
+  /* charts */
+  .chartbox{ background:rgba(5,22,52,.35); border:1px solid var(--line); border-radius:12px; padding:12px 12px 8px; margin-bottom:11px; }
+  .ch-t{ font-size:13.5px; font-weight:700; margin-bottom:1px; }
+  .ch-s{ font-size:11.5px; color:var(--ink-quiet); margin-bottom:8px; line-height:1.4; }
+  .legend{ display:flex; gap:14px; flex-wrap:wrap; margin-bottom:6px; }
+  .lg{ display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--ink-dim); font-weight:700; }
+  .lg i{ width:13px; height:3px; border-radius:2px; display:inline-block; }
+  .ch-wrap{ position:relative; }
+  .ch-wrap svg{ display:block; width:100%; height:auto; touch-action:pan-y; }
+  .tip{ position:absolute; pointer-events:none; opacity:0; transition:opacity .12s; background:rgba(5,22,52,.95);
+    border:1px solid var(--line); border-radius:9px; padding:7px 10px; font-size:12px; line-height:1.5; color:var(--ink);
+    white-space:nowrap; transform:translate(-50%,-115%); z-index:5; }
+  .tip.on{ opacity:1; }
+  .tip .td{ font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; margin-bottom:3px; }
+  .tip .tr{ display:flex; align-items:center; gap:6px; }
+  .tip .tr i{ width:9px; height:3px; border-radius:2px; }
+
+  /* drill */
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(19px,5vw,26px); font-weight:300; line-height:1.4; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .btn:focus-visible, .toggle button:focus-visible, .sbtn:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  @media (max-width:520px){ .twocol{ grid-template-columns:1fr 1fr; } }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-work" onclick="setMode('work')">Log</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>Inoculation</h1>
+    <div class="sub">Solo, cheap, injury-free drills that raise the load you can still think under. This page owns the body under stress and the pre-decided first move. In-the-moment composure is <a class="inl" href="./resilience.html">Resilience</a>; the willpower tracks are <a class="inl" href="./daily-challenge.html">Daily Challenge</a>; the physical skills are <a class="inl" href="./selfdefense.html">Self-Defense</a>; the social-exposure ladder is the Fear of Failure doc. None of those is restated here.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="band"><b>Why this exists.</b> Watching danger from a seat builds a model of the threat and nothing else. Forty documentaries on predators make a well-informed victim. Repeated exposure to violent media does lower your heart rate at the next clip <span class="ev b">B</span>, and that is a dulled alarm, not a better response: no study finds it improves what you do when the thing is real. Readiness is built the other way round, and it is cheap.</div>
+
+    <div class="section-k">The one rule</div>
+
+    <div class="card gold">
+      <div class="p-head"><div class="p-name">Arousal &rarr; task &rarr; feedback</div></div>
+      <div class="p-ess">Anything that only produces the arousal is a cold shower. Anything that adds a task and a score is inoculation.</div>
+      <div class="para">Stress inoculation training <span class="ev b">B</span> and the stress-exposure training used in police, military and aviation <span class="ev b">B</span> share one finding: performance holds under pressure only when the practice included the pressure, and the practice was <b>active</b>, with a decision made inside the stress and feedback on it afterward. Mental practice helps <span class="ev b">B</span>, but only first-person rehearsal of you doing the thing, and it works best layered on the physical rep.</div>
+      <div class="move"><b>Every drill below has three parts.</b> A cheap way to raise arousal. A task with a score. A number written down before and after.</div>
+      <div class="move"><b>Write the prediction first.</b> The learning comes from the gap between what you predicted and what happened <span class="ev b">B</span>. A rep without a prediction is a rep without the active ingredient.</div>
+    </div>
+
+    <div class="section-k">The seven drills</div>
+
+    <div class="card">
+      <div class="p-head"><div class="p-num">01</div><div class="p-name">Cold with a job</div></div>
+      <div class="p-ess">A cold shower or a cold bath, and while you are in it, a task you can score.</div>
+      <div class="trig"><b>SETUP</b> Two to three minutes of cold water. Before you turn it on, write the predicted intensity (1&ndash;10) and how long until it feels manageable.</div>
+      <div class="move"><b>The task:</b> count backward from 300 by sevens aloud, or recite the thing you are memorizing. Score it: how far you got, how many errors.</div>
+      <div class="move"><b>What it buys:</b> repeated cold reliably blunts the body&rsquo;s alarm to cold <span class="ev b">B</span>, with weaker evidence that the calm carries to other stressors <span class="ev c">C</span>. The arithmetic is what turns habituation into training: a clear head in the first ten seconds of any shock.</div>
+      <div class="move"><b>Log:</b> predicted vs actual intensity, task score, peak heart rate if the watch catches it.</div>
+      <div class="note" style="color:#ffc0c0;">Safety: shower or tub only. No open water, no face-first plunges alone. Cold shock is the one real risk and the bathtub removes it.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><div class="p-num">02</div><div class="p-name">Air hunger, on dry land</div></div>
+      <div class="p-ess">Breath holds on the couch, with a decision task running during the hold.</div>
+      <div class="trig"><b>SETUP</b> Sitting. Normal exhale, then hold. Predict how many seconds until the urge becomes loud, and how you will rate it.</div>
+      <div class="move"><b>The task:</b> sort a shuffled deck by suit, or solve three mental-arithmetic problems, during the hold. Score accuracy and how far you got.</div>
+      <div class="move"><b>What it buys:</b> CO&#8322;-tolerance work reduces panic-type reactivity to the body&rsquo;s own alarm signals <span class="ev c">C</span>. The point is making a clean choice while the body is yelling.</div>
+      <div class="move"><b>Log:</b> predicted vs actual intensity, hold length, task accuracy.</div>
+      <div class="note" style="color:#ffc0c0;">Safety: never in water, never standing, never after hyperventilating. Stop at the first strong urge, not past it.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><div class="p-num">03</div><div class="p-name">Precision after intensity</div></div>
+      <div class="p-ess">Thirty seconds of burpees or stairs to a high heart rate, then immediately a fine-motor or recall task.</div>
+      <div class="trig"><b>SETUP</b> Watch on. Predict the heart rate you will reach and whether the task will hold.</div>
+      <div class="move"><b>The task:</b> thread a needle, dial a specific ten-digit number from memory, write one legible sentence, or lay out a four-step plan aloud. Score it 0&ndash;10.</div>
+      <div class="move"><b>What it buys:</b> this is the home version of stress shooting <span class="ev b">B</span> in the field, <span class="ev c">C</span> for the home version. It raises the heart rate at which your hands and your working memory still function, and it gives you <b>the hard number</b>: the heart rate at which the task falls apart, and whether that number climbs over weeks.</div>
+      <div class="move"><b>Log:</b> peak heart rate, task score, predicted vs actual. This drill feeds the Load chart.</div>
+      <div class="note" style="color:#ffc0c0;">Safety: it is thirty seconds, not a workout. Stop for chest pain, dizziness, or anything that is not ordinary breathlessness.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><div class="p-num">04</div><div class="p-name">The random alarm</div></div>
+      <div class="p-ess">An alarm at an unknown time once a day. When it fires, sixty seconds to execute a pre-decided first move for one scenario.</div>
+      <div class="trig"><b>SETUP</b> Set it the night before for a time you will not remember. Rotate the four scenarios below. Predict how long the first move will take and whether you will hesitate.</div>
+      <div class="move"><b>The task:</b> the first move only, timed. Not the whole response, the first move, because the freeze lives in the first move.</div>
+      <div class="move"><b>What it buys:</b> a pre-decided plan fires where an undecided one freezes. Implementation intentions carry a medium-to-large effect on follow-through <span class="ev a">A</span>; the evidence that drills specifically improve emergency response is thinner <span class="ev c">C</span>. The widely repeated claim that 80% of people freeze in a disaster is poorly sourced <span class="ev d">D</span>, but the freeze itself is real and the countermeasure is the move that is already chosen.</div>
+      <div class="move"><b>Log:</b> seconds to first move, hesitation yes or no, which scenario.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><div class="p-num">05</div><div class="p-name">Time pressure on camera</div></div>
+      <div class="p-ess">The Trier Social Stress Test, solo: a five-minute timed speech on a topic you know badly, camera running, then watch it back.</div>
+      <div class="trig"><b>SETUP</b> Phone propped, timer visible, topic drawn at random. Predict how bad it will be (1&ndash;10) and how it will feel to watch.</div>
+      <div class="move"><b>The task:</b> speak the full five minutes. No stopping, no restarting. Then watch it and score it 0&ndash;10 against the prediction.</div>
+      <div class="move"><b>What it buys:</b> the Trier test is one of the most reliable stress inducers in the lab <span class="ev b">B</span>, and the recording is what makes the solo version real. What you are training is the accuracy of your forecasts of social cost: predicted versus actual, again and again, until the forecast stops being wrong in the same direction <span class="ev b">B</span>. This overlaps rungs four and six of the Fear of Failure ladder; a rep here counts there.</div>
+      <div class="move"><b>Log:</b> predicted vs actual, score on playback, how long the discomfort lasted.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><div class="p-num">06</div><div class="p-name">Heat and hunger with a task</div></div>
+      <div class="p-ess">You already sauna and you already fast. Each is a real stress state. The inoculation is doing judgment work inside it.</div>
+      <div class="trig"><b>SETUP</b> Pick a task that needs judgment and has a visible quality: marking a set, making a decision you have been avoiding, drafting a message that matters. Predict whether the quality will hold.</div>
+      <div class="move"><b>The task:</b> do it in the state. Score the quality afterward, when you are out of it, against the prediction.</div>
+      <div class="move"><b>What it buys:</b> both are general stressors <span class="ev c">C</span>; the task pairing is reasoning, not a finding. What you get is a log of whether your judgment degrades under physical load, and by how much. For most people it degrades less than they predict, which is the lesson.</div>
+      <div class="move"><b>Log:</b> predicted vs actual, task quality score.</div>
+      <div class="note" style="color:#ffc0c0;">Safety: the sauna and fasting rules you already run. Nothing is added to the dose; only the task is.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><div class="p-num">07</div><div class="p-name">First-person imagery</div></div>
+      <div class="p-ess">Five minutes, eyes closed, one scenario run as yourself in detail, including the fear, and the first move performed.</div>
+      <div class="trig"><b>SETUP</b> Pick the scenario from the four below, or the next real situation you are avoiding. Predict how vivid you can make it and whether you will flinch away from the hard part.</div>
+      <div class="move"><b>The task:</b> stay in it for the full five minutes. Every time the mind leaves, bring it back to the body in the scene. Score how many times it left.</div>
+      <div class="move"><b>What it buys:</b> mental practice carries a moderate effect on performance <span class="ev b">B</span>, strongest when layered on the physical drill, weakest on its own. It installs the script so that the random alarm has something to fire.</div>
+      <div class="move"><b>Log:</b> predicted vs actual vividness, number of exits, scenario.</div>
+    </div>
+
+    <div class="section-k">The four scenarios, and their first moves</div>
+
+    <div class="band"><b>The alarm and the imagery rotate through these.</b> A first move is one action, decided now, that you can do in under ten seconds. It is not the plan. It is the thing that breaks the freeze so the plan can start.</div>
+
+    <div class="card teal">
+      <div class="p-head"><div class="p-num">A</div><div class="p-name">Violence</div></div>
+      <div class="p-ess">A confrontation, or someone in the house who should not be.</div>
+      <div class="move"><b>First move:</b> distance and voice. Two steps back, hands up open, one loud clear sentence. In the house: the door between you and them, then the phone.</div>
+      <div class="move"><b>Drill it:</b> at the alarm, stand, take the two steps, say the sentence out loud. Time it. The technique after that is <a class="inl" href="./selfdefense.html">Self-Defense</a>&rsquo;s page, not this one.</div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><div class="p-num">B</div><div class="p-name">Medical</div></div>
+      <div class="p-ess">Someone collapses, chokes, or bleeds in front of you.</div>
+      <div class="move"><b>First move:</b> say &ldquo;911&rdquo; aloud and point at a person, or dial it yourself if alone. Then hands on: back blows for choking, pressure for bleeding, chest compressions for no pulse.</div>
+      <div class="move"><b>Drill it:</b> at the alarm, say your address and the dispatcher script aloud without calling, then thirty seconds of compressions on a cushion at the right tempo. A four-hour first-aid course is the one spend on this page worth money.</div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><div class="p-num">C</div><div class="p-name">Fire or crash</div></div>
+      <div class="p-ess">Smoke in the townhouse, or the car has stopped the wrong way.</div>
+      <div class="move"><b>First move, fire:</b> low, to the nearest exit, door closed behind you, meet point. <b>First move, crash:</b> hazards on, engine off, check yourself before you move, then out and away from the road.</div>
+      <div class="move"><b>Drill it:</b> at the alarm, walk the exit with the lights off, or find the extinguisher and pull the pin on an imaginary fire. Once a month, the whole family walks it with you.</div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><div class="p-num">D</div><div class="p-name">Public exposure</div></div>
+      <div class="p-ess">The hard question from a parent, the student who catches your error in front of the class, the room going quiet on you.</div>
+      <div class="move"><b>First move:</b> one breath out, then say the true thing first. &ldquo;You&rsquo;re right, I got that wrong.&rdquo; &ldquo;I don&rsquo;t know; I&rsquo;ll find out.&rdquo; The sentence is pre-written so it does not have to be composed under load.</div>
+      <div class="move"><b>Drill it:</b> at the alarm, say one of the three sentences aloud, full voice, as if to the room. This is the scenario the camera drill trains most directly.</div>
+    </div>
+
+    <div class="section-k">The gate</div>
+
+    <div class="card gold">
+      <div class="p-head"><div class="p-name">Hold a drill until the forecast closes</div></div>
+      <div class="p-ess">No fixed rungs. One gate per drill, read off the log.</div>
+      <div class="move"><b>A drill is banked</b> when two consecutive reps show a predicted-versus-actual gap of one point or less, no safety behaviour, and a task score of six or better. That is the forecast telling you it has stopped being wrong.</div>
+      <div class="move"><b>A banked drill drops to boosters:</b> one rep every two weeks. Return of fear is predicted by the evidence <span class="ev a">A</span> in animals, <span class="ev b">B</span> in people: the original alarm is inhibited, not erased. The booster is what keeps the new rule on top.</div>
+      <div class="move"><b>Cadence overall:</b> two or three reps a week across the drills, most under ten minutes. Two weeks off and a banked drill goes back into training.</div>
+    </div>
+
+    <div class="section-k">What changes, and by what means</div>
+
+    <table class="wk">
+      <tr><th>Drill</th><th>Mechanism</th><th>What you can then do</th></tr>
+      <tr><td>Cold, air</td><td>Habituation of the body&rsquo;s own alarm signals <span class="ev b">B</span> <span class="ev c">C</span></td><td>Think during the first ten seconds of a shock instead of after them</td></tr>
+      <tr><td>Precision</td><td>Fine-motor and working memory trained at high heart rate <span class="ev b">B</span></td><td>Use your hands and your plan at a load that used to take both away</td></tr>
+      <tr><td>Alarm</td><td>Pre-decided action fires instead of deliberation <span class="ev a">A</span></td><td>Move in the first second, which is the second that decides most emergencies</td></tr>
+      <tr><td>Camera</td><td>Expectancy violation on social cost <span class="ev b">B</span></td><td>Forecast the cost of looking bad accurately, which removes the main blocker on asking</td></tr>
+      <tr><td>Heat, hunger</td><td>Judgment measured under physical load <span class="ev c">C</span></td><td>Trust a decision made tired, because you have the record that tired decisions hold</td></tr>
+      <tr><td>Imagery</td><td>Script installed through rehearsal <span class="ev b">B</span></td><td>Have something for the alarm to fire</td></tr>
+    </table>
+
+    <div class="band warn"><b>The honest limit.</b> Transfer is narrow. You get calmer and more functional in situations that resemble the drills, and the evidence for far transfer, a general courage that shows up anywhere, is weak. So this page does not promise bravery. It promises three specific things: a smaller gap between what you predict and what happens, a higher load at which you still function, and a first move that is already chosen. Those three are what the brave-looking person actually has.</div>
+
+    <div class="section-k">Cashing it in</div>
+
+    <div class="card violet">
+      <div class="p-head"><div class="p-name">Spend it within a week</div></div>
+      <div class="p-ess">Capacity you do not use decays the way fear returns. Every banked drill should produce a real-world spend inside seven days, and the spend gets logged.</div>
+      <div class="move"><b>1. The ask for money.</b> One real person, one real price for Self-Evidence. The predicted cost of the no was the whole blocker; the camera drill is what makes that forecast accurate. This is where the capacity pays most.</div>
+      <div class="move"><b>2. The ten coach emails.</b> Same mechanism, at scale. Count replies; silence is data.</div>
+      <div class="move"><b>3. The hard conversation you have been managing around.</b> A parent, a student, a colleague. First move D, then the plan.</div>
+      <div class="move"><b>4. Teaching under observation.</b> Invite the colleague in. The load is real and the prediction is checkable.</div>
+      <div class="move"><b>5. Krav, when the rung arrives.</b> The highest-load legal simulation of violence; the precision drill is its warm-up.</div>
+      <div class="move"><b>6. The real emergency.</b> You do not schedule it. The first move already exists, and the log says you have executed it under load. That is the whole return on the page.</div>
+      <div class="move"><b>Log every spend</b> in the Log tab as a Spend entry. The chart then shows the return on the drills, not just the drills.</div>
+    </div>
+
+    <div class="section-k">Synthesis</div>
+
+    <div class="card">
+      <div class="p-head"><div class="p-name">The hard number</div></div>
+      <div class="para">Every protocol on this list that has moved you had a number. This one&rsquo;s is the <b>heart rate at which fine-motor skill collapses</b>, from drill 03, measured by what is already on your wrist. It is the readiness equivalent of a sleep score: a wish becomes a figure, and a figure can climb.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><div class="p-name">Predict before you act</div></div>
+      <div class="para">The prediction field on every rep is <a class="inl" href="./shaping-adapting.html">Shaping and Adapting</a>&rsquo;s third move run on the body. The exposure research says the same thing from the other side: the learning is in the violation, and there is no violation without a prediction.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><div class="p-name">Home ground first</div></div>
+      <div class="para">Your own call on the <a class="inl" href="./second-nature.html">Second Nature</a> ladder: start where self-monitoring is lowest. Drills 01, 02, 06 and 07 are at home with no one watching. Drill 03 is the first one with a number anyone could see. The camera is the first one with an audience, even if it is only you later.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><div class="p-name">The cue</div></div>
+      <div class="para">One line for the corner, in the shape <a class="inl" href="./cus-corner.html">Cus&rsquo;s Corner</a> uses: <b>&ldquo;Task, not feeling.&rdquo;</b> Said at the moment the arousal arrives, it points at the only thing you can control inside it.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><div class="p-name">Why the spectator version feels like progress</div></div>
+      <div class="para">Humans are drawn to simulated encounters with threats, at a distance that keeps the arousal in the enjoyable band, and they come away with a model of the threat <span class="ev b">B</span> for the general account, <span class="ev c">C</span> for true crime and combat sport specifically. The model is real. The capacity is not. Boxing on a screen gives you the arousal and withholds the rep; this page gives you the rep and lets the screen keep the arousal.</div>
+    </div>
+
+    <div class="section-k">The one thing</div>
+    <div class="band vio"><b>Arousal is free. The rep is the task you do inside it.</b> Anything that raises your heart rate is a drill the moment you add a score and a prediction. Nothing that raises your heart rate is a drill without them.</div>
+
+    <div class="section-k">Failure modes</div>
+
+    <div class="card red">
+      <div class="move"><b>Arousal with no task.</b> Cold showers for their own sake, sauna as relaxation, breath holds as a party trick. Pleasant, and not this protocol.</div>
+      <div class="move"><b>No prediction.</b> A rep without the number written first produces habituation at best. It is the cheapest step and the one most often skipped.</div>
+      <div class="move"><b>Training the easy drills only.</b> Cold and imagery can be repeated indefinitely because nobody sees them. If three weeks in there is no camera rep and no spend, that is the data.</div>
+      <div class="move"><b>Dosing up instead of banking.</b> Colder water and longer holds are a different hobby. The gate is forecast accuracy, not tolerance; once a drill is banked, the next step is spending it, not escalating it.</div>
+      <div class="move"><b>Sleep deprivation as a stressor.</b> Out. It impairs the learning you are trying to bank. So is anything with impact or falls done alone.</div>
+      <div class="move"><b>Banked and unspent.</b> A drill banked with no spend inside seven days has produced a feeling of readiness and nothing else.</div>
+    </div>
+
+    <div class="section-k">Evidence key</div>
+    <div class="key"><span class="ev a">A</span> <b>strong</b> &mdash; replicated across many studies or meta-analyses &middot; <span class="ev b">B</span> <b>good</b> &mdash; several independent studies, some mixed &middot; <span class="ev c">C</span> <b>suggestive</b> &mdash; few studies or small effects &middot; <span class="ev d">D</span> <b>thin</b> &mdash; one study or theory only. Anywhere a claim is extended to you specifically, it is reasoning, and the log is the only evidence that will ever be about you.</div>
+    <div class="note">Sources behind the grades: Meichenbaum on stress inoculation; Driskell, Johnston &amp; Salas on stress exposure training and Driskell, Copper &amp; Moran on mental practice; Craske et al. on inhibitory learning and expectancy violation; Gollwitzer &amp; Sheeran on implementation intentions; Bouton on return of fear; Kirschbaum et al. on the Trier Social Stress Test; cold-water habituation and cross-adaptation literature (Tipton and colleagues); desensitization-to-media-violence studies (Carnagey, Anderson &amp; Bushman). Grades were assigned from the primary literature as I know it, not re-checked at build time: treat any grade you plan to cite as one to verify.</div>
+  </div>
+
+  <!-- ===================== LOG ===================== -->
+  <div id="work">
+    <h1 style="font-size:21px;">Log</h1>
+    <div class="sub">One entry per rep or per real-world spend. Everything saves to this device only. The gates read off the last two reps of each drill; the charts read off all of them.</div>
+
+    <div class="phase" id="phase"></div>
+
+    <div class="tool open" id="t1">
+      <div class="tool-head" onclick="toggleTool('t1')"><div class="tn">1</div><div class="tt">Log a rep</div><div class="cnt" id="c-log"></div><div class="chev">&#9656;</div></div>
+      <div class="tool-body">
+        <div class="why">Fill the <b>predicted</b> fields before the rep and the rest after. Blanks are fine and simply don&rsquo;t plot. The analysis appears after you commit, not before.</div>
+
+        <div class="fl"><label>Drill</label>
+          <select id="dr">
+            <option value="">&mdash;</option>
+            <option value="1">01 Cold with a job</option>
+            <option value="2">02 Air hunger</option>
+            <option value="3">03 Precision after intensity</option>
+            <option value="4">04 The random alarm</option>
+            <option value="5">05 Time pressure on camera</option>
+            <option value="6">06 Heat and hunger</option>
+            <option value="7">07 First-person imagery</option>
+            <option value="S">Spend &mdash; a real situation</option>
+          </select>
+        </div>
+
+        <div class="fl"><label>Scenario (alarm, imagery, spend)</label>
+          <select id="sc">
+            <option value="">&mdash;</option>
+            <option value="A">A Violence</option>
+            <option value="B">B Medical</option>
+            <option value="C">C Fire or crash</option>
+            <option value="D">D Public exposure</option>
+            <option value="E">Other</option>
+          </select>
+        </div>
+
+        <div class="fl"><label>Intensity, 1&ndash;10</label>
+          <div class="hintline">Predicted before. Actual after. The gap is the product.</div>
+          <div class="twocol">
+            <div><div class="colhd l">Predicted</div><input type="number" inputmode="numeric" min="1" max="10" id="pi" placeholder="7"></div>
+            <div><div class="colhd r">Actual</div><input type="number" inputmode="numeric" min="1" max="10" id="ai" placeholder="5"></div>
+          </div>
+        </div>
+
+        <div class="fl"><label>Minutes until manageable</label>
+          <div class="twocol">
+            <div><div class="colhd l">Predicted</div><input type="number" inputmode="decimal" step="0.5" id="pd" placeholder="3"></div>
+            <div><div class="colhd r">Actual</div><input type="number" inputmode="decimal" step="0.5" id="ad" placeholder="1.5"></div>
+          </div>
+        </div>
+
+        <div class="fl"><label>Task score, 0&ndash;10</label>
+          <div class="hintline">How well the task held under load. Six or better counts toward the gate.</div>
+          <input type="number" inputmode="numeric" min="0" max="10" id="ts" placeholder="7">
+        </div>
+
+        <div class="fl"><label>Peak heart rate &mdash; bpm</label>
+          <div class="hintline">From the watch. Drill 03 is the one this is for; log it anywhere you have it.</div>
+          <input type="number" inputmode="numeric" id="hr" placeholder="156">
+        </div>
+
+        <div class="fl"><label>Seconds to first move (alarm only)</label>
+          <input type="number" inputmode="decimal" step="0.5" id="fm" placeholder="4">
+        </div>
+
+        <div class="fl"><label>Safety behaviour caught?</label>
+          <div class="hintline">Over-preparing, pre-apologizing, a softer version of the task, bailing early. Yes counts the rep as half.</div>
+          <select id="sb"><option value="">&mdash;</option><option value="n">No</option><option value="y">Yes</option></select>
+        </div>
+
+        <div class="fl"><label>Notes</label>
+          <input type="text" id="nt" placeholder="Shower, 2 min. Lost the count twice at 272.">
+        </div>
+
+        <div class="toolbar">
+          <button class="sbtn" onclick="saveLog()">Save &amp; analyse</button>
+          <button class="sbtn ghost" onclick="clearForm(true)">Clear</button>
+        </div>
+        <div class="analysis" id="a-log"></div>
+      </div>
+    </div>
+
+    <div class="section-k">The numbers over time</div>
+    <div id="charts"></div>
+
+    <div class="tool" id="t2">
+      <div class="tool-head" onclick="toggleTool('t2')"><div class="tn">2</div><div class="tt">All reps</div><div class="cnt" id="c-hist"></div><div class="chev">&#9656;</div></div>
+      <div class="tool-body">
+        <div class="why">The table behind the charts and the gates. <b>Tap &times; to delete</b> a rep &mdash; a mistyped number can bank a drill that is not banked.</div>
+        <div class="hist" id="hist"></div>
+      </div>
+    </div>
+
+    <div class="foot">Stored on this device only &middot; never synced</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h1 style="font-size:20px;">Call it</h1>
+    <div class="sub">Recognition, not recall. A situation &mdash; say out loud whether it is inoculation, mere exposure, or a spend, and what is missing, before revealing. Ten per round, shuffled.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Done</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn ghost" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  document.getElementById('read').style.display  = (m==='read')  ? 'block' : 'none';
+  document.getElementById('work').style.display  = (m==='work')  ? 'block' : 'none';
+  document.getElementById('drill').style.display = (m==='drill') ? 'block' : 'none';
+  document.getElementById('tab-read').className  = (m==='read')  ? 'on' : '';
+  document.getElementById('tab-work').className  = (m==='work')  ? 'on' : '';
+  document.getElementById('tab-drill').className = (m==='drill') ? 'on' : '';
+  if(m==='drill'){ restart(); }
+  if(m==='work'){ renderAll(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-inoculation';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- store ---------------- */
+var WKEY='forge-inoculation-work';
+function store(){ try{ var v=JSON.parse(localStorage.getItem(WKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function put(s){ try{ localStorage.setItem(WKEY, JSON.stringify(s)); }catch(e){ alert('Could not save on this device.'); } }
+function list(){ var s=store(); return Array.isArray(s.log)?s.log:[]; }
+function push(rec){ var s=store(); if(!Array.isArray(s.log)) s.log=[]; rec.d=new Date().toISOString(); rec.id=Date.now()+'-'+Math.floor(Math.random()*1e4); s.log.unshift(rec); put(s); }
+function drop(id){ var s=store(); if(!Array.isArray(s.log)) return; s.log=s.log.filter(function(r){ return r.id!==id; }); put(s); renderAll(); }
+function num(id){ var e=document.getElementById(id); if(!e) return null; var v=(e.value||'').trim(); if(v==='') return null; var n=parseFloat(v); return isFinite(n)?n:null; }
+function val(id){ var e=document.getElementById(id); return e?(e.value||'').trim():''; }
+function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fdate(iso){ try{ var d=new Date(iso); return d.toLocaleDateString(undefined,{month:'short',day:'numeric'}); }catch(e){ return ''; } }
+function fdatetime(iso){ try{ var d=new Date(iso); return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}); }catch(e){ return ''; } }
+function toggleTool(id){ var el=document.getElementById(id); el.className = el.className.indexOf('open')>-1 ? el.className.replace(' open','') : el.className+' open'; }
+
+var DRILLS={ '1':'Cold with a job','2':'Air hunger','3':'Precision after intensity','4':'The random alarm','5':'Time pressure on camera','6':'Heat and hunger','7':'First-person imagery','S':'Spend' };
+var SCEN={ 'A':'Violence','B':'Medical','C':'Fire or crash','D':'Public exposure','E':'Other' };
+
+var FIELDS=['dr','sc','pi','ai','pd','ad','ts','hr','fm','sb','nt'];
+function clearForm(hideAnalysis){
+  FIELDS.forEach(function(i){ var e=document.getElementById(i); if(e) e.value=''; });
+  if(hideAnalysis){ var a=document.getElementById('a-log'); if(a) a.className='analysis'; }
+}
+function showA(html){ var a=document.getElementById('a-log'); a.innerHTML=html; a.className='analysis on'; }
+function ah(t){ return '<div class="ah">'+t+'</div>'; }
+function aq(t){ return '<div class="aq">'+t+'</div>'; }
+function flag(t,ok){ return '<div class="flag'+(ok?' ok':'')+'">'+t+'</div>'; }
+
+function gapOf(r){ return (r.pi!==null&&r.pi!==undefined&&r.ai!==null&&r.ai!==undefined) ? (r.pi-r.ai) : null; }
+function repOk(r){ var g=gapOf(r); return g!==null && Math.abs(g)<=1 && r.sb!=='y' && r.ts!==null && r.ts!==undefined && r.ts>=6; }
+
+/* ---------------- save + analyse ---------------- */
+function saveLog(){
+  var r={ dr:val('dr'), sc:val('sc'), pi:num('pi'), ai:num('ai'), pd:num('pd'), ad:num('ad'),
+          ts:num('ts'), hr:num('hr'), fm:num('fm'), sb:val('sb'), nt:val('nt') };
+  if(!r.dr){ alert('Pick the drill, or Spend.'); return; }
+  var any=['pi','ai','pd','ad','ts','hr','fm'].some(function(k){ return r[k]!==null; });
+  if(!any && !r.sb && !r.nt){ alert('Enter at least one number.'); return; }
+
+  var prevSame=list().filter(function(x){ return x.dr===r.dr; })[0]||null;
+  push(r);
+
+  var h=ah(r.dr==='S' ? 'Spend logged' : 'This rep &middot; '+esc(DRILLS[r.dr]||''));
+  var g=gapOf(r);
+  if(g!==null){
+    if(Math.abs(g)<=1) h+=flag('Forecast gap <b>'+g+'</b>. Inside a point. The prediction is getting accurate on this drill.',true);
+    else if(g>1) h+=flag('You predicted <b>'+r.pi+'</b> and got <b>'+r.ai+'</b>. Overestimated by '+g+'. That is the impact bias doing exactly what the literature says it does, and the gap is the lesson, not the number.',true);
+    else h+=flag('You predicted <b>'+r.pi+'</b> and got <b>'+r.ai+'</b>. Underestimated by '+(-g)+'. Rarer. Hold this drill; the forecast has to close from both sides.');
+  } else if(r.dr!=='S'){
+    h+=flag('No predicted-versus-actual pair. <b>Without the prediction there is no active ingredient.</b> Log it next time before the rep.');
+  }
+  if(r.pd!==null && r.ad!==null && r.pd>r.ad) h+=aq('Predicted <b>'+r.pd+'</b> minutes to manageable, actual <b>'+r.ad+'</b>. It passed faster than you thought. Write that down somewhere you will see it before the next one.');
+  if(r.sb==='y') h+=flag('Safety behaviour caught. <b>This rep counts as half</b> and cannot bank the drill. Naming it is the fix; next rep, strip it.');
+  if(r.ts!==null && r.ts<6 && r.dr!=='S') h+=aq('Task score <b>'+r.ts+'</b>. Below the gate. The task is the thing being trained; keep the dose the same and repeat.');
+  if(r.dr==='3' && r.hr!==null){
+    var hrs=list().filter(function(x){ return x.dr==='3' && x.hr!==null && x.hr!==undefined && x.ts!==null && x.ts!==undefined && x.ts>=6; }).map(function(x){ return x.hr; });
+    if(hrs.length) h+=aq('Highest heart rate at which the task has held so far: <b>'+Math.max.apply(null,hrs)+' bpm</b>. That is the hard number. Watch it climb.');
+  }
+  if(r.dr==='4' && r.fm!==null) h+=flag('First move in <b>'+r.fm+' s</b>. '+(r.fm<=10?'Inside ten seconds. The move is installed for this scenario.':'Over ten seconds. The hesitation is the freeze; the fix is a simpler first move, not more will.'), r.fm<=10);
+  if(r.dr==='S') h+=flag('A real-world spend. <b>This is the return on every drill above it.</b> Log the forecast gap on these the same way; they are the only reps that are about your actual life.',true);
+
+  if(prevSame && r.dr!=='S'){
+    var pg=gapOf(prevSame);
+    if(pg!==null && g!==null && Math.abs(g)<Math.abs(pg)) h+=flag('Forecast gap narrowed since '+fdate(prevSame.d)+' (<b>'+Math.abs(pg)+' &rarr; '+Math.abs(g)+'</b>).',true);
+    if(repOk(r) && repOk(prevSame)) h+=flag('<b>Two consecutive reps inside the gate. This drill is banked.</b> It drops to one booster every two weeks. Now spend it: pick an item from Cashing In and do it inside seven days.',true);
+  } else if(r.dr!=='S'){
+    h+=flag('First rep of this drill logged. Everything after this is measured against it.',true);
+  }
+  h+=aq('Check the gate panel at the top. <b>A drill is held until two consecutive reps close the forecast.</b> That is the whole mechanism.');
+  showA(h); clearForm(false); renderAll();
+}
+
+/* ---------------- gates ---------------- */
+function drillState(k){
+  var L=list().filter(function(x){ return x.dr===k; }); /* newest first */
+  if(!L.length) return { s:'none', n:0 };
+  var last=L[0], ageDays=(Date.now()-new Date(last.d).getTime())/86400000;
+  var banked = L.length>=2 && repOk(L[0]) && repOk(L[1]);
+  if(banked && ageDays>14) return { s:'lapsed', n:L.length, last:last.d, age:Math.floor(ageDays) };
+  if(banked) return { s:'banked', n:L.length, last:last.d, age:Math.floor(ageDays) };
+  var g=gapOf(last);
+  return { s:'training', n:L.length, last:last.d, gap:(g===null?null:Math.abs(g)), ok:repOk(last) };
+}
+function renderPhase(){
+  var el=document.getElementById('phase'), L=list();
+  var spends=L.filter(function(x){ return x.dr==='S'; }).length;
+  var h='<div class="ph-k">Gates &middot; one per drill</div>';
+  if(!L.length){
+    h+='<div class="ph-t">Nothing logged yet</div><div class="ph-s">Start with any home-ground drill (01, 02, 06, 07). Write the predicted intensity before you begin; the gate cannot read a rep without it.</div>';
+    el.innerHTML=h; return;
+  }
+  var banked=0;
+  h+='<div style="margin-top:4px;">';
+  ['1','2','3','4','5','6','7'].forEach(function(k){
+    var st=drillState(k), met=(st.s==='banked'), txt='';
+    if(st.s==='none') txt='not started';
+    else if(st.s==='training') txt=st.n+' rep'+(st.n===1?'':'s')+(st.gap===null?', no forecast pair':', last gap '+st.gap)+(st.ok?', one more inside the gate banks it':'');
+    else if(st.s==='banked'){ banked++; txt='banked &middot; booster due in '+Math.max(0,14-st.age)+' d'; }
+    else txt='banked, lapsed '+st.age+' d ago &middot; back in training';
+    h+='<div class="gate'+(met?' met':'')+'"><div class="gm">'+(met?'&#10003;':(st.s==='lapsed'?'!':'&middot;'))+'</div>'
+     + '<div class="gt"><b>0'+k+' '+esc(DRILLS[k])+'</b> <span class="gv">&mdash; '+txt+'</span></div></div>';
+  });
+  h+='</div>';
+  h+='<div class="ph-s" style="margin-top:10px;">'+banked+' of 7 banked &middot; '+spends+' real-world spend'+(spends===1?'':'s')+' logged.'+(banked>0&&spends===0?' <b style="color:#ffc0c0;">Something is banked and nothing has been spent.</b>':'')+'</div>';
+  el.innerHTML=h;
+}
+
+/* ---------------- charts ---------------- */
+var CHARTS=[
+  { t:'Forecast gap', s:'Predicted minus actual intensity, every rep and spend. Positive means you expected worse than you got. The target is the zero line.', unit:'pts', target:0, k:'gap', filter:function(r){ return gapOf(r)!==null; }, get:function(r){ return gapOf(r); },
+    series:[{k:'gap',n:'Gap',c:'var(--s-right)',hex:'#4a9de8'}] },
+  { t:'Load tolerance', s:'Peak heart rate on reps where the task score was 6 or better. The hard number. Higher is better.', unit:'bpm', k:'hrok', filter:function(r){ return r.hr!==null&&r.hr!==undefined&&r.ts!==null&&r.ts!==undefined&&r.ts>=6; }, get:function(r){ return r.hr; },
+    series:[{k:'hrok',n:'Peak HR, task held',c:'var(--s-left)',hex:'#f5d76e'}] },
+  { t:'Task score', s:'How well the task held, 0 to 10, every rep. The gate is 6.', unit:'/10', target:6, k:'ts', filter:function(r){ return r.ts!==null&&r.ts!==undefined; }, get:function(r){ return r.ts; },
+    series:[{k:'ts',n:'Score',c:'var(--s-right)',hex:'#4a9de8'}] },
+  { t:'First move', s:'Seconds to the first move on alarm reps. Ten is the line.', unit:'s', target:10, k:'fm', filter:function(r){ return r.dr==='4'&&r.fm!==null&&r.fm!==undefined; }, get:function(r){ return r.fm; },
+    series:[{k:'fm',n:'Seconds',c:'var(--s-right)',hex:'#4a9de8'}] }
+];
+
+function renderCharts(){
+  var host=document.getElementById('charts');
+  var all=list().slice().reverse(); /* oldest first */
+  if(all.length<1){ host.innerHTML='<div class="chartbox"><div class="empty">Charts appear once you have logged a rep. Two or more draw a line; one draws a point.</div></div>'; return; }
+  var h='';
+  CHARTS.forEach(function(c,ci){
+    var L=all.filter(c.filter).map(function(r){ var o={ d:r.d }; o[c.k]=c.get(r); return o; });
+    c._L=L;
+    h+='<div class="chartbox"><div class="ch-t">'+c.t+'</div><div class="ch-s">'+c.s+'</div>';
+    if(!L.length){ h+='<div class="empty">Not logged yet.</div></div>'; return; }
+    h+='<div class="ch-wrap" id="cw'+ci+'">'+svgFor(c,L,ci)+'<div class="tip" id="tip'+ci+'"></div></div></div>';
+  });
+  host.innerHTML=h;
+  CHARTS.forEach(function(c,ci){ if(c._L&&c._L.length) wireChart(c,c._L,ci); });
+}
+
+var CW=600, CH=190, PL=38, PR=14, PT=12, PB=26;
+function svgFor(c,L,ci){
+  var vals=[];
+  c.series.forEach(function(s){ L.forEach(function(r){ var v=r[s.k]; if(v!==null&&v!==undefined) vals.push(v); }); });
+  if(c.target!==undefined) vals.push(c.target);
+  var mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals);
+  if(mn===mx){ mn=mn-1; mx=mx+1; }
+  var pad=(mx-mn)*0.14; mn=mn-pad; mx=mx+pad;
+  if(c.k!=='gap' && mn<0) mn=0;
+  var n=L.length;
+  function X(i){ return n<=1 ? (PL+(CW-PL-PR)/2) : PL+(CW-PL-PR)*i/(n-1); }
+  function Y(v){ return PT+(CH-PT-PB)*(1-(v-mn)/(mx-mn)); }
+
+  var g='<svg viewBox="0 0 '+CW+' '+CH+'" role="img" aria-label="'+c.t+' over time">';
+  var ticks=4;
+  for(var t=0;t<=ticks;t++){
+    var v=mn+(mx-mn)*t/ticks, y=Y(v);
+    g+='<line x1="'+PL+'" y1="'+y.toFixed(1)+'" x2="'+(CW-PR)+'" y2="'+y.toFixed(1)+'" stroke="rgba(122,175,255,.13)" stroke-width="1"/>';
+    g+='<text x="'+(PL-7)+'" y="'+(y+4).toFixed(1)+'" text-anchor="end" font-size="10.5" fill="rgba(234,244,255,.5)">'+(Math.round(v*10)/10)+'</text>';
+  }
+  if(c.target!==undefined && c.target>=mn && c.target<=mx){
+    var ty=Y(c.target);
+    g+='<line x1="'+PL+'" y1="'+ty.toFixed(1)+'" x2="'+(CW-PR)+'" y2="'+ty.toFixed(1)+'" stroke="rgba(234,244,255,.45)" stroke-width="1" stroke-dasharray="5 4"/>';
+    g+='<text x="'+(CW-PR)+'" y="'+(ty-5).toFixed(1)+'" text-anchor="end" font-size="10" font-weight="700" fill="rgba(234,244,255,.6)">TARGET '+c.target+'</text>';
+  }
+  var marks=[0]; if(n>2) marks.push(Math.floor((n-1)/2)); if(n>1) marks.push(n-1);
+  marks.forEach(function(i){
+    g+='<text x="'+X(i).toFixed(1)+'" y="'+(CH-7)+'" text-anchor="middle" font-size="10.5" fill="rgba(234,244,255,.5)">'+esc(fdate(L[i].d))+'</text>';
+  });
+  var labels=[];
+  c.series.forEach(function(s){
+    var pts=[];
+    for(var i=0;i<n;i++){ var v=L[i][s.k]; if(v!==null&&v!==undefined) pts.push([X(i),Y(v),v,i]); }
+    if(!pts.length) return;
+    if(pts.length>1){
+      var d=''; pts.forEach(function(p,k){ d+=(k?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)+' '; });
+      g+='<path d="'+d.trim()+'" fill="none" stroke="'+s.c+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+    }
+    pts.forEach(function(p){
+      g+='<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="4.5" fill="'+s.c+'" stroke="#0a2a57" stroke-width="2"/>';
+    });
+    var last=pts[pts.length-1];
+    labels.push({ x:last[0], y:last[1], v:last[2], c:s.c });
+  });
+  var MINSEP=13, TOP=PT+10, BOT=CH-PB-3;
+  labels.sort(function(a,b){ return (a.y-9)-(b.y-9); });
+  var placed=null;
+  labels.forEach(function(l){
+    var ly=l.y-9;
+    if(placed!==null && ly-placed<MINSEP) ly=placed+MINSEP;
+    if(ly<TOP) ly=TOP;
+    if(ly>BOT) ly=BOT;
+    placed=ly;
+    var lx=l.x+9, anchor='start';
+    if(lx>CW-PR-28){ lx=l.x-9; anchor='end'; }
+    g+='<text x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'" text-anchor="'+anchor+'" font-size="11.5" font-weight="800" fill="'+l.c+'">'+l.v+'</text>';
+  });
+  g+='</svg>';
+  return g;
+}
+
+function wireChart(c,L,ci){
+  var wrap=document.getElementById('cw'+ci); if(!wrap) return;
+  var svg=wrap.querySelector('svg'), tip=document.getElementById('tip'+ci);
+  if(!svg||!tip) return;
+  var n=L.length;
+  function show(ev){
+    var rect=wrap.getBoundingClientRect();
+    var cx=(ev.touches?ev.touches[0].clientX:ev.clientX)-rect.left;
+    var frac=rect.width? (cx/rect.width) : 0;
+    var sx=frac*CW;
+    var i=0;
+    if(n>1){
+      var step=(CW-PL-PR)/(n-1);
+      i=Math.round((sx-PL)/step);
+      if(i<0) i=0; if(i>n-1) i=n-1;
+    }
+    var r=L[i], rows='', got=false;
+    c.series.forEach(function(s){
+      var v=r[s.k];
+      if(v===null||v===undefined) return;
+      got=true;
+      rows+='<div class="tr"><i style="background:'+s.c+'"></i>'+s.n+' &middot; <b>'+v+'</b> '+c.unit+'</div>';
+    });
+    if(!got){ tip.className='tip'; return; }
+    tip.innerHTML='<div class="td">'+esc(fdate(r.d))+'</div>'+rows;
+    var px = n<=1 ? (rect.width/2) : (PL+(CW-PL-PR)*i/(n-1))/CW*rect.width;
+    tip.style.left=px+'px';
+    tip.style.top=(CH*0.45/CH*rect.height)+'px';
+    tip.className='tip on';
+  }
+  function hide(){ tip.className='tip'; }
+  svg.addEventListener('mousemove',show);
+  svg.addEventListener('mouseleave',hide);
+  svg.addEventListener('touchstart',function(e){ show(e); },{passive:true});
+  svg.addEventListener('touchmove',function(e){ show(e); },{passive:true});
+  svg.addEventListener('touchend',hide);
+}
+
+/* ---------------- history ---------------- */
+function renderHist(){
+  var L=list(), el=document.getElementById('hist');
+  document.getElementById('c-hist').textContent=L.length?(L.length+(L.length===1?' rep':' reps')):'';
+  document.getElementById('c-log').textContent=L.length?('last '+fdate(L[0].d)):'';
+  if(!L.length){ el.innerHTML='<div class="empty">No reps yet.</div>'; return; }
+  var h='';
+  L.forEach(function(r){
+    h+='<div class="entry"><div class="edate">'+esc(fdatetime(r.d))+' &middot; '+esc(r.dr==='S'?'Spend':('0'+r.dr+' '+(DRILLS[r.dr]||'')))+'<span class="del" onclick="drop(\''+r.id+'\')">&times;</span></div>';
+    if(r.sc) h+='<div class="erow"><span class="el">Scenario</span>'+esc(SCEN[r.sc]||r.sc)+'</div>';
+    var g=gapOf(r);
+    if(g!==null) h+='<div class="erow"><span class="el">Intensity</span>'+r.pi+' predicted / '+r.ai+' actual &middot; gap '+g+'</div>';
+    else if(r.pi!==null&&r.pi!==undefined) h+='<div class="erow"><span class="el">Intensity</span>'+r.pi+' predicted / &mdash;</div>';
+    else if(r.ai!==null&&r.ai!==undefined) h+='<div class="erow"><span class="el">Intensity</span>&mdash; / '+r.ai+' actual</div>';
+    if((r.pd!==null&&r.pd!==undefined)||(r.ad!==null&&r.ad!==undefined)) h+='<div class="erow"><span class="el">Manageable in</span>'+(r.pd==null?'&mdash;':r.pd)+' / '+(r.ad==null?'&mdash;':r.ad)+' min</div>';
+    if(r.ts!==null&&r.ts!==undefined) h+='<div class="erow"><span class="el">Task score</span>'+r.ts+' / 10</div>';
+    if(r.hr!==null&&r.hr!==undefined) h+='<div class="erow"><span class="el">Peak HR</span>'+r.hr+' bpm</div>';
+    if(r.fm!==null&&r.fm!==undefined) h+='<div class="erow"><span class="el">First move</span>'+r.fm+' s</div>';
+    if(r.sb) h+='<div class="erow"><span class="el">Safety behaviour</span>'+(r.sb==='y'?'yes &middot; half rep':'none')+'</div>';
+    if(r.nt) h+='<div class="erow"><span class="el">Notes</span>'+esc(r.nt)+'</div>';
+    h+='</div>';
+  });
+  el.innerHTML=h;
+}
+
+function renderAll(){ renderPhase(); renderCharts(); renderHist(); }
+
+/* ---------------- drill ---------------- */
+var ROUND=10;
+var POOL=[
+  { prompt:'You take a <b>three-minute cold shower</b> every morning and feel great afterward. No count, no number written.',
+    lines:['<b>Exposure, not inoculation.</b> Arousal with no task and no prediction.','Add the backward count and the predicted intensity and the same shower becomes drill 01.'] },
+  { prompt:'Before the breath hold you write <b>&ldquo;7, loud by 40 seconds.&rdquo;</b> It was a 4 and got loud at 55.',
+    lines:['<b>Inoculation, and the rep worked.</b> The forecast gap is the product: you expected worse than you got.','Log pi 7, ai 4. Two of these inside a point and the drill banks.'] },
+  { prompt:'Drill 03. Heart rate 162, and you <b>dialled the number wrong twice</b>.',
+    lines:['<b>That is the hard number, found.</b> 162 is above where the hands hold today.','Task score below 6; the rep does not count toward the gate, but it is the most useful rep you will log this month. Watch where the line sits in six weeks.'] },
+  { prompt:'The random alarm fires in the kitchen. You <b>think about which scenario</b> for a while, then walk the exit.',
+    lines:['<b>The thinking was the freeze.</b> Scenario is set the night before so the alarm has only one job.','Log seconds to first move honestly. Over ten means simplify the move, not try harder.'] },
+  { prompt:'Five-minute camera speech. You <b>prepared notes for an hour</b> first and it went well.',
+    lines:['<b>Safety behaviour.</b> Over-preparing made failure impossible and removed the load.','Half rep. Next time the topic is drawn at random and the timer starts immediately.'] },
+  { prompt:'You logged a rep with actual intensity 5, task score 8, <b>no predicted value</b>.',
+    lines:['<b>No active ingredient.</b> Without the prediction there is nothing for the result to violate.','It still counts as practice. It does not count toward the gate, and the page will tell you so.'] },
+  { prompt:'Drill 01 is banked. You decide to <b>go colder and longer</b> next week.',
+    lines:['<b>Dosing up instead of spending.</b> The gate is forecast accuracy, not tolerance.','Banked means boosters every two weeks and a real-world spend inside seven days. Colder water is a different hobby.'] },
+  { prompt:'You asked one person to buy a Self-Evidence module at a real price. They said no. You <b>predicted an 8 and felt a 4</b>.',
+    lines:['<b>A spend, and the best rep on the page.</b> Log it as Spend, scenario D, with the forecast pair.','The no is information. The gap is the thing you were actually training for.'] },
+  { prompt:'Three weeks in. Every logged rep is <b>01, 02 or 07</b>.',
+    lines:['<b>Training the private drills only.</b> They can be repeated forever because nobody sees them.','That is the data. The next rep is the camera.'] },
+  { prompt:'You watched a documentary on a predator and <b>feel much more aware</b> of how they operate.',
+    lines:['<b>A model of the threat. Not a capacity.</b> Media exposure dulls the alarm and trains nothing.','Fine as a model. Turn it into drill 07 and run scenario A as yourself.'] },
+  { prompt:'Banked three drills a month ago. <b>No spend logged.</b>',
+    lines:['<b>Banked and unspent.</b> Capacity decays the way fear returns.','The gate panel will show the warning. Pick an item from Cashing In and do it this week.'] },
+  { prompt:'Sauna, and you take the <b>marking in with you</b>. Predicted the quality would drop to 5; it held at 8.',
+    lines:['<b>Inoculation, drill 06.</b> Judgment measured under heat, with a prediction it beat.','Log it. The lesson is that tired decisions hold better than forecast, and the record is what lets you trust the next one.'] },
+  { prompt:'You skipped sleep to <b>see how you decide when wrecked</b>.',
+    lines:['<b>Out.</b> Sleep deprivation impairs the learning you are trying to bank.','Heat, hunger and cold are the body stressors on this page. Sleep is not one of them.'] },
+  { prompt:'A banked drill has had <b>no rep for three weeks</b>.',
+    lines:['<b>Lapsed. Back into training.</b> Return of fear is the best-supported finding on the page.','One booster rep every two weeks keeps it; three weeks off and the gate reopens.'] },
+  { prompt:'Student catches a real error on the board in front of the class. You take one breath and say <b>&ldquo;You&rsquo;re right, I got that wrong.&rdquo;</b>',
+    lines:['<b>Scenario D first move, executed live. A spend.</b> The sentence was pre-written so it did not have to be composed under load.','Log it as Spend, scenario D, with how it felt against what you predicted it would feel like.'] },
+  { prompt:'You want to do the breath holds <b>in the bath</b>, because the cold is there anyway.',
+    lines:['<b>No.</b> Air hunger is dry land only, seated, every time.','The two drills stack in sequence, never in the same minute.'] },
+  { prompt:'Imagery rep. You run the fire scenario and <b>skip the part where you cannot find the kids</b>.',
+    lines:['<b>Flinching from the hard part is the safety behaviour here.</b> The scene is run in full or the script has a hole where the fear is.','Log exits honestly. Next rep, stay in that part for ten seconds longer.'] },
+  { prompt:'Precision drill. You chose <b>stairs for ninety seconds</b> to get the heart rate really up.',
+    lines:['<b>Thirty seconds.</b> It is a spike, not a workout, and the task starts the instant it ends.','Longer efforts shift the drill toward conditioning and away from the thing being measured.'] },
+  { prompt:'You log every rep but <b>never look at the charts</b>.',
+    lines:['<b>Feedback is the third part of the rule.</b> Arousal, task, feedback. Two out of three is a diary.','Once a week, open the Log tab and read the forecast gap line. That is the whole review.'] },
+  { prompt:'Someone suggests a <b>$900 tactical stress course</b> as the real way to do this.',
+    lines:['<b>Maybe later, and not instead.</b> The mechanism is the same one running on your bathroom and a phone timer.','The one paid thing worth doing first is a four-hour first-aid course, because it installs scenario B&rsquo;s first move.'] },
+  { prompt:'The alarm fires during a lesson, in your pocket.',
+    lines:['<b>Not then.</b> The alarm is set for hours you own.','Re-set it tonight for a time you will not remember; the drill is the surprise, not the interruption.'] },
+  { prompt:'Ten coach emails sent. <b>One reply.</b> You predicted the silence would feel like a 7; it was a 3.',
+    lines:['<b>A spend, logged with its forecast pair.</b> Silence is data, and the gap is the training.','That is the second item in Cashing In, done. The capacity was spent; it will need re-earning, which is the point of boosters.'] }
+];
+var ONE={ prompt:'The whole protocol in one line.',
+  lines:['<b>Arousal is free. The rep is the task you do inside it.</b>','Prediction before, score after. Nothing else on the page is the active ingredient.'] };
+
+var STEPS=[], idx=0, revealed=false;
+function startRound(){
+  var a=POOL.slice(0);
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+  STEPS=a.slice(0,ROUND-1); STEPS.push(ONE); idx=0;
+}
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Call it &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  startRound();
+  document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-inoculation-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+startRound();
+renderAll();
+</script>
+</body>
+</html>
