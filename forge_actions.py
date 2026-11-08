@@ -738,7 +738,11 @@ SUBSCRIBED_ICS_URLS = [
     # replaced by 5063785,5136202 — the combined family link from the RAMP Team
     # App, covering both girls. The old link kept returning 200 with zero events,
     # which is why this went silent for two months; see ICS_ALWAYS_FUTURE below.
-    ("Ringette", "https://api3.rampinteractive.com/teamapp/Calendar/GetCalendar/America-Vancouver/5063785,5136202/0"),
+    # Nov 8 2026: RAMP retired the GetCalendar link (a "RAMP calendar link changed"
+    # all-day notice Nov 1-7, then HTTP 404 from Nov 2). Replaced with the new
+    # family feed from the rebuilt RAMP Team App, given as webcal:// and stored as
+    # https:// because urllib only reads http/https.
+    ("Ringette", "https://api3.rampinteractive.com/teamapp/Calendar/Feed/c0bddca4-0036-4511-8166-9d16142f6aae.ics"),
     ("Doctor 2", "https://p147-caldav.icloud.com/published/2/MjA4NzgzMDU5MjA4NzgzMKp8OzvkKcO0VBjXnAPWsZ3QfUpZTMmqDhS1RS2Q4Unql2HwH_zVrF_S7pswdX5EkPscxgI5CxoYg1ulgXc7ME0"),
     ("Richmond Blundell Physio", "https://richmondblundellphysio.janeapp.com/ical/yphai5OwEVtmTOppT6Fx/appointments.ics"),
     ("ONE Championship", "https://calendar.onefc.com/ONE-Championship-events.ics"),
