@@ -1,1 +1,179 @@
-{"welltory": {"stress": 94, "energy": 17, "health": 60}, "body_comp": {"weight": 208.3, "body_fat": 27.6, "muscle_mass": null, "bmi": 29.8, "visceral_fat": null}, "sleep": {"score": null, "duration": null, "hr_range": null, "rem": 61, "core": 229, "deep": 110, "awake": 1, "duration_min": 400, "time_in_bed_min": 487, "computed_score": 84, "computed_score_parts": {"duration": 33.3, "deep": 20, "rem": 13.9, "efficiency": 16.4}, "capture_method": "health_auto_export_v1", "capture_method_since": "2026-08-13", "stage_source_date": "2026-11-06"}, "notes": "", "updated": "2026-11-08T16:51:54.208Z", "calendar": [{"date": "Mon Oct 26", "time": "All day", "title": "POF W2 \u2014 Ablation (training stress removed)"}, {"date": "Sun Nov 08", "time": "06:30 AM", "title": "POF \u2014 Morning reading"}, {"date": "Sun Nov 08", "time": "07:00 PM", "title": "POF \u2014 Weekly deviations log"}, {"date": "Mon Nov 09", "time": "All day", "title": "POF W3 \u2014 Restoration (training resumed)"}, {"date": "Mon Nov 09", "time": "07:00 AM", "title": "POF \u2014 Step test + orthostatic test"}, {"date": "Tue Nov 10", "time": "01:39 PM", "title": "Mark: English 8 \u2014 Unit test"}, {"date": "Thu Nov 12", "time": "All day", "title": "Free Starbucks red cups. Last year we were sold out when they got there. They opened at six sold out before nine. Get there early."}, {"date": "Fri Nov 13", "time": "All day", "title": "MyEd comment entry opens"}, {"date": "Sun Nov 08", "time": "12:45 PM", "title": "Kayla \u2014 1 Practice \u00b7 Richmond Ice Centre Coliseum"}, {"date": "Mon Nov 09", "time": "All day", "title": "EFGH"}, {"date": "Tue Nov 10", "time": "All day", "title": "Remembrance Day Ceremonies"}, {"date": "Tue Nov 10", "time": "All day", "title": "ABCD"}, {"date": "Tue Nov 10", "time": "05:45 PM", "title": "Layna \u2014 U12A DRA \u00b7 Tilbury Ice (Delta)"}, {"date": "Tue Nov 10", "time": "05:45 PM", "title": "Layna \u2014 U12A at DRA U12 \u00b7 Tilbury Ice (Delta) \u00b7 Rescheduled as per email from Sarah Bearisto November 4, 2026."}, {"date": "Wed Nov 11", "time": "12:00 AM", "title": "Remebrance Day"}, {"date": "Wed Nov 11", "time": "All day", "title": "Remembrance Day"}, {"date": "Wed Nov 11", "time": "All day", "title": "School Closed"}, {"date": "Wed Nov 11", "time": "06:15 PM", "title": "Layna \u2014 U12A Practice \u00b7 Richmond Ice Centre Garage \u00b7 NRL development all U12"}, {"date": "Thu Nov 12", "time": "All day", "title": "Kayla \u2014 U16 Ice Breaker Tournament TBC \u00b7 Burnaby"}, {"date": "Thu Nov 12", "time": "All day", "title": "E-PLT-FGH"}, {"date": "Thu Nov 12", "time": "06:00 PM", "title": "Kayla \u2014 1 Practice \u00b7 Richmond Ice Centre Igloo"}, {"date": "Thu Nov 12", "time": "06:15 PM", "title": "Layna \u2014 U12A BNWRA U12-1 \u00b7 Rosemary Brown Recreation Centre - Rink B (Burnaby)"}, {"date": "Thu Nov 12", "time": "08:00 PM", "title": "Kayla \u2014 U16 Practice \u00b7 Richmond Ice Centre Forum \u00b7 Share ice with U19"}, {"date": "Fri Nov 13", "time": "All day", "title": "ABCD"}, {"date": "Fri Nov 13", "time": "04:30 AM", "title": "ONE Friday Fights 178 & The Inner Circle 38"}, {"date": "Fri Nov 13", "time": "12:00 PM", "title": "Layna \u2014 U12A VRA U12B \u00b7 Rosemary Brown Recreation Centre - Rink A (Burnaby)"}, {"date": "Fri Nov 13", "time": "06:00 PM", "title": "Family Night - Laternenfest - Latern procession"}, {"date": "Sat Nov 14", "time": "03:45 PM", "title": "Layna \u2014 U12A VRA U12A \u00b7 Bill Copeland Sports Centre Bill Copeland Rink (Burnaby)"}]}
+{
+  "welltory": {
+    "stress": 94,
+    "energy": 17,
+    "health": 60
+  },
+  "body_comp": {
+    "weight": 211.6,
+    "body_fat": 28.1,
+    "muscle_mass": null,
+    "bmi": 30.3,
+    "visceral_fat": null
+  },
+  "sleep": {
+    "score": null,
+    "duration": null,
+    "hr_range": null,
+    "rem": 61,
+    "core": 229,
+    "deep": 110,
+    "awake": 1,
+    "duration_min": 400,
+    "time_in_bed_min": 487,
+    "computed_score": 84,
+    "computed_score_parts": {
+      "duration": 33.3,
+      "deep": 20,
+      "rem": 13.9,
+      "efficiency": 16.4
+    },
+    "capture_method": "health_auto_export_v1",
+    "capture_method_since": "2026-08-13",
+    "stage_source_date": "2026-11-06"
+  },
+  "notes": "",
+  "updated": "2026-11-08T16:51:54.208Z",
+  "calendar": [
+    {
+      "date": "Mon Oct 26",
+      "time": "All day",
+      "title": "POF W2 — Ablation (training stress removed)"
+    },
+    {
+      "date": "Sun Nov 08",
+      "time": "06:30 AM",
+      "title": "POF — Morning reading"
+    },
+    {
+      "date": "Sun Nov 08",
+      "time": "07:00 PM",
+      "title": "POF — Weekly deviations log"
+    },
+    {
+      "date": "Mon Nov 09",
+      "time": "All day",
+      "title": "POF W3 — Restoration (training resumed)"
+    },
+    {
+      "date": "Mon Nov 09",
+      "time": "07:00 AM",
+      "title": "POF — Step test + orthostatic test"
+    },
+    {
+      "date": "Tue Nov 10",
+      "time": "01:39 PM",
+      "title": "Mark: English 8 — Unit test"
+    },
+    {
+      "date": "Thu Nov 12",
+      "time": "All day",
+      "title": "Free Starbucks red cups. Last year we were sold out when they got there. They opened at six sold out before nine. Get there early."
+    },
+    {
+      "date": "Fri Nov 13",
+      "time": "All day",
+      "title": "MyEd comment entry opens"
+    },
+    {
+      "date": "Sun Nov 08",
+      "time": "12:45 PM",
+      "title": "Kayla — 1 Practice · Richmond Ice Centre Coliseum"
+    },
+    {
+      "date": "Mon Nov 09",
+      "time": "All day",
+      "title": "EFGH"
+    },
+    {
+      "date": "Tue Nov 10",
+      "time": "All day",
+      "title": "Remembrance Day Ceremonies"
+    },
+    {
+      "date": "Tue Nov 10",
+      "time": "All day",
+      "title": "ABCD"
+    },
+    {
+      "date": "Tue Nov 10",
+      "time": "05:45 PM",
+      "title": "Layna — U12A DRA · Tilbury Ice (Delta)"
+    },
+    {
+      "date": "Tue Nov 10",
+      "time": "05:45 PM",
+      "title": "Layna — U12A at DRA U12 · Tilbury Ice (Delta) · Rescheduled as per email from Sarah Bearisto November 4, 2026."
+    },
+    {
+      "date": "Wed Nov 11",
+      "time": "12:00 AM",
+      "title": "Remebrance Day"
+    },
+    {
+      "date": "Wed Nov 11",
+      "time": "All day",
+      "title": "Remembrance Day"
+    },
+    {
+      "date": "Wed Nov 11",
+      "time": "All day",
+      "title": "School Closed"
+    },
+    {
+      "date": "Wed Nov 11",
+      "time": "06:15 PM",
+      "title": "Layna — U12A Practice · Richmond Ice Centre Garage · NRL development all U12"
+    },
+    {
+      "date": "Thu Nov 12",
+      "time": "All day",
+      "title": "Kayla — U16 Ice Breaker Tournament TBC · Burnaby"
+    },
+    {
+      "date": "Thu Nov 12",
+      "time": "All day",
+      "title": "E-PLT-FGH"
+    },
+    {
+      "date": "Thu Nov 12",
+      "time": "06:00 PM",
+      "title": "Kayla — 1 Practice · Richmond Ice Centre Igloo"
+    },
+    {
+      "date": "Thu Nov 12",
+      "time": "06:15 PM",
+      "title": "Layna — U12A BNWRA U12-1 · Rosemary Brown Recreation Centre - Rink B (Burnaby)"
+    },
+    {
+      "date": "Thu Nov 12",
+      "time": "08:00 PM",
+      "title": "Kayla — U16 Practice · Richmond Ice Centre Forum · Share ice with U19"
+    },
+    {
+      "date": "Fri Nov 13",
+      "time": "All day",
+      "title": "ABCD"
+    },
+    {
+      "date": "Fri Nov 13",
+      "time": "04:30 AM",
+      "title": "ONE Friday Fights 178 & The Inner Circle 38"
+    },
+    {
+      "date": "Fri Nov 13",
+      "time": "12:00 PM",
+      "title": "Layna — U12A VRA U12B · Rosemary Brown Recreation Centre - Rink A (Burnaby)"
+    },
+    {
+      "date": "Fri Nov 13",
+      "time": "06:00 PM",
+      "title": "Family Night - Laternenfest - Latern procession"
+    },
+    {
+      "date": "Sat Nov 14",
+      "time": "03:45 PM",
+      "title": "Layna — U12A VRA U12A · Bill Copeland Sports Centre Bill Copeland Rink (Burnaby)"
+    }
+  ]
+}
