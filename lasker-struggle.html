@@ -206,6 +206,7 @@
       <div class="move"><b>Ask: am I actually forced?</b> If not, hold. Pressure that costs nothing to ignore costs something to answer.</div>
       <div class="move"><b>If forced, parry with the least that suffices.</b> The wall is as strong as it needs to be and no stronger.</div>
       <div class="move"><b>Don&rsquo;t grab the gain in front of you</b> before checking whether a better one is available.</div>
+      <div class="move"><b>Cheap prevention is not defending early.</b> Nimzowitsch&rsquo;s prophylaxis &mdash; stop the plan before it becomes a threat &mdash; is economical when it costs little. Lasker&rsquo;s target is the expensive reaction to a threat that hasn&rsquo;t arrived. <span class="ev c">C</span></div>
       <div class="move"><b>Use complexity as a detector.</b> Lasker: simplicity is economy, excess reads as affectation, and complicated behaviour usually hides a second motive. Your own elaborate plan included. <span class="ev c">C</span></div>
       <div class="ex">
         <div class="ex-k">In practice</div>
@@ -270,6 +271,7 @@
       <div class="move"><b>Examine the situation.</b></div>
       <div class="move"><b>List every possible manoeuvre</b>, not the two that came to mind first.</div>
       <div class="move"><b>Compute each one&rsquo;s average gain</b> across the likely outcomes. Rough probability times rough payoff is enough.</div>
+      <div class="move"><b>Ruin check first.</b> If one outcome can knock you out of the game, average gain is the wrong target: size the stake so you survive the bad run (the Kelly criterion, 1956). Lasker hinted at this with &ldquo;modest values&rdquo;; the page makes it a step. <span class="ev a">A</span></div>
       <div class="move"><b>Choose the highest probable profit.</b> For any venture, compare it against the other uses of the same capital, labour and time.</div>
       <div class="move"><b>Refusing good bets is waste too.</b> A one-in-ten shot at eight units against a certain loss of one is a bad bet; declining a favourable risk because the downside is unpleasant to picture is the same error in reverse.</div>
       <div class="move"><b>No system beats an edge against you.</b> Doubling after losses and raising on streaks only change when you lose. Lasker calls the gambler&rsquo;s system a fetish that resists criticism.</div>
@@ -299,6 +301,17 @@
       </div>
       <div class="fail"><b>Failure signal:</b> the quiet one &mdash; a won position, rested on.</div>
       <div class="note">Only the opening pages of this chapter survive in the available scan of the 1907 English edition. The proportionality rule above comes from how Lasker restated the idea elsewhere, including his 1907 lecture on Morphy, where he called it a belief in the justice of effort. Read the original before quoting it as his.</div>
+    </div>
+
+    <div class="section-k">What held up</div>
+    <div class="card">
+      <div class="p-head"><span class="p-name">A forerunner, corrected in four places</span><span class="ev a">A</span><span class="ev c">C</span></div>
+      <div class="para">Lasker&rsquo;s idea of one formal theory for every contest came true, but it was built by mathematicians, not by him. Robert Leonard&rsquo;s history of game theory (Cambridge, 2010) opens with <i>Struggle</i>; the German national biography calls the macheeide a forerunner of modern game theory. The corrections:</div>
+      <div class="move"><b>The macheeide sometimes varies.</b> In games where both sides see everything, perfect play is fixed (Zermelo, 1913). Where information is hidden &mdash; a bluff, a bargain, a hand of cards &mdash; von Neumann proved in 1928 that the perfect player often mixes moves in set proportions. Predictability is itself a weakness. <span class="ev a">A</span></div>
+      <div class="move"><b>Chance needs a ruin check.</b> Expected value is right for repeated bets; when one loss can end you, size the stake so you survive the bad run (Kelly). And people don&rsquo;t naturally decide by the figure: losses weigh roughly twice as much as equal gains (Kahneman &amp; Tversky, 1979), which is exactly the bias Lasker was arguing against. <span class="ev a">A</span></div>
+      <div class="move"><b>Economy has a partner.</b> Prophylaxis &mdash; cheap prevention before a threat forms &mdash; arrived within twenty years. It refines &ldquo;don&rsquo;t defend until forced&rdquo; rather than replacing it. <span class="ev c">C</span></div>
+      <div class="move"><b>Advantage is wider than he counted.</b> Engines routinely give up material for time and initiative. Superiority still precedes attack, but initiative counts as superiority. <span class="ev c">C</span></div>
+      <div class="move"><b>Justice is the weakest.</b> Results track advantage only over the long run between competent players; top-level chess is mostly draws, and big edges are thrown away under the clock. Keep &ldquo;don&rsquo;t sit on an advantage&rdquo; as practice, not as a law. <span class="ev c">C</span></div>
     </div>
 
     <div class="section-k">Lasker and Boyd</div>
@@ -358,7 +371,7 @@
   <!-- ===================== DRILL ===================== -->
   <div id="drill">
     <h1 style="font-size:20px;">Which principle?</h1>
-    <div class="sub">Recognition, not recall. Each prompt is a situation. Name the principle being kept or broken &mdash; Work, Economy, Advantage, Chance or Justice &mdash; and the eumachic move. Nine per round, drawn from twenty-four, then the one thing.</div>
+    <div class="sub">Recognition, not recall. Each prompt is a situation. Name the principle being kept or broken &mdash; Work, Economy, Advantage, Chance or Justice &mdash; and the eumachic move. Nine per round, drawn from twenty-six, then the one thing.</div>
     <div class="progress" id="progress"></div>
     <div class="stage" id="stage"></div>
     <div class="done-view" id="done">
@@ -451,6 +464,10 @@ var POOL = [
     lines:['<b>Justice &mdash; overreach.</b> The attack claims more than the position contains.','Attack to the position&rsquo;s worth, not past it.'] },
   { prompt:'You have evidence your method works and you <b>still price it like an experiment</b>.',
     lines:['<b>Justice &mdash; underreach.</b> An advantage left unconverted.','Price to what the evidence supports.'] },
+  { prompt:'The odds are in your favour, but <b>one bad result would wipe out the whole account</b>.',
+    lines:['<b>Chance &mdash; the ruin check.</b> Average gain is the wrong target when one loss ends the game.','Size the stake so you survive the bad run.'] },
+  { prompt:'In negotiations you <b>always open the same way</b>, and the other side has started to expect it.',
+    lines:['<b>The macheeide, corrected.</b> Where information is hidden, perfect play mixes.','Predictability is itself a weakness. Vary it.'] },
   { prompt:'You&rsquo;re treating <b>a struggling student</b> as the opponent in a lesson that isn&rsquo;t working.',
     lines:['<b>Scope.</b> In Room 148 the resistance is the task or the room&rsquo;s state, never the student.','Re-aim the struggle at the actual resistance.'] }
 ];
