@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lasker: Struggle</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0; --violet:#b39dff;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* read cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.phys{ border-left-color:var(--teal); background:rgba(63,208,192,.08); }
+  .card.vio{ border-left-color:var(--violet); background:rgba(179,157,255,.08); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:11px; font-weight:800; letter-spacing:.16em; color:var(--accent); }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .trig{ font-size:13px; line-height:1.5; margin:4px 0 8px; color:var(--ink-dim); }
+  .trig b{ color:var(--gold); font-weight:800; letter-spacing:.04em; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .ex{ margin-top:12px; padding-top:10px; border-top:1px solid var(--line); }
+  .ex-k{ font-size:12px; color:var(--ink-quiet); margin-bottom:4px; font-weight:700; }
+  .ex-row{ font-size:13.5px; line-height:1.55; margin:9px 0; }
+  .ex-row .tag{ display:block; font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); margin-bottom:1px; }
+  .ex-row .act{ color:var(--ink); font-weight:600; }
+  .ex-row .eg{ display:block; color:var(--ink-dim); font-style:italic; }
+  .fail{ margin-top:11px; font-size:13px; line-height:1.5; color:var(--ink-dim); background:rgba(245,215,110,.07); border-radius:10px; padding:9px 11px; }
+  .fail b{ color:var(--gold); }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .band.stop{ background:rgba(63,208,192,.10); border-left-color:var(--teal); }
+  .band.stop b{ color:#8ff0e4; }
+  .para{ font-size:14px; line-height:1.6; margin:7px 0; }
+  .para b{ color:var(--accent-hi); }
+  .card.phys .para b{ color:#8ff0e4; }
+  .card.vio .para b{ color:#d6caff; }
+  .quote{ font-size:15px; font-style:italic; line-height:1.5; margin:10px 0 4px; padding-left:12px; border-left:2px solid var(--violet); color:var(--ink); }
+  .quote span{ display:block; font-style:normal; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-quiet); margin-top:3px; font-weight:700; }
+
+  /* glossary */
+  .gl{ display:grid; grid-template-columns:auto 1fr; gap:7px 12px; margin-top:6px; }
+  .gl .w{ font-size:14px; font-weight:800; color:#d6caff; white-space:nowrap; }
+  .gl .d{ font-size:13.5px; line-height:1.5; color:var(--ink-dim); }
+
+  /* diagram */
+  .diagram{ margin:10px 0 6px; background:rgba(6,28,64,.45); border:1px solid var(--line); border-radius:12px; padding:8px 4px; }
+  .diagram svg{ display:block; width:100%; height:auto; max-width:440px; margin:0 auto; }
+  .cap{ font-size:11.5px; color:var(--ink-quiet); text-align:center; margin-top:4px; line-height:1.4; }
+
+  /* tools */
+  .tool{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:14px 16px; margin-bottom:11px; }
+  .t-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:5px; flex-wrap:wrap; }
+  .t-name{ font-size:16.5px; font-weight:700; }
+  .t-dose{ font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; }
+  .q{ font-size:14px; line-height:1.55; margin:6px 0 6px 4px; padding-left:12px; border-left:2px solid var(--gold); }
+  .step{ font-size:14px; line-height:1.55; margin:8px 0; display:flex; gap:10px; }
+  .step .n{ flex:0 0 22px; height:22px; border-radius:50%; background:rgba(74,157,232,.25); color:var(--accent-hi); font-size:12px; font-weight:800;
+    display:flex; align-items:center; justify-content:center; margin-top:1px; }
+  .step b{ color:var(--accent-hi); }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.doc{ background:rgba(63,208,192,.16); color:#8ff0e4; border-color:rgba(63,208,192,.45); }
+  .ev.rec{ background:rgba(179,157,255,.16); color:#d6caff; border-color:rgba(179,157,255,.45); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+
+  /* drill */
+  #drill{ display:none; }
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(19px,5vw,26px); font-weight:300; line-height:1.4; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .btn:focus-visible, .toggle button:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>Lasker: Struggle</h1>
+    <div class="sub">After Emanuel Lasker, <i>Struggle</i> (New York, 1907; the German edition is <i>Kampf</i>). World chess champion for twenty-seven years, doctor of mathematics, and the first person to try to write one science of every contest. The companion to the Macheeide Protocol audio.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="section-k">The idea</div>
+
+    <div class="card vio">
+      <div class="p-head"><span class="p-name">A position is worth what a perfect player could take from it</span><span class="ev doc">DOCTRINE</span></div>
+      <div class="para">Lasker&rsquo;s claim was that a war, a lawsuit, a business, a game and a body fighting a disease all obey the same handful of laws. His definition of a struggle is the cleanest one available: something alive wants to reach a purpose <b>against resistance</b>. The resistance can be an opponent, but it can just as easily be nature, habit or your own body.</div>
+      <div class="quote">It is an old reflection that life is a struggle.<span>Struggle, 1907 &middot; the opening line</span></div>
+      <div class="para">To measure any struggle he imagined a perfect fighter, the <b>macheeide</b>, from the Greek for a fight. It is not a person. It is a ruler, the way physics uses a frictionless plane: nothing is frictionless, but friction can&rsquo;t be measured without the idea. The macheeide&rsquo;s move in any position is <b>uniquely determined</b>, because every perfect strategist would choose the same one.</div>
+      <div class="para">So the question is never &ldquo;am I winning?&rdquo; It is <b>&ldquo;what is this position actually worth, and am I taking what it offers?&rdquo;</b></div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">The vocabulary is the tool</span><span class="ev doc">DOCTRINE</span></div>
+      <div class="para">Lasker invented words so the same word would work on the board, in court and on a battlefield. Seven of them carry the whole book.</div>
+      <div class="gl">
+        <div class="w">Machee</div><div class="d">Any struggle, from war to art to business.</div>
+        <div class="w">Stratoi</div><div class="d">The forces, the centres of effect. In Room 148: your attention, a relationship with a student, the routine you built.</div>
+        <div class="w">Field</div><div class="d">The ground and its conditions. Change the field and every stratos changes value.</div>
+        <div class="w">Energy</div><div class="d">What gets spent: time, attention, goodwill, effort. The machee&rsquo;s money.</div>
+        <div class="w">Armoostia</div><div class="d">Adaptability: how fast a force can change what it is doing.</div>
+        <div class="w">Pressure</div><div class="d">A threat that forces the other side to spend energy parrying it. It doesn&rsquo;t have to land.</div>
+        <div class="w">Amachic</div><div class="d">An action that wastes energy. Its opposite, the macheeide&rsquo;s choice, is <b style="color:#d6caff">eumachic</b>.</div>
+      </div>
+    </div>
+
+    <div class="band stop"><b>Where this applies.</b> Lasker&rsquo;s machee is wider than Boyd&rsquo;s conflict: the resistance doesn&rsquo;t have to be a person. That makes most of this page safe in the classroom and the house, with one rule: there, the thing you are struggling against is <b>the task, the habit or the condition, never the student or your daughter</b>. Move three&rsquo;s attack language belongs only where someone really is working against you &mdash; income, the stock and betting systems, a genuine dispute. Patterns of Conflict carries the same scope line for the same reason.</div>
+
+    <div class="section-k">The five moves</div>
+
+    <!-- 1 WORK -->
+    <div class="card">
+      <div class="p-head"><span class="p-num">01</span><span class="p-name">Work &mdash; best unit on what matters</span><span class="ev doc">DOCTRINE</span></div>
+      <div class="p-ess">A group&rsquo;s value is its capacity to produce work, and the macheeide always sends its highest-value group to the most important task.</div>
+      <div class="trig"><b>Use when</b> you are busy and nothing is moving.</div>
+      <div class="move"><b>Name the most important task in this machee right now.</b> One sentence.</div>
+      <div class="move"><b>Name your highest-value unit.</b> Your best hour of attention, your strongest relationship, your most liquid capital.</div>
+      <div class="move"><b>Check whether they are on the same thing.</b> Usually they aren&rsquo;t; the best unit is on whatever looks urgent.</div>
+      <div class="move"><b>Every manoeuvre adds effect or moves toward greater effect.</b> Lasker calls movement for its own sake <i>Rococo</i>: Frederick the Great&rsquo;s armies marching for seasons and deciding nothing.</div>
+      <div class="ex">
+        <div class="ex-k">In practice</div>
+        <div class="ex-row"><span class="tag">Room 148</span><span class="act">Your undivided attention is the highest-value unit in the room.</span><span class="eg">Marking is where Rococo hides: visible output in a volume that feels like achievement.</span></div>
+        <div class="ex-row"><span class="tag">Home</span><span class="act">An evening with the girls is your best unit at home.</span><span class="eg">Spending it tired, on logistics, is manoeuvring.</span></div>
+        <div class="ex-row"><span class="tag">Income</span><span class="act">The stock system and Self-Evidence are both stratoi.</span><span class="eg">Which one is this quarter&rsquo;s most important task, and is the best unit on it, or split so neither gets work done?</span></div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> a full week and the aim did not move. Lasker&rsquo;s own note: society tends to reward the appearance of capacity rather than the work.</div>
+    </div>
+
+    <!-- 2 ECONOMY -->
+    <div class="card">
+      <div class="p-head"><span class="p-num">02</span><span class="p-name">Economy &mdash; defend only when forced</span><span class="ev doc">DOCTRINE</span></div>
+      <div class="p-ess">An action that wastes energy is amachic. Mediocrity acts on eagerness and impatience; the master waits.</div>
+      <div class="trig"><b>Use when</b> you feel the urge to respond, fix, answer or act right now.</div>
+      <div class="move"><b>Ask: am I actually forced?</b> If not, hold. Pressure that costs nothing to ignore costs something to answer.</div>
+      <div class="move"><b>If forced, parry with the least that suffices.</b> The wall is as strong as it needs to be and no stronger.</div>
+      <div class="move"><b>Don&rsquo;t grab the gain in front of you</b> before checking whether a better one is available.</div>
+      <div class="move"><b>Use complexity as a detector.</b> Lasker: simplicity is economy, excess reads as affectation, and complicated behaviour usually hides a second motive. Your own elaborate plan included. <span class="ev c">C</span></div>
+      <div class="ex">
+        <div class="ex-k">In practice</div>
+        <div class="ex-row"><span class="tag">Room 148</span><span class="act">A student pushes. Notice whether anything is actually threatened.</span><span class="eg">If it is, a look, a name or a quiet word, then back to work. Engaging the push at full strength is the amachic move.</span></div>
+        <div class="ex-row"><span class="tag">Daily life</span><span class="act">The driver who cuts you off, the email with an edge on it, the last-minute request.</span><span class="eg">Not forced means do not move.</span></div>
+        <div class="ex-row"><span class="tag">Training</span><span class="act">The minimum effective dose is economy.</span><span class="eg">The extra sets that feel like commitment are often Rococo.</span></div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> the regretted reply. Almost every one is a defence of something that was never under threat.</div>
+    </div>
+
+    <!-- 3 ADVANTAGE -->
+    <div class="card">
+      <div class="p-head"><span class="p-num">03</span><span class="p-name">Advantage &mdash; attack only from superiority</span><span class="ev doc">DOCTRINE</span></div>
+      <div class="p-ess">In a balanced position neither side can make progress. Advantage means an attack that has no sufficient defence, and superiority is the condition for attack.</div>
+      <div class="trig"><b>Use when</b> you are about to attack, or are being attacked.</div>
+      <div class="diagram" role="img" aria-label="Three positions. Balanced: wait and build. Stronger: attack the weakest point and keep pressure continuous. Weaker: move toward least pressure and change the field.">
+        <svg viewBox="0 0 420 190" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif">
+          <rect x="8" y="14" width="124" height="162" rx="12" fill="rgba(74,157,232,.14)" stroke="rgba(122,175,255,.45)"/>
+          <text x="70" y="40" fill="#cfe6ff" font-size="14" font-weight="800" text-anchor="middle">BALANCED</text>
+          <line x1="32" y1="70" x2="108" y2="70" stroke="#7fbfff" stroke-width="3"/>
+          <polygon points="70,72 62,88 78,88" fill="#7fbfff"/>
+          <text x="70" y="122" fill="#eaf4ff" font-size="12.5" font-weight="700" text-anchor="middle">Wait and build</text>
+          <text x="70" y="141" fill="rgba(234,244,255,.62)" font-size="11" text-anchor="middle">no progress is</text>
+          <text x="70" y="156" fill="rgba(234,244,255,.62)" font-size="11" text-anchor="middle">available yet</text>
+
+          <rect x="148" y="14" width="124" height="162" rx="12" fill="rgba(63,208,192,.16)" stroke="rgba(63,208,192,.5)"/>
+          <text x="210" y="40" fill="#8ff0e4" font-size="14" font-weight="800" text-anchor="middle">STRONGER</text>
+          <line x1="172" y1="80" x2="248" y2="60" stroke="#8ff0e4" stroke-width="3"/>
+          <polygon points="210,72 202,88 218,88" fill="#8ff0e4"/>
+          <text x="210" y="122" fill="#eaf4ff" font-size="12.5" font-weight="700" text-anchor="middle">Attack the</text>
+          <text x="210" y="139" fill="#eaf4ff" font-size="12.5" font-weight="700" text-anchor="middle">weakest point</text>
+          <text x="210" y="158" fill="rgba(234,244,255,.62)" font-size="11" text-anchor="middle">keep pressure on</text>
+
+          <rect x="288" y="14" width="124" height="162" rx="12" fill="rgba(179,157,255,.16)" stroke="rgba(179,157,255,.5)"/>
+          <text x="350" y="40" fill="#d6caff" font-size="14" font-weight="800" text-anchor="middle">WEAKER</text>
+          <line x1="312" y1="60" x2="388" y2="80" stroke="#d6caff" stroke-width="3"/>
+          <polygon points="350,72 342,88 358,88" fill="#d6caff"/>
+          <text x="350" y="122" fill="#eaf4ff" font-size="12.5" font-weight="700" text-anchor="middle">Change the field</text>
+          <text x="350" y="141" fill="rgba(234,244,255,.62)" font-size="11" text-anchor="middle">move toward the</text>
+          <text x="350" y="156" fill="rgba(234,244,255,.62)" font-size="11" text-anchor="middle">least pressure</text>
+        </svg>
+      </div>
+      <div class="cap">Name which box you are in before you move.</div>
+      <div class="move"><b>Name the advantage you actually hold.</b> Numerical (more force) or positional (better placement of the same force). If you can&rsquo;t name it, you are attacking from balance, which the macheeide never does.</div>
+      <div class="move"><b>Stronger: attack the weakest point, not the most annoying one.</b> Keep the pressure continuous. A slight edge justifies calm, patient aggression without the anxiety of a balanced position. Trading to fatigue an opponent can pay.</div>
+      <div class="move"><b>Weaker: seek compensating position.</b> Move toward the least pressure. Don&rsquo;t meet a high-adaptability attacker head-on; bind it with a continuous ring of pressure. Protect the fragile, high-value pieces first.</div>
+      <div class="move"><b>Changing the field is the weaker side&rsquo;s move.</b> Cheng &middot; Ch&rsquo;i holds the sixteen domains to change it into; this page doesn&rsquo;t repeat them.</div>
+      <div class="ex">
+        <div class="ex-k">In practice</div>
+        <div class="ex-row"><span class="tag">Room 148</span><span class="act">A settled class with an established routine is a positional advantage.</span><span class="eg">That is when to push the harder content, calmly and continuously. An unsettled class makes you the weaker side: change the activity, pace or grouping until an advantage exists. The resistance is the room&rsquo;s state, not a student.</span></div>
+        <div class="ex-row"><span class="tag">Stock system</span><span class="act">A slight statistical edge, held with patience.</span><span class="eg">The urge to abandon it after one bad week is the anxiety of a balanced position wrongly applied to a slightly favourable one.</span></div>
+        <div class="ex-row"><span class="tag">Income</span><span class="act">Against a bigger competitor, don&rsquo;t contest their strongest point.</span><span class="eg">Move to the least pressure: the ground they don&rsquo;t cover.</span></div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> you attacked and got refuted. Check whether there was any advantage to attack from.</div>
+    </div>
+
+    <!-- 4 CHANCE -->
+    <div class="card">
+      <div class="p-head"><span class="p-num">04</span><span class="p-name">Chance &mdash; decide by the figure</span><span class="ev a">A</span></div>
+      <div class="p-ess">When causes are too many to compute, assign probabilities from observed frequency, then decide by the probable gain, not by inclination or vague fear.</div>
+      <div class="trig"><b>Use when</b> an outcome is unknown, and especially when the choice feels exciting or frightening.</div>
+      <div class="move"><b>Examine the situation.</b></div>
+      <div class="move"><b>List every possible manoeuvre</b>, not the two that came to mind first.</div>
+      <div class="move"><b>Compute each one&rsquo;s average gain</b> across the likely outcomes. Rough probability times rough payoff is enough.</div>
+      <div class="move"><b>Choose the highest probable profit.</b> For any venture, compare it against the other uses of the same capital, labour and time.</div>
+      <div class="move"><b>Refusing good bets is waste too.</b> A one-in-ten shot at eight units against a certain loss of one is a bad bet; declining a favourable risk because the downside is unpleasant to picture is the same error in reverse.</div>
+      <div class="move"><b>No system beats an edge against you.</b> Doubling after losses and raising on streaks only change when you lose. Lasker calls the gambler&rsquo;s system a fetish that resists criticism.</div>
+      <div class="ex">
+        <div class="ex-k">In practice</div>
+        <div class="ex-row"><span class="tag">Income</span><span class="act">Any venture gets the four steps before it gets the hours.</span><span class="eg">A course launch, a trading rule, a side build: compare its probable gain with the alternative use of the same summer.</span></div>
+        <div class="ex-row"><span class="tag">Betting &amp; fantasy</span><span class="act">The system you won&rsquo;t audit is the fetish.</span><span class="eg">Lasker would ask for the record.</span></div>
+        <div class="ex-row"><span class="tag">Others&rsquo; risk</span><span class="act">His moral line: staking your own modest values is merely imprudent.</span><span class="eg">Knowingly pushing other people into unprofitable risks is the real wrong.</span></div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> the decision was made by the feeling, and the arithmetic was done afterwards to justify it.</div>
+    </div>
+
+    <!-- 5 JUSTICE -->
+    <div class="card">
+      <div class="p-head"><span class="p-num">05</span><span class="p-name">Justice &mdash; attack to the position&rsquo;s worth</span><span class="ev rec">RECONSTRUCTED</span></div>
+      <div class="p-ess">Between competent sides, results tend to match the real advantages held. Claim more and a sound defence refutes you; claim less and the advantage decays.</div>
+      <div class="trig"><b>Use when</b> you are tempted either to overreach or to sit on a gain.</div>
+      <div class="move"><b>Ask what the macheeide would get from this position.</b> That is the line.</div>
+      <div class="move"><b>Attack to it, not past it.</b> An attack that exceeds what the position contains is unjust in Lasker&rsquo;s structural sense, and it gets refuted.</div>
+      <div class="move"><b>Convert held advantage now.</b> This is Steinitz&rsquo;s chess law &mdash; the side with the advantage must attack or lose it &mdash; raised by Lasker into a law of every struggle.</div>
+      <div class="move"><b>Every unit acts for the whole.</b> The chapter opens with a battle broken into many small contests: each unit engages where it does the most work, the unengaged wait as reserves, and an unforeseen jump gets reported to the commander at once.</div>
+      <div class="ex">
+        <div class="ex-k">In practice</div>
+        <div class="ex-row"><span class="tag">Room 148</span><span class="act">A unit that landed and a class that is ready is held advantage.</span><span class="eg">The next lesson has to take it. A soft week as a reward lets it decay.</span></div>
+        <div class="ex-row"><span class="tag">Home</span><span class="act">Goodwill with a teenager is positional advantage with a short half-life.</span><span class="eg">Spent on something real, or lost.</span></div>
+        <div class="ex-row"><span class="tag">Income</span><span class="act">Overreach and underreach both show up as pricing.</span><span class="eg">Charge past what the evidence supports and you are refuted; charge less and you leave the position unconverted.</span></div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> the quiet one &mdash; a won position, rested on.</div>
+      <div class="note">Only the opening pages of this chapter survive in the available scan of the 1907 English edition. The proportionality rule above comes from how Lasker restated the idea elsewhere, including his 1907 lecture on Morphy, where he called it a belief in the justice of effort. Read the original before quoting it as his.</div>
+    </div>
+
+    <div class="section-k">Lasker and Boyd</div>
+    <div class="card phys">
+      <div class="p-head"><span class="p-name">Lasker gives the ruler; Boyd gives the tempo</span><span class="ev c">C</span></div>
+      <div class="para"><b>They agree</b> that strategy is one subject across every field; that the weaker side wins by changing the ground rather than matching force; that economy and simplicity are survival, not taste; and that defence done well is cheap while attack done badly is ruinous.</div>
+      <div class="para"><b>They part</b> on continuity. Lasker&rsquo;s positions change smoothly, advantage is measured, and justice means the result matches the advantage. Boyd&rsquo;s world is discontinuous by design: a fast transient is exactly the jump Lasker treats as an exception the commander must hear about. Lasker tells you what a position is worth. Boyd tells you how to make the other side misjudge it. You need both.</div>
+      <div class="para"><b>Where Lasker is ahead:</b> Boyd never wrote decision arithmetic. Lasker did, in 1907, and it still holds.</div>
+    </div>
+
+    <div class="section-k">Start this week</div>
+    <div class="tool">
+      <div class="step"><div class="n">1</div><div>Write your <b>most important task</b> and your <b>highest-value unit</b> for each of school, home and income. Circle any pair that doesn&rsquo;t match.</div></div>
+      <div class="step"><div class="n">2</div><div>For three days, before any reply or fix, ask <b>&ldquo;am I forced?&rdquo;</b> Count how many times the answer was no.</div></div>
+      <div class="step"><div class="n">3</div><div>Pick one open decision with an unknown outcome and <b>run the four Chance steps</b> on paper. Every option, rough odds, rough payoff.</div></div>
+      <div class="step"><div class="n">4</div><div>Name one advantage you currently hold and <b>convert it</b> before Friday.</div></div>
+      <div class="step"><div class="n">5</div><div>Do the drill once. Recognition before it has to be recall.</div></div>
+    </div>
+
+    <div class="section-k">The Sunday block</div>
+    <div class="tool">
+      <div class="t-head"><span class="t-name">Four questions</span><span class="t-dose">weekly &middot; 5 min</span></div>
+      <div class="q">Where was my best unit this week, and was it on the most important task?</div>
+      <div class="q">What did I defend that was never under threat?</div>
+      <div class="q">Which decision did I make by feeling, and what would the figure have said?</div>
+      <div class="q">Which advantage did I hold and not convert?</div>
+      <div class="note">Not wired into the debrief. Read them in the existing Sunday review.</div>
+    </div>
+
+    <div class="section-k">The one thing</div>
+    <div class="band"><b>What is this position worth to a perfect player &mdash; and is what I&rsquo;m about to do eumachic or amachic?</b></div>
+
+    <div class="section-k">Failure modes</div>
+    <div class="card">
+      <div class="move"><b>Busyness mistaken for work.</b> Rococo feels like effort and produces nothing. The test is whether the aim moved.</div>
+      <div class="move"><b>Defending before you are forced.</b> The commonest amachic act, and the one behind most regretted replies.</div>
+      <div class="move"><b>Attacking from balance.</b> Impatience makes you attack when no advantage exists, and a sound defence punishes it.</div>
+      <div class="move"><b>Sitting on an advantage.</b> Won and not converted, decaying while you rest.</div>
+      <div class="move"><b>The fetish.</b> A system, belief or method you won&rsquo;t audit because it has become identity rather than arithmetic.</div>
+      <div class="move"><b>Turning the people into the opponent.</b> In Room 148 and at home the resistance is the task or the habit. The moment it becomes the student or your daughter, the page has been misread.</div>
+    </div>
+
+    <div class="section-k">Evidence</div>
+    <div class="card">
+      <div class="key">
+        <b><span class="ev doc">DOCTRINE</span></b> &mdash; Lasker&rsquo;s own generalization from chess: the macheeide, the principles of work, economy and advantage, and the vocabulary. Read from the 1907 English text. It is a philosopher&rsquo;s ruler, not a tested theory; its test is whether applying it improves your own results, which is an action-research question.<br>
+        <b><span class="ev a">A</span></b> &mdash; settled science. Move four&rsquo;s core: decide repeated bets by expected value; martingale and streak systems cannot beat a house edge; avoiding small favourable risks is itself a cost.<br>
+        <b><span class="ev c">C</span></b> &mdash; reasoned. Economy as beauty has partial support in processing-fluency research (easy-to-process things are rated truer and more attractive), but &ldquo;complexity hides a second motive&rdquo; is an untested heuristic. The Lasker&ndash;Boyd comparison is Clyde&rsquo;s reading, not scholarship.<br>
+        <b><span class="ev rec">RECONSTRUCTED</span></b> &mdash; move five beyond the chapter&rsquo;s opening pages, rebuilt from Lasker&rsquo;s other statements because the scan truncates.
+      </div>
+      <div class="note">Source: Emanuel Lasker, <i>Struggle</i> (New York: Lasker&rsquo;s Publishing Company, 1907), public domain; on the Internet Archive as <i>struggle00lask</i>. The book was poorly received and the &ldquo;science&rdquo; never caught on. Lasker kept using it for the rest of his career, and it is the real content of what people called his psychological chess.</div>
+    </div>
+
+    <div class="foot">Lasker: Struggle</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h1 style="font-size:20px;">Which principle?</h1>
+    <div class="sub">Recognition, not recall. Each prompt is a situation. Name the principle being kept or broken &mdash; Work, Economy, Advantage, Chance or Justice &mdash; and the eumachic move. Nine per round, drawn from twenty-four, then the one thing.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Done</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn ghost" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  var read = m === 'read';
+  document.getElementById('read').style.display  = read ? 'block' : 'none';
+  document.getElementById('drill').style.display = read ? 'none' : 'block';
+  document.getElementById('tab-read').className  = read ? 'on' : '';
+  document.getElementById('tab-drill').className = read ? '' : 'on';
+  if(!read){ startRound(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-lasker-struggle';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+/* long-press to remove */
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- drill ---------------- */
+var POOL = [
+  { prompt:'You spent Sunday <b>colour-coding the assessment tracker</b> and rewriting slide templates. Monday&rsquo;s lesson is unchanged.',
+    lines:['<b>Work &mdash; Rococo.</b> Movement that decided nothing.','The eumachic move was the best hour on the thing that changes Monday.'] },
+  { prompt:'Your sharpest hour of the day goes to <b>email</b>. The book chapter gets what&rsquo;s left at 10 p.m.',
+    lines:['<b>Work.</b> Highest-value unit on a minor task, minor unit on the main one.','Swap them.'] },
+  { prompt:'Four projects each got <b>a little</b> this month, and none of them moved.',
+    lines:['<b>Work.</b> Value is capacity to produce work, and split capacity produced none.','Name the most important task and put the best unit on it alone.'] },
+  { prompt:'A parent email arrives with a sharp tone. It&rsquo;s 10 p.m. and you&rsquo;re <b>three paragraphs into a reply</b>.',
+    lines:['<b>Economy.</b> You weren&rsquo;t forced.','If any parry is needed, it is a short reply tomorrow.'] },
+  { prompt:'A student mutters something during instructions. You feel the urge to <b>stop the class and deal with it</b>.',
+    lines:['<b>Economy.</b> Is anything actually threatened?','If yes, the least sufficient parry &mdash; a look, a name &mdash; then back to work.'] },
+  { prompt:'Someone cuts you off in traffic and you&rsquo;re <b>composing what you&rsquo;d say</b>.',
+    lines:['<b>Economy.</b> Pressure that costs nothing to ignore costs energy to answer.','Not forced means do not move.'] },
+  { prompt:'Your plan for the book launch has <b>nine steps, three platforms and two partners</b>.',
+    lines:['<b>Economy as a detector.</b> Complexity hides a second motive.','Ask what the extra parts are serving that the aim doesn&rsquo;t need.'] },
+  { prompt:'A colleague&rsquo;s explanation keeps <b>growing new clauses</b> every time you ask a question.',
+    lines:['<b>Economy as a detector.</b> Look for the second motive.','Simplicity is economy; the elaboration is information.'] },
+  { prompt:'A good offer is on the table. You <b>take it immediately</b> because it&rsquo;s good.',
+    lines:['<b>Economy.</b> Don&rsquo;t grab the gain before checking whether a better one is available.','The master waits. Look once more.'] },
+  { prompt:'The class is restless and you push the hard content anyway, <b>louder</b>.',
+    lines:['<b>Advantage.</b> You attacked from weakness; the room&rsquo;s state holds the advantage.','Change the field first &mdash; activity, pace, grouping.'] },
+  { prompt:'The stock system has a <b>slight positive edge</b> over three months. One bad week and you want to scrap it.',
+    lines:['<b>Advantage, with Chance.</b> A slight edge justifies calm, patient aggression.','The figure decides, not the week.'] },
+  { prompt:'A bigger competitor owns the obvious market. Your plan is to <b>out-do them on it</b>.',
+    lines:['<b>Advantage &mdash; you are the weaker side.</b> Don&rsquo;t contest the point of greatest pressure.','Move toward the least pressure. Cheng &middot; Ch&rsquo;i has the domains.'] },
+  { prompt:'You&rsquo;re about to press a negotiation and <b>can&rsquo;t say what advantage you hold</b>.',
+    lines:['<b>Advantage.</b> No nameable advantage means you are attacking from balance.','Wait and build until the attack has no sufficient defence.'] },
+  { prompt:'You have the edge in a dispute, and you&rsquo;re aiming at <b>the point that annoys you most</b>.',
+    lines:['<b>Advantage.</b> The stronger side attacks the weakest point, not the most irritating one.','Then keep the pressure continuous.'] },
+  { prompt:'A course idea feels <b>thrilling</b>. You&rsquo;re ready to give it the whole summer.',
+    lines:['<b>Chance.</b> Excitement is an inclination, not a figure.','List the options, rough odds, rough payoff, and compare with the other uses of the summer.'] },
+  { prompt:'You decline a small, favourable opportunity because <b>the downside is unpleasant to imagine</b>.',
+    lines:['<b>Chance.</b> Refusing good bets is waste too.','Compute, then decide.'] },
+  { prompt:'Your betting approach is to <b>double the stake</b> after each loss.',
+    lines:['<b>Chance &mdash; the fetish.</b> No staking system beats an edge against you.','It only changes when you lose, not whether.'] },
+  { prompt:'Asked why you trust your fantasy approach, your answer is <b>&ldquo;it&rsquo;s my system.&rdquo;</b>',
+    lines:['<b>Chance &mdash; the fetish that resists criticism.</b>','Put the record in front of it.'] },
+  { prompt:'You&rsquo;re choosing between two options and <b>haven&rsquo;t listed a third</b>.',
+    lines:['<b>Chance, step two.</b> List every possible manoeuvre.','The best option is often the one that didn&rsquo;t come to mind.'] },
+  { prompt:'A unit landed beautifully. You give the class <b>a soft week as a reward</b>.',
+    lines:['<b>Justice.</b> Held advantage decays.','Convert it: the next lesson takes what the last one earned.'] },
+  { prompt:'Things are good with your fourteen-year-old this week. You <b>save the conversation</b> you&rsquo;ve been meaning to have for later.',
+    lines:['<b>Justice.</b> Goodwill has a short half-life.','Spend it on something real while it&rsquo;s there.'] },
+  { prompt:'Three good reviews in, you <b>triple the price</b>.',
+    lines:['<b>Justice &mdash; overreach.</b> The attack claims more than the position contains.','Attack to the position&rsquo;s worth, not past it.'] },
+  { prompt:'You have evidence your method works and you <b>still price it like an experiment</b>.',
+    lines:['<b>Justice &mdash; underreach.</b> An advantage left unconverted.','Price to what the evidence supports.'] },
+  { prompt:'You&rsquo;re treating <b>a struggling student</b> as the opponent in a lesson that isn&rsquo;t working.',
+    lines:['<b>Scope.</b> In Room 148 the resistance is the task or the room&rsquo;s state, never the student.','Re-aim the struggle at the actual resistance.'] }
+];
+var ONE = { prompt:'Name <b>the one thing</b>.',
+  lines:['<b>What is this position worth to a perfect player &mdash; and is what I&rsquo;m about to do eumachic or amachic?</b>'] };
+var ROUND=9;
+var STEPS=[], idx=0, revealed=false;
+
+function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function buildRound(){ var p=shuffle(POOL.slice()).slice(0,ROUND); p.push(ONE); return p; }
+function startRound(){
+  STEPS=buildRound(); idx=0;
+  document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display='';
+  document.getElementById('progress').style.opacity='';
+  renderStep();
+}
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Name the principle &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){ startRound(); window.scrollTo(0,0); }
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-lasker-struggle-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+</script>
+</body>
+</html>
