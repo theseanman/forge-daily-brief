@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Making of a Strategist</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0; --violet:#b39dff;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* read cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.phys{ border-left-color:var(--teal); background:rgba(63,208,192,.08); }
+  .card.vio{ border-left-color:var(--violet); background:rgba(179,157,255,.08); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:11px; font-weight:800; letter-spacing:.16em; color:var(--accent); }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .trig{ font-size:13px; line-height:1.5; margin:4px 0 8px; color:var(--ink-dim); }
+  .trig b{ color:var(--gold); font-weight:800; letter-spacing:.04em; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .ex{ margin-top:12px; padding-top:10px; border-top:1px solid var(--line); }
+  .ex-k{ font-size:12px; color:var(--ink-quiet); margin-bottom:4px; font-weight:700; }
+  .ex-row{ font-size:13.5px; line-height:1.55; margin:9px 0; }
+  .ex-row .tag{ display:block; font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); margin-bottom:1px; }
+  .ex-row .act{ color:var(--ink); font-weight:600; }
+  .ex-row .eg{ display:block; color:var(--ink-dim); font-style:italic; }
+  .fail{ margin-top:11px; font-size:13px; line-height:1.5; color:var(--ink-dim); background:rgba(245,215,110,.07); border-radius:10px; padding:9px 11px; }
+  .fail b{ color:var(--gold); }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .band.stop{ background:rgba(63,208,192,.10); border-left-color:var(--teal); }
+  .band.stop b{ color:#8ff0e4; }
+  .para{ font-size:14px; line-height:1.6; margin:7px 0; }
+  .para b{ color:var(--accent-hi); }
+  .card.phys .para b{ color:#8ff0e4; }
+  .card.vio .para b{ color:#d6caff; }
+  .quote{ font-size:15px; font-style:italic; line-height:1.5; margin:10px 0 4px; padding-left:12px; border-left:2px solid var(--violet); color:var(--ink); }
+  .quote span{ display:block; font-style:normal; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-quiet); margin-top:3px; font-weight:700; }
+
+  /* glossary */
+  .gl{ display:grid; grid-template-columns:auto 1fr; gap:7px 12px; margin-top:6px; }
+  .gl .w{ font-size:14px; font-weight:800; color:#d6caff; white-space:nowrap; }
+  .gl .d{ font-size:13.5px; line-height:1.5; color:var(--ink-dim); }
+
+  /* diagram */
+  .diagram{ margin:10px 0 6px; background:rgba(6,28,64,.45); border:1px solid var(--line); border-radius:12px; padding:8px 4px; }
+  .diagram svg{ display:block; width:100%; height:auto; max-width:440px; margin:0 auto; }
+  .cap{ font-size:11.5px; color:var(--ink-quiet); text-align:center; margin-top:4px; line-height:1.4; }
+
+  /* tools */
+  .tool{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:14px 16px; margin-bottom:11px; }
+  .t-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:5px; flex-wrap:wrap; }
+  .t-name{ font-size:16.5px; font-weight:700; }
+  .t-dose{ font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-quiet); font-weight:800; }
+  .q{ font-size:14px; line-height:1.55; margin:6px 0 6px 4px; padding-left:12px; border-left:2px solid var(--gold); }
+  .step{ font-size:14px; line-height:1.55; margin:8px 0; display:flex; gap:10px; }
+  .step .n{ flex:0 0 22px; height:22px; border-radius:50%; background:rgba(74,157,232,.25); color:var(--accent-hi); font-size:12px; font-weight:800;
+    display:flex; align-items:center; justify-content:center; margin-top:1px; }
+  .step b{ color:var(--accent-hi); }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.doc{ background:rgba(63,208,192,.16); color:#8ff0e4; border-color:rgba(63,208,192,.45); }
+  .ev.rec{ background:rgba(179,157,255,.16); color:#d6caff; border-color:rgba(179,157,255,.45); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+
+  /* drill */
+  #drill{ display:none; }
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(19px,5vw,26px); font-weight:300; line-height:1.4; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .btn:focus-visible, .toggle button:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>The Making of a Strategist</h1>
+    <div class="sub">Five elements that Boyd, Lasker, Musashi and Clausewitz shared before they were great, each with a ladder to build it and a plan to use it. The companion to the audio of the same name.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="section-k">The idea</div>
+
+    <div class="card vio">
+      <div class="p-head"><span class="p-name">Five things they had before the theory</span><span class="ev c">REASONING</span></div>
+      <div class="para">Each of the four <b>competed where someone else kept the score</b>, stood <b>outside the institution</b> at a decisive moment, <b>imported</b> from a field that had nothing to do with strategy, <b>practised long before writing</b>, and <b>aimed at the other side&rsquo;s mind</b> rather than its material.</div>
+      <div class="para">The five are one loop. The arena produces verdicts. The record keeps them. The import supplies new things to try. The outside stops you accepting the standard answer in place of your own result. The mind is where the gains are largest once the other four are running.</div>
+    </div>
+
+    <div class="band"><b>The warning that comes first.</b> Picking four famous strategists and asking what they share is survivorship reasoning. Plenty of outsiders with hard experience and wide reading became nothing. The elements may be necessary without being enough. The test is whether building one changes <b>your own results</b> &mdash; an action-research question. Treat each as a hypothesis with a log attached.</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">Four corrections from the fact check</span><span class="ev doc">HISTORY</span></div>
+      <div class="move"><b>Boyd&rsquo;s arena was a training arena.</b> Twenty-two missions in Korea as a wingman, never fired his guns. The record that made him was the forty-second bet at the Fighter Weapons School. The arena has to be honest, not mortal.</div>
+      <div class="move"><b>Boyd did not cite Musashi.</b> He found the Japanese classics after his major briefings; Musashi is in none of Boyd&rsquo;s own works, though the book became a favourite.</div>
+      <div class="move"><b>Musashi&rsquo;s numbers are his own.</b> First duel at thirteen and sixty without defeat both come from his own introduction.</div>
+      <div class="move"><b>Clausewitz is the weakest outsider.</b> A career officer who made major general; the case rests on his 1812 resignation.</div>
+    </div>
+
+    <div class="band stop"><b>Where this applies.</b> Elements one to four are safe everywhere. Element five carries the same scope line as Patterns of Conflict and Lasker: against a real opponent you aim at expectations; <b>in Room 148 and at home there is no opponent</b>, and the skill is used only to read and to lead. If the student or your daughter becomes the enemy, the page has been misread.</div>
+
+    <div class="section-k">The five elements</div>
+
+    <!-- 1 ARENA -->
+    <div class="card">
+      <div class="p-head"><span class="p-num">01</span><span class="p-name">The Arena</span><span class="ev a">A</span><span class="ev doc">HISTORY</span></div>
+      <div class="p-ess">Compete, repeatedly, where someone else decides the result and the answer comes fast. Theory comes later.</div>
+      <div class="para"><b>The pattern.</b> Lasker held the world title 1894&ndash;1921, twenty-seven years. Clausewitz entered the army at twelve and was in combat within about a year. Musashi, by his own account, fought from thirteen. Boyd had the forty-second bet.</div>
+      <div class="para"><b>Why it works.</b> Kahneman and Klein (2009) agreed that skilled intuition forms only when the environment is regular enough to learn and the feedback is rapid and unambiguous. The arena is about <b>calibration</b>, not toughness.</div>
+      <div class="ex">
+        <div class="ex-k">Cultivate &mdash; stay on a rung until it is boring</div>
+        <div class="ex-row"><span class="tag">Rung 1 &middot; scored drill</span><span class="act">Attach a number you don&rsquo;t control to something you do alone.</span><span class="eg">Clean combinations landed in a three-minute round. Number written before you decide how it felt.</span></div>
+        <div class="ex-row"><span class="tag">Rung 2 &middot; prediction</span><span class="act">One line before a lesson: what will the exit tickets show?</span><span class="eg">Shaping and Adapting owns the full method. Use it; don&rsquo;t rebuild it.</span></div>
+        <div class="ex-row"><span class="tag">Rung 3 &middot; low-stakes opponent</span><span class="act">Play something against a person, to a result, weekly.</span><span class="eg">Chess online, a board game with the girls played to win, a lineup call recorded before kickoff.</span></div>
+        <div class="ex-row"><span class="tag">Rung 4 &middot; live audience</span><span class="act">Five minutes at an open mic as Doug Fistmore.</span><span class="eg">Record it. Mark each joke laugh, smile or nothing &mdash; from the tape, not memory.</span></div>
+        <div class="ex-row"><span class="tag">Rung 5 &middot; hits back</span><span class="act">Supervised sparring or partner pads.</span><span class="eg">Only when the body is ready and inside Be Like Mike&rsquo;s rules.</span></div>
+      </div>
+      <div class="ex">
+        <div class="ex-k">Exploit</div>
+        <div class="move"><b>Trust fast judgment where you logged it, and only there.</b> The log shows you the edge of your expertise. No log, slow down and use paper.</div>
+        <div class="move"><b>Teach from a record.</b> &ldquo;I ran this forty times&rdquo; is a different product from &ldquo;experts say.&rdquo;</div>
+        <div class="move"><b>Lose the fear of the verdict.</b> Scored often, a bad score stops being a statement about you. <span class="ev c">REASONING</span></div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> you call a session good or bad before you look at the number. Or the number has stopped being kept.</div>
+      <div class="note">Weekly minimum: one scored contest, one prediction checked.</div>
+    </div>
+
+    <!-- 2 OUTSIDE -->
+    <div class="card">
+      <div class="p-head"><span class="p-num">02</span><span class="p-name">The Outside</span><span class="ev doc">HISTORY</span><span class="ev c">REASONING</span></div>
+      <div class="p-ess">Stand where you can&rsquo;t lean on the institution&rsquo;s answer, so you have to find out for yourself what works.</div>
+      <div class="para"><b>The pattern.</b> Boyd retired a colonel in 1975 after years of Pentagon fights. Musashi was a ronin until 1640. Lasker was forced out of Germany in 1933 &mdash; England, Moscow in 1935, New York in 1937. Clausewitz resigned in 1812 and fought for Russia against the alliance his own king had signed.</div>
+      <div class="para">Two chose it, one had it forced on him, one preferred it. What they share is <b>not rebellion</b>. It is a habit of checking.</div>
+      <div class="ex">
+        <div class="ex-k">Cultivate &mdash; quietly</div>
+        <div class="ex-row"><span class="tag">Rung 1 &middot; default audit</span><span class="act">Weekly, pick one thing you do because it is how it is done.</span><span class="eg">What evidence do I have, from my own room or house, that this works? None is a candidate for a test, not a reason to drop it.</span></div>
+        <div class="ex-row"><span class="tag">Rung 2 &middot; quiet test</span><span class="act">One audited default a month, run two ways.</span><span class="eg">Two blocks of English 8, one measure chosen in advance. Tell no one until there is a result.</span></div>
+        <div class="ex-row"><span class="tag">Rung 3 &middot; outside judge</span><span class="act">One person outside teaching who sees your work regularly.</span><span class="eg">Shaping and Adapting owns this move.</span></div>
+        <div class="ex-row"><span class="tag">Rung 4 &middot; separate ground</span><span class="act">Income projects wholly outside the school&rsquo;s approval and calendar.</span><span class="eg">Their standard is whether a stranger would pay.</span></div>
+      </div>
+      <div class="ex">
+        <div class="ex-k">Exploit</div>
+        <div class="move"><b>Defaults are where the cheap gains are.</b> One audited marking convention can return hours a term.</div>
+        <div class="move"><b>The outside is your market position.</b> A method built by a working teacher who tested it on himself. Say so plainly.</div>
+        <div class="move"><b>Hold the job with less.</b> Give it what it requires and no more &mdash; Lasker&rsquo;s economy.</div>
+      </div>
+      <div class="fail"><b>Failure signals:</b> a month with no default questioned (gone native), or arguing with colleagues about how things ought to be (a habit turned into a cause). Boyd&rsquo;s price is the warning.</div>
+      <div class="note">Weekly minimum: one default audited, one line written.</div>
+    </div>
+
+    <!-- 3 IMPORT -->
+    <div class="card">
+      <div class="p-head"><span class="p-num">03</span><span class="p-name">The Import</span><span class="ev doc">HISTORY</span><span class="ev c">REASONING</span></div>
+      <div class="p-ess">Bring something into the contest from a field that has nothing to do with it &mdash; its ideas and its standard of rigour.</div>
+      <div class="para"><b>The pattern.</b> Boyd&rsquo;s &ldquo;Destruction and Creation&rdquo; (1976) is built from G&ouml;del, Heisenberg and the second law of thermodynamics. Lasker took a mathematics doctorate at Erlangen under Max Noether (sources give 1900 or 1902). Musashi was an ink painter of standing. Clausewitz and German philosophy is the usual claim and the weakest case.</div>
+      <div class="ex">
+        <div class="ex-k">Cultivate</div>
+        <div class="ex-row"><span class="tag">Rung 1 &middot; forced transfer</span><span class="act">After anything from outside, one sentence in a fixed form.</span><span class="eg">&ldquo;In Room 148 this means&hellip;&rdquo; &ldquo;In the ring this means&hellip;&rdquo; &ldquo;In the book this means&hellip;&rdquo; No sentence, it was entertainment.</span></div>
+        <div class="ex-row"><span class="tag">Rung 2 &middot; one field deep</span><span class="act">One outside field per term, far enough to meet its rigour.</span><span class="eg">Probability from the stock system, comedy writing, or boxing mechanics. One deep beats six toured.</span></div>
+        <div class="ex-row"><span class="tag">Rung 3 &middot; transfer tested</span><span class="act">One written transfer a month, run and checked.</span><span class="eg">Stand-up&rsquo;s &ldquo;cut every word before the punchline&rdquo; applied to class instructions.</span></div>
+        <div class="ex-row"><span class="tag">Rung 4 &middot; reverse import</span><span class="act">Carry teaching outward.</span><span class="eg">Twenty years of making hard language simple is a skill most self-improvement writers lack.</span></div>
+      </div>
+      <div class="ex">
+        <div class="ex-k">Exploit</div>
+        <div class="move"><b>Combinations that are hard to copy.</b> Anyone can read Boyd. Few can join Boyd, action research and second-language teaching.</div>
+        <div class="move"><b>Explanation.</b> Two fields means twice the stock of comparisons.</div>
+        <div class="move"><b>Early warning.</b> When one field contradicts another, you have found an error or an opening.</div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> a stack of interesting notes and no transfer sentences. Collecting has replaced importing.</div>
+      <div class="note">Weekly minimum: one transfer sentence. Shaping and Adapting&rsquo;s &ldquo;destroy to create&rdquo; is what this habit feeds.</div>
+    </div>
+
+    <!-- 4 RECORD -->
+    <div class="card">
+      <div class="p-head"><span class="p-num">04</span><span class="p-name">The Record</span><span class="ev doc">HISTORY</span><span class="ev c">REASONING</span></div>
+      <div class="p-ess">Practice first, book late. A record kept during the practice is what lets the theory be both true and teachable.</div>
+      <div class="para"><b>The pattern.</b> Musashi finished the Book of Five Rings in 1645, weeks before he died. Clausewitz began On War in 1816 after two decades of service and never finished; Marie published it in 1832. Boyd never published a book &mdash; he revised briefings for years. Lasker is the partial exception: <i>Struggle</i> came in 1907, thirteen years into his reign.</div>
+      <div class="ex">
+        <div class="ex-k">Cultivate</div>
+        <div class="ex-row"><span class="tag">Rung 1 &middot; one-line log</span><span class="act">Dated line per experiment: tried, predicted, happened.</span><span class="eg">No essay. The line is the asset.</span></div>
+        <div class="ex-row"><span class="tag">Rung 2 &middot; earned claim</span><span class="act">No principle goes into a chapter or page without five dated entries.</span><span class="eg">Reading can suggest a principle. Only the log can license it.</span></div>
+        <div class="ex-row"><span class="tag">Rung 3 &middot; briefing before book</span><span class="act">Explain a finding aloud before writing it.</span><span class="eg">What the listener misunderstands is what you haven&rsquo;t understood yet.</span></div>
+        <div class="ex-row"><span class="tag">Rung 4 &middot; revision</span><span class="act">Once a term, reread an old entry and mark what was wrong.</span><span class="eg">Conceptual Spiral: give the frame an expiry.</span></div>
+      </div>
+      <div class="ex">
+        <div class="ex-k">Exploit</div>
+        <div class="move"><b>Authority that can be checked.</b> It answers the reader&rsquo;s quiet question: did the author do this himself?</div>
+        <div class="move"><b>A brake on fluency.</b> You write fast and so does Clyde. A persuasive chapter about something untested is easy to produce.</div>
+        <div class="move"><b>Material.</b> Two hours a week won&rsquo;t write a book. It will keep a log. Capture in term, build in summer.</div>
+      </div>
+      <div class="fail"><b>Failure signal:</b> drafting a principle you can&rsquo;t point to entries for. Or a new protocol page built with nothing logged against the last one.</div>
+      <div class="note">Weekly minimum: three one-line entries.</div>
+    </div>
+
+    <!-- 5 MIND -->
+    <div class="card">
+      <div class="p-head"><span class="p-num">05</span><span class="p-name">The Mind</span><span class="ev doc">HISTORY</span><span class="ev a">A</span></div>
+      <div class="p-ess">Move the contest from material to what the other side believes, expects and can bear.</div>
+      <div class="para"><b>The pattern.</b> Boyd: physical, mental, moral &mdash; and the moral is deepest. Clausewitz: moral forces, will, friction. Musashi: rhythm, timing, moving the opponent as you wish. Lasker: &ldquo;he played the man&rdquo; is the popular summary; your Lasker page has the fuller account.</div>
+      <div class="para"><b>Settled.</b> Von Neumann (1928): with hidden information, the best play often mixes its moves in fixed proportions. Predictability is an exploitable weakness.</div>
+      <div class="ex">
+        <div class="ex-k">Cultivate</div>
+        <div class="ex-row"><span class="tag">Rung 1 &middot; expectation line</span><span class="act">Before anything that matters: what do they expect me to do?</span><span class="eg">Two weeks of noticing only. Check afterward whether you were right.</span></div>
+        <div class="ex-row"><span class="tag">Rung 2 &middot; deliberate break</span><span class="act">Once a day, break an expectation at no stakes.</span><span class="eg">A class braced for a raised voice gets a lowered one. Watch what it does to attention.</span></div>
+        <div class="ex-row"><span class="tag">Rung 3 &middot; feint</span><span class="act">Show one punch, throw another. Write a punchline.</span><span class="eg">A set-up builds an expectation; the last word breaks it.</span></div>
+        <div class="ex-row"><span class="tag">Rung 4 &middot; read under pressure</span><span class="act">Hold the expectation line during a live negotiation or dispute.</span><span class="eg">Think Like Boyd: model people by their constraints.</span></div>
+        <div class="ex-row"><span class="tag">Rung 5 &middot; mix</span><span class="act">Facing the same counterpart repeatedly, check your own predictability.</span><span class="eg">Vary on purpose.</span></div>
+      </div>
+      <div class="ex">
+        <div class="ex-k">Exploit</div>
+        <div class="move"><b>Cheaper wins.</b> Change what someone expects and you often don&rsquo;t need force. A class that can&rsquo;t predict your next move is paying attention. <span class="ev c">REASONING</span></div>
+        <div class="move"><b>Defence.</b> You notice when your own expectations are being managed &mdash; by a salesman, an institution, a headline.</div>
+        <div class="move"><b>Writing.</b> Set an expectation, then meet it slightly differently than promised.</div>
+      </div>
+      <div class="fail"><b>Failure signals:</b> surprised by a reaction one line of thought would have predicted. Or running this on your family as a tactic &mdash; the scope line crossed.</div>
+      <div class="note">Weekly minimum: five expectation lines, checked afterward.</div>
+    </div>
+
+    <div class="section-k">Start this month</div>
+    <div class="tool">
+      <div class="step"><div class="n">1</div><div><b>Month one: Arena and Record only.</b> One scored contest and one checked prediction a week, three one-line entries.</div></div>
+      <div class="step"><div class="n">2</div><div><b>Add one element a month</b>, and only if the log shows the last one is alive.</div></div>
+      <div class="step"><div class="n">3</div><div><b>If only one, the Arena.</b> It is the only element that corrects the other four. A record with no verdicts is a diary; an untested import is a hobby; an outsider with no results is a crank; mind-reading with no feedback is guessing.</div></div>
+      <div class="step"><div class="n">4</div><div><b>The cheapest single rep:</b> five minutes at an open mic trains Arena, Record, Import and Mind at once.</div></div>
+      <div class="step"><div class="n">5</div><div>Do the drill once. Recognition before it has to be recall.</div></div>
+    </div>
+
+    <div class="section-k">The Sunday block</div>
+    <div class="tool">
+      <div class="t-head"><span class="t-name">Five questions</span><span class="t-dose">weekly &middot; 5 min</span></div>
+      <div class="q">Where did someone else keep the score this week, and what was it?</div>
+      <div class="q">Which default did I question?</div>
+      <div class="q">What did I carry in from outside, in one sentence?</div>
+      <div class="q">How many lines went in the log?</div>
+      <div class="q">Whose expectation did I read right, and whose did I miss?</div>
+      <div class="note">Not wired into the debrief. Read them in the existing Sunday review.</div>
+    </div>
+
+    <div class="section-k">The one thing</div>
+    <div class="band"><b>Find the place where someone else keeps the score, go there every week, and write down what happened.</b></div>
+
+    <div class="section-k">Failure modes</div>
+    <div class="card">
+      <div class="move"><b>Starting all five.</b> The ladder is one element a month.</div>
+      <div class="move"><b>Reading in place of the arena.</b> More strategy books feel like progress and produce no verdict.</div>
+      <div class="move"><b>The outsider as identity.</b> Checking is the habit. Opposition is the trap.</div>
+      <div class="move"><b>Theory ahead of the log.</b> A chapter written from fluency rather than entries.</div>
+      <div class="move"><b>Turning the people into the opponent.</b> Element five stops at the classroom door and the front door.</div>
+    </div>
+
+    <div class="section-k">Evidence</div>
+    <div class="card">
+      <div class="key">
+        <b><span class="ev doc">HISTORY</span></b> &mdash; biographical facts checked against published sources on Nov 10 2026: Coram via the Super Sabre Society and Chet Richards for Boyd; MacTutor (St Andrews) and Deutsche Biographie for Lasker; Musashi&rsquo;s own introduction and Samurai Archives; Britannica for Clausewitz. Musashi&rsquo;s duel record is self-reported.<br>
+        <b><span class="ev a">A</span></b> &mdash; peer-reviewed or proven. Kahneman &amp; Klein, &ldquo;Conditions for Intuitive Expertise,&rdquo; <i>American Psychologist</i>, 2009. Von Neumann&rsquo;s 1928 minimax result is carried over from the Lasker page and was not rechecked for this build.<br>
+        <b><span class="ev c">REASONING</span></b> &mdash; Clyde&rsquo;s judgment, untested. The five elements themselves, every ladder and every exploitation plan. Found by looking backward at four winners.
+      </div>
+    </div>
+
+    <div class="foot">The Making of a Strategist</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h1 style="font-size:20px;">Which element?</h1>
+    <div class="sub">Recognition, not recall. Each prompt is a situation. Name the element being kept or broken &mdash; Arena, Outside, Import, Record or Mind &mdash; and the move. A few are scope or ladder calls. Nine per round, drawn from thirty-one, then the one thing.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Done</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn ghost" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  var read = m === 'read';
+  document.getElementById('read').style.display  = read ? 'block' : 'none';
+  document.getElementById('drill').style.display = read ? 'none' : 'block';
+  document.getElementById('tab-read').className  = read ? 'on' : '';
+  document.getElementById('tab-drill').className = read ? '' : 'on';
+  if(!read){ startRound(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-making-of-a-strategist';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+/* long-press to remove */
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- drill ---------------- */
+var POOL = [
+  { prompt:'After bag work you write <b>&ldquo;felt sharp tonight&rdquo;</b> in the log. No count, no timer.',
+    lines:['<b>Arena &mdash; no verdict.</b> A feeling is not a score.','Number first, written before you decide how it felt.'] },
+  { prompt:'You&rsquo;ve read <b>three more strategy books</b> this month and competed at nothing.',
+    lines:['<b>Arena.</b> Reading in place of contest produces no feedback.','One scored contest this week, however small.'] },
+  { prompt:'You are sure the new lesson format works better. <b>You never wrote down what you expected.</b>',
+    lines:['<b>Arena &mdash; rung two.</b> Without a prediction, a lesson&rsquo;s feedback is easy to explain away.','One line before, exit tickets after.'] },
+  { prompt:'A board game with the girls. You <b>ease off so nobody loses</b>.',
+    lines:['<b>Arena &mdash; rung three.</b> The structure only works played to a result.','Play to win, kindly. Or call it family time, which is fine, and find the contest elsewhere.'] },
+  { prompt:'You remember the open mic set as <b>&ldquo;went pretty well.&rdquo;</b> The recording is unplayed.',
+    lines:['<b>Arena &mdash; rung four.</b> Memory edits the verdict.','Mark each joke laugh, smile or nothing from the tape.'] },
+  { prompt:'Your classroom read has been right all term, so you <b>trust the same gut on a business deal</b>.',
+    lines:['<b>Arena &mdash; the edge of expertise.</b> Fast judgment is earned per domain.','No log there. Slow down and use paper.'] },
+  { prompt:'One bad score and you&rsquo;re <b>thinking of dropping the drill</b>.',
+    lines:['<b>Arena.</b> The verdict is information about the attempt, not about you.','Log it and go again. Scored often, the sting fades.'] },
+  { prompt:'You mark every paragraph error on every paper because <b>that&rsquo;s how the department does it</b>.',
+    lines:['<b>Outside &mdash; default audit.</b> What evidence, from your own room, says it works?','None means a candidate for a quiet test.'] },
+  { prompt:'You&rsquo;ve found a better routine and you&rsquo;re <b>drafting the email to tell the department</b> they&rsquo;re doing it wrong.',
+    lines:['<b>Outside &mdash; habit turned into a cause.</b> Boyd paid for this with his career.','Run it quietly. Share a result if asked.'] },
+  { prompt:'A month has gone by and you <b>can&rsquo;t name one default you questioned</b>.',
+    lines:['<b>Outside &mdash; gone native.</b>','One audit this week. Five minutes, one line.'] },
+  { prompt:'You&rsquo;re holding the course launch until <b>a colleague you respect approves of it</b>.',
+    lines:['<b>Outside &mdash; separate ground.</b> The income projects sit outside the institution&rsquo;s approval.','The standard is whether a stranger would pay.'] },
+  { prompt:'Everyone who has seen the manuscript is <b>a teacher</b>.',
+    lines:['<b>Outside &mdash; the outside judge.</b> People who share your assumptions can&rsquo;t see them.','One reader from outside the field. Shaping and Adapting has the method.'] },
+  { prompt:'You&rsquo;re polishing a lesson that already works because <b>an observation might happen</b>.',
+    lines:['<b>Outside &mdash; hold the job with less.</b> Give it what it requires and no more.','That hour belongs to the main effort.'] },
+  { prompt:'A fascinating podcast on <b>how casinos think about risk</b>. You tell two people about it and move on.',
+    lines:['<b>Import &mdash; no transfer sentence.</b> That was entertainment.','&ldquo;In the stock system this means&hellip;&rdquo; &mdash; finish it or let it go.'] },
+  { prompt:'This term you&rsquo;ve dipped into <b>six new subjects</b> and can explain none of them properly.',
+    lines:['<b>Import &mdash; rung two.</b> A tour brings back ideas but not rigour.','One field per term, deep enough to meet its standard.'] },
+  { prompt:'Your note says <b>&ldquo;stand-up timing would help my instructions.&rdquo;</b> It&rsquo;s three weeks old.',
+    lines:['<b>Import &mdash; rung three.</b> A transfer is a hypothesis until it&rsquo;s run.','Try it Monday. Check it against what the class does.'] },
+  { prompt:'What you know from probability <b>contradicts a rule</b> in a self-help book you like.',
+    lines:['<b>Import &mdash; early warning.</b> An error or an opening. Both are worth having.','Write down which one you think it is, and why.'] },
+  { prompt:'You&rsquo;re wondering what you could offer that <b>other self-improvement writers can&rsquo;t</b>.',
+    lines:['<b>Import &mdash; the reverse import.</b> Twenty years of making hard language simple.','And the combination: Boyd, action research, second-language teaching.'] },
+  { prompt:'You&rsquo;re drafting a chapter on a principle. The log holds <b>one entry</b> on it.',
+    lines:['<b>Record &mdash; the earned claim.</b> Reading suggests; only the log licenses.','Five dated entries first.'] },
+  { prompt:'Clyde has produced <b>a persuasive section</b> on a tactic neither of you has tested.',
+    lines:['<b>Record &mdash; the brake on fluency.</b> Persuasive is not tested.','Mark it reasoning, or hold it until there are entries.'] },
+  { prompt:'A new protocol page went live. <b>Nothing has been logged</b> against the previous one.',
+    lines:['<b>Record.</b> Pages are theory. The log is practice.','Three one-line entries before the next build.'] },
+  { prompt:'October, Tuesday night. You feel you should be <b>writing the book</b> and have forty minutes.',
+    lines:['<b>Record &mdash; capture in term, build in summer.</b>','Forty minutes keeps a log. It doesn&rsquo;t write a book.'] },
+  { prompt:'You wrote the finding up straight away. <b>Nobody has heard you explain it.</b>',
+    lines:['<b>Record &mdash; briefing before book.</b> Boyd gave the talk until audiences stopped breaking it.','Say it aloud to one person. Note what they misunderstood.'] },
+  { prompt:'The class goes quiet and wary when you walk over. <b>You were about to raise your voice.</b>',
+    lines:['<b>Mind &mdash; the deliberate break.</b> They expect loud.','Go quiet. Watch what it does to attention. Read and lead, not defeat.'] },
+  { prompt:'A parent meeting goes badly in <b>exactly the way you&rsquo;d have guessed</b> if you&rsquo;d thought for ten seconds.',
+    lines:['<b>Mind &mdash; the expectation line, skipped.</b>','One thought before anything that matters: what do they expect me to do?'] },
+  { prompt:'On the bag you throw <b>the same jab-cross entry</b> every time.',
+    lines:['<b>Mind &mdash; feint and mix.</b> Predictability is an exploitable weakness.','Show one, throw another. Vary on purpose.'] },
+  { prompt:'The joke&rsquo;s set-up <b>gives away the ending</b>.',
+    lines:['<b>Mind &mdash; rung three.</b> A punchline is a broken expectation.','Build the wrong expectation first, then break it on the last word.'] },
+  { prompt:'A salesman keeps saying <b>the offer ends today</b>.',
+    lines:['<b>Mind &mdash; defence.</b> Your expectations are being managed.','Name it to yourself. Then decide on the figure, not the clock.'] },
+  { prompt:'You catch yourself <b>working an angle on your fourteen-year-old</b> to win an argument.',
+    lines:['<b>Scope.</b> At home there is no opponent.','Drop the tactic. Read what she expects and decide what helps her.'] },
+  { prompt:'You&rsquo;re planning to start <b>all five elements on Monday</b>.',
+    lines:['<b>The ladder.</b> Month one is Arena and Record only.','Add one a month, and only if the log shows the last is alive.'] },
+  { prompt:'Four famous strategists share a trait, so <b>the trait must be what made them</b>.',
+    lines:['<b>The warning.</b> Survivorship reasoning &mdash; plenty with the trait became nothing.','Hypothesis with a log attached. Your results decide.'] }
+];
+var ONE = { prompt:'Name <b>the one thing</b>.',
+  lines:['<b>Find the place where someone else keeps the score, go there every week, and write down what happened.</b>'] };
+var ROUND=9;
+var STEPS=[], idx=0, revealed=false;
+
+function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function buildRound(){ var p=shuffle(POOL.slice()).slice(0,ROUND); p.push(ONE); return p; }
+function startRound(){
+  STEPS=buildRound(); idx=0;
+  document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display='';
+  document.getElementById('progress').style.opacity='';
+  renderStep();
+}
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Name the element &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){ startRound(); window.scrollTo(0,0); }
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-making-of-a-strategist-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+</script>
+</body>
+</html>
