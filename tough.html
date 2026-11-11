@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tough</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0; --red:#ff8a8a; --violet:#b48cff;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 13px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+  a.inl{ color:var(--accent-hi); }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.teal{ border-left-color:var(--teal); background:rgba(63,208,192,.08); }
+  .card.gold{ border-left-color:var(--gold); background:rgba(245,215,110,.08); }
+  .card.red{ border-left-color:var(--red); background:rgba(255,138,138,.08); }
+  .card.violet{ border-left-color:var(--violet); background:rgba(180,140,255,.09); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .trig{ font-size:13px; line-height:1.5; margin:4px 0 8px; color:var(--ink-dim); }
+  .trig b{ color:var(--gold); font-weight:800; letter-spacing:.04em; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .card.teal .move b{ color:#8ff0e4; } .card.teal .move:before{ color:var(--teal); }
+  .card.red .move b{ color:#ffc0c0; } .card.red .move:before{ color:var(--red); }
+  .card.violet .move b{ color:#d4bcff; } .card.violet .move:before{ color:var(--violet); }
+  .ex{ margin-top:11px; padding-top:10px; border-top:1px solid var(--line); }
+  .ex-row{ font-size:13.5px; line-height:1.55; margin:6px 0; }
+  .ex-row .tag{ display:inline-block; min-width:78px; font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .group-k{ font-size:12.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--teal); font-weight:800; margin:16px 0 6px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .band.warn{ background:rgba(255,138,138,.10); border-left-color:var(--red); }
+  .band.warn b{ color:var(--red); }
+  .band.vio{ background:rgba(180,140,255,.11); border-left-color:var(--violet); }
+  .band.vio b{ color:#d4bcff; }
+  .para{ font-size:14px; line-height:1.6; margin:7px 0; }
+  .para b{ color:var(--accent-hi); }
+  .card.teal .para b{ color:#8ff0e4; }
+  .card.red .para b{ color:#ffc0c0; }
+  .q{ font-size:14px; line-height:1.55; margin:6px 0 6px 4px; padding-left:12px; border-left:2px solid var(--gold); }
+  .step{ display:flex; gap:11px; font-size:14px; line-height:1.55; margin:9px 0; }
+  .step .n{ flex:0 0 22px; height:22px; border-radius:50%; background:rgba(74,157,232,.22); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:800; color:var(--accent-hi); margin-top:1px; }
+  .step b{ color:var(--accent-hi); }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+  .ev.x{ background:rgba(255,138,138,.16); color:#ffb3b3; border-color:rgba(255,138,138,.4); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+
+  /* ---------- WORK tab ---------- */
+  #work{ display:none; }
+  #drill{ display:none; }
+  .tool{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; margin-bottom:13px; overflow:hidden; }
+  .tool.teal{ border-left-color:var(--teal); background:rgba(63,208,192,.07); }
+  .tool.violet{ border-left-color:var(--violet); background:rgba(180,140,255,.08); }
+  .tool.gold{ border-left-color:var(--gold); background:rgba(245,215,110,.07); }
+  .tool-head{ display:flex; align-items:center; gap:10px; padding:14px 16px; cursor:pointer; }
+  .tool-head .tn{ flex:0 0 24px; height:24px; border-radius:50%; background:rgba(74,157,232,.22); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:800; color:var(--accent-hi); }
+  .tool-head .tt{ flex:1; font-size:16px; font-weight:700; line-height:1.3; }
+  .tool-head .cnt{ font-size:10.5px; font-weight:800; letter-spacing:.1em; color:var(--ink-quiet); }
+  .tool-head .chev{ color:var(--ink-quiet); font-size:15px; transition:transform .25s; }
+  .tool.open .tool-head .chev{ transform:rotate(90deg); }
+  .tool-body{ display:none; padding:0 16px 16px; }
+  .tool.open .tool-body{ display:block; }
+  .why{ font-size:13px; line-height:1.55; color:var(--ink-dim); border-top:1px solid var(--line); padding-top:11px; margin-bottom:12px; }
+  .why b{ color:var(--gold); }
+  .fl{ margin-bottom:11px; }
+  .fl label{ display:block; font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:var(--accent-hi); margin-bottom:5px; }
+  .fl .hintline{ font-size:12px; color:var(--ink-quiet); line-height:1.45; margin-bottom:6px; }
+  textarea, input[type=text], select{ width:100%; background:rgba(5,22,52,.55); border:1px solid var(--line); border-radius:10px;
+    color:var(--ink); font-size:14.5px; line-height:1.5; padding:10px 12px; font-family:inherit; resize:vertical; }
+  textarea:focus, input[type=text]:focus, select:focus{ outline:2px solid var(--accent); outline-offset:0; border-color:transparent; }
+  textarea::placeholder, input::placeholder{ color:rgba(234,244,255,.3); }
+  select{ appearance:none; -webkit-appearance:none; background-image:linear-gradient(45deg,transparent 50%,var(--accent-hi) 50%),linear-gradient(135deg,var(--accent-hi) 50%,transparent 50%);
+    background-position:calc(100% - 17px) 18px, calc(100% - 12px) 18px; background-size:5px 5px,5px 5px; background-repeat:no-repeat; padding-right:34px; }
+  select option{ background:#0b2547; color:#eaf4ff; }
+  .twocol{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (max-width:520px){ .twocol{ grid-template-columns:1fr; } }
+  .colhd{ font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; margin-bottom:5px; }
+  .colhd.l{ color:var(--red); } .colhd.r{ color:var(--accent-hi); }
+  .rung{ display:flex; gap:9px; align-items:flex-start; margin-bottom:8px; }
+  .rung .rn{ flex:0 0 20px; height:20px; border-radius:50%; background:rgba(180,140,255,.2); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:10.5px; font-weight:800; color:#d4bcff; margin-top:9px; }
+  .rung .rl{ flex:1; }
+  .rung .rl .rlab{ font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); margin-bottom:3px; }
+  .chk{ display:flex; align-items:flex-start; gap:10px; font-size:14px; line-height:1.5; margin:9px 0; cursor:pointer; }
+  .chk input{ flex:0 0 19px; width:19px; height:19px; margin-top:1px; accent-color:var(--accent); }
+  .chk span b{ color:var(--accent-hi); }
+  .toolbar{ display:flex; gap:9px; margin-top:13px; flex-wrap:wrap; }
+  .sbtn{ border:0; border-radius:999px; padding:11px 20px; font-size:13px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; }
+  .sbtn.ghost{ background:rgba(9,36,80,.6); color:#fff; border:1px solid var(--line); }
+  .sbtn.danger{ background:rgba(255,138,138,.16); color:#ffb3b3; border:1px solid rgba(255,138,138,.4); }
+  .sbtn:disabled{ opacity:.35; cursor:default; }
+  .analysis{ display:none; margin-top:13px; background:rgba(245,215,110,.09); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; }
+  .analysis.on{ display:block; }
+  .analysis .ah{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800; color:var(--gold); margin-bottom:8px; }
+  .analysis .aq{ font-size:14px; line-height:1.55; margin:8px 0; padding-left:14px; position:relative; }
+  .analysis .aq:before{ content:'\2192'; position:absolute; left:0; color:var(--gold); font-weight:700; }
+  .analysis .aq b{ color:var(--gold); }
+  .flag{ font-size:13.5px; line-height:1.55; margin:8px 0; padding:9px 11px; border-radius:9px; background:rgba(255,138,138,.12); border-left:3px solid var(--red); }
+  .flag b{ color:#ffc0c0; }
+  .flag.ok{ background:rgba(63,208,192,.11); border-left-color:var(--teal); }
+  .flag.ok b{ color:#8ff0e4; }
+  .hist{ margin-top:14px; border-top:1px solid var(--line); padding-top:11px; }
+  .hist-k{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); margin-bottom:8px; }
+  .entry{ background:rgba(5,22,52,.4); border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin-bottom:8px; }
+  .entry .edate{ font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; color:var(--accent-hi); margin-bottom:5px;
+    display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .entry .edate .del{ color:var(--ink-quiet); cursor:pointer; font-size:15px; line-height:1; padding:0 4px; }
+  .entry .erow{ font-size:13px; line-height:1.5; color:var(--ink-dim); margin:4px 0; white-space:pre-wrap; }
+  .entry .erow .el{ font-size:10px; letter-spacing:.1em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); display:block; }
+  .empty{ font-size:12.5px; color:var(--ink-quiet); font-style:italic; }
+  .pattern{ background:rgba(63,208,192,.09); border-left:4px solid var(--teal); border-radius:12px; padding:13px 15px; margin-bottom:13px; font-size:13.5px; line-height:1.6; }
+  .pattern b{ color:#8ff0e4; }
+
+  /* drill */
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(19px,5vw,26px); font-weight:300; line-height:1.4; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .btn:focus-visible, .toggle button:focus-visible, .sbtn:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+
+  /* ---------- Tough additions ---------- */
+  .due{ border-radius:12px; padding:12px 15px; font-size:13.5px; line-height:1.55; margin-bottom:13px; background:rgba(74,157,232,.12); border-left:4px solid var(--accent); }
+  .due b{ color:var(--accent-hi); }
+  .due.now{ background:rgba(255,138,138,.12); border-left-color:var(--red); }
+  .due.now b{ color:#ffc0c0; }
+  .stepk{ font-size:11px; letter-spacing:.2em; text-transform:uppercase; font-weight:800; color:var(--gold); margin:16px 0 6px; }
+  .stepk:first-of-type{ margin-top:4px; }
+  .ro{ background:rgba(5,22,52,.45); border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:13.5px; line-height:1.55;
+    color:var(--ink-dim); white-space:pre-wrap; min-height:60px; max-height:260px; overflow:auto; }
+  .ro.empty{ font-style:italic; color:var(--ink-quiet); }
+  .gaprow{ background:rgba(5,22,52,.35); border:1px solid var(--line); border-radius:12px; padding:11px 12px 4px; margin-bottom:10px; }
+  .gaprow .gh{ display:flex; justify-content:space-between; align-items:center; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:var(--violet); margin-bottom:8px; }
+  .gaprow .gh span.x{ color:var(--ink-quiet); cursor:pointer; font-size:15px; padding:0 4px; letter-spacing:0; }
+  .saved-note{ font-size:12px; color:var(--teal); font-weight:700; letter-spacing:.06em; margin-top:8px; min-height:16px; }
+  .quote{ font-size:15px; line-height:1.6; font-style:italic; color:var(--ink); margin:6px 0 4px; }
+  .quote-by{ font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); margin-bottom:6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-work" onclick="setMode('work')">Work</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>Tough</h1>
+    <div class="sub">Built from your reading notes on Greg Everett&rsquo;s <i>Tough: Building True Mental, Physical &amp; Emotional Toughness for Success &amp; Fulfillment</i> (2021). His four elements, his identity exercise and goal plan, and the research that backs or qualifies each piece. The exercise itself lives in the Work tab.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="band"><b>The premise.</b> Toughness is not discovering who you are. It is <b>determining</b> who you are, then moving through life deliberately and without hesitation as that person. Everett does not mean being imperturbable by temperament. He means having the knowledge and capability, built through purposeful training, to deal productively with whatever arrives &mdash; and the confidence that comes from having proved it to yourself.</div>
+
+    <div class="section-k">The four elements</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">01</span><span class="p-name">Character</span></div>
+      <div class="p-ess">Who are you, and are you secure in it?</div>
+      <div class="move"><b>Define an identity and the values that go with it,</b> then enforce decisions that fit them. Without that definition there is nothing to steer by, and every decision gets made by mood or by whoever is in the room.</div>
+      <div class="move"><b>Insecurity is expensive.</b> It drives pointless competition, attention seeking and attempts at validation &mdash; energy spent convincing other people of your value instead of becoming the person. And it rarely works: people see you as you are, not as you are performing.</div>
+      <div class="move"><b>Find a value by finding its exception.</b> Ask where you would let the end justify the means. The line you would cross for family shows you what family is to you.</div>
+      <div class="move"><b>Confidence is evidence, not a feeling.</b> It is a resolute trust in your abilities and values, built from honest self-evaluation that produces objective proof of competence.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="ev b">B</span> Self-assessment is a weak guide on its own: in a meta-analysis, self-ratings correlated with objective performance at only about r = .29 (Mabe &amp; West, 1982). That is why Everett&rsquo;s &ldquo;objective metrics&rdquo; matter &mdash; the feeling of competence and the fact of it are only loosely connected.</div>
+        <div class="ex-row"><span class="ev b">B</span> Self-worth that depends on outside approval carries real costs to learning, relationships and self-regulation (Crocker &amp; Park, 2004). It supports his point about validation seeking, though the research is correlational more than experimental.</div>
+      </div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><span class="p-num">02</span><span class="p-name">Capability</span></div>
+      <div class="p-ess">What are you able to do?</div>
+      <div class="move"><b>The more you can do, the less you depend on others</b> and the less new situations intimidate you.</div>
+      <div class="move"><b>The universal basics.</b> Survival skills, first aid, home safety (shutting off gas and water), car skills such as changing a tire, tool use, self-defence, swimming and general physical ability. Everett&rsquo;s list also includes firearms.</div>
+      <div class="move"><b>Start where you are.</b> Appendix B of the book scales the training down &mdash; push-ups on knees or against the counter &mdash; so there is no level too low to begin.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="ev b">B</span> Bandura&rsquo;s work on self-efficacy places <b>mastery experience</b> &mdash; actually having done the thing &mdash; as the strongest source of belief in your ability, ahead of encouragement or watching others. Capability is the raw material of confidence, not a separate topic.</div>
+      </div>
+    </div>
+
+    <div class="card violet">
+      <div class="p-head"><span class="p-num">03</span><span class="p-name">Capacity</span></div>
+      <div class="p-ess">What are you able to withstand?</div>
+      <div class="move"><b>Seek challenge rather than avoid it,</b> and choose your attitude while you do. The best survivors treat disruptive change as if it were welcome &mdash; not because they want hardship, but because that is the posture they meet it with.</div>
+      <div class="move"><b>Stay in command of your outlook.</b> Don&rsquo;t let circumstances, other people or emotion dictate what you do or say, or bend your perception of the facts. Composure in chaos is a choice made by someone in control.</div>
+      <div class="move"><b>Recognize, evaluate, respond.</b> Practise noticing a significant emotion quickly, assessing the situation at once, and choosing the most useful response. Marcus Aurelius: the nearer a man comes to a calm mind, the closer he is to strength.</div>
+      <div class="move"><b>Talk to yourself like a coach.</b> Straightforward, honest cues. Offensive words &mdash; <b>can</b> and <b>will</b> &mdash; in place of defensive ones like <b>try</b>, <b>might</b> and <b>should</b>. Defensive self-talk casts you as a victim reacting to an attack; offensive self-talk brings the fight to the challenge.</div>
+      <div class="move"><b>Visualize twice.</b> Outcome visualization before bed &mdash; succeeding at the major goals. Process visualization for the day ahead &mdash; the specific things you need to do.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="ev a">A</span> Self-talk works: a meta-analysis of 32 studies found a moderate effect on sport performance (ES = .48), larger for fine and novel tasks, and larger when people were trained in it (Hatzigeorgiadis et al., 2011).</div>
+        <div class="ex-row"><span class="ev a">A</span> Mental practice improves performance (d &asymp; .53; Driskell et al., 1994), more so for tasks with a thinking component.</div>
+        <div class="ex-row"><span class="ev b">B</span> <b>Qualify the outcome visualization.</b> Picturing success alone can lower effort &mdash; positive fantasies reduce the energy you bring to the goal (Kappes &amp; Oettingen, 2011). Picturing the <b>process</b> beat picturing the outcome in a classic exam study (Taylor et al., 1998). Keep the bedtime outcome image, but finish it with the obstacle and the first step.</div>
+        <div class="ex-row"><span class="ev b">B</span> <b>Qualify &ldquo;complete control&rdquo;.</b> Suppressing an emotion carries costs that reappraisal does not (Gross &amp; John, 2003). Control here means choosing the response and the interpretation, not pretending the feeling is absent. Naming the feeling helps: affect labelling dampens the brain&rsquo;s threat response (Lieberman et al., 2007).</div>
+        <div class="ex-row"><span class="ev b">B</span> Treating stress as enhancing rather than debilitating changed health and performance measures in a set of studies (Crum et al., 2013) &mdash; a research cousin of the &ldquo;welcome the disruption&rdquo; posture.</div>
+      </div>
+    </div>
+
+    <div class="card gold">
+      <div class="p-head"><span class="p-num">04</span><span class="p-name">Commitment</span></div>
+      <div class="p-ess">What are you willing to do? Without it, the other three are fantasy.</div>
+      <div class="move"><b>Motivation is the why. Enthusiasm is weather.</b> Enthusiasm rises and falls with how the current stage is going, how the rest of life feels, and the weight of unrelated obligations. As long as the why holds, the path and destination hold. Misreading a dip in enthusiasm as loss of motivation is how people quit and call it a course correction.</div>
+      <div class="move"><b>Strategy before tactics.</b> Set the overall plan first: a clear endpoint, a purpose, ways to measure success and markers along the way. Settle the tactics only as you go and gather feedback. No plan survives contact, and everyone has a plan until they are punched in the mouth.</div>
+      <div class="move"><b>Act before the plan is perfect.</b> Waiting for perfect conditions is the reliable way never to start. Better to act without a full plan than to plan without acting.</div>
+      <div class="move"><b>Build the routine of being who you are.</b> Habits and routines turn the chosen identity from something you consciously act out into something you simply live.</div>
+      <div class="move"><b>One difficult thing every day</b> &mdash; something you have to force yourself to do. Your <a class="inl" href="./daily-challenge.html">Daily Challenge</a> page already runs this as a graded draw.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="ev a">A</span> Specific, demanding goals beat &ldquo;do your best&rdquo; across hundreds of studies (Locke &amp; Latham, 2002) &mdash; the research behind his demand that goals be clear and measurable.</div>
+        <div class="ex-row"><span class="ev a">A</span> If-then plans (&ldquo;when X happens, I will do Y&rdquo;) improve goal attainment, d = .65 across 94 studies (Gollwitzer &amp; Sheeran, 2006).</div>
+        <div class="ex-row"><span class="ev a">A</span> Monitoring progress promotes goal attainment (d &asymp; .40), and more so when progress is physically recorded (Harkin et al., 2016). This is his regular check-in schedule, with a number on it.</div>
+        <div class="ex-row"><span class="ev b">B</span> Automaticity takes time: in one study, a new daily habit took a median of 66 days to plateau, ranging from 18 to 254 (Lally et al., 2010). &ldquo;Natural rather than consciously chosen&rdquo; is months of work, not weeks.</div>
+      </div>
+    </div>
+
+    <div class="section-k">The identity exercise</div>
+
+    <div class="step"><div class="n">1</div><div><b>Who are you?</b> Quick-fire. As many answers as you can, without overthinking.</div></div>
+    <div class="step"><div class="n">2</div><div><b>Expand it.</b> What inspires you, what you fear, what makes you anxious, your ambitions, how you deal with people from family to strangers, emotional or rational, excitable or composed, what makes you content, what frustrates you and how you show it.</div></div>
+    <div class="step"><div class="n">3</div><div><b>Who do you want to be?</b> Step 2 again, as the ideal you, in the present tense. &ldquo;I am,&rdquo; not &ldquo;I want to be.&rdquo; Not a wish &mdash; a plan.</div></div>
+    <div class="step"><div class="n">4</div><div><b>Compare 2 and 3 objectively.</b> Note each gap the way you would subtract two numbers. Find the source of each one and exactly what has to change. Gaps are potential awaiting fulfilment, not proof of failure. Any progress counts.</div></div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">Why step 4 is the part that works</span><span class="ev a">A</span></div>
+      <div class="para">Step 3 on its own is a positive fantasy. Step 3 <b>followed by</b> step 4 is mental contrasting: the desired future set against the present reality. Combined with if-then plans, it improved goal attainment across 21 studies and almost 16,000 people (g = .34; Wang et al., 2021, which also notes publication bias may inflate that).</div>
+      <div class="para"><span class="ev b">B</span> The &ldquo;I am&rdquo; wording has a known risk. People with low self-esteem who repeated &ldquo;I&rsquo;m a lovable person&rdquo; felt <b>worse</b> afterward, while those allowed to weigh when the statement was true and when it wasn&rsquo;t did better (Wood et al., 2009). Everett&rsquo;s step 4 is exactly that weighing, so don&rsquo;t skip it and keep only the affirmation.</div>
+    </div>
+
+    <div class="section-k">The goal plan</div>
+    <div class="step"><div class="n">1</div><div><b>Write every goal,</b> however ambitious or unlikely. You are finding out what you actually want, not what is realistic.</div></div>
+    <div class="step"><div class="n">2</div><div><b>Check each against your identity and values.</b> Where they clash, decide which needs to change: is the goal really yours, or what someone in your position is supposed to want &mdash; or does the goal reveal that your identity needs adjusting?</div></div>
+    <div class="step"><div class="n">3</div><div><b>Prioritize need over desire.</b> Decide what you pursue now and what waits.</div></div>
+    <div class="step"><div class="n">4</div><div><b>Break each primary goal into intermediate goals</b> &mdash; simpler targets that lay out the path and let you measure progress.</div></div>
+    <div class="step"><div class="n">5</div><div><b>Write a task list for the next intermediate goal only.</b> Not for all of them.</div></div>
+    <div class="step"><div class="n">6</div><div><b>Track and adjust.</b> Set a regular check-in to stay accountable and confirm you are on pace.</div></div>
+
+    <div class="section-k">The daily journal</div>
+    <div class="step"><div class="n">1</div><div><b>Grateful for.</b> Three to five things, different every day, each with the reason.</div></div>
+    <div class="step"><div class="n">2</div><div><b>Yesterday.</b> What did I do well? Did I live up to my standards? Where did I fall short, and what will I do differently today?</div></div>
+    <div class="step"><div class="n">3</div><div><b>Who am I today?</b> State what you are and do, not what you wish to be, in grammar that makes it real &mdash; actions to complete, mindset, energy, attitude, character, in as much detail as you can.</div></div>
+    <div class="step"><div class="n">4</div><div><b>Look back periodically.</b> Where have you grown, what still needs work, and which values keep appearing in your writing?</div></div>
+    <div class="card">
+      <div class="p-head"><span class="p-name">What the gratitude evidence actually says</span><span class="ev b">B</span></div>
+      <div class="para">Small but real. Gratitude exercises beat a neutral activity on well-being (d = .17) but performed no better than other psychologically active exercises (Davis et al., 2016), and their effect on depression and anxiety symptoms is modest (Cregg &amp; Cheavens, 2021). Keep it in because it is cheap and it trains attention, but the <b>yesterday review</b> and the <b>gap work</b> are where the change gets made.</div>
+    </div>
+
+    <div class="section-k">Other notes from the book</div>
+    <div class="card teal">
+      <div class="move"><b>Faith in the outcome.</b> Like a good spy, hold total confidence that you will accomplish the task and find a way through whatever difficulties come: &ldquo;I can handle whatever comes my way; I can creatively dissolve any problem.&rdquo;</div>
+      <div class="move"><b>When it comes, fight.</b> Accept that there will be times you have to drop everything to defend your life and the life your family has come to depend on. No self-pity for a second &mdash; fight as tenaciously, ferociously and intelligently as anyone ever has.</div>
+      <div class="move"><b>Repetition.</b> The mind forms thought habits that charge the subconscious. Make a habit of concentrating on what you want. <span class="ev d">D</span></div>
+      <div class="move"><b>Mental agility.</b> Boyd&rsquo;s idea: orient well to your environment and change your mental models as it changes.</div>
+      <div class="move"><b>Backward-plan the future.</b> Describe the future you want in as much detail as possible. Find the people, tools and experts that move you toward it &mdash; it will feel uncomfortable. Then plan backward from it.</div>
+      <div class="move"><b>Celebrate.</b> Ric Flair: the more you celebrate your life, the more there is in life to celebrate.</div>
+    </div>
+
+    <div class="band vio"><b>The one thing.</b> Write it as &ldquo;I am,&rdquo; then measure the gap like a number. The description sets the direction; the honest comparison is what moves you.</div>
+
+    <div class="section-k">Evidence key</div>
+    <div class="key"><span class="ev a">A</span> <b>meta-analytic or repeatedly replicated</b> &middot; <span class="ev b">B</span> <b>solid studies, limited replication or correlational</b> &middot; <span class="ev c">C</span> <b>mixed or thin</b> &middot; <span class="ev d">D</span> <b>anecdote or doctrine, no real test</b>. Everett&rsquo;s own points carry no grade: they are his framework from coaching experience, and the grades belong to the research set beside them. Grades were checked against the sources at build time; the sources marked B are honest about being smaller or correlational.</div>
+
+    <div class="foot">Tough &middot; after Greg Everett &middot; Forge OS</div>
+  </div>
+
+  <!-- ===================== WORK ===================== -->
+  <div id="work">
+    <h1 style="font-size:21px;">Work</h1>
+    <div class="sub">Everything saves to this device only. The identity exercise is a monthly snapshot, the goal plan and check-ins build a history, and the journal is daily.</div>
+
+    <div class="due" id="due"></div>
+    <div class="pattern" id="pattern"></div>
+
+    <!-- 1 identity -->
+    <div class="tool open" id="t1">
+      <div class="tool-head" onclick="toggleTool('t1')"><div class="tn">1</div><div class="tt">Who I am &amp; who I&rsquo;m becoming</div><div class="cnt" id="c-id"></div><div class="chev">&#9656;</div></div>
+      <div class="tool-body">
+        <div class="why">The four steps. Your draft <b>saves as you type</b>, so you can do it over several sittings. When step 4 is done, <b>Save snapshot</b> dates it and starts the 30-day clock to the next revisit.</div>
+
+        <div class="stepk">Step 1 &middot; Who are you?</div>
+        <div class="fl"><div class="hintline">Quick-fire. As many answers as you can. Don&rsquo;t stop to judge them.</div><textarea id="id-s1" rows="5" data-draft="1" placeholder="Teacher. Father. Stubborn. Curious. Competitive&hellip;"></textarea></div>
+
+        <div class="stepk">Step 2 &middot; Who you are now</div>
+        <div class="fl"><label>What inspires and motivates you?</label><textarea id="id-q1" rows="2" data-draft="1"></textarea></div>
+        <div class="fl"><label>What are you afraid of? What makes you anxious?</label><textarea id="id-q2" rows="2" data-draft="1"></textarea></div>
+        <div class="fl"><label>Your ambitions, big and small</label><textarea id="id-q3" rows="2" data-draft="1"></textarea></div>
+        <div class="fl"><label>How you deal with people</label><div class="hintline">From your wife and daughters to students to complete strangers.</div><textarea id="id-q4" rows="2" data-draft="1"></textarea></div>
+        <div class="fl"><label>Emotional or rational? Excitable or composed?</label><textarea id="id-q5" rows="2" data-draft="1"></textarea></div>
+        <div class="fl"><label>What makes you happy and content?</label><textarea id="id-q6" rows="2" data-draft="1"></textarea></div>
+        <div class="fl"><label>What frustrates you &mdash; and how do you show it?</label><textarea id="id-q7" rows="2" data-draft="1"></textarea></div>
+
+        <div class="stepk">Step 3 &middot; Who you are (the target)</div>
+        <div class="fl"><div class="hintline">Step 2 again, as the man you are building. Present tense: &ldquo;I am,&rdquo; never &ldquo;I want to be.&rdquo;</div><textarea id="id-s3" rows="9" data-draft="1"></textarea></div>
+        <div id="tense"></div>
+
+        <div class="stepk">Step 4 &middot; The gaps</div>
+        <div class="why" style="border-top:0;padding-top:0;">Read the two side by side. Log each gap the way you&rsquo;d subtract two numbers: what it is, where it comes from, and exactly what changes it. Potential, not failure.</div>
+        <div class="twocol">
+          <div><div class="colhd l">Now (step 2)</div><div class="ro" id="ro-now"></div></div>
+          <div><div class="colhd r">Target (step 3)</div><div class="ro" id="ro-target"></div></div>
+        </div>
+        <div style="height:12px;"></div>
+        <div id="gaps"></div>
+        <div class="toolbar"><button class="sbtn ghost" onclick="addGap()">+ Add a gap</button></div>
+        <div class="saved-note" id="draft-note"></div>
+        <div class="toolbar"><button class="sbtn" onclick="saveSnapshot()">Save snapshot</button><button class="sbtn ghost" onclick="loadLatest()">Start from last snapshot</button></div>
+        <div class="analysis" id="a-id"></div>
+        <div class="hist" id="h-id"></div>
+      </div>
+    </div>
+
+    <!-- 2 goal plan -->
+    <div class="tool violet" id="t2">
+      <div class="tool-head" onclick="toggleTool('t2')"><div class="tn">2</div><div class="tt">Goal plan</div><div class="cnt" id="c-plan"></div><div class="chev">&#9656;</div></div>
+      <div class="tool-body">
+        <div class="why">Everett&rsquo;s six steps. Your gaps from step 4 are good raw material for the list. <b>Make the goals measurable</b> &mdash; if you can&rsquo;t say what number counts as done, you can&rsquo;t plan the steps or check the pace.</div>
+        <div class="fl"><label>1 &middot; Every goal</label><div class="hintline">One per line. Ambitious and unlikely are allowed.</div><textarea id="pl-all" rows="5"></textarea></div>
+        <div class="fl"><label>2 &middot; Clashes with identity or values</label><div class="hintline">Which goals don&rsquo;t fit the man in step 3? For each: is the goal not really yours, or does it mean the identity needs adjusting?</div><textarea id="pl-clash" rows="3"></textarea></div>
+        <div class="twocol">
+          <div class="fl"><label>3 &middot; Now (needs)</label><textarea id="pl-now" rows="3"></textarea></div>
+          <div class="fl"><label>3 &middot; Later (wants)</label><textarea id="pl-later" rows="3"></textarea></div>
+        </div>
+        <div class="fl"><label>4 &middot; Primary goal and its intermediate goals</label><div class="hintline">First line the primary goal, then one intermediate goal per line, in order.</div><textarea id="pl-inter" rows="5"></textarea></div>
+        <div class="fl"><label>5 &middot; Tasks for the next intermediate goal only</label><textarea id="pl-tasks" rows="4"></textarea></div>
+        <div class="twocol">
+          <div class="fl"><label>6 &middot; Check-in schedule</label><select id="pl-cad"><option value="weekly">Weekly</option><option value="fortnightly">Every two weeks</option><option value="monthly">Monthly</option></select></div>
+          <div class="fl"><label>6 &middot; The measure</label><input type="text" id="pl-measure" placeholder="What number shows you're on pace?"></div>
+        </div>
+        <div class="toolbar"><button class="sbtn" onclick="savePlan()">Save plan</button><button class="sbtn ghost" onclick="clearPlan()">Clear</button></div>
+        <div class="analysis" id="a-plan"></div>
+
+        <div class="stepk" style="margin-top:20px;">Check-in</div>
+        <div class="fl"><label>Where the measure stands</label><input type="text" id="ci-num" placeholder="The number, today"></div>
+        <div class="fl"><label>On pace?</label><select id="ci-pace"><option value="">&mdash; choose &mdash;</option><option value="yes">Yes</option><option value="close">Close</option><option value="no">No</option></select></div>
+        <div class="fl"><label>Adjustment</label><textarea id="ci-adj" rows="2" placeholder="Tactic to change, or why none is needed"></textarea></div>
+        <div class="toolbar"><button class="sbtn" onclick="saveCheckin()">Log check-in</button></div>
+        <div class="analysis" id="a-ci"></div>
+        <div class="hist" id="h-plan"></div>
+      </div>
+    </div>
+
+    <!-- 3 journal -->
+    <div class="tool teal" id="t3">
+      <div class="tool-head" onclick="toggleTool('t3')"><div class="tn">3</div><div class="tt">Daily journal</div><div class="cnt" id="c-jr"></div><div class="chev">&#9656;</div></div>
+      <div class="tool-body">
+        <div class="why">Morning, five to ten minutes. Gratitude with reasons, an honest look at yesterday, and today&rsquo;s &ldquo;I am.&rdquo; <b>Different gratitudes every day</b> &mdash; the page will tell you if you repeat yourself.</div>
+        <div class="fl"><label>Grateful for &mdash; and why</label><div class="hintline">Three to five, one per line, each with its reason.</div><textarea id="jr-grat" rows="5"></textarea></div>
+        <div class="fl"><label>Yesterday &middot; what I did well</label><textarea id="jr-well" rows="2"></textarea></div>
+        <div class="fl"><label>Yesterday &middot; did I live up to my standards?</label><select id="jr-std"><option value="">&mdash; choose &mdash;</option><option value="yes">Yes</option><option value="partly">Partly</option><option value="no">No</option></select></div>
+        <div class="fl"><label>Where I fell short</label><textarea id="jr-short" rows="2"></textarea></div>
+        <div class="fl"><label>What I&rsquo;ll do differently today</label><textarea id="jr-diff" rows="2"></textarea></div>
+        <div class="fl"><label>Who I am today</label><div class="hintline">Present tense. Actions to complete, mindset, energy, attitude, character.</div><textarea id="jr-iam" rows="5"></textarea></div>
+        <div class="toolbar" style="margin-top:0;"><button class="sbtn ghost" onclick="copyTarget()">Start from my step 3</button></div>
+        <div class="fl" style="margin-top:12px;"><label>Today&rsquo;s difficult thing</label><div class="hintline">Something you have to force yourself to do. Or draw one from the <a class="inl" href="./daily-challenge.html">Daily Challenge</a>.</div><input type="text" id="jr-hard"></div>
+        <div class="toolbar"><button class="sbtn" onclick="saveJournal()">Save today</button><button class="sbtn ghost" onclick="clearJournal()">Clear</button></div>
+        <div class="analysis" id="a-jr"></div>
+        <div class="hist" id="h-jr"></div>
+      </div>
+    </div>
+
+    <div class="toolbar" style="justify-content:center;margin-top:18px;">
+      <button class="sbtn ghost" onclick="exportAll()">Export everything</button>
+      <button class="sbtn danger" onclick="wipeAll()">Erase all</button>
+    </div>
+    <div class="foot">Tough &middot; Forge OS</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h1 style="font-size:20px;">Which element?</h1>
+    <div class="sub">Recognition, not recall. A situation from your week: name the element (Character, Capability, Capacity, Commitment) and the move it calls for, then reveal. Ten per round, shuffled.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Done</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn ghost" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  document.getElementById('read').style.display  = (m==='read')  ? 'block' : 'none';
+  document.getElementById('work').style.display  = (m==='work')  ? 'block' : 'none';
+  document.getElementById('drill').style.display = (m==='drill') ? 'block' : 'none';
+  document.getElementById('tab-read').className  = (m==='read')  ? 'on' : '';
+  document.getElementById('tab-work').className  = (m==='work')  ? 'on' : '';
+  document.getElementById('tab-drill').className = (m==='drill') ? 'on' : '';
+  if(m==='drill'){ restart(); }
+  if(m==='work'){ renderAll(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-tough';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- store ---------------- */
+var WKEY='forge-tough-work';
+var PREFILL = "I am energetic, charismatic and enthusiastic. I'm confident in my abilities and secure in my identity so I am not intimidated or overwhelmed by unfamiliar experiences but invigorated by the chance to solve problems, learn and overcome. I don't change myself to impress others or ingratiate myself to them. I work hard but efficiently, ignoring distractions and focusing specifically on my task to create the best result possible. I'm always looking for ways to improve what I do and I never rest on my laurels. I'm a loving and thoughtful husband and father who goes out of his way not just to take care of his family but to ensure they thrive. I have a killer instinct and follow ideas through to completion.";
+function store(){ try{ var v=JSON.parse(localStorage.getItem(WKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function put(s){ try{ localStorage.setItem(WKEY, JSON.stringify(s)); }catch(e){ alert('Could not save on this device.'); } }
+function list(k){ var s=store(); return Array.isArray(s[k])?s[k]:[]; }
+function push(k,rec){ var s=store(); if(!Array.isArray(s[k])) s[k]=[]; rec.d=new Date().toISOString(); rec.id=Date.now()+'-'+Math.floor(Math.random()*1e4); s[k].unshift(rec); put(s); return rec; }
+function drop(k,id){ if(!confirm('Delete this entry?')) return; var s=store(); if(!Array.isArray(s[k])) return; s[k]=s[k].filter(function(r){ return r.id!==id; }); put(s); renderAll(); }
+function val(id){ var e=document.getElementById(id); return e?(e.value||'').trim():''; }
+function setv(id,v){ var e=document.getElementById(id); if(e) e.value=v||''; }
+function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fdate(iso){ try{ var d=new Date(iso); return d.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}); }catch(e){ return ''; } }
+function toggleTool(id){ var el=document.getElementById(id); el.className = el.className.indexOf(' open')>-1 ? el.className.replace(' open','') : el.className+' open'; }
+function showA(id, html){ var a=document.getElementById(id); a.innerHTML=html; a.className='analysis on'; }
+function ah(t){ return '<div class="ah">'+t+'</div>'; }
+function aq(t){ return '<div class="aq">'+t+'</div>'; }
+function flag(t,ok){ return '<div class="flag'+(ok?' ok':'')+'">'+t+'</div>'; }
+function row(l,v){ return v?'<div class="erow"><span class="el">'+l+'</span>'+esc(v)+'</div>':''; }
+function lines(t){ return String(t||'').split(/\n+/).map(function(x){ return x.trim(); }).filter(Boolean); }
+var DAY=86400000;
+
+/* ---------------- identity: draft ---------------- */
+var DRAFT_IDS=['id-s1','id-q1','id-q2','id-q3','id-q4','id-q5','id-q6','id-q7','id-s3'];
+var Q_LABELS={ 'id-q1':'Inspires me','id-q2':'Fear / anxiety','id-q3':'Ambitions','id-q4':'With people','id-q5':'Emotional / rational','id-q6':'Content','id-q7':'Frustrates me' };
+var CNAMES={ character:'Character', capability:'Capability', capacity:'Capacity', commitment:'Commitment' };
+var GAPS=[];
+function readDraft(){ var s=store(); return (s.draft&&typeof s.draft==='object')?s.draft:null; }
+function writeDraft(){
+  var s=store(), d={};
+  DRAFT_IDS.forEach(function(i){ d[i]=document.getElementById(i).value||''; });
+  d.gaps=collectGaps(); s.draft=d; put(s);
+  var n=document.getElementById('draft-note'); if(n) n.textContent='Draft saved on this device';
+  paintCompare(); paintTense();
+}
+function loadDraft(){
+  var d=readDraft();
+  if(d){ DRAFT_IDS.forEach(function(i){ setv(i,d[i]); }); GAPS=Array.isArray(d.gaps)?d.gaps:[]; }
+  else { DRAFT_IDS.forEach(function(i){ setv(i,''); }); setv('id-s3',PREFILL); GAPS=[]; }
+  paintGaps(); paintCompare(); paintTense();
+}
+function nowText(){
+  var out=[], s1=val('id-s1'); if(s1) out.push(s1);
+  ['id-q1','id-q2','id-q3','id-q4','id-q5','id-q6','id-q7'].forEach(function(i){ var v=val(i); if(v) out.push(Q_LABELS[i].toUpperCase()+': '+v); });
+  return out.join('\n\n');
+}
+function paintCompare(){
+  var n=nowText(), t=val('id-s3');
+  var a=document.getElementById('ro-now'), b=document.getElementById('ro-target');
+  a.textContent = n || 'Steps 1 and 2 appear here.'; a.className='ro'+(n?'':' empty');
+  b.textContent = t || 'Step 3 appears here.'; b.className='ro'+(t?'':' empty');
+}
+var WISH=/\b(want to|wanna|hope to|hope I|wish|try to|trying to|will be|going to be|should|would like to|someday|one day|aim to)\b/i;
+function paintTense(){
+  var t=val('id-s3'), el=document.getElementById('tense');
+  if(!t){ el.innerHTML=''; return; }
+  var hits=[], sents=t.split(/[.!?]+\s+/);
+  sents.forEach(function(s){ if(WISH.test(s)) hits.push(s.trim()); });
+  if(hits.length) el.innerHTML=flag('<b>Wish language.</b> Everett&rsquo;s rule is &ldquo;I am,&rdquo; not &ldquo;I want to be.&rdquo; Rewrite: <i>'+esc(hits[0].slice(0,140))+'</i>');
+  else el.innerHTML=flag('<b>Present tense throughout.</b> It reads as a description, not a wish.',true);
+}
+function collectGaps(){
+  var out=[], rows=document.querySelectorAll('#gaps .gaprow');
+  for(var i=0;i<rows.length;i++){
+    var r=rows[i];
+    out.push({ el:r.querySelector('.g-el').value, gap:r.querySelector('.g-gap').value, src:r.querySelector('.g-src').value, chg:r.querySelector('.g-chg').value });
+  }
+  return out;
+}
+function paintGaps(){
+  var box=document.getElementById('gaps'), h='';
+  if(!GAPS.length) GAPS=[{el:'',gap:'',src:'',chg:''}];
+  GAPS.forEach(function(g,i){
+    h+='<div class="gaprow"><div class="gh">Gap '+(i+1)+'<span class="x" onclick="removeGap('+i+')" title="Remove">&times;</span></div>'
+     +'<div class="fl"><label>Element</label><select class="g-el" onchange="writeDraft()"><option value="">&mdash; choose &mdash;</option>'
+     +['character','capability','capacity','commitment'].map(function(k){ return '<option value="'+k+'"'+(g.el===k?' selected':'')+'>'+CNAMES[k]+'</option>'; }).join('')
+     +'</select></div>'
+     +'<div class="fl"><label>The gap</label><input type="text" class="g-gap" value="'+esc(g.gap)+'" oninput="writeDraft()" placeholder="Target says ___; now is ___"></div>'
+     +'<div class="fl"><label>Where it comes from</label><input type="text" class="g-src" value="'+esc(g.src)+'" oninput="writeDraft()" placeholder="How and why I don&rsquo;t fit the description yet"></div>'
+     +'<div class="fl"><label>Exactly what changes it</label><input type="text" class="g-chg" value="'+esc(g.chg)+'" oninput="writeDraft()" placeholder="A specific action, ideally with a when"></div>'
+     +'</div>';
+  });
+  box.innerHTML=h;
+}
+function addGap(){ GAPS=collectGaps(); GAPS.push({el:'',gap:'',src:'',chg:''}); paintGaps(); writeDraft(); }
+function removeGap(i){ GAPS=collectGaps(); GAPS.splice(i,1); paintGaps(); writeDraft(); }
+DRAFT_IDS.forEach(function(i){ document.getElementById(i).addEventListener('input', writeDraft); });
+
+function saveSnapshot(){
+  var s3=val('id-s3'), now=nowText();
+  var gaps=collectGaps().filter(function(g){ return (g.gap||'').trim(); });
+  if(!now){ alert('Fill in step 1 or 2 first.'); return; }
+  if(!s3){ alert('Step 3 is empty.'); return; }
+  var rec={ s1:val('id-s1'), s3:s3, gaps:gaps };
+  ['id-q1','id-q2','id-q3','id-q4','id-q5','id-q6','id-q7'].forEach(function(i){ rec[i.replace('id-','')]=val(i); });
+  var prev=list('snap')[0];
+  push('snap',rec);
+  var h=ah('Snapshot saved &middot; next revisit in 30 days');
+  if(!gaps.length) h+=flag('<b>No gaps logged.</b> Step 4 is the part that does the work &mdash; contrasting the target with the present is what turns a description into commitment. Go back and log at least one.');
+  else {
+    var noChg=gaps.filter(function(g){ return !(g.chg||'').trim(); }).length;
+    var noSrc=gaps.filter(function(g){ return !(g.src||'').trim(); }).length;
+    if(noChg) h+=flag('<b>'+noChg+' gap'+(noChg===1?' has':'s have')+' no change named.</b> Everett asks for exactly what you need to change. A gap without a change is just a description of disappointment.');
+    if(noSrc) h+=flag('<b>'+noSrc+' gap'+(noSrc===1?' has':'s have')+' no source.</b> Knowing why you don&rsquo;t fit the description yet is what tells you which change will work.');
+    if(!noChg && !noSrc) h+=flag('Every gap has a source and a change. That is the full step 4.',true);
+    var tally={}; gaps.forEach(function(g){ if(g.el) tally[g.el]=(tally[g.el]||0)+1; });
+    var missing=['character','capability','capacity','commitment'].filter(function(k){ return !tally[k]; });
+    if(missing.length && missing.length<4) h+=aq('No gaps logged under <b>'+missing.map(function(k){ return CNAMES[k]; }).join(', ')+'</b>. Either you already match the target there, or you haven&rsquo;t looked. Which?');
+  }
+  if(WISH.test(s3)) h+=flag('Step 3 still contains wish language. &ldquo;I am,&rdquo; not &ldquo;I want to be.&rdquo;');
+  if(prev && Array.isArray(prev.gaps) && prev.gaps.length){
+    h+=aq('Last snapshot ('+fdate(prev.d)+') had <b>'+prev.gaps.length+'</b> gap'+(prev.gaps.length===1?'':'s')+'; this one has <b>'+gaps.length+'</b>. Which of the old ones closed, and what closed it? That is the evidence Everett means by confidence.');
+  }
+  h+=aq('Take the one gap that matters most into the <b>goal plan</b> below, and give it a number.');
+  showA('a-id',h); renderAll();
+}
+function loadLatest(){
+  var p=list('snap')[0]; if(!p){ alert('No snapshot saved yet.'); return; }
+  if(!confirm('Replace the current draft with your last snapshot ('+fdate(p.d)+')?')) return;
+  setv('id-s1',p.s1); ['q1','q2','q3','q4','q5','q6','q7'].forEach(function(q){ setv('id-'+q,p[q]); }); setv('id-s3',p.s3);
+  GAPS=(p.gaps||[]).map(function(g){ return {el:g.el,gap:g.gap,src:g.src,chg:g.chg}; });
+  paintGaps(); writeDraft();
+}
+
+/* ---------------- goal plan ---------------- */
+var PLAN_IDS=['pl-all','pl-clash','pl-now','pl-later','pl-inter','pl-tasks','pl-measure'];
+function clearPlan(){ PLAN_IDS.forEach(function(i){ setv(i,''); }); document.getElementById('pl-cad').value='weekly'; document.getElementById('a-plan').className='analysis'; }
+function savePlan(){
+  var all=lines(val('pl-all')), inter=lines(val('pl-inter')), tasks=lines(val('pl-tasks'));
+  if(!all.length && !inter.length){ alert('List at least one goal.'); return; }
+  push('plan',{ all:val('pl-all'), clash:val('pl-clash'), now:val('pl-now'), later:val('pl-later'), inter:val('pl-inter'), tasks:val('pl-tasks'),
+    cad:document.getElementById('pl-cad').value, measure:val('pl-measure') });
+  var h=ah('Plan saved');
+  var unmeasured=(inter.length?inter:all).filter(function(g){ return !/\d/.test(g); });
+  if(unmeasured.length) h+=flag('<b>No number in:</b> '+esc(unmeasured.slice(0,3).join(' &middot; '))+(unmeasured.length>3?' &hellip;':'')+'. Everett&rsquo;s rule: goals must be objectively defined, or neither the steps nor the progress can be judged.');
+  else h+=flag('Every goal carries a number. That is what makes the check-ins mean something.',true);
+  if(!val('pl-clash')) h+=aq('Step 2 is blank. Is there <b>no</b> goal on the list that someone in your position is merely supposed to want? Check once more.');
+  if(!val('pl-measure')) h+=flag('<b>No measure for the check-in.</b> Progress monitoring helps most when it is physically recorded. Name the number.');
+  if(inter.length && inter.length<3) h+=aq('Only '+inter.length+' line'+(inter.length===1?'':'s')+' in step 4. Is the gap from the first intermediate goal to the primary goal small enough to aim at?');
+  if(tasks.length>12) h+=aq('That is a long task list. Step 5 is the <b>next</b> intermediate goal only &mdash; trim to what that one needs.');
+  if(!tasks.length) h+=flag('<b>No tasks yet.</b> Strategy without a first tactic is a plan without an action. Write the first task.');
+  showA('a-plan',h); renderAll();
+}
+function saveCheckin(){
+  var num=val('ci-num'), pace=document.getElementById('ci-pace').value, adj=val('ci-adj');
+  if(!num && !pace){ alert('Enter the number or choose a pace.'); return; }
+  push('ci',{ num:num, pace:pace, adj:adj });
+  var h=ah('Check-in logged');
+  var past=list('ci').slice(1,3).map(function(r){ return r.pace; });
+  if(pace==='no' && past[0]==='no') h+=flag('<b>Off pace two check-ins running.</b> Strategy holds; the tactic doesn&rsquo;t. Change one specific thing before the next check-in, not the goal.');
+  else if(pace==='no') h+=aq('Off pace. Before changing anything: is this a dip in <b>enthusiasm</b> or a real problem with the <b>tactic</b>? Only the second calls for a change.');
+  if(pace==='yes') h+=flag('On pace. Note what made it work so you can repeat it.',true);
+  if(!adj && pace!=='yes') h+=flag('No adjustment written. If you&rsquo;re not on pace, name the one tactic you&rsquo;ll change.');
+  setv('ci-num',''); setv('ci-adj',''); document.getElementById('ci-pace').value='';
+  showA('a-ci',h); renderAll();
+}
+
+/* ---------------- journal ---------------- */
+var JR_IDS=['jr-grat','jr-well','jr-short','jr-diff','jr-iam','jr-hard'];
+var STOP=('the a an and or but of to in on for with my me i im i\'m is am are was be been at it this that as by from so not do did have has had just very really about '
+ +'today yesterday because they them their she he her his we our you your all more some what when who how will can get got go went one two three things thing').split(' ');
+function words(t){ return String(t||'').toLowerCase().replace(/[^a-z\s']/g,' ').split(/\s+/).filter(function(w){ return w.length>3 && STOP.indexOf(w)<0; }); }
+function copyTarget(){
+  var t=val('id-s3'); if(!t){ var d=readDraft(); t=d?d['id-s3']:''; }
+  if(!t){ var p=list('snap')[0]; t=p?p.s3:''; }
+  if(!t){ alert('Step 3 is empty.'); return; }
+  if(val('jr-iam') && !confirm('Replace what you\'ve written?')) return;
+  setv('jr-iam',t);
+}
+function clearJournal(){ JR_IDS.forEach(function(i){ setv(i,''); }); document.getElementById('jr-std').value=''; document.getElementById('a-jr').className='analysis'; }
+function saveJournal(){
+  var g=val('jr-grat'), iam=val('jr-iam');
+  if(!g && !iam && !val('jr-well')){ alert('Write at least the gratitudes or today\'s "I am".'); return; }
+  var prev=list('jr')[0];
+  push('jr',{ grat:g, well:val('jr-well'), std:document.getElementById('jr-std').value, shortf:val('jr-short'), diff:val('jr-diff'), iam:iam, hard:val('jr-hard') });
+  var h=ah('Saved');
+  var gl=lines(g);
+  if(gl.length && gl.length<3) h+=flag('Only '+gl.length+' gratitude'+(gl.length===1?'':'s')+'. The prompt is three to five.');
+  var noWhy=gl.filter(function(x){ return !/\b(because|since|so that|for|as)\b|[-–—:]/i.test(x); }).length;
+  if(noWhy) h+=flag('<b>'+noWhy+' gratitude'+(noWhy===1?'':'s')+' without a reason.</b> The reason is the part that trains attention.');
+  if(prev && prev.grat){
+    var pw=words(prev.grat), cw=words(g), rep=[];
+    cw.forEach(function(w){ if(pw.indexOf(w)>-1 && rep.indexOf(w)<0) rep.push(w); });
+    if(rep.length>=3) h+=flag('<b>Close to yesterday&rsquo;s list</b> ('+esc(rep.slice(0,4).join(', '))+'). Everett asks for different things each day.');
+  }
+  if(iam && WISH.test(iam)) h+=flag('Today&rsquo;s &ldquo;I am&rdquo; slipped into wish language. Present tense.');
+  var std=document.getElementById('jr-std').value;
+  if(std && std!=='yes' && !val('jr-diff')) h+=flag('You fell short yesterday but haven&rsquo;t named what changes today. That line is the point of the review.');
+  if(!val('jr-hard')) h+=aq('No difficult thing named for today. What will you have to force yourself to do?');
+  clearJournal(); showA('a-jr',h); renderAll();
+}
+
+/* ---------------- render ---------------- */
+function renderHist(key, boxId, cntId, fn, label){
+  var arr=list(key), box=document.getElementById(boxId), cnt=document.getElementById(cntId);
+  if(cnt) cnt.textContent = arr.length ? arr.length : '';
+  if(!box) return;
+  if(!arr.length){ box.innerHTML='<div class="hist-k">'+label+'</div><div class="empty">Nothing saved yet.</div>'; return; }
+  var h='<div class="hist-k">'+label+' &middot; '+arr.length+'</div>';
+  arr.slice(0,30).forEach(function(r){
+    h+='<div class="entry"><div class="edate"><span>'+fdate(r.d)+'</span><span class="del" onclick="drop(\''+key+'\',\''+r.id+'\')">&times;</span></div>'+fn(r)+'</div>';
+  });
+  box.innerHTML=h;
+}
+function renderAll(){
+  renderHist('snap','h-id','c-id',function(r){
+    var g=(r.gaps||[]).map(function(x){ return (x.el?'['+CNAMES[x.el]+'] ':'')+x.gap+(x.chg?' → '+x.chg:''); }).join('\n');
+    return row('Target',r.s3.length>220?r.s3.slice(0,220)+'…':r.s3)+row('Gaps ('+(r.gaps||[]).length+')',g);
+  },'Snapshots');
+  var plans=list('plan'), cis=list('ci');
+  document.getElementById('c-plan').textContent = plans.length ? plans.length : '';
+  var hp=document.getElementById('h-plan'), h='';
+  if(plans.length){
+    var p=plans[0];
+    h+='<div class="hist-k">Current plan &middot; '+fdate(p.d)+'</div><div class="entry">'+row('Now',p.now)+row('Primary & intermediate',p.inter)+row('Next tasks',p.tasks)+row('Measure',p.measure)+row('Check-in',p.cad)+'</div>';
+  }
+  if(cis.length){
+    h+='<div class="hist-k" style="margin-top:10px;">Check-ins &middot; '+cis.length+'</div>';
+    cis.slice(0,20).forEach(function(r){ h+='<div class="entry"><div class="edate"><span>'+fdate(r.d)+(r.pace?' &middot; '+esc(r.pace):'')+'</span><span class="del" onclick="drop(\'ci\',\''+r.id+'\')">&times;</span></div>'+row('Measure',r.num)+row('Adjustment',r.adj)+'</div>'; });
+  }
+  if(plans.length>1){
+    h+='<div class="hist-k" style="margin-top:10px;">Earlier plans</div>';
+    plans.slice(1,10).forEach(function(r){ h+='<div class="entry"><div class="edate"><span>'+fdate(r.d)+'</span><span class="del" onclick="drop(\'plan\',\''+r.id+'\')">&times;</span></div>'+row('Primary & intermediate',r.inter||r.all)+'</div>'; });
+  }
+  hp.innerHTML = h || '<div class="hist-k">History</div><div class="empty">Nothing saved yet.</div>';
+  renderHist('jr','h-jr','c-jr',function(r){ return row('Grateful',r.grat)+row('Did well',r.well)+row('Standards',r.std)+row('Fell short',r.shortf)+row('Differently',r.diff)+row('I am',r.iam)+row('Difficult thing',r.hard); },'Journal');
+  paintDue(); paintPattern();
+}
+function paintDue(){
+  var el=document.getElementById('due'), snaps=list('snap');
+  if(!snaps.length){ el.className='due'; el.innerHTML='<b>No snapshot yet.</b> Work through the four steps below and save one. After that this banner tracks the monthly revisit.'; return; }
+  var last=new Date(snaps[0].d).getTime(), days=Math.floor((Date.now()-last)/DAY), left=30-days;
+  if(left<=0){ el.className='due now'; el.innerHTML='<b>Revisit due'+(left<0?' &mdash; '+(-left)+' day'+(-left===1?'':'s')+' overdue':' today')+'.</b> Last snapshot '+fdate(snaps[0].d)+'. Use &ldquo;Start from last snapshot&rdquo;, update what has changed, and see which gaps closed.'; }
+  else { el.className='due'; el.innerHTML='<b>Next revisit in '+left+' day'+(left===1?'':'s')+'.</b> Last snapshot '+fdate(snaps[0].d)+'.'; }
+}
+function paintPattern(){
+  var el=document.getElementById('pattern'), jr=list('jr'), snaps=list('snap');
+  if(!jr.length && !snaps.length){ el.innerHTML='<b>Nothing logged yet.</b> Start with tool 1. Your step 3 is already filled in with the description you wrote; edit it until it is exactly right.'; return; }
+  var b='';
+  if(jr.length){
+    var tally={};
+    jr.slice(0,60).forEach(function(r){ var seen={}; words((r.iam||'')+' '+(r.well||'')).forEach(function(w){ if(!seen[w]){ seen[w]=1; tally[w]=(tally[w]||0)+1; } }); });
+    var top=Object.keys(tally).filter(function(k){ return tally[k]>=2; }).sort(function(a,c){ return tally[c]-tally[a]; }).slice(0,6);
+    b+='<b>'+jr.length+' journal entr'+(jr.length===1?'y':'ies')+'.</b> ';
+    if(top.length) b+='Words that keep appearing in your &ldquo;I am&rdquo; and &ldquo;did well&rdquo; lines: <b>'+top.map(esc).join(', ')+'</b>. Everett&rsquo;s periodic review asks which values keep showing up &mdash; these are the candidates. ';
+    var stds=jr.slice(0,14).map(function(r){ return r.std; }).filter(Boolean);
+    if(stds.length>=3){ var y=stds.filter(function(s){ return s==='yes'; }).length; b+='Standards met in <b>'+y+' of the last '+stds.length+'</b> reviews. '; }
+  }
+  if(snaps.length>=2){ b+='Gaps: <b>'+(snaps[1].gaps||[]).length+'</b> &rarr; <b>'+(snaps[0].gaps||[]).length+'</b> across your last two snapshots.'; }
+  el.innerHTML=b;
+}
+function exportAll(){
+  var s=store(), out='TOUGH — WORK LOG\nExported '+new Date().toLocaleString()+'\n';
+  var secs=[['snap','Identity snapshots'],['plan','Goal plans'],['ci','Check-ins'],['jr','Journal']];
+  secs.forEach(function(p){
+    var arr=Array.isArray(s[p[0]])?s[p[0]]:[]; if(!arr.length) return;
+    out+='\n\n=== '+p[1]+' ('+arr.length+') ===\n';
+    arr.forEach(function(r){
+      out+='\n-- '+fdate(r.d)+'\n';
+      for(var f in r){ if(f==='d'||f==='id') continue; var v=r[f];
+        if(f==='gaps'&&Array.isArray(v)){ v=v.map(function(g){ return '  - '+(g.el?'['+(CNAMES[g.el]||g.el)+'] ':'')+g.gap+' | source: '+(g.src||'')+' | change: '+(g.chg||''); }).join('\n'); if(v) out+='gaps:\n'+v+'\n'; continue; }
+        if(v) out+=f+': '+v+'\n'; }
+    });
+  });
+  var w=window.open('','_blank');
+  if(w){ w.document.write('<pre style="white-space:pre-wrap;font:14px -apple-system,sans-serif;padding:18px;">'+esc(out)+'</pre>'); w.document.close(); }
+  else { alert('Allow pop-ups to export.'); }
+}
+function wipeAll(){
+  if(!confirm('Erase every saved entry and your draft on this device? This cannot be undone.')) return;
+  if(!confirm('Really erase all of it?')) return;
+  try{ localStorage.removeItem(WKEY); }catch(e){}
+  loadDraft(); renderAll();
+}
+
+/* ---------------- drill ---------------- */
+var POOL = [
+  { prompt:'At a parent night you catch yourself <b>name-dropping your Japan workshops</b> to a parent who didn&rsquo;t ask.',
+    lines:['<b>Character &mdash; validation seeking.</b> Energy spent convincing someone of your value instead of being it.','People see you as you are, not as you&rsquo;re presenting. Let the work speak and ask about their child instead.'] },
+  { prompt:'The furnace pilot goes out on a cold Saturday. You don&rsquo;t know where the <b>gas shut-off</b> is.',
+    lines:['<b>Capability &mdash; the universal basics.</b> Home safety is on Everett&rsquo;s list for exactly this moment.','Find the gas and water shut-offs this week and show your daughters where they are.'] },
+  { prompt:'Three weeks into a new routine, you <b>just don&rsquo;t feel like it</b> any more and think it might not be working.',
+    lines:['<b>Commitment &mdash; enthusiasm is not motivation.</b> The dip is weather; the why is the climate.','Check the why and the number. If the number is moving, the feeling is noise. Don&rsquo;t call quitting a course correction.'] },
+  { prompt:'Your inner voice before a hard conversation: <b>&ldquo;I&rsquo;ll try not to lose my temper.&rdquo;</b>',
+    lines:['<b>Capacity &mdash; defensive self-talk.</b> &ldquo;Try&rdquo; concedes the outcome in advance.','Offensive version: &ldquo;I will stay level and say the one thing that matters.&rdquo; Can and will, not try and might.'] },
+  { prompt:'Your step 3 reads <b>&ldquo;I want to be more patient with my kids.&rdquo;</b>',
+    lines:['<b>Character &mdash; wish language.</b> Everett&rsquo;s rule is &ldquo;I am,&rdquo; not &ldquo;I want to be.&rdquo;','&ldquo;I am patient with my daughters; I listen to the end before I answer.&rdquo; Then step 4 measures how far today is from that.'] },
+  { prompt:'You write a beautiful step 3 and <b>skip step 4</b> because comparing feels discouraging.',
+    lines:['<b>Character &mdash; the exercise without its engine.</b> A target alone is a positive fantasy, and fantasies drain effort.','Contrasting the target with reality is what turns it into commitment. Log the gaps like subtracting numbers.'] },
+  { prompt:'A student says something cutting in front of the class. You feel the heat rise.',
+    lines:['<b>Capacity &mdash; recognize, evaluate, respond.</b> Notice the emotion, read the situation, choose the most useful response.','Name it to yourself (&ldquo;that&rsquo;s anger&rdquo;) &mdash; labelling it dampens it. Then respond as the man in your step 3.'] },
+  { prompt:'You&rsquo;ve spent two weeks building <b>the perfect plan</b> for the book and haven&rsquo;t written a page.',
+    lines:['<b>Commitment &mdash; strategy before tactics, action before perfection.</b>','Set the endpoint, the measure and the markers. Then write today and settle tactics as feedback comes in.'] },
+  { prompt:'Your goal list includes <b>&ldquo;get a principal&rsquo;s certificate&rdquo;</b> and you can&rsquo;t say why you want it.',
+    lines:['<b>Commitment &mdash; goal plan step 2: check it against your identity and values.</b>','Is it yours, or what someone in your position is supposed to want? Or does it reveal the identity needs adjusting?'] },
+  { prompt:'Your goal says <b>&ldquo;get fitter this year.&rdquo;</b>',
+    lines:['<b>Commitment &mdash; not measurable.</b> Without a number you can&rsquo;t plan the steps or judge the pace.','Name the number: a time, a weight, a count. Then intermediate goals, then tasks for the next one only.'] },
+  { prompt:'You realize you&rsquo;ve written <b>the same three gratitudes</b> four mornings running.',
+    lines:['<b>Character &mdash; the daily journal: different things every day.</b> Repetition turns it into a ritual that no longer trains attention.','Look for something new, and write why it matters. The reason is the working part.'] },
+  { prompt:'You admire a colleague&rsquo;s confidence and <b>start copying how he talks</b> with parents.',
+    lines:['<b>Character &mdash; changing yourself to impress.</b> Your step 3 says you don&rsquo;t.','Confidence comes from evidence of your own competence, not borrowed style. What would build that evidence?'] },
+  { prompt:'Your daughter asks you to help change a <b>flat tire</b>, and you realize you&rsquo;d have to look it up.',
+    lines:['<b>Capability &mdash; car skills.</b> Small, learnable, and exactly the kind of competence that removes intimidation.','Do it once this month in the driveway, with her. Mastery experience is the strongest source of self-belief.'] },
+  { prompt:'You ask yourself how you rate as a teacher, and the answer is <b>&ldquo;pretty good, I think.&rdquo;</b>',
+    lines:['<b>Character &mdash; confidence from objective metrics, not feelings.</b> Self-ratings track real performance only loosely.','What number would show it? Marks moved, students placed up a level, an outside observer&rsquo;s count.'] },
+  { prompt:'A sudden change at school wrecks your week&rsquo;s plan. Your first thought: <b>&ldquo;Of course. Typical.&rdquo;</b>',
+    lines:['<b>Capacity &mdash; welcome the disruption.</b> Not wanting hardship, but meeting it as if it were the chance you wanted.','Reframe as a problem to solve: &ldquo;Good. What can I do with this?&rdquo;'] },
+  { prompt:'Before bed you picture the book launched and the course selling &mdash; <b>and stop there</b>.',
+    lines:['<b>Capacity &mdash; outcome visualization, half done.</b> Picturing success alone can lower the energy you bring.','Finish it: the main obstacle, and the first step tomorrow. Then picture the process of tomorrow&rsquo;s work.'] },
+  { prompt:'You wake at 5:30, tired, and <b>the workout is the last thing you want</b>.',
+    lines:['<b>Commitment &mdash; one difficult thing a day.</b> This is the rep.','The if-then you set last night carries it: &ldquo;When the alarm goes, shoes on before I decide anything.&rdquo;'] },
+  { prompt:'A goal is off pace at two check-ins in a row, and you want to <b>drop the goal</b>.',
+    lines:['<b>Commitment &mdash; adjust the tactic, keep the strategy.</b>','Change one specific thing before the next check-in. Only revisit the goal itself if step 2 says it was never really yours.'] },
+  { prompt:'You notice you <b>talk yourself down</b> in front of a new class to seem relatable.',
+    lines:['<b>Character &mdash; acting, not being.</b> Self-deprecation for approval is still validation seeking.','State plainly who you are and what the class will do. Security doesn&rsquo;t need the audience on side.'] },
+  { prompt:'At the monthly revisit, a gap from last month <b>has quietly closed</b>.',
+    lines:['<b>Character &mdash; this is the evidence confidence is built on.</b>','Write down what closed it. That record is the objective proof Everett means, and it is yours to keep.'] },
+  { prompt:'Marking is piling up and you&rsquo;re <b>snapping at everyone at home</b>.',
+    lines:['<b>Capacity &mdash; composure is a choice made by someone in control.</b> The pressure is real; the behaviour is chosen.','Recognize it, evaluate it (&ldquo;this is marking, not them&rdquo;), respond as the husband and father in your step 3.'] },
+  { prompt:'You&rsquo;ve set ten intermediate goals and written <b>task lists for all ten</b>.',
+    lines:['<b>Commitment &mdash; goal plan step 5: tasks for the next intermediate goal only.</b>','The later lists will be wrong by the time you reach them. Keep the strategy; settle tactics when you arrive.'] },
+  { prompt:'You&rsquo;ve stopped doing the journal because <b>you already know who you are</b>.',
+    lines:['<b>Character &mdash; determining, not knowing.</b> Toughness isn&rsquo;t understanding who you are; it&rsquo;s deciding it, daily.','The daily &ldquo;I am&rdquo; is the routine of being him. Habits take months, not weeks, to run on their own.'] },
+  { prompt:'Name <b>the one thing</b>.',
+    lines:['<b>Write it as &ldquo;I am,&rdquo; then measure the gap like a number.</b>','The description sets the direction; the honest comparison is what moves you.'] }
+];
+var ROUND=10, STEPS=[], idx=0, revealed=false;
+var ONE = POOL[POOL.length-1];
+function startRound(){
+  var a=POOL.slice(0,POOL.length-1);
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+  STEPS=a.slice(0,ROUND-1); STEPS.push(ONE); idx=0;
+}
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Name the element &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar"><button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button></div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  startRound();
+  document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+var DKEY='forge-tough-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=ymd(new Date()); if(s.last===t) return s;
+  s.streak=(s.last===ymd(new Date(Date.now()-DAY)))?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+loadDraft();
+startRound();
+renderAll();
+</script>
+</body>
+</html>
