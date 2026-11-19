@@ -2207,6 +2207,42 @@ def fetch_betting_intel():
 
 HANNIBAL_IMG = "https://upload.wikimedia.org/wikipedia/en/thumb/d/da/Hannibal_Smith.jpg/220px-Hannibal_Smith.jpg"
 
+def sleep_staleness(sleep):
+    """stalesleep (Nov 19 2026): (stale, age_days, last_date_str).
+
+    The Health Auto Export pipeline publishes ONE night into data.json and keeps
+    it there until a newer night arrives. If nights stop reaching Apple Health,
+    the old night sits in data.json indefinitely and every downstream reader
+    presents it as "last night" - which hid a ten-week outage in Sep-Nov 2026.
+    Stale = the newest recorded night is more than SLEEP_STALE_DAYS old, or
+    there is no dated night AND no manually typed score.
+    """
+    SLEEP_STALE_DAYS = 2
+    sleep = sleep or {}
+    d = sleep.get("stage_source_date")
+    if d:
+        try:
+            last = _dt.date.fromisoformat(str(d)[:10])
+        except ValueError:
+            return (True, None, str(d))
+        age = (today_pt() - last).days
+        return (age > SLEEP_STALE_DAYS, age, last.isoformat())
+    if not sleep_is_missing(sleep.get("score")):
+        return (False, None, None)
+    return (True, None, None)
+
+
+def sleep_for_display(sleep):
+    """stalesleep: a stale night is shown as NOT RECORDED everywhere (card, SITREP,
+    low-score banner) instead of being passed off as last night. stage_source_date
+    is kept so the stale banner can name it."""
+    stale, _age, _last = sleep_staleness(sleep)
+    if not stale:
+        return sleep
+    keep = {"stage_source_date": (sleep or {}).get("stage_source_date")}
+    return {"score": None, "duration": None, "hr_range": None, **keep}
+
+
 def sleep_is_missing(v):
     """install10 (Jul 30 2026): True when a sleep score is absent, blank, zero,
     or an impossible sentinel (<=0 or >100).
@@ -2396,6 +2432,9 @@ def highlight_ringette(text):
 
 
 def generate_html(welltory, sleep, weather, calendar_events, week_structured=None, body_comp=None):
+    # stalesleep: decide staleness on the RAW record, then blank it for display.
+    _stale, _stale_age, _stale_last = sleep_staleness(sleep)
+    sleep = sleep_for_display(sleep)
     now = now_pt()
     day_name = now.strftime("%A")
     date_str = now.strftime("%B %d, %Y")
@@ -2433,6 +2472,19 @@ def generate_html(welltory, sleep, weather, calendar_events, week_structured=Non
         _sleep_alert = f'<div style="padding:10px 14px; margin-bottom:10px; border-radius:8px; background:rgba(200,60,60,0.15); border:1px solid rgba(200,60,60,0.35); font-size:14px; font-weight:600; color:var(--text-bright);">Sleep score {_ss}% last night</div>'
     else:
         _sleep_alert = ''
+    # stalesleep: loud banner when sleep has stopped arriving. Same red-chip pattern
+    # as the low-score alert (light theme: red in the chip, near-black text).
+    if _stale:
+        if _stale_last and _stale_age is not None:
+            _stale_msg = (f"SLEEP DATA STALE \u2014 last night recorded {_stale_last} "
+                          f"({_stale_age} days ago). Check Zepp \u2192 Apple Health sync.")
+        elif _stale_last:
+            _stale_msg = f"SLEEP DATA STALE \u2014 unreadable night date {_stale_last!r}. Check the sleep export."
+        else:
+            _stale_msg = "SLEEP DATA MISSING \u2014 no recorded night in data.json. Check Zepp \u2192 Apple Health sync."
+        _sleep_alert = (f'<div id="stale-sleep" style="padding:12px 14px; margin-bottom:10px; border-radius:8px; '
+                        f'background:rgba(200,60,60,0.22); border:1px solid rgba(200,60,60,0.5); border-left:5px solid #b03030; '
+                        f'font-size:15px; font-weight:700; color:var(--text-bright);">{_stale_msg}</div>')
 
     _dm = sleep.get("duration_min")
     if _sd is not None and str(_sd).strip() not in ("", "-"):
