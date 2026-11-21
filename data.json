@@ -1,1 +1,194 @@
-{"welltory": {"stress": 33, "energy": 60, "health": 100}, "body_comp": {"weight": 208.3, "body_fat": 27.7, "muscle_mass": null, "bmi": 29.8, "visceral_fat": null}, "sleep": {"score": null, "duration": null, "hr_range": null, "rem": 95, "core": 326, "deep": 112, "awake": 4, "duration_min": 533, "time_in_bed_min": 626, "computed_score": 93, "computed_score_parts": {"duration": 40, "deep": 20, "rem": 16.2, "efficiency": 17}, "capture_method": "health_auto_export_v1", "capture_method_since": "2026-08-13", "stage_source_date": "2026-11-19"}, "notes": "", "updated": "2026-11-20T14:39:49.926Z", "calendar": [{"date": "Mon Nov 09", "time": "All day", "title": "POF W3 \u2014 Restoration (training resumed)"}, {"date": "Tue Nov 17", "time": "12:00 PM", "title": "Leonids meteor shower referenced at beginning of blood meridian occuring every 33 years"}, {"date": "Fri Nov 20", "time": "All day", "title": "Suggested marks cut-off"}, {"date": "Fri Nov 20", "time": "06:30 AM", "title": "POF \u2014 Morning reading"}, {"date": "Fri Nov 20", "time": "07:00 AM", "title": "POF \u2014 Step test + orthostatic test"}, {"date": "Sun Nov 22", "time": "07:00 PM", "title": "POF \u2014 Weekly deviations log"}, {"date": "Mon Nov 23", "time": "All day", "title": "POF \u2014 Analysis day (first day you may compute anything)"}, {"date": "Mon Nov 23", "time": "12:00 PM", "title": "Dr. Ip will call"}, {"date": "Tue Nov 24", "time": "01:39 PM", "title": "Mark: ELL 3 \u2014 DRAFT READ U2 L10"}, {"date": "Tue Nov 24", "time": "01:39 PM", "title": "Mark: Reports \u2014 WRITE REPORT COMMENTS \u2014 ELL 1/2"}, {"date": "Wed Nov 25", "time": "03:30 PM", "title": "Dr. Heng will call"}, {"date": "Thu Nov 26", "time": "09:41 AM", "title": "Mark: Reports \u2014 ENTER AND POST IN MyEd \u2014 due 5:00 PM today"}, {"date": "Thu Nov 26", "time": "09:41 AM", "title": "Mark: Reports \u2014 WRITE REPORT COMMENTS \u2014 ELL 3"}, {"date": "Thu Nov 26", "time": "01:54 PM", "title": "Mark: Reports \u2014 WRITE REPORT COMMENTS \u2014 English 8"}, {"date": "Thu Nov 26", "time": "02:00 PM", "title": "Dr. Calvert will call at 3:00"}, {"date": "Fri Nov 20", "time": "01:00 AM", "title": "EFGH"}, {"date": "Fri Nov 20", "time": "04:30 AM", "title": "ONE Friday Fights 179 & The Inner Circle 39"}, {"date": "Fri Nov 20", "time": "06:00 PM", "title": "Family Night"}, {"date": "Sat Nov 21", "time": "11:00 AM", "title": "UFC Fight Night: Prochazka vs Stirling"}, {"date": "Sat Nov 21", "time": "05:30 PM", "title": "Herbsttanz / Fall Dance"}, {"date": "Sun Nov 22", "time": "08:00 AM", "title": "Layna \u2014 U12A at CMRA U12-1 \u00b7 Poirier Sport & Leisure Complex (Ice 3) (Coquitlam)"}, {"date": "Sun Nov 22", "time": "09:15 AM", "title": "Kayla \u2014 1 Poco and Coquitlam (vs Richmond White) \u00b7 Richmond Ice Centre Pond"}, {"date": "Sun Nov 22", "time": "10:30 AM", "title": "Kayla \u2014 1 Poco(vs Richmond Blue) \u00b7 Richmond Ice Centre Pond"}, {"date": "Sun Nov 22", "time": "12:45 PM", "title": "Kayla \u2014 1 Surrey (vs Richmond Blue) \u00b7 Richmond Ice Centre Coliseum \u00b7 This is a game for BLUE team"}, {"date": "Sun Nov 22", "time": "01:00 PM", "title": "Kayla \u2014 1 Poco (vs Richmond White) \u00b7 Richmond Ice Centre Gardens \u00b7 This is a game for White team"}, {"date": "Sun Nov 22", "time": "03:30 PM", "title": "Kayla \u2014 U16 at DRA U16 \u00b7 Ladner Leisure Centre (Delta)"}, {"date": "Mon Nov 23", "time": "All day", "title": "Professional Development Day"}, {"date": "Tue Nov 24", "time": "01:00 AM", "title": "ABCD"}, {"date": "Tue Nov 24", "time": "01:00 AM", "title": "Birthday of Guru Nanak Dev Sahib"}, {"date": "Wed Nov 25", "time": "01:00 AM", "title": "CT-EFGH"}, {"date": "Thu Nov 26", "time": "01:00 AM", "title": "A-PLT-BCD"}]}
+{
+  "welltory": {
+    "stress": 33,
+    "energy": 60,
+    "health": 100
+  },
+  "body_comp": {
+    "weight": 207.2,
+    "body_fat": 27.6,
+    "muscle_mass": null,
+    "bmi": 29.7,
+    "visceral_fat": null
+  },
+  "sleep": {
+    "score": null,
+    "duration": null,
+    "hr_range": null,
+    "rem": 95,
+    "core": 326,
+    "deep": 112,
+    "awake": 4,
+    "duration_min": 533,
+    "time_in_bed_min": 626,
+    "computed_score": 93,
+    "computed_score_parts": {
+      "duration": 40,
+      "deep": 20,
+      "rem": 16.2,
+      "efficiency": 17
+    },
+    "capture_method": "health_auto_export_v1",
+    "capture_method_since": "2026-08-13",
+    "stage_source_date": "2026-11-19"
+  },
+  "notes": "",
+  "updated": "2026-11-20T14:39:49.926Z",
+  "calendar": [
+    {
+      "date": "Mon Nov 09",
+      "time": "All day",
+      "title": "POF W3 — Restoration (training resumed)"
+    },
+    {
+      "date": "Tue Nov 17",
+      "time": "12:00 PM",
+      "title": "Leonids meteor shower referenced at beginning of blood meridian occuring every 33 years"
+    },
+    {
+      "date": "Fri Nov 20",
+      "time": "All day",
+      "title": "Suggested marks cut-off"
+    },
+    {
+      "date": "Fri Nov 20",
+      "time": "06:30 AM",
+      "title": "POF — Morning reading"
+    },
+    {
+      "date": "Fri Nov 20",
+      "time": "07:00 AM",
+      "title": "POF — Step test + orthostatic test"
+    },
+    {
+      "date": "Sun Nov 22",
+      "time": "07:00 PM",
+      "title": "POF — Weekly deviations log"
+    },
+    {
+      "date": "Mon Nov 23",
+      "time": "All day",
+      "title": "POF — Analysis day (first day you may compute anything)"
+    },
+    {
+      "date": "Mon Nov 23",
+      "time": "12:00 PM",
+      "title": "Dr. Ip will call"
+    },
+    {
+      "date": "Tue Nov 24",
+      "time": "01:39 PM",
+      "title": "Mark: ELL 3 — DRAFT READ U2 L10"
+    },
+    {
+      "date": "Tue Nov 24",
+      "time": "01:39 PM",
+      "title": "Mark: Reports — WRITE REPORT COMMENTS — ELL 1/2"
+    },
+    {
+      "date": "Wed Nov 25",
+      "time": "03:30 PM",
+      "title": "Dr. Heng will call"
+    },
+    {
+      "date": "Thu Nov 26",
+      "time": "09:41 AM",
+      "title": "Mark: Reports — ENTER AND POST IN MyEd — due 5:00 PM today"
+    },
+    {
+      "date": "Thu Nov 26",
+      "time": "09:41 AM",
+      "title": "Mark: Reports — WRITE REPORT COMMENTS — ELL 3"
+    },
+    {
+      "date": "Thu Nov 26",
+      "time": "01:54 PM",
+      "title": "Mark: Reports — WRITE REPORT COMMENTS — English 8"
+    },
+    {
+      "date": "Thu Nov 26",
+      "time": "02:00 PM",
+      "title": "Dr. Calvert will call at 3:00"
+    },
+    {
+      "date": "Fri Nov 20",
+      "time": "01:00 AM",
+      "title": "EFGH"
+    },
+    {
+      "date": "Fri Nov 20",
+      "time": "04:30 AM",
+      "title": "ONE Friday Fights 179 & The Inner Circle 39"
+    },
+    {
+      "date": "Fri Nov 20",
+      "time": "06:00 PM",
+      "title": "Family Night"
+    },
+    {
+      "date": "Sat Nov 21",
+      "time": "11:00 AM",
+      "title": "UFC Fight Night: Prochazka vs Stirling"
+    },
+    {
+      "date": "Sat Nov 21",
+      "time": "05:30 PM",
+      "title": "Herbsttanz / Fall Dance"
+    },
+    {
+      "date": "Sun Nov 22",
+      "time": "08:00 AM",
+      "title": "Layna — U12A at CMRA U12-1 · Poirier Sport & Leisure Complex (Ice 3) (Coquitlam)"
+    },
+    {
+      "date": "Sun Nov 22",
+      "time": "09:15 AM",
+      "title": "Kayla — 1 Poco and Coquitlam (vs Richmond White) · Richmond Ice Centre Pond"
+    },
+    {
+      "date": "Sun Nov 22",
+      "time": "10:30 AM",
+      "title": "Kayla — 1 Poco(vs Richmond Blue) · Richmond Ice Centre Pond"
+    },
+    {
+      "date": "Sun Nov 22",
+      "time": "12:45 PM",
+      "title": "Kayla — 1 Surrey (vs Richmond Blue) · Richmond Ice Centre Coliseum · This is a game for BLUE team"
+    },
+    {
+      "date": "Sun Nov 22",
+      "time": "01:00 PM",
+      "title": "Kayla — 1 Poco (vs Richmond White) · Richmond Ice Centre Gardens · This is a game for White team"
+    },
+    {
+      "date": "Sun Nov 22",
+      "time": "03:30 PM",
+      "title": "Kayla — U16 at DRA U16 · Ladner Leisure Centre (Delta)"
+    },
+    {
+      "date": "Mon Nov 23",
+      "time": "All day",
+      "title": "Professional Development Day"
+    },
+    {
+      "date": "Tue Nov 24",
+      "time": "01:00 AM",
+      "title": "ABCD"
+    },
+    {
+      "date": "Tue Nov 24",
+      "time": "01:00 AM",
+      "title": "Birthday of Guru Nanak Dev Sahib"
+    },
+    {
+      "date": "Wed Nov 25",
+      "time": "01:00 AM",
+      "title": "CT-EFGH"
+    },
+    {
+      "date": "Thu Nov 26",
+      "time": "01:00 AM",
+      "title": "A-PLT-BCD"
+    }
+  ]
+}
