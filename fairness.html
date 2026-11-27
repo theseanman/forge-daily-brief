@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Fairness Problem</title>
+<style>
+  :root{
+    --bg-deep:#061c40; --bg-mid:#0d3572; --accent:#4a9de8; --accent-hi:#7fbfff;
+    --ink:#eaf4ff; --ink-dim:rgba(234,244,255,.78); --ink-quiet:rgba(234,244,255,.5);
+    --gold:#f5d76e; --panel:rgba(74,157,232,.10); --line:rgba(122,175,255,.22);
+    --teal:#3fd0c0; --red:#ff8a8a; --violet:#b48cff;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ min-height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #1e5aa8 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed; color:var(--ink); }
+  .wrap{ max-width:680px; margin:0 auto; padding:20px 16px calc(40px + env(safe-area-inset-bottom)); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  a.back{ color:var(--ink-quiet); text-decoration:none; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+  .toggle{ display:flex; gap:4px; background:rgba(9,36,80,.5); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .toggle button{ border:0; background:transparent; color:var(--ink-dim); font-size:12.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 13px; border-radius:999px; cursor:pointer; }
+  .toggle button.on{ background:var(--accent); color:#06264f; }
+  h1{ font-size:26px; font-weight:300; letter-spacing:-.01em; margin:2px 0 2px; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-bottom:16px; line-height:1.5; }
+  a.inl{ color:var(--accent-hi); }
+
+  /* photo slot */
+  .photo{ position:relative; width:100%; height:170px; border-radius:16px; overflow:hidden; margin-bottom:20px;
+    border:1px dashed var(--line); background:rgba(9,36,80,.35); display:flex; align-items:center; justify-content:center;
+    background-size:cover; background-position:center; cursor:pointer; }
+  .photo.set{ border-style:solid; }
+  .photo .ph-hint{ font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); font-weight:700; text-align:center; padding:0 20px; }
+  .photo .ph-edit{ position:absolute; right:10px; bottom:10px; background:rgba(6,30,70,.72); color:#fff; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; font-weight:800; padding:7px 12px; border-radius:999px; display:none; }
+  .photo.set .ph-edit{ display:block; }
+  .photo.set .ph-hint{ display:none; }
+
+  /* cards */
+  .card{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; padding:15px 16px; margin-bottom:13px; }
+  .card.teal{ border-left-color:var(--teal); background:rgba(63,208,192,.08); }
+  .card.gold{ border-left-color:var(--gold); background:rgba(245,215,110,.08); }
+  .card.red{ border-left-color:var(--red); background:rgba(255,138,138,.08); }
+  .card.violet{ border-left-color:var(--violet); background:rgba(180,140,255,.09); }
+  .p-head{ display:flex; align-items:baseline; gap:9px; margin-bottom:4px; flex-wrap:wrap; }
+  .p-num{ font-size:12px; font-weight:800; color:var(--accent-hi); letter-spacing:.1em; }
+  .p-name{ font-size:18px; font-weight:700; }
+  .p-ess{ font-size:13.5px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-bottom:10px; }
+  .trig{ font-size:13px; line-height:1.5; margin:4px 0 8px; color:var(--ink-dim); }
+  .trig b{ color:var(--gold); font-weight:800; letter-spacing:.04em; }
+  .move{ font-size:14px; line-height:1.55; margin:7px 0; padding-left:15px; position:relative; }
+  .move:before{ content:'\2192'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .move b{ color:var(--accent-hi); font-weight:700; }
+  .card.teal .move b{ color:#8ff0e4; } .card.teal .move:before{ color:var(--teal); }
+  .card.red .move b{ color:#ffc0c0; } .card.red .move:before{ color:var(--red); }
+  .card.violet .move b{ color:#d4bcff; } .card.violet .move:before{ color:var(--violet); }
+  .ex{ margin-top:11px; padding-top:10px; border-top:1px solid var(--line); }
+  .ex-row{ font-size:13.5px; line-height:1.55; margin:6px 0; }
+  .ex-row .tag{ display:inline-block; min-width:78px; font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); }
+  .note{ font-size:12.5px; color:var(--ink-quiet); line-height:1.5; margin-top:9px; }
+  .section-k{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:22px 0 10px; }
+  .group-k{ font-size:12.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--teal); font-weight:800; margin:16px 0 6px; }
+  .band{ background:rgba(245,215,110,.10); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; font-size:14px; line-height:1.6; margin-bottom:13px; }
+  .band b{ color:var(--gold); }
+  .band.warn{ background:rgba(255,138,138,.10); border-left-color:var(--red); }
+  .band.warn b{ color:var(--red); }
+  .band.vio{ background:rgba(180,140,255,.11); border-left-color:var(--violet); }
+  .band.vio b{ color:#d4bcff; }
+  .para{ font-size:14px; line-height:1.6; margin:7px 0; }
+  .para b{ color:var(--accent-hi); }
+  .card.teal .para b{ color:#8ff0e4; }
+  .card.red .para b{ color:#ffc0c0; }
+  .q{ font-size:14px; line-height:1.55; margin:6px 0 6px 4px; padding-left:12px; border-left:2px solid var(--gold); }
+  .step{ display:flex; gap:11px; font-size:14px; line-height:1.55; margin:9px 0; }
+  .step .n{ flex:0 0 22px; height:22px; border-radius:50%; background:rgba(74,157,232,.22); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:800; color:var(--accent-hi); margin-top:1px; }
+  .step b{ color:var(--accent-hi); }
+
+  /* evidence pills */
+  .ev{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.1em; padding:2px 7px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-quiet); vertical-align:middle; }
+  .ev.a{ background:rgba(74,157,232,.26); color:#cfe6ff; border-color:rgba(122,175,255,.5); }
+  .ev.b{ background:rgba(74,157,232,.14); color:#b7d8ff; }
+  .ev.c{ background:rgba(245,215,110,.14); color:#f0dc9a; border-color:rgba(245,215,110,.35); }
+  .ev.d{ background:rgba(255,255,255,.06); color:var(--ink-quiet); }
+  .ev.x{ background:rgba(255,138,138,.16); color:#ffb3b3; border-color:rgba(255,138,138,.4); }
+  .key{ font-size:12px; color:var(--ink-quiet); line-height:1.7; }
+  .key b{ color:var(--ink-dim); }
+
+  /* ---------- WORK tab ---------- */
+  #work{ display:none; }
+  #drill{ display:none; }
+  .tool{ background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:14px; margin-bottom:13px; overflow:hidden; }
+  .tool.teal{ border-left-color:var(--teal); background:rgba(63,208,192,.07); }
+  .tool.violet{ border-left-color:var(--violet); background:rgba(180,140,255,.08); }
+  .tool.gold{ border-left-color:var(--gold); background:rgba(245,215,110,.07); }
+  .tool-head{ display:flex; align-items:center; gap:10px; padding:14px 16px; cursor:pointer; }
+  .tool-head .tn{ flex:0 0 24px; height:24px; border-radius:50%; background:rgba(74,157,232,.22); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:800; color:var(--accent-hi); }
+  .tool-head .tt{ flex:1; font-size:16px; font-weight:700; line-height:1.3; }
+  .tool-head .cnt{ font-size:10.5px; font-weight:800; letter-spacing:.1em; color:var(--ink-quiet); }
+  .tool-head .chev{ color:var(--ink-quiet); font-size:15px; transition:transform .25s; }
+  .tool.open .tool-head .chev{ transform:rotate(90deg); }
+  .tool-body{ display:none; padding:0 16px 16px; }
+  .tool.open .tool-body{ display:block; }
+  .why{ font-size:13px; line-height:1.55; color:var(--ink-dim); border-top:1px solid var(--line); padding-top:11px; margin-bottom:12px; }
+  .why b{ color:var(--gold); }
+  .fl{ margin-bottom:11px; }
+  .fl label{ display:block; font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:var(--accent-hi); margin-bottom:5px; }
+  .fl .hintline{ font-size:12px; color:var(--ink-quiet); line-height:1.45; margin-bottom:6px; }
+  textarea, input[type=text], select{ width:100%; background:rgba(5,22,52,.55); border:1px solid var(--line); border-radius:10px;
+    color:var(--ink); font-size:14.5px; line-height:1.5; padding:10px 12px; font-family:inherit; resize:vertical; }
+  textarea:focus, input[type=text]:focus, select:focus{ outline:2px solid var(--accent); outline-offset:0; border-color:transparent; }
+  textarea::placeholder, input::placeholder{ color:rgba(234,244,255,.3); }
+  select{ appearance:none; -webkit-appearance:none; background-image:linear-gradient(45deg,transparent 50%,var(--accent-hi) 50%),linear-gradient(135deg,var(--accent-hi) 50%,transparent 50%);
+    background-position:calc(100% - 17px) 18px, calc(100% - 12px) 18px; background-size:5px 5px,5px 5px; background-repeat:no-repeat; padding-right:34px; }
+  select option{ background:#0b2547; color:#eaf4ff; }
+  .twocol{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (max-width:520px){ .twocol{ grid-template-columns:1fr; } }
+  .colhd{ font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; margin-bottom:5px; }
+  .colhd.l{ color:var(--red); } .colhd.r{ color:var(--accent-hi); }
+  .rung{ display:flex; gap:9px; align-items:flex-start; margin-bottom:8px; }
+  .rung .rn{ flex:0 0 20px; height:20px; border-radius:50%; background:rgba(180,140,255,.2); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:10.5px; font-weight:800; color:#d4bcff; margin-top:9px; }
+  .rung .rl{ flex:1; }
+  .rung .rl .rlab{ font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); margin-bottom:3px; }
+  .chk{ display:flex; align-items:flex-start; gap:10px; font-size:14px; line-height:1.5; margin:9px 0; cursor:pointer; }
+  .chk input{ flex:0 0 19px; width:19px; height:19px; margin-top:1px; accent-color:var(--accent); }
+  .chk span b{ color:var(--accent-hi); }
+  .toolbar{ display:flex; gap:9px; margin-top:13px; flex-wrap:wrap; }
+  .sbtn{ border:0; border-radius:999px; padding:11px 20px; font-size:13px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; }
+  .sbtn.ghost{ background:rgba(9,36,80,.6); color:#fff; border:1px solid var(--line); }
+  .sbtn.danger{ background:rgba(255,138,138,.16); color:#ffb3b3; border:1px solid rgba(255,138,138,.4); }
+  .sbtn:disabled{ opacity:.35; cursor:default; }
+  .analysis{ display:none; margin-top:13px; background:rgba(245,215,110,.09); border-left:4px solid var(--gold); border-radius:12px; padding:13px 15px; }
+  .analysis.on{ display:block; }
+  .analysis .ah{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800; color:var(--gold); margin-bottom:8px; }
+  .analysis .aq{ font-size:14px; line-height:1.55; margin:8px 0; padding-left:14px; position:relative; }
+  .analysis .aq:before{ content:'\2192'; position:absolute; left:0; color:var(--gold); font-weight:700; }
+  .analysis .aq b{ color:var(--gold); }
+  .flag{ font-size:13.5px; line-height:1.55; margin:8px 0; padding:9px 11px; border-radius:9px; background:rgba(255,138,138,.12); border-left:3px solid var(--red); }
+  .flag b{ color:#ffc0c0; }
+  .flag.ok{ background:rgba(63,208,192,.11); border-left-color:var(--teal); }
+  .flag.ok b{ color:#8ff0e4; }
+  .hist{ margin-top:14px; border-top:1px solid var(--line); padding-top:11px; }
+  .hist-k{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); margin-bottom:8px; }
+  .entry{ background:rgba(5,22,52,.4); border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin-bottom:8px; }
+  .entry .edate{ font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; color:var(--accent-hi); margin-bottom:5px;
+    display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .entry .edate .del{ color:var(--ink-quiet); cursor:pointer; font-size:15px; line-height:1; padding:0 4px; }
+  .entry .erow{ font-size:13px; line-height:1.5; color:var(--ink-dim); margin:4px 0; white-space:pre-wrap; }
+  .entry .erow .el{ font-size:10px; letter-spacing:.1em; text-transform:uppercase; font-weight:800; color:var(--ink-quiet); display:block; }
+  .empty{ font-size:12.5px; color:var(--ink-quiet); font-style:italic; }
+  .pattern{ background:rgba(63,208,192,.09); border-left:4px solid var(--teal); border-radius:12px; padding:13px 15px; margin-bottom:13px; font-size:13.5px; line-height:1.6; }
+  .pattern b{ color:#8ff0e4; }
+
+  /* drill */
+  .progress{ display:flex; gap:5px; justify-content:center; margin:14px 0 8px; }
+  .dot{ height:3px; flex:1; max-width:40px; background:rgba(255,255,255,.15); border-radius:2px; transition:background .3s; }
+  .dot.on{ background:var(--accent); } .dot.done{ background:var(--accent-hi); }
+  .stage{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px 4px 8px; }
+  .prompt{ font-size:clamp(19px,5vw,26px); font-weight:300; line-height:1.4; max-width:600px; }
+  .prompt b{ font-weight:700; color:var(--accent-hi); }
+  .hint{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-quiet); margin-top:18px; font-weight:700; }
+  .reveal-wrap{ margin-top:0; width:100%; max-width:600px; opacity:0; transform:translateY(6px); max-height:0; overflow:hidden;
+    transition:opacity .35s ease, transform .35s ease, max-height .4s ease, margin-top .35s ease; pointer-events:none; }
+  .reveal-wrap.on{ opacity:1; transform:translateY(0); pointer-events:auto; max-height:60vh; overflow:auto; margin-top:18px; }
+  .reveal{ background:rgba(74,157,232,.14); border-left:4px solid var(--accent); border-radius:12px; padding:15px 17px; text-align:left; }
+  .reveal .line{ font-size:15.5px; line-height:1.55; margin-bottom:6px; } .reveal .line:last-child{ margin-bottom:0; }
+  .reveal .line b{ color:var(--accent-hi); }
+  .bar{ display:flex; gap:12px; justify-content:center; margin-top:18px; }
+  .btn{ border:0; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; background:rgba(255,255,255,.94); color:#0b2547; min-width:130px; box-shadow:0 4px 18px rgba(6,30,70,.35); }
+  .btn.ghost{ background:rgba(9,36,80,.55); color:#fff; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .btn:focus-visible, .toggle button:focus-visible, .sbtn:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .foot{ text-align:center; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-quiet); margin-top:16px; font-weight:700; }
+  .done-view{ display:none; text-align:center; padding:30px 0; }
+  .done-view.on{ display:block; }
+  .done-view .big{ font-size:32px; font-weight:200; letter-spacing:.05em; }
+  .done-view .streak{ margin-top:20px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-hi); font-weight:800; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+  /* fairness additions */
+  .rangerow{ display:flex; align-items:center; gap:12px; }
+  .rangerow input[type=range]{ flex:1; accent-color:var(--accent); height:28px; }
+  .rangerow .rv{ flex:0 0 38px; text-align:right; font-size:16px; font-weight:800; color:var(--accent-hi); }
+  .closebox{ margin-top:9px; padding-top:9px; border-top:1px dashed var(--line); }
+  .chartbox{ margin-top:14px; }
+  svg.chart{ width:100%; height:auto; display:block; }
+  svg.chart .grid{ stroke:rgba(122,175,255,.16); stroke-width:1; }
+  svg.chart .ax{ fill:rgba(234,244,255,.5); font-size:9.5px; font-family:inherit; }
+  svg.chart polyline{ fill:none; stroke-width:2.4; stroke-linejoin:round; stroke-linecap:round; }
+  svg.chart polyline.sa{ stroke:var(--teal); }
+  svg.chart polyline.sb{ stroke:var(--gold); stroke-dasharray:5 4; }
+  svg.chart circle.sad{ fill:var(--teal); } svg.chart circle.sbd{ fill:var(--gold); }
+  svg.chart text.el{ font-size:10px; font-weight:800; font-family:inherit; }
+  svg.chart text.sat{ fill:var(--teal); } svg.chart text.sbt{ fill:var(--gold); }
+  .legend{ display:flex; gap:16px; justify-content:center; margin-top:6px; font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+  .legend .sa{ color:var(--teal); } .legend .sb{ color:var(--gold); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="./protocols.html" class="back">&larr; Protocols</a>
+    <div class="toggle">
+      <button id="tab-read" class="on" onclick="setMode('read')">Read</button>
+      <button id="tab-work" onclick="setMode('work')">Work</button>
+      <button id="tab-drill" onclick="setMode('drill')">Drill</button>
+    </div>
+  </div>
+
+  <!-- ===================== READ ===================== -->
+  <div id="read">
+    <h1>The Fairness Problem</h1>
+    <div class="sub">&ldquo;It&rsquo;s not fair&rdquo; and &ldquo;Why hasn&rsquo;t anyone noticed?&rdquo; are two faces of one belief, and they get equal weight here. CBT&rsquo;s answer is not to argue with the belief but to test it against your own evidence until it stops steering. Four tools in the Work tab.</div>
+
+    <div class="photo" id="photo" onclick="pickPhoto()">
+      <div class="ph-hint">Tap to add an image</div>
+      <div class="ph-edit">Change</div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+
+    <div class="section-k">The belief</div>
+
+    <div class="band"><b>One rule underneath both.</b> &ldquo;If I do the right thing, the world will register it and pay it back.&rdquo; Track A is what you feel when the rule is broken: <b>it&rsquo;s not fair</b>. Track B is what you do while you wait for the rule to be honoured: <b>you wait to be noticed</b>. Same rule, one reaction and one behaviour. Both get worked on, equally.</div>
+
+    <div class="card teal">
+      <div class="p-head"><span class="p-num">A</span><span class="p-name">&ldquo;It&rsquo;s not fair&rdquo;</span><span class="ev c">C</span></div>
+      <div class="p-ess">CBT calls it the fallacy of fairness: measuring events against what should happen, then resenting the gap.</div>
+      <div class="para">It shows up as <b>surprise, then resentment</b>. Something went against you, and it feels less like bad luck than like a broken agreement. The surprise is the useful part. It means your model predicted one thing and the world did another.</div>
+      <div class="move">Its sentences: <b>&ldquo;That shouldn&rsquo;t have happened.&rdquo; &ldquo;After everything I did.&rdquo; &ldquo;I don&rsquo;t deserve this.&rdquo;</b></div>
+      <div class="note">Grade C. It is a standard entry in CBT distortion lists, but there is almost no trial evidence on this one distortion on its own. It is treated inside general cognitive restructuring.</div>
+    </div>
+
+    <div class="card gold">
+      <div class="p-head"><span class="p-num">B</span><span class="p-name">&ldquo;Why hasn&rsquo;t anyone noticed?&rdquo;</span><span class="ev c">C</span></div>
+      <div class="p-ess">CBT calls it the heaven&rsquo;s reward fallacy: the belief that good work will be repaid without you doing anything more.</div>
+      <div class="para">This track is quieter than A, and it costs more. It doesn&rsquo;t feel like anything. It feels like patience. You do the work well and then you <b>leave the last step to someone else</b>: showing it, asking, following up, putting it in front of the right person.</div>
+      <div class="move">Its sentences: <b>&ldquo;They should see it.&rdquo; &ldquo;If it&rsquo;s good it&rsquo;ll get picked up.&rdquo; &ldquo;I&rsquo;m not going to blow my own horn.&rdquo;</b></div>
+      <div class="note">Grade C, for the same reason as A. Listed in CBT distortion handouts, not studied on its own.</div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-name">Why you can&rsquo;t just drop it</span><span class="ev b">B</span></div>
+      <div class="p-ess">The belief is doing a job.</div>
+      <div class="para">Research on belief in a just world separates two versions: <b>the world is fair to me</b> (personal) and <b>the world is fair in general</b> (general). In questionnaire studies, the personal version predicts wellbeing and self-esteem. The general version mostly doesn&rsquo;t.</div>
+      <div class="move">So the aim is not cynicism. <b>&ldquo;Nothing is ever fair&rdquo; is the same error turned upside down.</b> It is still a forecast made from a moral rule instead of from evidence.</div>
+      <div class="move">What you keep: fairness as <b>your own standard</b> for how you behave. What you drop: fairness as a <b>forecast</b> of how the world will respond.</div>
+      <div class="note">Grade B. Dalbert (1999) and several later replications across countries. These are correlations from questionnaires, not experiments, so they show the belief travels with wellbeing, not that it causes it.</div>
+    </div>
+
+    <div class="band vio"><b>What this page doesn&rsquo;t cover.</b> The in-the-moment handle (<b>&ldquo;Nothing is owed&rdquo;</b>) and the three tiers of hurt belong to <a class="inl" href="./ledger.html">The Grievance Protocol</a>. The distancing move belongs to <a class="inl" href="./resilience.html">Resilience</a>, Pillar 04. This page covers the slower job: <b>testing the belief over weeks</b> until your own record outweighs it. Same scope as the Grievance Protocol: strangers, work and the world. Not your children, where obligations are real.</div>
+
+    <div class="section-k">Why test instead of argue</div>
+
+    <div class="card violet">
+      <div class="p-head"><span class="p-name">Head&ndash;heart lag</span><span class="ev b">B</span></div>
+      <div class="p-ess">You already know the world isn&rsquo;t fair. That knowledge has never stopped the feeling.</div>
+      <div class="para">CBT therapists call this head&ndash;heart lag: you hold the right belief as a sentence while acting on the old one. Reasoning with yourself reaches the sentence. <b>A behavioural experiment reaches the expectation</b>, because it puts a prediction in front of reality and you watch which one wins.</div>
+      <div class="move">An experiment is <b>a specific prediction from the old belief</b>, an action that tests it, and an honest record of what happened.</div>
+      <div class="move">In one direct comparison, people <b>rated experiments as more powerful and compelling than thought records</b> for changing a belief. <span class="ev c">C</span> That is one study and self-reported ratings, so it supports putting experiments at the centre, not dropping thought records.</div>
+      <div class="note">Grade B for experiments as a core CBT tool. The Oxford and King&rsquo;s College groups have built thirty years of anxiety treatment around them. Grade C for experiments beating thought records head-to-head.</div>
+    </div>
+
+    <div class="band"><b>Why this suits you.</b> Evidence that leaves no room to argue is the lever that has worked for you before. You also already run action research on yourself. This is the same method aimed at one belief: predict, act, record, compare.</div>
+
+    <div class="section-k">The six steps</div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">01</span><span class="p-name">Write the rule down</span><span class="ev b">B</span></div>
+      <div class="p-ess">A belief you can&rsquo;t state can&rsquo;t be tested.</div>
+      <div class="move">CBT writes underlying beliefs as <b>if&ndash;then rules</b>, because an if&ndash;then makes a prediction and a prediction can fail.</div>
+      <div class="move"><b>Rule A:</b> &ldquo;If I play fair, I&rsquo;ll be treated fairly.&rdquo;</div>
+      <div class="move"><b>Rule B:</b> &ldquo;If my work is good, the right people will notice it.&rdquo;</div>
+      <div class="move">Rate how true each one <b>feels</b> right now, 0 to 100. Not how true you think it is, but how strongly it runs. Log it in Work, tool 1. That number is your baseline.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Tip</span>Rewrite them in your own words if these don&rsquo;t sound like the voice in your head. The test only works on the rule you actually run.</div>
+      </div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><span class="p-num">02</span><span class="p-name">Catch it</span><span class="ev b">B</span></div>
+      <div class="p-ess">A two-line record, written while it&rsquo;s fresh. No analysis.</div>
+      <div class="trig"><b>The tells:</b> surprise followed by resentment &middot; a &ldquo;should&rdquo; right before a decision &middot; finishing something good and putting it away &middot; waiting for someone to offer instead of asking.</div>
+      <div class="move"><b>Line 1, the situation:</b> what a camera would have seen.</div>
+      <div class="move"><b>Line 2, the sentence:</b> the words in your head, quoted exactly. Then how strong the feeling was, 0 to 10, and which track.</div>
+      <div class="move">That&rsquo;s it. A short record you actually keep beats a full seven-column record you skip.</div>
+      <div class="ex">
+        <div class="ex-row"><span class="tag">Room 148</span>A colleague&rsquo;s unit gets mentioned at the staff meeting. Yours, built over the summer, doesn&rsquo;t. Line 2: &ldquo;I did twice the work and nobody even knows it exists.&rdquo; B, 6.</div>
+        <div class="ex-row"><span class="tag">Strangers</span>Someone cuts in at the Superstore checkout and the cashier serves them. Line 2: &ldquo;Unbelievable.&rdquo; A, 5.</div>
+        <div class="ex-row"><span class="tag">Admin</span>A last-minute request arrives after you&rsquo;ve finished the thing it changes. Line 2: &ldquo;I always get mine in on time and this is what I get.&rdquo; A, 7.</div>
+        <div class="ex-row"><span class="tag">Income</span>You finish a strong Self-Evidence chapter and close the file. Line 2: nothing, which is the tell. B, 0. Log the zero too.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-head"><span class="p-num">03</span><span class="p-name">Swap the demand for a preference</span><span class="ev b">B</span></div>
+      <div class="p-ess">Keep wanting it. Stop requiring it.</div>
+      <div class="para">This is the REBT move, and the Grievance Protocol covers it in full (Tier Two). Here it gets one line per track, used at the end of a catch:</div>
+      <div class="move"><b>A:</b> &ldquo;I&rsquo;d prefer this had gone fairly. It didn&rsquo;t have to. What does it change about what I do next?&rdquo;</div>
+      <div class="move"><b>B:</b> &ldquo;I&rsquo;d like this noticed. It won&rsquo;t be unless I show it. Showing it is the last step of the job.&rdquo;</div>
+      <div class="note">Grade B. A meta-analysis of fifty years of REBT found medium effects on outcomes (d = 0.58) and on irrational beliefs themselves (d = 0.70). The evidence is for the whole package, not this one move tested alone.</div>
+    </div>
+
+    <div class="card violet">
+      <div class="p-head"><span class="p-num">04</span><span class="p-name">Run one experiment a week</span><span class="ev b">B</span></div>
+      <div class="p-ess">This is the core of the page. Everything else feeds it.</div>
+      <div class="move"><b>Name the rule</b> you&rsquo;re testing, A or B.</div>
+      <div class="move"><b>Write the prediction first</b>, specific enough to be wrong. Not &ldquo;it won&rsquo;t go well&rdquo; but &ldquo;she won&rsquo;t reply within two days&rdquo; or &ldquo;none of the three will have heard of it.&rdquo;</div>
+      <div class="move"><b>Rate the rule</b> 0 to 100 before you act.</div>
+      <div class="move"><b>Do it cleanly.</b> No hedging, no apologising in advance, no burying the ask. A hedge is a <b>safety behaviour</b>: it lets you write off the result whichever way it goes.</div>
+      <div class="move"><b>Record what happened</b>, compare it with the prediction, and re-rate the rule.</div>
+      <div class="note">Design rules from the clinical guidance (Oxford / King&rsquo;s College group, 2025): test one specific belief, make the prediction concrete, drop safety behaviours, and review afterward what the result means for the belief. Small and real beats big and imagined.</div>
+
+      <div class="group-k">Track A experiments &middot; &ldquo;it&rsquo;s not fair&rdquo;</div>
+      <div class="ex-row"><span class="tag">Forecast</span>Before five situations this week, write two forecasts each: the fair one and the realistic one, based on what usually happens. Afterward, score which forecast was closer more often.</div>
+      <div class="ex-row"><span class="tag">Traffic</span>Prediction: &ldquo;Bad drivers pick on me.&rdquo; Count every cut-off on your commute for a week and note whether it was aimed at you or just happened near you.</div>
+      <div class="ex-row"><span class="tag">Admin</span>Prediction: &ldquo;If I push back on a late request, it&rsquo;ll go badly.&rdquo; Once, reply politely with a real constraint and a counter-offer. Record what actually came back.</div>
+      <div class="ex-row"><span class="tag">Survey</span>Ask two people you trust, separately: &ldquo;Do you think doing things the right way gets you treated fairly at work?&rdquo; Predict their answers first. Asking other people what they believe is a recognized form of behavioural experiment.</div>
+      <div class="ex-row"><span class="tag">Strangers</span>Next time someone jumps a line, predict how long the feeling will last if you do nothing, and how long it will last if you say one calm sentence. Then try one and time it.</div>
+
+      <div class="group-k">Track B experiments &middot; waiting to be noticed</div>
+      <div class="ex-row"><span class="tag">Admin</span>Prediction: &ldquo;Telling the VP about a result will look like bragging, or get no reply.&rdquo; Send two lines about one concrete student result with a number in it. Record the reply and how long it took.</div>
+      <div class="ex-row"><span class="tag">Room 148</span>Prediction: &ldquo;People already know about the work I do.&rdquo; Ask three colleagues whether they knew about one thing you built. Predict how many will say yes before you ask.</div>
+      <div class="ex-row"><span class="tag">Income</span>Prediction: &ldquo;Nobody will care about a Self-Evidence excerpt.&rdquo; Put one short piece in front of real readers. Predict the response count first, then compare.</div>
+      <div class="ex-row"><span class="tag">The ask</span>Pick one thing you&rsquo;ve been waiting to be offered: a timetable preference, a resource, a chance to present. Ask for it directly. Prediction: &ldquo;They&rsquo;ll say no.&rdquo; Record the answer.</div>
+      <div class="ex-row"><span class="tag">Night class</span>Prediction: &ldquo;They don&rsquo;t notice the extra prep.&rdquo; Ask the class for one line each on what helped most this term. Count how many name something you built.</div>
+      <div class="ex-row"><span class="tag">Unseen</span>For one week, do your best work and tell nobody. At the end, count how much of it anyone mentioned. This tests Rule B directly, with no action from you to blame.</div>
+    </div>
+
+    <div class="card teal">
+      <div class="p-head"><span class="p-num">05</span><span class="p-name">Lock it in with if&ndash;then plans</span><span class="ev a">A</span></div>
+      <div class="p-ess">Decide the response before the trigger arrives.</div>
+      <div class="para">An if&ndash;then plan ties a specific cue to a specific action. Across 94 independent tests, these plans had a <b>medium-to-large effect on goal attainment</b> (d = .65). They work best when the goal behind them is strong, so write them for the experiments you actually mean to run.</div>
+      <div class="move"><b>B:</b> &ldquo;If I finish something I&rsquo;m proud of, then within 24 hours I show it to one person who matters for it.&rdquo;</div>
+      <div class="move"><b>B:</b> &ldquo;If I catch myself waiting to be offered something, then I ask for it that day.&rdquo;</div>
+      <div class="move"><b>A:</b> &ldquo;If &lsquo;that&rsquo;s not fair&rsquo; fires, then I write the two lines and ask what it changes about my next move.&rdquo;</div>
+      <div class="move"><b>A:</b> &ldquo;If a late request lands, then I answer it on its merits, not on the balance of the account.&rdquo;</div>
+      <div class="note">Grade A for the meta-analysis itself (Gollwitzer &amp; Sheeran, 2006). Using it on this particular belief is reasoning.</div>
+    </div>
+
+    <div class="card gold">
+      <div class="p-head"><span class="p-num">06</span><span class="p-name">Review weekly</span><span class="ev d">D</span></div>
+      <div class="p-ess">Ten minutes. The chart does the arguing.</div>
+      <div class="move"><b>Re-rate both rules</b> in tool 1. Watch the two lines, not any single week.</div>
+      <div class="move"><b>Read the closed experiments.</b> One question: how often did the prediction from the old rule come true?</div>
+      <div class="move"><b>Choose next week&rsquo;s experiment</b>, alternating tracks so both get equal work.</div>
+      <div class="note">Grade D. A weekly review is ordinary CBT practice, but its structure here is my design, not a tested protocol.</div>
+    </div>
+
+    <div class="section-k">Six weeks</div>
+    <div class="card">
+      <div class="step"><div class="n">1</div><div><b>Week 1:</b> rate both rules, then catch only. Aim for at least five records, split across both tracks. No experiments yet; you&rsquo;re learning where it fires.</div></div>
+      <div class="step"><div class="n">2</div><div><b>Week 2:</b> first Track B experiment, the smallest one on the list. Write two if&ndash;then plans.</div></div>
+      <div class="step"><div class="n">3</div><div><b>Week 3:</b> first Track A experiment. Keep catching.</div></div>
+      <div class="step"><div class="n">4</div><div><b>Week 4:</b> a bigger Track B experiment, one where the result matters to you.</div></div>
+      <div class="step"><div class="n">5</div><div><b>Week 5:</b> a bigger Track A experiment.</div></div>
+      <div class="step"><div class="n">6</div><div><b>Week 6:</b> read the whole log. Compare both ratings with week 1. Decide which track needs another round.</div></div>
+    </div>
+
+    <div class="section-k">How it goes wrong</div>
+    <div class="card red">
+      <div class="move"><b>Arguing instead of testing.</b> If a session is all reasoning and no action, it has drifted back into the head.</div>
+      <div class="move"><b>Vague predictions.</b> &ldquo;It won&rsquo;t go well&rdquo; can&rsquo;t fail. If it can&rsquo;t fail, it can&rsquo;t teach you anything.</div>
+      <div class="move"><b>Hedging the action.</b> An ask buried in apologies, or a result shared &ldquo;in case it&rsquo;s useful.&rdquo; The hedge gives you an excuse whichever way it goes.</div>
+      <div class="move"><b>Counting only the hits.</b> Log the experiments where the old rule was right, too. Sometimes it will be, and that&rsquo;s information, not failure.</div>
+      <div class="move"><b>Swinging into cynicism.</b> &ldquo;Nothing is ever fair&rdquo; is the same forecast error turned upside down.</div>
+      <div class="move"><b>Running it at home.</b> Out of scope. Obligations to your children are real.</div>
+    </div>
+
+    <div class="band warn"><b>The honest limit.</b> CBT&rsquo;s evidence comes mostly from clinical anxiety and depression. Using it on a fairness belief in a healthy adult is <b>reasoning, not tested</b>. Self-guided programs also run weaker than guided ones; one meta-analysis of self-guided stress programs found a small effect (g = 0.19). What makes up for that is that you&rsquo;re not relying on the studies: <b>your own log is the evidence</b>.</div>
+
+    <div class="section-k">The one thing</div>
+    <div class="band"><b>&ldquo;What did I predict, and what actually happened?&rdquo;</b> Both tracks run on a forecast. That question turns each one into data.</div>
+
+    <div class="section-k">Evidence key</div>
+    <div class="key">
+      <span class="ev a">A</span> <b>Meta-analytic, replicated.</b> &nbsp;
+      <span class="ev b">B</span> <b>Solid but narrower:</b> one strong meta-analysis, or a well-established clinical method. &nbsp;
+      <span class="ev c">C</span> <b>Thin:</b> catalogued, plausible, few direct tests. &nbsp;
+      <span class="ev d">D</span> <b>My design, from reasoning.</b><br>
+      Sources: Dalbert 1999 (Social Justice Research); Bennett-Levy 2003 (Behavioural and Cognitive Psychotherapy); Warnock-Parkes et al. 2025, behavioural experiments guide (Cognitive Behaviour Therapy); David et al. 2018, REBT meta-analysis (Journal of Clinical Psychology); Gollwitzer &amp; Sheeran 2006 (Advances in Experimental Social Psychology); Amanvermez et al., self-guided stress interventions meta-analysis.
+    </div>
+
+    <div class="foot">The Fairness Problem &middot; Forge OS</div>
+  </div>
+
+  <!-- ===================== WORK ===================== -->
+  <div id="work">
+    <h1 style="font-size:21px;">Work</h1>
+    <div class="sub">Four tools. Everything saves to this device only. The analysis appears after you save, so the prompts can&rsquo;t shape what you write.</div>
+
+    <div class="pattern" id="pattern"></div>
+
+    <!-- 1 ratings -->
+    <div class="tool gold" id="t1">
+      <div class="tool-head" onclick="toggleTool('t1')"><div class="tn">1</div><div class="tt">Rule ratings &mdash; weekly</div><div class="cnt" id="c-rate"></div><div class="chev">&#9656;</div></div>
+      <div class="tool-body">
+        <div class="why">How strongly each rule <b>runs</b> right now, not how true you think it is. Once a week, same day if you can.</div>
+        <div class="fl"><label>Rule A &mdash; &ldquo;If I play fair, I&rsquo;ll be treated fairly&rdquo;</label>
+          <div class="rangerow"><input type="range" id="rate-a" min="0" max="100" step="5" value="50" oninput="document.getElementById('rate-a-v').textContent=this.value"><span class="rv" id="rate-a-v">50</span></div></div>
+        <div class="fl"><label>Rule B &mdash; &ldquo;If my work is good, the right people will notice&rdquo;</label>
+          <div class="rangerow"><input type="range" id="rate-b" min="0" max="100" step="5" value="50" oninput="document.getElementById('rate-b-v').textContent=this.value"><span class="rv" id="rate-b-v">50</span></div></div>
+        <div class="fl"><label>Note (optional)</label><input type="text" id="rate-note" placeholder="What moved it this week, if anything"></div>
+        <div class="toolbar"><button class="sbtn" onclick="saveRate()">Save rating</button></div>
+        <div class="chartbox" id="chart"></div>
+        <div class="hist" id="h-rate"></div>
+      </div>
+    </div>
+
+    <!-- 2 catch -->
+    <div class="tool teal" id="t2">
+      <div class="tool-head" onclick="toggleTool('t2')"><div class="tn">2</div><div class="tt">Catch it &mdash; two lines</div><div class="cnt" id="c-catch"></div><div class="chev">&#9656;</div></div>
+      <div class="tool-body">
+        <div class="why"><b>Write it down, don&rsquo;t judge it.</b> Situation as a camera saw it, then the exact sentence in your head.</div>
+        <div class="fl"><label>Track</label><select id="catch-track"><option value="A">A &mdash; it&rsquo;s not fair</option><option value="B">B &mdash; waiting to be noticed</option><option value="AB">Both</option></select></div>
+        <div class="fl"><label>Line 1 &mdash; situation</label><input type="text" id="catch-sit" placeholder="Staff meeting, Tuesday &mdash; another unit mentioned, mine not"></div>
+        <div class="fl"><label>Line 2 &mdash; the sentence, exactly</label><input type="text" id="catch-thought" placeholder="&ldquo;I did twice the work and nobody even knows it exists&rdquo;"></div>
+        <div class="fl"><label>Strength 0&ndash;10</label>
+          <div class="rangerow"><input type="range" id="catch-str" min="0" max="10" step="1" value="5" oninput="document.getElementById('catch-str-v').textContent=this.value"><span class="rv" id="catch-str-v">5</span></div></div>
+        <div class="fl"><label>What I did next (optional)</label><input type="text" id="catch-did" placeholder="Said nothing, went back to marking"></div>
+        <div class="toolbar"><button class="sbtn" onclick="saveCatch()">Save &amp; analyse</button><button class="sbtn ghost" onclick="clearForm('catch',true)">Clear</button></div>
+        <div class="analysis" id="a-catch"></div>
+        <div class="hist" id="h-catch"></div>
+      </div>
+    </div>
+
+    <!-- 3 experiments -->
+    <div class="tool violet" id="t3">
+      <div class="tool-head" onclick="toggleTool('t3')"><div class="tn">3</div><div class="tt">Experiment log</div><div class="cnt" id="c-exp"></div><div class="chev">&#9656;</div></div>
+      <div class="tool-body">
+        <div class="why">Save it <b>before</b> you act, and it stays open. Close it in the history below once you know what happened. <b>The prediction has to be able to fail.</b></div>
+        <div class="fl"><label>Track</label><select id="exp-track"><option value="A">A &mdash; it&rsquo;s not fair</option><option value="B">B &mdash; waiting to be noticed</option></select></div>
+        <div class="fl"><label>The prediction (from the old rule)</label><div class="hintline">Specific and checkable &mdash; a number, a time, a yes/no.</div><input type="text" id="exp-pred" placeholder="The VP won&rsquo;t reply within two school days"></div>
+        <div class="fl"><label>What I&rsquo;ll do</label><textarea id="exp-act" rows="2" placeholder="Send two lines on the Unit 3 results, with the number, no apology"></textarea></div>
+        <div class="fl"><label>How strongly the rule runs, before (0&ndash;100)</label>
+          <div class="rangerow"><input type="range" id="exp-before" min="0" max="100" step="5" value="50" oninput="document.getElementById('exp-before-v').textContent=this.value"><span class="rv" id="exp-before-v">50</span></div></div>
+        <div class="toolbar"><button class="sbtn" onclick="saveExp()">Save as open</button><button class="sbtn ghost" onclick="clearForm('exp',true)">Clear</button></div>
+        <div class="analysis" id="a-exp"></div>
+        <div class="hist" id="h-exp"></div>
+      </div>
+    </div>
+
+    <!-- 4 if-then -->
+    <div class="tool" id="t4">
+      <div class="tool-head" onclick="toggleTool('t4')"><div class="tn">4</div><div class="tt">If&ndash;then plans</div><div class="cnt" id="c-plan"></div><div class="chev">&#9656;</div></div>
+      <div class="tool-body">
+        <div class="why">A specific cue and a specific action. <b>&ldquo;Then I&rsquo;ll try to&hellip;&rdquo; is not a plan.</b></div>
+        <div class="fl"><label>Track</label><select id="plan-track"><option value="A">A &mdash; it&rsquo;s not fair</option><option value="B">B &mdash; waiting to be noticed</option></select></div>
+        <div class="fl"><label>If&hellip;</label><input type="text" id="plan-if" placeholder="I finish something I&rsquo;m proud of"></div>
+        <div class="fl"><label>Then&hellip;</label><input type="text" id="plan-then" placeholder="within 24 hours I show it to one person who matters for it"></div>
+        <div class="toolbar"><button class="sbtn" onclick="savePlan()">Save &amp; check</button><button class="sbtn ghost" onclick="clearForm('plan',true)">Clear</button></div>
+        <div class="analysis" id="a-plan"></div>
+        <div class="hist" id="h-plan"></div>
+      </div>
+    </div>
+
+    <div class="band" style="margin-top:18px;"><b>On device only.</b> Everything here is stored in this browser. Nothing is synced or committed. Export before you clear the browser.</div>
+    <div class="toolbar"><button class="sbtn ghost" onclick="exportAll()">Export all as text</button><button class="sbtn danger" onclick="wipeAll()">Erase everything</button></div>
+
+    <div class="foot">The Fairness Problem &middot; Forge OS</div>
+  </div>
+
+  <!-- ===================== DRILL ===================== -->
+  <div id="drill">
+    <h1 style="font-size:20px;">Name the track</h1>
+    <div class="sub">Recognition, not recall. Read the situation, then name the track (A, B, both, or neither) and the move before you reveal. Ten per round, shuffled.</div>
+    <div class="progress" id="progress"></div>
+    <div class="stage" id="stage"></div>
+    <div class="done-view" id="done">
+      <div class="big">Done</div>
+      <div class="streak" id="streak"></div>
+      <div class="bar"><button class="btn ghost" onclick="restart()">Again</button></div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ---------------- mode ---------------- */
+function setMode(m){
+  document.getElementById('read').style.display  = (m==='read')  ? 'block' : 'none';
+  document.getElementById('work').style.display  = (m==='work')  ? 'block' : 'none';
+  document.getElementById('drill').style.display = (m==='drill') ? 'block' : 'none';
+  document.getElementById('tab-read').className  = (m==='read')  ? 'on' : '';
+  document.getElementById('tab-work').className  = (m==='work')  ? 'on' : '';
+  document.getElementById('tab-drill').className = (m==='drill') ? 'on' : '';
+  if(m==='drill'){ restart(); }
+  if(m==='work'){ renderAll(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------------- photo slot (local only, on-device) ---------------- */
+var PKEY='forge-img-fairness';
+function loadPhoto(){
+  var v=''; try{ v=localStorage.getItem(PKEY)||''; }catch(e){}
+  var el=document.getElementById('photo');
+  if(v){ el.style.backgroundImage='url('+v+')'; el.className='photo set'; }
+  else { el.style.backgroundImage=''; el.className='photo'; }
+}
+function pickPhoto(){ document.getElementById('photo-input').click(); }
+document.getElementById('photo-input').addEventListener('change', function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ try{ localStorage.setItem(PKEY, r.result); }catch(err){ alert('Image too large to store on this device.'); } loadPhoto(); };
+  r.readAsDataURL(f);
+});
+var lpTimer=null;
+document.getElementById('photo').addEventListener('touchstart', function(){ lpTimer=setTimeout(function(){
+  if(confirm('Remove this image?')){ try{ localStorage.removeItem(PKEY); }catch(e){} loadPhoto(); }
+}, 650); });
+document.getElementById('photo').addEventListener('touchend', function(){ if(lpTimer) clearTimeout(lpTimer); });
+
+/* ---------------- work store ---------------- */
+var WKEY='forge-fairness-work';
+function store(){ try{ var v=JSON.parse(localStorage.getItem(WKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function put(s){ try{ localStorage.setItem(WKEY, JSON.stringify(s)); }catch(e){ alert('Could not save on this device.'); } }
+function list(k){ var s=store(); return Array.isArray(s[k])?s[k]:[]; }
+function push(k,rec){ var s=store(); if(!Array.isArray(s[k])) s[k]=[]; rec.d=new Date().toISOString(); rec.id=Date.now()+'-'+Math.floor(Math.random()*1e4); s[k].unshift(rec); put(s); return rec.id; }
+function drop(k,id){ if(!confirm('Delete this entry?')) return; var s=store(); if(!Array.isArray(s[k])) return; s[k]=s[k].filter(function(r){ return r.id!==id; }); put(s); renderAll(); }
+function val(id){ var e=document.getElementById(id); return e?(e.value||'').trim():''; }
+function num(id){ var e=document.getElementById(id); var n=parseInt(e?e.value:'',10); return isNaN(n)?null:n; }
+function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function nl(t){ return esc(t).replace(/\n/g,'<br>'); }
+function fdate(iso){ try{ var d=new Date(iso); return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}); }catch(e){ return ''; } }
+function sdate(iso){ try{ return new Date(iso).toLocaleDateString(undefined,{month:'short',day:'numeric'}); }catch(e){ return ''; } }
+var TRACK={A:'A &mdash; not fair',B:'B &mdash; waiting to be noticed',AB:'Both'};
+
+function toggleTool(id){ var el=document.getElementById(id); el.className = el.className.indexOf('open')>-1 ? el.className.replace(' open','') : el.className+' open'; }
+function setRange(id,v){ var e=document.getElementById(id); if(e){ e.value=v; var o=document.getElementById(id+'-v'); if(o) o.textContent=v; } }
+function clearForm(p, hideAnalysis){
+  var ids={ catch:['catch-sit','catch-thought','catch-did'], exp:['exp-pred','exp-act'], plan:['plan-if','plan-then'] };
+  (ids[p]||[]).forEach(function(i){ var e=document.getElementById(i); if(e) e.value=''; });
+  if(p==='catch') setRange('catch-str',5);
+  if(p==='exp') setRange('exp-before',50);
+  if(hideAnalysis){ var a=document.getElementById('a-'+p); if(a) a.className='analysis'; }
+}
+function showA(p, html){ var a=document.getElementById('a-'+p); a.innerHTML=html; a.className='analysis on'; }
+function ah(t){ return '<div class="ah">'+t+'</div>'; }
+function aq(t){ return '<div class="aq">'+t+'</div>'; }
+function flag(t,ok){ return '<div class="flag'+(ok?' ok':'')+'">'+t+'</div>'; }
+
+/* ---------------- 1 ratings ---------------- */
+function saveRate(){
+  push('rate',{ a:num('rate-a'), b:num('rate-b'), note:val('rate-note') });
+  document.getElementById('rate-note').value='';
+  renderAll();
+}
+
+/* ---------------- 2 catch ---------------- */
+var RX_A=/\b(fair|unfair|deserve|should(n'?t|n’t)?|after (all|everything)|always get|not right|how dare|unbelievable)\b/i;
+var RX_B=/\b(notice|noticed|knows?|see it|seen|recogni[sz]e|credit|thank|mention|picked up|invisible|nobody|no one)\b/i;
+function saveCatch(){
+  var sit=val('catch-sit'), th=val('catch-thought');
+  if(!sit && !th){ alert('Write at least one of the two lines.'); return; }
+  var tr=val('catch-track'), str=num('catch-str'), did=val('catch-did');
+  push('catch',{ track:tr, sit:sit, thought:th, str:str, did:did });
+  clearForm('catch',false);
+  var h=ah('Saved &mdash; now look at it');
+  var hitA=RX_A.test(th), hitB=RX_B.test(th);
+  if(!th) h+=flag('<b>No sentence recorded.</b> Line 2 is the part that does the work. Even a fragment (&ldquo;typical&rdquo;) is worth writing.');
+  else if(tr==='A' && hitB && !hitA) h+=flag('<b>You marked A, but the sentence sounds like B.</b> It&rsquo;s about being seen, not about the outcome. Worth checking which one is really running.');
+  else if(tr==='B' && hitA && !hitB) h+=flag('<b>You marked B, but the sentence sounds like A.</b> There&rsquo;s a <i>should</i> or a <i>deserve</i> in it. Both tracks may be running at once.');
+  else if(hitA||hitB) h+=flag('<b>The sentence carries the rule word for word.</b> That&rsquo;s a clean catch.',true);
+  if(str!==null && str>=7) h+=aq('<b>Strength '+str+'.</b> High-strength catches make the best experiments, because the prediction feels most certain. Is there one in this?');
+  if(tr==='A'||tr==='AB') h+=aq('<b>Swap:</b> &ldquo;I&rsquo;d prefer this had gone fairly. It didn&rsquo;t have to. What does it change about my next move?&rdquo;');
+  if(tr==='B'||tr==='AB') h+=aq('<b>Swap:</b> &ldquo;I&rsquo;d like this noticed. It won&rsquo;t be unless I show it.&rdquo; Then: who is the one person it should go in front of?');
+  if(!did) h+=aq('Leave <b>what you did next</b> blank only if you did nothing. Doing nothing is the Track B behaviour, so it&rsquo;s worth writing down.');
+  showA('catch',h);
+  renderAll();
+}
+
+/* ---------------- 3 experiments ---------------- */
+var VAGUE=/\b(won'?t go well|badly|bad|weird|awkward|nothing|probably|might|maybe|not good)\b/i;
+function saveExp(){
+  var pred=val('exp-pred'), act=val('exp-act');
+  if(!pred){ alert('Write the prediction first. It is the whole experiment.'); return; }
+  var tr=val('exp-track'), before=num('exp-before');
+  push('exp',{ track:tr, pred:pred, act:act, before:before, open:true });
+  clearForm('exp',false);
+  var h=ah('Open &mdash; go and run it');
+  var hasNum=/\d/.test(pred), short=pred.split(/\s+/).length<5;
+  if(VAGUE.test(pred) && !hasNum) h+=flag('<b>The prediction may be too vague to fail.</b> Could someone else check it without asking you what you meant? Add a number, a time limit or a yes/no.');
+  else if(short) h+=flag('<b>Short prediction.</b> Fine if it&rsquo;s checkable. If not, sharpen it before you act.');
+  else h+=flag('<b>Checkable prediction.</b> Good.',true);
+  if(!act) h+=aq('No action written. Decide <b>exactly what you&rsquo;ll say or do</b>, so you can&rsquo;t hedge it in the moment.');
+  else if(/\b(sorry|just|maybe|if (it'?s|you'?re)|in case|no worries|quick question)\b/i.test(act)) h+=flag('<b>Possible safety behaviour in the action.</b> &ldquo;Just&rdquo;, &ldquo;sorry&rdquo;, &ldquo;in case it&rsquo;s useful&rdquo;: a hedge gives you an excuse whichever way it goes. Drop it.');
+  h+=aq('Close it below once you know the result. <b>An open experiment teaches nothing.</b>');
+  showA('exp',h);
+  renderAll();
+}
+function closeExp(id){
+  var out=val('cx-out-'+id), res=val('cx-res-'+id), after=num('cx-after-'+id);
+  if(!out){ alert('Write what actually happened.'); return; }
+  if(!res){ alert('Choose whether the prediction came true.'); return; }
+  var s=store(), arr=Array.isArray(s.exp)?s.exp:[], r=null;
+  for(var i=0;i<arr.length;i++){ if(arr[i].id===id){ r=arr[i]; break; } }
+  if(!r) return;
+  r.out=out; r.res=res; r.after=after; r.open=false; r.closed=new Date().toISOString();
+  put(s);
+  renderAll();
+  var msg = res==='no' ? 'The old rule <b>predicted wrong</b>. Note how much the rating moved, and whether it moved as far as the evidence did.'
+          : res==='yes' ? 'The old rule <b>predicted right</b> this time. That&rsquo;s data, not failure. Was the experiment a fair test, with no hedging?'
+          : 'A <b>partial</b> result. Write down which part held and which didn&rsquo;t. That&rsquo;s usually where the useful finding is.';
+  var d=(r.before!=null && after!=null) ? (after-r.before) : null;
+  if(d!==null) msg+=' Rating '+r.before+' &rarr; '+after+' ('+(d>0?'+':'')+d+').';
+  showA('exp', ah('Closed')+aq(msg));
+}
+
+/* ---------------- 4 if-then ---------------- */
+function savePlan(){
+  var i=val('plan-if'), t=val('plan-then');
+  if(!i||!t){ alert('Fill in both halves.'); return; }
+  push('plan',{ track:val('plan-track'), ifc:i, thenc:t });
+  clearForm('plan',false);
+  var h=ah('Saved &mdash; check it');
+  if(/\b(try|be more|remember to|think about|be better|aim to|should)\b/i.test(t)) h+=flag('<b>The &ldquo;then&rdquo; is an intention, not an action.</b> Rewrite it as something a camera could see you do.');
+  else h+=flag('<b>The action is concrete.</b>',true);
+  if(/\b(always|whenever|every time|when things)\b/i.test(i) || i.split(/\s+/).length<3) h+=aq('Make the <b>if</b> a cue you&rsquo;ll actually notice in the moment: a place, a time, a sentence in your head.');
+  h+=aq('Say it out loud once. These plans work best when the goal behind them is strong. Which experiment does this one serve?');
+  showA('plan',h);
+  renderAll();
+}
+
+/* ---------------- render ---------------- */
+function row(l,t){ return (t!==undefined && t!==null && t!=='') ? '<div class="erow"><span class="el">'+l+'</span>'+nl(t)+'</div>' : ''; }
+function entryWrap(k,r,inner){
+  return '<div class="entry"><div class="edate"><span>'+fdate(r.d)+'</span><span class="del" onclick="drop(\''+k+'\',\''+r.id+'\')">&times;</span></div>'+inner+'</div>';
+}
+function renderHist(k,elId,cntId,fn){
+  var arr=list(k), el=document.getElementById(elId), c=document.getElementById(cntId);
+  if(c) c.textContent = arr.length ? arr.length : '';
+  if(!el) return;
+  if(!arr.length){ el.innerHTML='<div class="hist-k">History</div><div class="empty">Nothing saved yet.</div>'; return; }
+  var b='<div class="hist-k">History &mdash; '+arr.length+'</div>';
+  for(var i=0;i<arr.length;i++){ b+=entryWrap(k,arr[i],fn(arr[i])); }
+  el.innerHTML=b;
+}
+var RESMAP={yes:'Yes &mdash; the old rule was right',partly:'Partly',no:'No &mdash; the old rule was wrong'};
+function expEntry(r){
+  var b=row('Track',TRACK[r.track]||r.track)+row('Prediction',r.pred)+row('Action',r.act)+row('Rule before',r.before);
+  if(r.open){
+    b+='<div class="closebox"><div class="hist-k" style="margin-bottom:6px;">Open &mdash; close it</div>'
+     + '<div class="fl"><label>What actually happened</label><textarea id="cx-out-'+r.id+'" rows="2"></textarea></div>'
+     + '<div class="fl"><label>Did the prediction come true?</label><select id="cx-res-'+r.id+'"><option value="">Choose&hellip;</option><option value="yes">Yes</option><option value="partly">Partly</option><option value="no">No</option></select></div>'
+     + '<div class="fl"><label>Rule after (0&ndash;100)</label><div class="rangerow"><input type="range" id="cx-after-'+r.id+'" min="0" max="100" step="5" value="'+(r.before!=null?r.before:50)+'" oninput="document.getElementById(\'cx-after-'+r.id+'-v\').textContent=this.value"><span class="rv" id="cx-after-'+r.id+'-v">'+(r.before!=null?r.before:50)+'</span></div></div>'
+     + '<button class="sbtn" onclick="closeExp(\''+r.id+'\')">Close experiment</button></div>';
+  } else {
+    b+=row('What happened',r.out)+row('Prediction came true?',RESMAP[r.res]||r.res)+row('Rule after',r.after);
+  }
+  return b;
+}
+function renderAll(){
+  renderHist('rate','h-rate','c-rate',function(r){ return row('Rule A',r.a)+row('Rule B',r.b)+row('Note',r.note); });
+  renderHist('catch','h-catch','c-catch',function(r){ return row('Track',TRACK[r.track]||r.track)+row('Situation',r.sit)+row('Sentence',r.thought)+row('Strength',r.str)+row('Did next',r.did); });
+  renderHist('exp','h-exp','c-exp',expEntry);
+  renderHist('plan','h-plan','c-plan',function(r){ return row('Track',TRACK[r.track]||r.track)+row('If',r.ifc)+row('Then',r.thenc); });
+  drawChart();
+  paintPattern();
+}
+function paintPattern(){
+  var rates=list('rate'), catches=list('catch'), exps=list('exp'), plans=list('plan');
+  var total=rates.length+catches.length+exps.length+plans.length;
+  var el=document.getElementById('pattern');
+  if(!total){ el.innerHTML='<b>Nothing logged yet.</b> Start with tool 1: rate both rules once, so you have a baseline. Week 1 is catching only.'; return; }
+  var cA=0,cB=0; catches.forEach(function(r){ if(r.track==='A'||r.track==='AB') cA++; if(r.track==='B'||r.track==='AB') cB++; });
+  var open=exps.filter(function(r){ return r.open; }).length;
+  var closed=exps.filter(function(r){ return !r.open; });
+  var wrong=closed.filter(function(r){ return r.res==='no'; }).length, part=closed.filter(function(r){ return r.res==='partly'; }).length;
+  var eA=exps.filter(function(r){ return r.track==='A'; }).length, eB=exps.filter(function(r){ return r.track==='B'; }).length;
+  var b='';
+  if(catches.length) b+='<b>'+catches.length+' catch'+(catches.length===1?'':'es')+'</b> (A '+cA+' &middot; B '+cB+'). ';
+  if(closed.length) b+='The old rule predicted wrong in <b>'+wrong+' of '+closed.length+'</b> closed experiment'+(closed.length===1?'':'s')+(part?' and partly wrong in '+part:'')+'. ';
+  if(open) b+='<b>'+open+'</b> experiment'+(open===1?' is':'s are')+' still open. ';
+  if(exps.length>=2 && Math.abs(eA-eB)>=2) b+='Experiments lean toward Track '+(eA>eB?'A':'B')+' ('+eA+' vs '+eB+'). <b>Next one should be Track '+(eA>eB?'B':'A')+'</b>, to keep them equal. ';
+  if(rates.length>=2){ var f=rates[rates.length-1], l=rates[0];
+    b+='Since your first rating: A '+f.a+' &rarr; '+l.a+', B '+f.b+' &rarr; '+l.b+'. '; }
+  if(!b) b='<b>'+total+' entr'+(total===1?'y':'ies')+'.</b> ';
+  el.innerHTML=b;
+}
+
+/* ---------------- chart ---------------- */
+var CW=320, CH=170, PL=30, PR=34, PT=12, PB=24;
+function drawChart(){
+  var el=document.getElementById('chart'); if(!el) return;
+  var arr=list('rate').slice().reverse();
+  if(arr.length<2){ el.innerHTML='<div class="empty">The chart appears after two weekly ratings.</div>'; return; }
+  var n=arr.length, w=CW-PL-PR, h=CH-PT-PB;
+  function X(i){ return PL + (n===1?w/2:(w*i/(n-1))); }
+  function Y(v){ return PT + h*(1-(Math.max(0,Math.min(100,v))/100)); }
+  var s='<svg viewBox="0 0 '+CW+' '+CH+'" class="chart" role="img" aria-label="Rule A and Rule B ratings over time">';
+  [0,25,50,75,100].forEach(function(g){ var y=Y(g).toFixed(1);
+    s+='<line x1="'+PL+'" x2="'+(CW-PR)+'" y1="'+y+'" y2="'+y+'" class="grid"/><text x="'+(PL-6)+'" y="'+(+y+3.5)+'" class="ax" text-anchor="end">'+g+'</text>'; });
+  var ser=[['a','sa','A'],['b','sb','B']];
+  var ends=[];
+  ser.forEach(function(se){
+    var pts=[]; arr.forEach(function(r,i){ if(r[se[0]]!=null) pts.push([X(i),Y(r[se[0]]),r[se[0]],r.d]); });
+    if(!pts.length) return;
+    s+='<polyline class="'+se[1]+'" points="'+pts.map(function(p){ return p[0].toFixed(1)+','+p[1].toFixed(1); }).join(' ')+'"/>';
+    pts.forEach(function(p){ s+='<circle class="'+se[1]+'d" cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="3"><title>Rule '+se[2]+': '+p[2]+' ('+sdate(p[3])+')</title></circle>'; });
+    var last=pts[pts.length-1]; ends.push({y:last[1], t:se[2]+' '+last[2], c:se[1]});
+  });
+  if(ends.length===2 && Math.abs(ends[0].y-ends[1].y)<13){
+    var mid=(ends[0].y+ends[1].y)/2, up=ends[0].y<=ends[1].y?0:1;
+    ends[up].y=mid-6.5; ends[1-up].y=mid+6.5;
+  }
+  ends.forEach(function(e){ var y=Math.max(PT+4,Math.min(CH-PB,e.y)); s+='<text x="'+(CW-PR+5)+'" y="'+(y+3.5).toFixed(1)+'" class="el '+e.c+'t">'+e.t+'</text>'; });
+  s+='<text x="'+PL+'" y="'+(CH-6)+'" class="ax">'+sdate(arr[0].d)+'</text>';
+  s+='<text x="'+(CW-PR)+'" y="'+(CH-6)+'" class="ax" text-anchor="end">'+sdate(arr[n-1].d)+'</text>';
+  s+='</svg><div class="legend"><span class="lg sa">&#9472;&#9472; Rule A &middot; fair</span><span class="lg sb">&#9476;&#9476; Rule B &middot; noticed</span></div>';
+  el.innerHTML=s;
+}
+
+function exportAll(){
+  var s=store(), keys=[['rate','Rule ratings'],['catch','Catches'],['exp','Experiments'],['plan','If-then plans']];
+  var out='THE FAIRNESS PROBLEM — WORK LOG\nExported '+new Date().toLocaleString()+'\n';
+  keys.forEach(function(p){
+    var arr=Array.isArray(s[p[0]])?s[p[0]]:[]; if(!arr.length) return;
+    out+='\n\n=== '+p[1]+' ('+arr.length+') ===\n';
+    arr.forEach(function(r){
+      out+='\n-- '+fdate(r.d)+'\n';
+      for(var f in r){ if(f==='d'||f==='id') continue; var v=r[f]; if(v!==null && v!=='' && v!==undefined) out+=f+': '+v+'\n'; }
+    });
+  });
+  var w=window.open('','_blank');
+  if(w){ w.document.write('<pre style="white-space:pre-wrap;font:14px -apple-system,sans-serif;padding:18px;">'+esc(out)+'</pre>'); w.document.close(); }
+  else { alert('Allow pop-ups to export, or copy from the history lists.'); }
+}
+function wipeAll(){
+  if(!confirm('Erase every saved entry on this device? This cannot be undone.')) return;
+  if(!confirm('Really erase all of it?')) return;
+  try{ localStorage.removeItem(WKEY); }catch(e){}
+  renderAll();
+}
+
+/* ---------------- drill ---------------- */
+var POOL = [
+  { prompt:'You finish a unit you&rsquo;re proud of, save it to the shared drive and <b>tell nobody</b>.',
+    lines:['<b>Track B.</b> Nothing felt wrong, which is exactly why it&rsquo;s B and not A.','Move: an if&ndash;then. &ldquo;If I finish something I&rsquo;m proud of, then within 24 hours I show it to one person.&rdquo;'] },
+  { prompt:'Someone cuts in at the checkout and the cashier serves them. You&rsquo;re still annoyed <b>in the parking lot</b>.',
+    lines:['<b>Track A.</b> Surprise, then resentment, about a stranger.','Move: two-line catch, then the swap. The Grievance Protocol&rsquo;s Tier One handle is built for exactly this.'] },
+  { prompt:'A colleague&rsquo;s project gets praised at the staff meeting. <b>Yours, which took longer, isn&rsquo;t mentioned.</b>',
+    lines:['<b>Both.</b> &ldquo;Not fair&rdquo; is the feeling (A). The real question is whether anyone knew yours existed (B).','Move: experiment. Ask three colleagues if they knew about it, and predict the number first.'] },
+  { prompt:'You think: <b>&ldquo;If it&rsquo;s good, it&rsquo;ll get picked up.&rdquo;</b>',
+    lines:['<b>Track B, said word for word.</b> That is the heaven&rsquo;s reward fallacy.','Move: write it as Rule B and test it. The &ldquo;Unseen&rdquo; week is the direct test.'] },
+  { prompt:'A late request lands after you&rsquo;ve finished the work it changes. You think <b>&ldquo;I always get mine in on time.&rdquo;</b>',
+    lines:['<b>Track A.</b> The account is being cited as evidence.','Move: the if&ndash;then. &ldquo;Answer it on its merits, not on the balance of the account.&rdquo;'] },
+  { prompt:'You plan to ask for a timetable preference but write the email as <b>&ldquo;Just wondering if maybe, no worries if not&hellip;&rdquo;</b>',
+    lines:['<b>A safety behaviour inside a Track B experiment.</b> The hedge lets you write off a no.','Move: rewrite it as one clean sentence with no hedge, then send it.'] },
+  { prompt:'You decide that since nothing is ever fair, <b>there&rsquo;s no point doing good work</b>.',
+    lines:['<b>Neither track. It&rsquo;s the inversion.</b> It&rsquo;s still a forecast from a moral rule, just turned upside down.','Move: keep fairness as your own standard and drop it only as a forecast.'] },
+  { prompt:'Your prediction reads: <b>&ldquo;It won&rsquo;t go well.&rdquo;</b>',
+    lines:['<b>A prediction that can&rsquo;t fail.</b>','Move: sharpen it. A number, a time limit or a yes/no. &ldquo;She won&rsquo;t reply within two days.&rdquo;'] },
+  { prompt:'The VP replies within an hour to your two-line note about a student result, and <b>thanks you</b>.',
+    lines:['<b>A Track B experiment where the old rule predicted wrong.</b>','Move: close it in the log and re-rate Rule B. Note whether the rating moved as far as the evidence did.'] },
+  { prompt:'You send the note. <b>No reply in a week.</b>',
+    lines:['<b>The old rule predicted right this time.</b> That&rsquo;s data, not a verdict on you.','Move: log it honestly. Then ask whether it was a fair test: the right person, a clear point, no hedge?'] },
+  { prompt:'You&rsquo;re waiting for someone to <b>offer</b> you the chance to present your unit at the district session.',
+    lines:['<b>Track B.</b> Waiting to be offered is waiting to be noticed.','Move: the ask. Request it directly, and predict the answer first.'] },
+  { prompt:'Driving home, you&rsquo;re cut off twice and think <b>&ldquo;Of course, it&rsquo;s always me.&rdquo;</b>',
+    lines:['<b>Track A,</b> with a targeting claim built in.','Move: the traffic count experiment. Was it aimed at you, or did it just happen near you?'] },
+  { prompt:'A strong Self-Evidence chapter sits finished on your laptop <b>for three weeks</b>.',
+    lines:['<b>Track B.</b> The work is done but the last step isn&rsquo;t.','Move: experiment. Put one excerpt in front of real readers, and predict the response count first.'] },
+  { prompt:'You did the extra prep for the night class all term. <b>Nobody has said anything.</b>',
+    lines:['<b>Track B,</b> leaning toward A.','Move: survey experiment. Ask the class for one line each on what helped most, and count how many name your work.'] },
+  { prompt:'You argue with yourself for twenty minutes about <b>why it shouldn&rsquo;t bother you</b>.',
+    lines:['<b>Arguing instead of testing.</b> You&rsquo;re reaching the sentence, not the expectation.','Move: stop, write the two lines, and look for an experiment in it.'] },
+  { prompt:'At home, you notice you&rsquo;re keeping score of <b>what you&rsquo;ve done for your daughters</b> versus what comes back.',
+    lines:['<b>Out of scope for this page.</b> Obligations there are real.','Move: the Grievance Protocol&rsquo;s tell. If the ledger is running on someone in your own house, the problem is the account, not the person.'] },
+  { prompt:'You log five experiments and <b>only remember the ones that proved you right</b>.',
+    lines:['<b>Counting only the hits.</b>','Move: read the closed log in order, including the experiments where the old rule won.'] },
+  { prompt:'Your Rule B rating has dropped from 80 to 45 over five weeks. <b>It still feels true sometimes.</b>',
+    lines:['<b>Normal.</b> Head&ndash;heart lag closes gradually, not all at once.','Move: keep going. Watch the line over the weeks, not how one moment feels.'] },
+  { prompt:'You think <b>&ldquo;I&rsquo;m not going to blow my own horn.&rdquo;</b>',
+    lines:['<b>Track B,</b> dressed up as a value.','Move: the reframe. Showing it is the last step of the job, not self-promotion. Then the if&ndash;then.'] },
+  { prompt:'A parent emails the principal to praise a colleague for something <b>you set up</b>.',
+    lines:['<b>Both.</b> A is the sting, and B is the fact that the parent never knew whose idea it was.','Move: catch it. Then ask what one-line habit would make your part visible next time.'] },
+  { prompt:'You write an if&ndash;then: <b>&ldquo;If I feel overlooked, then I&rsquo;ll try to speak up more.&rdquo;</b>',
+    lines:['<b>That &ldquo;then&rdquo; is an intention, not a plan.</b>','Move: rewrite it as something a camera could see. &ldquo;Then I send one person two lines that day.&rdquo;'] },
+  { prompt:'Name <b>the one thing</b>.',
+    lines:['<b>&ldquo;What did I predict, and what actually happened?&rdquo;</b>','Both tracks run on a forecast. That question turns each one into data.'] }
+];
+var ROUND=10, STEPS=[], idx=0, revealed=false;
+var ONE = POOL[POOL.length-1];
+
+function startRound(){
+  var a=POOL.slice(0,POOL.length-1);
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+  STEPS=a.slice(0,ROUND-1); STEPS.push(ONE); idx=0;
+}
+function paintProgress(){
+  var p=document.getElementById('progress'); p.innerHTML='';
+  for(var i=0;i<STEPS.length;i++){ var d=document.createElement('div'); d.className='dot'+(i<idx?' done':(i===idx?' on':'')); p.appendChild(d); }
+}
+function renderStep(){
+  var st=STEPS[idx], stage=document.getElementById('stage'), b='';
+  b+='<div class="prompt">'+st.prompt+'</div>';
+  b+='<div class="hint">Name the track &middot; then reveal</div>';
+  var inner=''; for(var i=0;i<st.lines.length;i++) inner+='<div class="line">'+st.lines[i]+'</div>';
+  b+='<div class="reveal-wrap" id="rw"><div class="reveal">'+inner+'</div></div>';
+  b+='<div class="bar">'
+   + '<button class="btn ghost" id="revealBtn" onclick="reveal()">Reveal</button>'
+   + '<button class="btn" id="nextBtn" onclick="next()" disabled>'+(idx===STEPS.length-1?'Finish':'Next')+'</button>'
+   + '</div>';
+  stage.innerHTML=b; revealed=false; paintProgress();
+}
+function reveal(){
+  if(revealed) return;
+  document.getElementById('rw').className='reveal-wrap on';
+  document.getElementById('revealBtn').disabled=true;
+  document.getElementById('nextBtn').disabled=false;
+  revealed=true;
+}
+function next(){
+  if(idx<STEPS.length-1){ idx++; renderStep(); window.scrollTo(0,0); return; }
+  var s=markDone();
+  document.getElementById('stage').style.display='none';
+  document.getElementById('progress').style.opacity='.35';
+  document.getElementById('streak').textContent='Drill streak: '+(s.streak||0)+' day'+((s.streak||0)===1?'':'s');
+  document.getElementById('done').className='done-view on';
+}
+function restart(){
+  startRound();
+  document.getElementById('done').className='done-view';
+  document.getElementById('stage').style.display=''; document.getElementById('progress').style.opacity='';
+  renderStep(); window.scrollTo(0,0);
+}
+
+/* streak: count-up only, no fail state */
+var DKEY='forge-fairness-drill';
+function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function today(){ return ymd(new Date()); }
+function yday(){ return ymd(new Date(Date.now()-86400000)); }
+function rd(){ try{ var v=JSON.parse(localStorage.getItem(DKEY)||'{}'); return (v&&typeof v==='object'&&!Array.isArray(v))?v:{}; }catch(e){ return {}; } }
+function markDone(){
+  var s=rd(), t=today(); if(s.last===t) return s;
+  s.streak=(s.last===yday())?(s.streak||0)+1:1; s.last=t;
+  try{ localStorage.setItem(DKEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+
+/* ---------------- boot ---------------- */
+loadPhoto();
+startRound();
+renderAll();
+</script>
+</body>
+</html>
